@@ -9,6 +9,7 @@ False (local dev, or the corporate network blocking live Fyers WebSocket access)
 has something to show.
 """
 import asyncio
+import traceback
 import uuid
 from pathlib import Path
 
@@ -237,24 +238,34 @@ class WebLiveEngine(LiveTrader):
             for row in self._replay_df.itertuples(index=False):
                 if not self.is_running:
                     break
-                candle = Candle(timestamp=row.Timestamp, open=row.Open, high=row.High,
-                                 low=row.Low, close=row.Close, volume=int(row.Volume))
-                self.data_manager.replay_candle(candle)
-                state = self.data_manager.get_state()
-                if state["nifty_price"] is None:
-                    continue
+                try:
+                    candle = Candle(timestamp=row.Timestamp, open=row.Open, high=row.High,
+                                     low=row.Low, close=row.Close, volume=int(row.Volume))
+                    self.data_manager.replay_candle(candle)
+                    state = self.data_manager.get_state()
+                    if state["nifty_price"] is None:
+                        continue
 
-                candle_count += 1
-                if candle_count % 20 == 0:
-                    print(f"CHECKPOINT replay_heartbeat candles_processed={candle_count}", flush=True)
+                    candle_count += 1
+                    if candle_count % 20 == 0:
+                        print(f"CHECKPOINT replay_heartbeat candles_processed={candle_count}", flush=True)
 
-                self._check_exits_replay()
+                    self._check_exits_replay()
 
-                signals = self.evaluate_strategies()
-                if signals:
-                    print(f"CHECKPOINT {len(signals)} signal(s) at candle {candle_count}", flush=True)
-                for signal in signals:
-                    asyncio.create_task(self.execute_signal(signal))
+                    signals = self.evaluate_strategies()
+                    if signals:
+                        print(f"CHECKPOINT {len(signals)} signal(s) at candle {candle_count}", flush=True)
+                    for signal in signals:
+                        asyncio.create_task(self.execute_signal(signal))
+                except Exception:
+                    # The for-loop body is otherwise all synchronous — an uncaught exception here
+                    # would silently kill this whole task (asyncio's default handler for an
+                    # unretrieved task exception can get swallowed once uvicorn reconfigures the
+                    # root logger), which looked exactly like an unexplained freeze: no crash
+                    # visible anywhere, but nothing ever advances again. Print with a guaranteed
+                    # full traceback and keep going instead of dying on one bad candle.
+                    print(f"CHECKPOINT EXCEPTION in replay loop at candle {candle_count}:", flush=True)
+                    traceback.print_exc()
 
                 await asyncio.sleep(REPLAY_SECONDS_PER_CANDLE)
                 if candle_count % 20 == 0:
