@@ -182,6 +182,7 @@ class WebLiveEngine(LiveTrader):
         await self._save_position_db(order)
         print(f"CHECKPOINT after _save_position_db {order.order_id}", flush=True)
         self._publish_state()
+        print(f"CHECKPOINT after _publish_state {order.order_id}", flush=True)
         # Gated by data_engine_enabled, not just `if self.telegram:` — Telegram credentials are
         # configured VM-wide, so this ran unconditionally on every fill regardless of mode, with
         # no timeout. Prime suspect for the observed freeze (exactly one trade, then silence,
@@ -192,6 +193,7 @@ class WebLiveEngine(LiveTrader):
                 await asyncio.wait_for(self.telegram.send_trade_execution(order), timeout=self.TELEGRAM_TIMEOUT_SECS)
             except Exception as e:
                 self.logger.log_error(f"Telegram trade-execution notice failed: {e}")
+        print(f"CHECKPOINT execute_signal end {order.order_id}", flush=True)
 
     async def _await_telegram_and_resolve(self, telegram_signal_id: str, our_signal_id: str) -> None:
         decision = await self.telegram.await_decision(telegram_signal_id, timeout_secs=300)
@@ -243,15 +245,20 @@ class WebLiveEngine(LiveTrader):
                     continue
 
                 candle_count += 1
-                if candle_count % 200 == 0:
+                if candle_count % 20 == 0:
                     print(f"CHECKPOINT replay_heartbeat candles_processed={candle_count}", flush=True)
 
                 self._check_exits_replay()
 
-                for signal in self.evaluate_strategies():
+                signals = self.evaluate_strategies()
+                if signals:
+                    print(f"CHECKPOINT {len(signals)} signal(s) at candle {candle_count}", flush=True)
+                for signal in signals:
                     asyncio.create_task(self.execute_signal(signal))
 
                 await asyncio.sleep(REPLAY_SECONDS_PER_CANDLE)
+                if candle_count % 20 == 0:
+                    print(f"CHECKPOINT post-sleep candle {candle_count}", flush=True)
 
     def _check_exits_replay(self) -> None:
         """Replay has no live option-chain LTP — mark to market with the same Black-Scholes
