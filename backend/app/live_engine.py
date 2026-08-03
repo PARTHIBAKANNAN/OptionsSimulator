@@ -127,6 +127,7 @@ class WebLiveEngine(LiveTrader):
         return signals
 
     async def execute_signal(self, signal) -> None:
+        print(f"CHECKPOINT execute_signal start {signal.strategy} {signal.strike}", flush=True)
         signal_id = str(uuid.uuid4())
 
         # Replay mode fires signals every ~50ms (see _start_replay) — real human approval has no
@@ -134,7 +135,9 @@ class WebLiveEngine(LiveTrader):
         # each one through Telegram exhausts its connection pool almost immediately. Auto-approve
         # instead, so replay actually produces positions/trade history to look at.
         if not self.data_engine_enabled:
+            print(f"CHECKPOINT before _save_signal_db {signal_id}", flush=True)
             await self._save_signal_db(signal_id, signal, "approve")
+            print(f"CHECKPOINT after _save_signal_db {signal_id}", flush=True)
             decision = "approve"
         else:
             loop = asyncio.get_event_loop()
@@ -175,9 +178,9 @@ class WebLiveEngine(LiveTrader):
             self.logger.log_error(f"Signal rejected by risk limits: {e}", {"strategy": signal.strategy})
             return
 
-        self.logger.log_websocket_event("execute_signal: before _save_position_db", {"order_id": order.order_id})
+        print(f"CHECKPOINT before _save_position_db {order.order_id}", flush=True)
         await self._save_position_db(order)
-        self.logger.log_websocket_event("execute_signal: after _save_position_db", {"order_id": order.order_id})
+        print(f"CHECKPOINT after _save_position_db {order.order_id}", flush=True)
         self._publish_state()
         # Gated by data_engine_enabled, not just `if self.telegram:` — Telegram credentials are
         # configured VM-wide, so this ran unconditionally on every fill regardless of mode, with
@@ -240,8 +243,8 @@ class WebLiveEngine(LiveTrader):
                     continue
 
                 candle_count += 1
-                if candle_count % 500 == 0:
-                    self.logger.log_websocket_event("replay_heartbeat", {"candles_processed": candle_count})
+                if candle_count % 200 == 0:
+                    print(f"CHECKPOINT replay_heartbeat candles_processed={candle_count}", flush=True)
 
                 self._check_exits_replay()
 
