@@ -4,6 +4,7 @@
 // socket instead of each opening their own.
 import { useEffect, useSyncExternalStore } from "react";
 import { applyDelta, applySnapshot, getSnapshot, subscribe } from "../store/marketStore";
+import { API_BASE } from "../lib/apiBase";
 
 const HEARTBEAT_TIMEOUT_MS = 30_000;
 const BACKOFF_START_MS = 500;
@@ -18,7 +19,7 @@ let lastSeq = 0;
 
 function wsUrl() {
   const proto = window.location.protocol === "https:" ? "wss:" : "ws:";
-  return `${proto}//${window.location.host}/ws/stream`;
+  return `${proto}//${window.location.host}${API_BASE}/ws/stream`;
 }
 
 function armHeartbeat() {

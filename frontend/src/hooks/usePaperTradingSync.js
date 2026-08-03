@@ -3,11 +3,12 @@
 // flows back to every client through the WS delta, not through this poll.
 import { useEffect, useSyncExternalStore } from "react";
 import { getSnapshot, setError, setTrades, subscribe } from "../store/tradingStore";
+import { API_BASE } from "../lib/apiBase";
 
 const POLL_INTERVAL_MS = 5000;
 
 async function api(path, opts) {
-  const res = await fetch(path, { credentials: "include", ...opts });
+  const res = await fetch(`${API_BASE}${path}`, { credentials: "include", ...opts });
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
     throw new Error(body.detail || `Request failed (${res.status})`);

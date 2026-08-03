@@ -122,22 +122,35 @@ class WebLiveEngine(LiveTrader):
 
     async def execute_signal(self, signal) -> None:
         signal_id = str(uuid.uuid4())
-        loop = asyncio.get_event_loop()
-        future = pending_signals.register(signal_id, self._signal_dict(signal) | {"id": signal_id}, loop)
-        await self._save_signal_db(signal_id, signal, "pending")
-        self._publish_state()
 
-        if self.telegram:
-            telegram_signal_id = await self.telegram.send_signal_alert(signal)
-            asyncio.create_task(self._await_telegram_and_resolve(telegram_signal_id, signal_id))
+        # Replay mode fires signals every ~50ms (see _start_replay) — real human approval has no
+        # meaning there (no one's watching a simulated 90-day replay tick by tick), and routing
+        # each one through Telegram exhausts its connection pool almost immediately. Auto-approve
+        # instead, so replay actually produces positions/trade history to look at.
+        if not self.data_engine_enabled:
+            await self._save_signal_db(signal_id, signal, "approve")
+            decision = "approve"
+        else:
+            loop = asyncio.get_event_loop()
+            future = pending_signals.register(signal_id, self._signal_dict(signal) | {"id": signal_id}, loop)
+            await self._save_signal_db(signal_id, signal, "pending")
+            self._publish_state()
 
-        try:
-            decision = await asyncio.wait_for(future, timeout=300)
-        except asyncio.TimeoutError:
-            pending_signals.resolve(signal_id, "timeout")
-            decision = "timeout"
+            if self.telegram:
+                try:
+                    telegram_signal_id = await self.telegram.send_signal_alert(signal)
+                    asyncio.create_task(self._await_telegram_and_resolve(telegram_signal_id, signal_id))
+                except Exception as e:
+                    self.logger.log_error(f"Telegram alert failed, web approval still available: {e}")
 
-        await self._save_signal_db(signal_id, signal, decision)
+            try:
+                decision = await asyncio.wait_for(future, timeout=300)
+            except asyncio.TimeoutError:
+                pending_signals.resolve(signal_id, "timeout")
+                decision = "timeout"
+
+            await self._save_signal_db(signal_id, signal, decision)
+
         self._publish_state()
 
         if decision != "approve":
