@@ -68,15 +68,26 @@ class WebLiveEngine(LiveTrader):
         }
 
     # ---- Postgres persistence (replaces StateManager's files for the web path) -----
-    # Best-effort: if the DB isn't configured/reachable, log and continue — in-memory paper
-    # trading correctness never depends on persistence succeeding.
+    # Best-effort: if the DB isn't configured/reachable/slow, log and continue — in-memory
+    # paper-trading correctness never depends on persistence succeeding. DB_TIMEOUT_SECS is
+    # a hard ceiling per call: without it, a stalled connection (observed once against
+    # Supabase's pooler, with no server-side trace of the stuck query — a client-side hang)
+    # freezes the entire trading loop forever, since every signal awaits its DB write in line.
 
-    async def _save_position_db(self, order) -> None:
+    DB_TIMEOUT_SECS = 5.0
+
+    async def _db_execute(self, query: str, *args) -> None:
         try:
             pool = db.get_pool()
         except RuntimeError:
             return
-        await pool.execute(
+        try:
+            await pool.execute(query, *args, timeout=self.DB_TIMEOUT_SECS)
+        except Exception as e:
+            self.logger.log_error(f"DB write failed/timed out, continuing without it: {e}")
+
+    async def _save_position_db(self, order) -> None:
+        await self._db_execute(
             """INSERT INTO options_positions
                (order_id, symbol, side, qty, lot_size, entry_price, entry_time, status,
                 stop_loss, take_profit, strategy)
@@ -88,11 +99,7 @@ class WebLiveEngine(LiveTrader):
         )
 
     async def _close_position_db(self, order) -> None:
-        try:
-            pool = db.get_pool()
-        except RuntimeError:
-            return
-        await pool.execute(
+        await self._db_execute(
             """UPDATE options_positions SET status=$2, exit_price=$3, exit_time=$4,
                exit_reason=$5, realized_pnl=$6 WHERE order_id=$1""",
             order.order_id, order.status, order.exit_price, order.exit_time,
@@ -100,11 +107,7 @@ class WebLiveEngine(LiveTrader):
         )
 
     async def _save_signal_db(self, signal_id: str, signal, status: str) -> None:
-        try:
-            pool = db.get_pool()
-        except RuntimeError:
-            return
-        await pool.execute(
+        await self._db_execute(
             """INSERT INTO options_signals
                (id, strategy, direction, strike, confidence, rationale, entry_price, timestamp, status)
                VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)

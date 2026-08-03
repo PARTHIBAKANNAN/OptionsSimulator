@@ -8,7 +8,11 @@ _pool: asyncpg.Pool | None = None
 
 async def init_pool(dsn: str) -> asyncpg.Pool:
     global _pool
-    _pool = await asyncpg.create_pool(dsn, statement_cache_size=0, min_size=1, max_size=5)
+    _pool = await asyncpg.create_pool(
+        dsn, statement_cache_size=0, min_size=1, max_size=5,
+        command_timeout=10,  # blanket ceiling — a stalled query/connection should error, never hang forever
+        max_inactive_connection_lifetime=120,  # recycle idle connections before the pooler/network can
+    )
     return _pool
 
 

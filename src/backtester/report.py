@@ -30,7 +30,11 @@ def build_report(strategy_name: str, direction: str, closed_orders: list, initia
 
     gross_profit = sum(wins)
     gross_loss = abs(sum(losses))
-    profit_factor = round(gross_profit / gross_loss, 2) if gross_loss > 0 else float("inf") if gross_profit > 0 else 0.0
+    # float("inf") isn't valid JSON (RFC 8259) — it round-trips fine through Python's own
+    # json.dumps/loads (non-standard extension), but crashes FastAPI's stricter response
+    # encoder. 999.99 is a conventional "effectively infinite" sentinel: sorts highest, displays
+    # sanely, and only ever occurs with zero losing trades (a tiny/unreliable sample either way).
+    profit_factor = round(gross_profit / gross_loss, 2) if gross_loss > 0 else 999.99 if gross_profit > 0 else 0.0
 
     equity = initial_capital
     peak = initial_capital

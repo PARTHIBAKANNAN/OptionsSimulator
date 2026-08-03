@@ -9,6 +9,7 @@ from fastapi import Depends, FastAPI, HTTPException, Request, WebSocket, WebSock
 from contextlib import asynccontextmanager
 from starlette.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
+from starlette.websockets import WebSocketState
 
 from . import db, security, supabase_auth
 from .backtest_router import router as backtest_router
@@ -124,21 +125,28 @@ async def ws_stream(websocket: WebSocket):
     queue = broadcaster.subscribe()
     await websocket.send_text(broadcaster.snapshot_frame())
 
+    def is_connected() -> bool:
+        return websocket.application_state == WebSocketState.CONNECTED
+
     async def reader():
         try:
             while True:
                 msg = await websocket.receive_json()
-                if msg.get("type") == "resync":
+                if msg.get("type") == "resync" and is_connected():
                     await websocket.send_text(broadcaster.snapshot_frame())
-        except WebSocketDisconnect:
+        except (WebSocketDisconnect, RuntimeError):
+            # RuntimeError: the ASGI connection was already torn down (client disconnected)
+            # between us checking is_connected() and sending — same outcome, just stop.
             pass
 
     reader_task = asyncio.create_task(reader())
     try:
         while True:
             frame = await queue.get()
+            if not is_connected():
+                break
             await websocket.send_text(frame)
-    except WebSocketDisconnect:
+    except (WebSocketDisconnect, RuntimeError):
         pass
     finally:
         reader_task.cancel()

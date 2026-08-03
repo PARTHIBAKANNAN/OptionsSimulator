@@ -2,7 +2,7 @@
 Simulated order execution — no broker calls, no real money. Tracks open positions,
 applies stop-loss/take-profit/time-exit, and calculates realized + unrealized P&L.
 """
-import itertools
+import uuid
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from typing import Optional
@@ -35,8 +35,6 @@ class RiskLimitExceeded(Exception):
 
 
 class PaperTrader:
-    _id_counter = itertools.count(1)
-
     def __init__(self, initial_capital: float = 1_000_000, slippage_pct: float = 0.1,
                  lot_size: int = 75, max_concurrent_positions: int = 5,
                  max_daily_loss: float = 5000, logger=None):
@@ -74,7 +72,10 @@ class PaperTrader:
         fill_price = price * (1 + self.slippage_pct / 100) if side == "BUY" else price * (1 - self.slippage_pct / 100)
 
         order = Order(
-            order_id=f"PT{next(self._id_counter):06d}",
+            # UUID, not a sequential counter: the web backend persists orders to Postgres across
+            # process restarts, where a counter that resets to 1 each time would collide with an
+            # already-persisted order_id — see docs/ARCHITECTURE.md.
+            order_id=str(uuid.uuid4()),
             symbol=symbol,
             side=side,
             qty=qty,
