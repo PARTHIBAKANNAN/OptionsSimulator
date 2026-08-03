@@ -128,7 +128,6 @@ class WebLiveEngine(LiveTrader):
         return signals
 
     async def execute_signal(self, signal) -> None:
-        print(f"CHECKPOINT execute_signal start {signal.strategy} {signal.strike}", flush=True)
         signal_id = str(uuid.uuid4())
 
         # Replay mode fires signals every ~50ms (see _start_replay) — real human approval has no
@@ -136,9 +135,7 @@ class WebLiveEngine(LiveTrader):
         # each one through Telegram exhausts its connection pool almost immediately. Auto-approve
         # instead, so replay actually produces positions/trade history to look at.
         if not self.data_engine_enabled:
-            print(f"CHECKPOINT before _save_signal_db {signal_id}", flush=True)
             await self._save_signal_db(signal_id, signal, "approve")
-            print(f"CHECKPOINT after _save_signal_db {signal_id}", flush=True)
             decision = "approve"
         else:
             loop = asyncio.get_event_loop()
@@ -179,22 +176,18 @@ class WebLiveEngine(LiveTrader):
             self.logger.log_error(f"Signal rejected by risk limits: {e}", {"strategy": signal.strategy})
             return
 
-        print(f"CHECKPOINT before _save_position_db {order.order_id}", flush=True)
         await self._save_position_db(order)
-        print(f"CHECKPOINT after _save_position_db {order.order_id}", flush=True)
         self._publish_state()
-        print(f"CHECKPOINT after _publish_state {order.order_id}", flush=True)
         # Gated by data_engine_enabled, not just `if self.telegram:` — Telegram credentials are
-        # configured VM-wide, so this ran unconditionally on every fill regardless of mode, with
-        # no timeout. Prime suspect for the observed freeze (exactly one trade, then silence,
-        # every single restart, with zero exceptions logged) — a hang, not a raise, would explain
-        # that precisely. asyncio.wait_for here bounds it either way.
+        # configured VM-wide, so this ran unconditionally on every fill regardless of mode. Fixed
+        # alongside the real freeze bug (a tz-naive/aware datetime subtraction in
+        # _check_exits_replay — see there); this one and the timeout are still worth keeping so a
+        # slow/down Telegram API can't block live trading either.
         if self.telegram and self.data_engine_enabled:
             try:
                 await asyncio.wait_for(self.telegram.send_trade_execution(order), timeout=self.TELEGRAM_TIMEOUT_SECS)
             except Exception as e:
                 self.logger.log_error(f"Telegram trade-execution notice failed: {e}")
-        print(f"CHECKPOINT execute_signal end {order.order_id}", flush=True)
 
     async def _await_telegram_and_resolve(self, telegram_signal_id: str, our_signal_id: str) -> None:
         decision = await self.telegram.await_decision(telegram_signal_id, timeout_secs=300)
@@ -247,29 +240,22 @@ class WebLiveEngine(LiveTrader):
                         continue
 
                     candle_count += 1
-                    if candle_count % 20 == 0:
-                        print(f"CHECKPOINT replay_heartbeat candles_processed={candle_count}", flush=True)
-
                     self._check_exits_replay()
 
-                    signals = self.evaluate_strategies()
-                    if signals:
-                        print(f"CHECKPOINT {len(signals)} signal(s) at candle {candle_count}", flush=True)
-                    for signal in signals:
+                    for signal in self.evaluate_strategies():
                         asyncio.create_task(self.execute_signal(signal))
                 except Exception:
                     # The for-loop body is otherwise all synchronous — an uncaught exception here
-                    # would silently kill this whole task (asyncio's default handler for an
-                    # unretrieved task exception can get swallowed once uvicorn reconfigures the
-                    # root logger), which looked exactly like an unexplained freeze: no crash
-                    # visible anywhere, but nothing ever advances again. Print with a guaranteed
-                    # full traceback and keep going instead of dying on one bad candle.
-                    print(f"CHECKPOINT EXCEPTION in replay loop at candle {candle_count}:", flush=True)
-                    traceback.print_exc()
+                    # would otherwise silently kill this whole task (asyncio's default handler for
+                    # an unretrieved task exception can go missing once uvicorn reconfigures the
+                    # root logger), which is exactly what caused a real freeze bug: one trade,
+                    # then dead silence forever, from a tz-naive/aware datetime subtraction in
+                    # _check_exits_replay. Log with the full traceback and keep going instead of
+                    # dying on whatever one candle triggers this.
+                    self.logger.log_error(
+                        f"Unhandled exception in replay loop at candle {candle_count}:\n{traceback.format_exc()}")
 
                 await asyncio.sleep(REPLAY_SECONDS_PER_CANDLE)
-                if candle_count % 20 == 0:
-                    print(f"CHECKPOINT post-sleep candle {candle_count}", flush=True)
 
     def _check_exits_replay(self) -> None:
         """Replay has no live option-chain LTP — mark to market with the same Black-Scholes
@@ -284,7 +270,14 @@ class WebLiveEngine(LiveTrader):
                     spot=state["nifty_price"], strike=strike,
                     days_to_expiry=days_to_expiry, option_type=option_type,
                 )
-        closed = self.paper_trader.update_positions(current_prices, time_exit_mins=self.time_exit_mins)
+        # Must pass the simulated candle timestamp — otherwise update_positions() defaults to
+        # tz-naive datetime.now() (wall-clock), which raises `TypeError: Cannot subtract tz-naive
+        # and tz-aware datetime-like objects` against order.entry_time (tz-aware, from the CSV)
+        # the instant there's an open position to check its time-exit condition. This was THE
+        # freeze: every candle from then on hit the same exception, forever, on a position that
+        # could never close (see the try/except around the caller in _start_replay).
+        closed = self.paper_trader.update_positions(
+            current_prices, timestamp=state["timestamp"], time_exit_mins=self.time_exit_mins)
         for order in closed:
             asyncio.create_task(self._close_position_db(order))
         self._publish_state()
