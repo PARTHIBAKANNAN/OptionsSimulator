@@ -77,6 +77,7 @@ class WebLiveEngine(LiveTrader):
     # default timeout at all — Pool.execute(timeout=...) never even got a chance to apply.
 
     DB_TIMEOUT_SECS = 5.0
+    TELEGRAM_TIMEOUT_SECS = 10.0
 
     async def _db_execute(self, query: str, *args) -> None:
         try:
@@ -143,7 +144,8 @@ class WebLiveEngine(LiveTrader):
 
             if self.telegram:
                 try:
-                    telegram_signal_id = await self.telegram.send_signal_alert(signal)
+                    telegram_signal_id = await asyncio.wait_for(
+                        self.telegram.send_signal_alert(signal), timeout=self.TELEGRAM_TIMEOUT_SECS)
                     asyncio.create_task(self._await_telegram_and_resolve(telegram_signal_id, signal_id))
                 except Exception as e:
                     self.logger.log_error(f"Telegram alert failed, web approval still available: {e}")
@@ -173,10 +175,20 @@ class WebLiveEngine(LiveTrader):
             self.logger.log_error(f"Signal rejected by risk limits: {e}", {"strategy": signal.strategy})
             return
 
+        self.logger.log_websocket_event("execute_signal: before _save_position_db", {"order_id": order.order_id})
         await self._save_position_db(order)
+        self.logger.log_websocket_event("execute_signal: after _save_position_db", {"order_id": order.order_id})
         self._publish_state()
-        if self.telegram:
-            await self.telegram.send_trade_execution(order)
+        # Gated by data_engine_enabled, not just `if self.telegram:` — Telegram credentials are
+        # configured VM-wide, so this ran unconditionally on every fill regardless of mode, with
+        # no timeout. Prime suspect for the observed freeze (exactly one trade, then silence,
+        # every single restart, with zero exceptions logged) — a hang, not a raise, would explain
+        # that precisely. asyncio.wait_for here bounds it either way.
+        if self.telegram and self.data_engine_enabled:
+            try:
+                await asyncio.wait_for(self.telegram.send_trade_execution(order), timeout=self.TELEGRAM_TIMEOUT_SECS)
+            except Exception as e:
+                self.logger.log_error(f"Telegram trade-execution notice failed: {e}")
 
     async def _await_telegram_and_resolve(self, telegram_signal_id: str, our_signal_id: str) -> None:
         decision = await self.telegram.await_decision(telegram_signal_id, timeout_secs=300)
@@ -215,6 +227,7 @@ class WebLiveEngine(LiveTrader):
         self._replay_df = pd.read_csv(HISTORICAL_PATH, parse_dates=["Timestamp"])
         self.is_running = True
 
+        candle_count = 0
         while self.is_running:
             for row in self._replay_df.itertuples(index=False):
                 if not self.is_running:
@@ -225,6 +238,10 @@ class WebLiveEngine(LiveTrader):
                 state = self.data_manager.get_state()
                 if state["nifty_price"] is None:
                     continue
+
+                candle_count += 1
+                if candle_count % 500 == 0:
+                    self.logger.log_websocket_event("replay_heartbeat", {"candles_processed": candle_count})
 
                 self._check_exits_replay()
 
