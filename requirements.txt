@@ -1,0 +1,10 @@
+setuptools<81  # fyers-apiv3's websocket module imports pkg_resources, removed in newer setuptools
+truststore  # corporate-proxy TLS interception isn't in certifi's CA list; use the OS trust store instead
+fyers-apiv3==3.1.7
+pyotp==2.9.0
+requests==2.31.0
+pandas==2.2.3
+numpy==2.1.3
+python-telegram-bot==20.7
+python-dotenv==1.0.1
+pytest==7.4.4

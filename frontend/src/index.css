@@ -1,0 +1,38 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Space-separated RGB components (not hex/rgb() strings) — required so Tailwind's opacity
+   modifiers (bg-bull/15) can wrap these in rgb(var(...) / <alpha-value>). See tailwind.config.js. */
+:root.light {
+  --surface: 255 255 255;
+  --surface-2: 246 247 249;
+  --surface-3: 236 238 241;
+  --border-subtle: 227 229 232;
+  --border-strong: 199 202 208;
+  --text-primary: 20 22 26;
+  --text-muted: 86 91 100;
+  --text-faint: 138 143 152;
+  --bull: 26 143 90;
+  --bear: 209 65 74;
+  --accent: 59 111 224;
+}
+
+:root.dark {
+  --surface: 20 22 26;
+  --surface-2: 27 30 36;
+  --surface-3: 35 38 45;
+  --border-subtle: 43 47 55;
+  --border-strong: 58 63 73;
+  --text-primary: 238 240 243;
+  --text-muted: 168 173 182;
+  --text-faint: 107 112 120;
+  --bull: 55 201 128;
+  --bear: 255 93 104;
+  --accent: 109 148 255;
+}
+
+body {
+  background-color: rgb(var(--surface-2));
+  color: rgb(var(--text-primary));
+}

@@ -1,0 +1,216 @@
+================================================================================
+🎯 YOUR ACTION PLAN - STEP BY STEP
+================================================================================
+
+Parthi, you have everything ready except the historical data.
+Here's exactly what to do:
+
+================================================================================
+✅ YOU ALREADY HAVE:
+================================================================================
+
+1. ✓ Fyers Credentials (App ID, Secret, TOTP)
+2. ✓ Telegram Bot (Token, Chat ID)  
+3. ✓ Python environment
+4. ✓ VS Code + Claude Code Agent
+
+================================================================================
+❌ YOU NEED:
+================================================================================
+
+1. 90 days NIFTY 1-minute historical data (CSV file)
+   Location: data/historical/nifty_90days.csv
+   Format: Timestamp,Open,High,Low,Close,Volume
+   Rows: ~35,000
+
+================================================================================
+HOW TO GET IT (Pick ONE):
+================================================================================
+
+🏆 BEST (Recommended - 10 mins):
+─────────────────────────────────────────────────────────────────────────────
+
+1. Open Terminal (or PowerShell on Windows)
+
+2. Go to your project folder:
+   cd nifty-options-trader
+
+3. Create file: download_nifty_data.py
+   
+   Copy this code:
+   ─────────────────────────────────────────────────────────────────────────
+   import pandas as pd
+   from datetime import datetime, timedelta
+   import os
+   from dotenv import load_dotenv
+   from fyers_apiv3 import fyersModel
+
+   load_dotenv()
+
+   app_id = os.getenv("FYERS_APP_ID")
+   app_secret = os.getenv("FYERS_APP_SECRET")
+   access_token = os.getenv("FYERS_ACCESS_TOKEN")
+
+   fyers = fyersModel.FyersClient()
+   fyers.app_id = app_id
+   fyers.app_secret = app_secret
+   fyers.access_token = access_token
+
+   end_date = datetime.now()
+   start_date = end_date - timedelta(days=90)
+
+   data = {
+       "symbol": "NSE:NIFTY50-INDEX",
+       "resolution": "1",
+       "date_format": "1",
+       "range_from": int(start_date.timestamp()),
+       "range_to": int(end_date.timestamp()),
+       "cont_flag": "1"
+   }
+
+   print("🔄 Downloading NIFTY data from Fyers...")
+   response = fyers.history(data)
+
+   if response.get("status") == "ok":
+       candles = response["candles"]
+       print(f"✅ Got {len(candles)} candles")
+       
+       df = pd.DataFrame(candles, columns=["Timestamp", "Open", "High", "Low", "Close", "Volume"])
+       df["Timestamp"] = pd.to_datetime(df["Timestamp"], unit='s')
+       df["Timestamp"] = df["Timestamp"].dt.strftime("%Y-%m-%d %H:%M:%S")
+       df = df[["Timestamp", "Open", "High", "Low", "Close", "Volume"]]
+       
+       os.makedirs("data/historical", exist_ok=True)
+       df.to_csv("data/historical/nifty_90days.csv", index=False)
+       print(f"💾 Saved to: data/historical/nifty_90days.csv")
+       print(f"   Rows: {len(df)}")
+   else:
+       print(f"❌ Error: {response}")
+   ─────────────────────────────────────────────────────────────────────────
+
+4. Update .env file - Add this line:
+   FYERS_ACCESS_TOKEN=your_access_token_from_myapi_fyers_in
+
+5. Run command:
+   pip install pandas python-dotenv fyers-api
+   python download_nifty_data.py
+
+6. Expected output:
+   🔄 Downloading NIFTY data from Fyers...
+   ✅ Got 35150 candles
+   💾 Saved to: data/historical/nifty_90days.csv
+      Rows: 35150
+
+DONE! ✅
+
+─────────────────────────────────────────────────────────────────────────────
+
+✅ ALTERNATIVE (Manual - 5 mins):
+
+1. Go to: https://ant.aliceblueonline.com
+2. Login with your Fyers account
+3. Charts → Search "NIFTY"
+4. Timeframe: "1-minute"
+5. Date range: May 6, 2026 to Aug 3, 2026 (90 days)
+6. Right-click → "Export" or "Download as CSV"
+7. Save as: nifty_90days.csv
+8. Move to: nifty-options-trader/data/historical/
+
+DONE! ✅
+
+================================================================================
+AFTER YOU GET THE FILE - Verify (2 mins):
+================================================================================
+
+1. Create file: validate_data.py
+
+   import pandas as pd
+   
+   df = pd.read_csv("data/historical/nifty_90days.csv")
+   print(f"Rows: {len(df)}")
+   print(f"Columns: {list(df.columns)}")
+   print(f"Date range: {df['Timestamp'].min()} to {df['Timestamp'].max()}")
+   print(f"✅ Ready!" if len(df) > 30000 else "❌ Not enough rows")
+
+2. Run:
+   python validate_data.py
+
+3. Expected output:
+   Rows: 35150
+   Columns: ['Timestamp', 'Open', 'High', 'Low', 'Close', 'Volume']
+   Date range: 2026-05-06 09:15:00 to 2026-08-03 15:30:00
+   ✅ Ready!
+
+DONE! ✅
+
+================================================================================
+THEN YOU'RE READY FOR IMPLEMENTATION:
+================================================================================
+
+1. Open NIFTY_OPTIONS_TRADER_COMPLETE_GUIDE.md
+2. Go to PART 3: CLAUDE CODE AGENT PROMPTS
+3. Copy "Prompt 1: Initial Setup"
+4. Paste into Claude Code Agent in VS Code
+5. Watch the code generate
+6. Repeat for Prompts 2-12
+
+You'll have your complete NIFTY options paper trader ready in 4-5 days!
+
+================================================================================
+FILE LOCATION AFTER DOWNLOAD:
+================================================================================
+
+Your project structure should look like:
+
+nifty-options-trader/
+├── venv/
+├── data/
+│   └── historical/
+│       └── nifty_90days.csv ← HERE!
+├── config/
+├── .env
+├── requirements.txt
+└── download_nifty_data.py (temporary, can delete after)
+
+================================================================================
+TROUBLESHOOTING:
+================================================================================
+
+Q: Where do I find FYERS_ACCESS_TOKEN?
+A: Go to https://myapi.fyers.in/ → Click on your app → Copy the access token
+   (or generate new token if expired)
+
+Q: I don't see an "Export" button in Fyers web?
+A: Use the Python script method instead - it's more reliable
+
+Q: File has wrong format or too few rows?
+A: Check:
+   - Did you select 1-minute timeframe? (not 5-min or 15-min)
+   - Did you select NSE:NIFTY50-INDEX? (not NIFTY stocks)
+   - Is the date range 90 days? (should have ~35,000 rows)
+
+Q: When I run the Python script, I get "No module named fyers_apiv3"?
+A: Run: pip install fyers-api
+
+================================================================================
+SUMMARY - YOUR NEXT 30 MINUTES:
+================================================================================
+
+Time    | Action
+─────────────────────────────────────────────────────────────────────────────
+0-10m   | Copy & run the Python download script (OR manual web export)
+10-15m  | Create and run validate_data.py to check file
+15-20m  | Download NIFTY_OPTIONS_TRADER_COMPLETE_GUIDE.md
+20-30m  | Set up project directory, prepare Claude Code Agent
+
+After that: You're ready to start building! 🚀
+
+================================================================================
+QUESTIONS BEFORE YOU START?
+================================================================================
+
+Ask now! After you get the data, you're ready to build the entire system.
+
+Good luck, Parthi! 💪
+
+================================================================================

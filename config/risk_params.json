@@ -1,0 +1,29 @@
+{
+  "position_sizing": {
+    "qty_per_signal": 1,
+    "lot_size": 75,
+    "max_concurrent_positions": 5,
+    "max_daily_loss": 5000
+  },
+  "exit_rules": {
+    "stop_loss_pts": 50,
+    "take_profit_pts": 150,
+    "time_exit_mins": 120,
+    "trailing_stop_enabled": false,
+    "trailing_stop_pts": 30
+  },
+  "strike_selection": {
+    "preference": "ATM_or_100pts_OTM",
+    "strike_step": 100,
+    "max_delta": 0.85,
+    "min_delta": 0.3
+  },
+  "market_hours": {
+    "start": "09:15",
+    "end": "15:30",
+    "timezone": "Asia/Kolkata"
+  },
+  "polling": {
+    "option_chain_interval_secs": 10
+  }
+}

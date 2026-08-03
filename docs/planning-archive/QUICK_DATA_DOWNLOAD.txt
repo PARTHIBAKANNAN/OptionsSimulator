@@ -1,0 +1,237 @@
+================================================================================
+🎯 QUICK 90-DAY NIFTY DATA DOWNLOAD GUIDE
+================================================================================
+
+YOU HAVE 3 OPTIONS:
+
+================================================================================
+OPTION 1: FYERS WEB PLATFORM (Easy - 5 mins) ✅
+================================================================================
+
+1. Go to: https://ant.aliceblueonline.com (your broker)
+2. Login with your Fyers account
+3. Charts → Search "NIFTY" or "NSE:NIFTY50-INDEX"
+4. Timeframe: Select "1-minute" (1M)
+5. Date Range: 
+   - Start: 90 days ago (May 6, 2026)
+   - End: Today (Aug 3, 2026)
+6. Right-click chart → "Export" or "Download as CSV"
+7. Save file: nifty_90days.csv
+8. Move to: your-project/data/historical/nifty_90days.csv
+
+Status: ✅ SIMPLEST if web export works
+
+================================================================================
+OPTION 2: PYTHON SCRIPT (Automatic - 10 mins) ⭐ RECOMMENDED
+================================================================================
+
+Step 1: Create file called "download_nifty_data.py" with this code:
+
+---
+import pandas as pd
+from datetime import datetime, timedelta
+import os
+from dotenv import load_dotenv
+from fyers_apiv3 import fyersModel
+
+load_dotenv()
+
+app_id = os.getenv("FYERS_APP_ID")
+app_secret = os.getenv("FYERS_APP_SECRET")
+access_token = os.getenv("FYERS_ACCESS_TOKEN")
+
+fyers = fyersModel.FyersClient()
+fyers.app_id = app_id
+fyers.app_secret = app_secret
+fyers.access_token = access_token
+
+end_date = datetime.now()
+start_date = end_date - timedelta(days=90)
+
+data = {
+    "symbol": "NSE:NIFTY50-INDEX",
+    "resolution": "1",
+    "date_format": "1",
+    "range_from": int(start_date.timestamp()),
+    "range_to": int(end_date.timestamp()),
+    "cont_flag": "1"
+}
+
+print("🔄 Downloading NIFTY data...")
+response = fyers.history(data)
+
+if response.get("status") == "ok":
+    candles = response["candles"]
+    df = pd.DataFrame(candles, columns=["Timestamp", "Open", "High", "Low", "Close", "Volume"])
+    df["Timestamp"] = pd.to_datetime(df["Timestamp"], unit='s')
+    df["Timestamp"] = df["Timestamp"].dt.strftime("%Y-%m-%d %H:%M:%S")
+    df = df[["Timestamp", "Open", "High", "Low", "Close", "Volume"]]
+    
+    os.makedirs("data/historical", exist_ok=True)
+    df.to_csv("data/historical/nifty_90days.csv", index=False)
+    print(f"✅ Saved! Rows: {len(df)}")
+else:
+    print(f"❌ Error: {response}")
+---
+
+Step 2: Update .env file (add these lines):
+
+FYERS_ACCESS_TOKEN=your_access_token_here
+
+Step 3: Run command:
+
+pip install pandas python-dotenv fyers-api
+python download_nifty_data.py
+
+Expected output:
+✅ Saved! Rows: 35150
+
+Status: ⭐ BEST - Automatic, reliable, reproducible
+
+================================================================================
+OPTION 3: NSE / TradingView (Manual - 15 mins)
+================================================================================
+
+Option A - NSE Website:
+1. Go to: https://www.nseindia.com/
+2. Market Data → Historical Data
+3. Select: NIFTY 50
+4. Download CSV
+5. Format columns to: Timestamp,Open,High,Low,Close,Volume
+
+Option B - TradingView:
+1. Go to: https://www.tradingview.com
+2. Search: NIFTY
+3. Right-click chart → Export data
+4. Select CSV format
+
+Status: ✓ Works if others fail, but may need reformatting
+
+================================================================================
+AFTER YOU GET THE FILE
+================================================================================
+
+Step 1: Place in correct location
+your-project/
+└── data/
+    └── historical/
+        └── nifty_90days.csv
+
+Step 2: Validate (create validate_data.py):
+
+---
+import pandas as pd
+
+df = pd.read_csv("data/historical/nifty_90days.csv")
+print(f"Rows: {len(df)}")
+print(f"Columns: {list(df.columns)}")
+print(f"Date range: {df['Timestamp'].min()} to {df['Timestamp'].max()}")
+print(f"\nFirst 5 rows:")
+print(df.head())
+print(f"\n✅ All good!" if len(df) > 30000 else "❌ Too few rows")
+---
+
+Run: python validate_data.py
+
+Expected:
+Rows: 35150
+Columns: ['Timestamp', 'Open', 'High', 'Low', 'Close', 'Volume']
+Date range: 2026-05-06 09:15:00 to 2026-08-03 15:30:00
+
+✅ All good!
+
+Step 3: Ready to run backtest!
+
+python src/backtester/backtest_engine.py
+
+================================================================================
+REQUIRED FILE FORMAT
+================================================================================
+
+✅ CORRECT FORMAT:
+
+Timestamp,Open,High,Low,Close,Volume
+2026-05-06 09:15:00,24100.00,24150.50,24090.00,24120.00,150000
+2026-05-06 09:16:00,24120.00,24180.00,24115.00,24170.00,180000
+2026-05-06 09:17:00,24170.00,24200.00,24160.00,24195.00,165000
+
+❌ WRONG FORMAT:
+
+Timestamp | Open | High | Low | Close | Volume  (pipes instead of commas)
+2026-05-06T09:15:00Z (wrong timestamp format)
+24100 | 24150 | 24090 | 24120  (missing columns)
+
+✅ WHAT TO CHECK:
+
+1. Column order: Timestamp, Open, High, Low, Close, Volume
+2. Separator: Commas (,) not pipes (|) or tabs
+3. Timestamp format: YYYY-MM-DD HH:MM:SS
+4. Rows: Should be ~35,000-36,000 rows
+5. Time range: 09:15 to 15:30 IST daily
+6. No missing data: No blank cells or zeros
+
+================================================================================
+QUICK COMMANDS
+================================================================================
+
+Check file exists:
+  ls -lh data/historical/nifty_90days.csv
+
+View first 10 lines:
+  head -10 data/historical/nifty_90days.csv
+
+Count total rows:
+  wc -l data/historical/nifty_90days.csv
+
+View last 5 lines:
+  tail -5 data/historical/nifty_90days.csv
+
+On Windows (PowerShell):
+  Get-Content data/historical/nifty_90days.csv -Head 10
+  (Get-Content data/historical/nifty_90days.csv | Measure-Object -Line).Lines
+
+================================================================================
+TROUBLESHOOTING
+================================================================================
+
+Problem: "File not found" during backtest
+Solution: Check exact path: data/historical/nifty_90days.csv (case-sensitive)
+
+Problem: Only a few rows
+Solution: Make sure you selected 1-minute timeframe, not 5-min or 15-min
+
+Problem: Fyers API gives error
+Solution: Check access token is valid (may have expired)
+
+Problem: Timestamp format is wrong
+Solution: Make sure it's: YYYY-MM-DD HH:MM:SS (e.g., 2026-05-06 09:15:00)
+
+Problem: Wrong column names
+Solution: Rename to exactly: Timestamp,Open,High,Low,Close,Volume
+
+================================================================================
+MY RECOMMENDATION
+================================================================================
+
+🏆 BEST: Use OPTION 2 (Python Script)
+   - Most reliable
+   - Data matches your broker
+   - Can re-run anytime
+   - Takes 10 minutes
+   - One-time setup, reusable forever
+
+✅ If Python fails: Use OPTION 1 (Web Export)
+   - Simple web interface
+   - 5 minutes
+   - Manual but guaranteed to work
+
+⚠️ Last resort: Use OPTION 3 (NSE/TradingView)
+   - May need reformatting
+   - Quality varies
+
+================================================================================
+NEXT: After you have nifty_90days.csv in data/historical/
+      Run: python validate_data.py
+      Then: You're ready for backtest!
+
+================================================================================

@@ -1,0 +1,22 @@
+# Copy to /etc/systemd/system/optionssimulator-backend.service on the VM, then:
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable optionssimulator-backend
+# (don't `--now` it until the app directory/venv/.env are actually in place)
+[Unit]
+Description=OptionsSimulator FastAPI backend
+After=network.target network-online.target
+Requires=network-online.target
+
+[Service]
+Type=simple
+User=ubuntu
+Group=ubuntu
+WorkingDirectory=/home/ubuntu/optionssimulator-app
+ExecStart=/home/ubuntu/optionssimulator-app/venv/bin/python -u backend/run.py
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
