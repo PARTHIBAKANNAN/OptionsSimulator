@@ -69,10 +69,12 @@ class WebLiveEngine(LiveTrader):
 
     # ---- Postgres persistence (replaces StateManager's files for the web path) -----
     # Best-effort: if the DB isn't configured/reachable/slow, log and continue — in-memory
-    # paper-trading correctness never depends on persistence succeeding. DB_TIMEOUT_SECS is
-    # a hard ceiling per call: without it, a stalled connection (observed once against
-    # Supabase's pooler, with no server-side trace of the stuck query — a client-side hang)
-    # freezes the entire trading loop forever, since every signal awaits its DB write in line.
+    # paper-trading correctness never depends on persistence succeeding. DB_TIMEOUT_SECS is a
+    # hard ceiling per call, applied via asyncio.wait_for around the WHOLE pool.execute() —
+    # not asyncpg's own `timeout=` kwarg, which only bounds the query once a connection is
+    # already acquired. The observed hang (one trade, then frozen forever, zero exceptions,
+    # no server-side trace of the query) was in Pool.acquire() itself, which asyncpg gives no
+    # default timeout at all — Pool.execute(timeout=...) never even got a chance to apply.
 
     DB_TIMEOUT_SECS = 5.0
 
@@ -82,7 +84,7 @@ class WebLiveEngine(LiveTrader):
         except RuntimeError:
             return
         try:
-            await pool.execute(query, *args, timeout=self.DB_TIMEOUT_SECS)
+            await asyncio.wait_for(pool.execute(query, *args), timeout=self.DB_TIMEOUT_SECS)
         except Exception as e:
             self.logger.log_error(f"DB write failed/timed out, continuing without it: {e}")
 
