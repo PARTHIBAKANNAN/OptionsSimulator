@@ -134,7 +134,15 @@ class WebLiveEngine(LiveTrader):
         # meaning there (no one's watching a simulated 90-day replay tick by tick), and routing
         # each one through Telegram exhausts its connection pool almost immediately. Auto-approve
         # instead, so replay actually produces positions/trade history to look at.
-        if not self.data_engine_enabled:
+        #
+        # auto_mode (config/risk_params.json's live_mode.auto_approve) applies the same
+        # auto-approve path to LIVE data too. This never places a real broker order either way —
+        # it's still paper trading — so the manual-tap gate below (a self-imposed precaution
+        # originally aimed at eventual real order placement, see
+        # docs/planning-archive/FYERS_FEASIBILITY_REPORT.md) isn't required for it. Telegram still
+        # gets a trade-execution notice once the paper order actually fills (see below), just
+        # without blocking on a reply first.
+        if not self.data_engine_enabled or self.auto_mode:
             await self._save_signal_db(signal_id, signal, "approve")
             decision = "approve"
         else:
@@ -164,7 +172,7 @@ class WebLiveEngine(LiveTrader):
         if decision != "approve":
             return
 
-        stop_loss = max(signal.entry_price - self.stop_loss_pts, 0.05)
+        stop_loss = max(signal.entry_price * (1 - self.stop_loss_pct / 100), 0.05)
         take_profit = signal.entry_price + self.take_profit_pts
         try:
             order = self.paper_trader.place_order(

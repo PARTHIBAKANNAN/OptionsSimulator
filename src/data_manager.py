@@ -172,9 +172,33 @@ class DataManager:
                 out["macd_histogram_1h_prev"] = (
                     float(macd_df["histogram"].iloc[-2]) if len(macd_df) >= 2 else out["macd_histogram_1h"]
                 )
+
+                # Volatility regime: current ATR(14, 1H) vs its own 20-bar average, as a ratio.
+                # >1 means "more volatile than usual right now", <1 means "calmer than usual".
+                # Backed by real autocorrelation in our own NIFTY data (today's ATR predicts
+                # tomorrow's realized range with corr ~0.53). Used by IronFlyHedge's entry gate
+                # (skip on an abnormally volatile expiry morning) — NOT for scaling directional
+                # stop-losses, which a backtest showed made drawdown *worse*, not better: widening
+                # the stop on a volatile day let losses run bigger without a matching increase in
+                # win size, since a volatile/trending move tends to continue against the position
+                # rather than mean-revert intraday. See docs/ARCHITECTURE.md.
+                if len(resampled) >= 35:
+                    atr_series = ind.atr(resampled["High"], resampled["Low"], resampled["Close"], period=14)
+                    current_atr = atr_series.iloc[-1]
+                    baseline_atr = atr_series.rolling(20).mean().iloc[-1]
+                    if baseline_atr and baseline_atr > 0:
+                        out["vol_regime_ratio"] = float(current_atr / baseline_atr)
             elif rule == "15min" and len(resampled) >= 15:
                 stoch = ind.stochastic(resampled["High"], resampled["Low"], resampled["Close"])
                 out["stochastic_k_15m"] = float(stoch["k"].iloc[-1])
+                # 15m MACD gives MACD_BULLISH/MACD_BEARISH ~4x more bars than the 1H histogram to
+                # cross on — the 1H version crossed too rarely (a handful of times in 90 days) to
+                # size a strategy around. See docs/ARCHITECTURE.md.
+                macd_df_15m = ind.macd(resampled["Close"])
+                out["macd_histogram_15m"] = float(macd_df_15m["histogram"].iloc[-1])
+                out["macd_histogram_15m_prev"] = (
+                    float(macd_df_15m["histogram"].iloc[-2]) if len(macd_df_15m) >= 2 else out["macd_histogram_15m"]
+                )
             elif rule == "5min" and len(resampled) >= 20:
                 out["volume_ratio_5m"] = float(ind.volume_ratio(resampled["Volume"]).iloc[-1])
 

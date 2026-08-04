@@ -61,12 +61,16 @@ and the current candle closes back below it on above-average volume. Confidence:
 | Parameter | Default | Meaning |
 |---|---|---|
 | `qty_per_signal` | 1 | Contracts per signal |
-| `lot_size` | 75 | NIFTY lot size |
+| `lot_size` | 65 | NIFTY lot size |
 | `max_concurrent_positions` | 5 | Hard cap on open positions at once |
 | `max_daily_loss` | ₹5,000 | Trading halts for the day once realized loss hits this |
-| `stop_loss_pts` | 50 | **Option premium** points below entry (not index points) |
+| `max_trades_per_day_per_strategy` | 2 | Each strategy may open at most this many new positions per calendar day |
+| `stop_loss_pct` | 20 | Stop-loss as a % of entry premium (not index points) |
 | `take_profit_pts` | 150 | **Option premium** points above entry |
 | `time_exit_mins` | 120 | Force-close any position still open after this long |
+| `trailing_stop_enabled` | true | Once armed, trails the stop below the peak premium instead of relying only on `take_profit_pts` |
+| `trailing_activation_pct` | 10 | Minimum profit (% of entry) before the trailing stop arms |
+| `trailing_stop_pct` | 15 | Distance the trailing stop trails below the peak premium once armed |
 
 ## Backtest ranking
 

@@ -119,8 +119,21 @@ core; new backtests stay `python -m src.backtester.backtest_engine`.
   individual option strikes. Backtesting/replay mark option positions to market with a
   Black-Scholes estimate (`utils/options_pricing.py`); live trading always prefers the real
   option-chain LTP when available.
-- **`stop_loss_pts`/`take_profit_pts` are option-premium points (₹), not NIFTY index points.**
-  Options are priced in rupees, not index points, so risk parameters apply to the traded instrument.
+- **`stop_loss_pct` is a percentage of the entry premium; `take_profit_pts` is still option-premium
+  points (₹), not NIFTY index points.** Options are priced in rupees, not index points, so risk
+  parameters apply to the traded instrument. `stop_loss_pct` (not a fixed point offset) so risk
+  scales with each option's own price — a fixed-point stop on a cheap OTM option could exceed the
+  whole premium, while the same points on an expensive ITM one barely mattered.
+- **Trailing stop**: once a position is `trailing_activation_pct` in profit, the stop ratchets up to
+  stay `trailing_stop_pct` below the peak premium seen since entry, locking in gains as a winner
+  runs instead of relying solely on the fixed `take_profit_pts` ceiling. Implemented in
+  `PaperTrader.update_positions()` (`src/simulator/paper_trader.py`) via `Order.peak_price`.
+- **SL/TP exits fill at the configured stop/target price, not the observed mark.** Exits are only
+  checked once per candle close; on a fast-moving candle the mark can already be well past the
+  stop. A 90-day backtest showed this overshoot inflating realized SL losses by 20-100%+ beyond the
+  intended risk — fixed by capping the fill at `order.stop_loss`/`order.take_profit` exactly.
+- **`max_trades_per_day_per_strategy` (default 2)**: `PaperTrader` tracks trades opened per
+  strategy per calendar day and rejects further entries past the cap via `RiskLimitExceeded`.
 - **`DataManager`'s rolling window defaults to ~3000 one-minute candles (~7-8 trading days).**
   NIFTY's 6.25-hour trading day alone can never produce the 15 hourly candles RSI(14)/EMA(50)/
   MACD(26) need — a smaller window would mean strategies silently never fire. `LiveTrader` seeds

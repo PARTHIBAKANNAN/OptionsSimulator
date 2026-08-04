@@ -2,22 +2,28 @@
 from datetime import datetime, timedelta
 
 from src.strategies.base_strategy import BaseStrategy, Signal
-from src.strategies.rsi_oversold_bullish import RSIOversoldBullish
 from src.strategies.macd_bullish import MACDBullish
 from src.strategies.support_bounce_bullish import SupportBounceBullish
+from src.strategies.orb_bullish import ORBBullish
 from src.strategies.rsi_overbought_bearish import RSIOverboughtBearish
 from src.strategies.macd_bearish import MACDBearish
 from src.strategies.resistance_rejection_bearish import ResistanceRejectionBearish
+from src.strategies.orb_bearish import ORBBearish
 
 
 def create_all_strategies() -> list[BaseStrategy]:
+    # RSIOversoldBullish is deliberately excluded: a full-year out-of-sample backtest showed it
+    # has no genuine edge (only profitable on the exact 90-day window it was originally tuned on,
+    # net negative everywhere else, 300+ days continuously underwater). Dropped rather than run
+    # live — see docs/ARCHITECTURE.md.
     return [
-        RSIOversoldBullish(),
         MACDBullish(),
         SupportBounceBullish(),
+        ORBBullish(),
         RSIOverboughtBearish(),
         MACDBearish(),
         ResistanceRejectionBearish(),
+        ORBBearish(),
     ]
 
 

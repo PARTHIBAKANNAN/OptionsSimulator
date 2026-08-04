@@ -4,7 +4,7 @@ applies stop-loss/take-profit/time-exit, and calculates realized + unrealized P&
 """
 import uuid
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 from typing import Optional
 
 
@@ -25,6 +25,8 @@ class Order:
     exit_time: Optional[datetime] = None
     exit_reason: Optional[str] = None
     realized_pnl: Optional[float] = None
+    peak_price: Optional[float] = None  # high-water mark since entry, for the trailing stop
+    trailing_active: bool = False
 
     def unrealized_pnl(self, current_price: float) -> float:
         return (current_price - self.entry_price) * self.qty * self.lot_size
@@ -36,24 +38,66 @@ class RiskLimitExceeded(Exception):
 
 class PaperTrader:
     def __init__(self, initial_capital: float = 1_000_000, slippage_pct: float = 0.1,
-                 lot_size: int = 75, max_concurrent_positions: int = 5,
-                 max_daily_loss: float = 5000, logger=None):
+                 lot_size: int = 65, max_concurrent_positions: int = 5,
+                 max_daily_loss: float = 5000, max_trades_per_day_per_strategy: int = 2,
+                 trailing_stop_enabled: bool = False, trailing_activation_pct: float = 10.0,
+                 trailing_stop_pct: float = 15.0,
+                 consecutive_loss_limit: int = None, consecutive_loss_cooldown_days: int = 1,
+                 max_drawdown_pct_of_capital: float = None, drawdown_cooldown_days: int = 3,
+                 drawdown_breaker_grace_trades: int = 3,
+                 capital_by_strategy: dict = None, logger=None):
         self.initial_capital = initial_capital
         self.slippage_pct = slippage_pct
         self.lot_size = lot_size
         self.max_concurrent_positions = max_concurrent_positions
         self.max_daily_loss = max_daily_loss
+        self.max_trades_per_day_per_strategy = max_trades_per_day_per_strategy
+        # Trailing stop only arms once a position is up trailing_activation_pct from entry — before
+        # that it would just clamp tightly to entry-price noise and shake out trades early. Once
+        # armed, it ratchets up to stay trailing_stop_pct below the peak premium seen so far,
+        # locking in gains as the trade runs instead of relying solely on the fixed take_profit.
+        self.trailing_stop_enabled = trailing_stop_enabled
+        self.trailing_activation_pct = trailing_activation_pct
+        self.trailing_stop_pct = trailing_stop_pct
+        # Circuit breakers: pause NEW entries for a strategy (existing open positions still get
+        # managed normally) after either K losses in a row, or its cumulative drawdown from peak
+        # P&L eats too much of the capital actually allocated to it. Both are None/disabled by
+        # default — a strategy has to opt in with real numbers. capital_by_strategy maps strategy
+        # name -> its allocated capital (e.g. from data/backtest_results/capital_requirements.json);
+        # without an entry there, the drawdown breaker can't fire for that strategy. See
+        # docs/ARCHITECTURE.md for why per-strategy drawdown-as-%-of-capital, not just the
+        # backtest's arbitrary initial_capital baseline, is what actually matters here.
+        self.consecutive_loss_limit = consecutive_loss_limit
+        self.consecutive_loss_cooldown_days = consecutive_loss_cooldown_days
+        self.max_drawdown_pct_of_capital = max_drawdown_pct_of_capital
+        self.drawdown_cooldown_days = drawdown_cooldown_days
+        # Drawdown is measured from the strategy's ALL-TIME peak P&L, which only improves on a new
+        # high — so without this grace window, resuming from a pause and then closing even one
+        # trade that isn't a strong enough win to set a new high would immediately re-trigger
+        # another pause. A backtest showed this trap effectively locked strategies out of most of
+        # their future good trades. This grants drawdown_breaker_grace_trades trades of breathing
+        # room after each drawdown-triggered pause before the breaker can fire again. See
+        # docs/ARCHITECTURE.md.
+        self.drawdown_breaker_grace_trades = drawdown_breaker_grace_trades
+        self.capital_by_strategy = capital_by_strategy or {}
         self.logger = logger
 
         self.orders: dict[str, Order] = {}
         self._realized_pnl_today = 0.0
         self._current_day = None
+        self._strategy_trades_today: dict[str, int] = {}
+        self._strategy_consecutive_losses: dict[str, int] = {}
+        self._strategy_cumulative_pnl: dict[str, float] = {}
+        self._strategy_peak_pnl: dict[str, float] = {}
+        self._strategy_paused_until: dict[str, date] = {}
+        self._strategy_drawdown_grace_remaining: dict[str, int] = {}
 
     def _roll_day(self, timestamp: datetime) -> None:
         day = timestamp.date()
         if self._current_day != day:
             self._current_day = day
             self._realized_pnl_today = 0.0
+            self._strategy_trades_today = {}
 
     def _open_positions(self) -> list[Order]:
         return [o for o in self.orders.values() if o.status == "OPEN"]
@@ -68,6 +112,14 @@ class PaperTrader:
             raise RiskLimitExceeded(f"Daily loss limit of {self.max_daily_loss} already hit")
         if len(self._open_positions()) >= self.max_concurrent_positions:
             raise RiskLimitExceeded(f"Max concurrent positions ({self.max_concurrent_positions}) reached")
+        if strategy is not None and self._strategy_trades_today.get(strategy, 0) >= self.max_trades_per_day_per_strategy:
+            raise RiskLimitExceeded(
+                f"Strategy '{strategy}' already hit its {self.max_trades_per_day_per_strategy} trades/day limit")
+        if strategy is not None:
+            paused_until = self._strategy_paused_until.get(strategy)
+            if paused_until is not None and timestamp.date() < paused_until:
+                raise RiskLimitExceeded(
+                    f"Strategy '{strategy}' is paused by a circuit breaker until {paused_until}")
 
         fill_price = price * (1 + self.slippage_pct / 100) if side == "BUY" else price * (1 - self.slippage_pct / 100)
 
@@ -86,8 +138,11 @@ class PaperTrader:
             stop_loss=stop_loss,
             take_profit=take_profit,
             strategy=strategy,
+            peak_price=fill_price,
         )
         self.orders[order.order_id] = order
+        if strategy is not None:
+            self._strategy_trades_today[strategy] = self._strategy_trades_today.get(strategy, 0) + 1
         if self.logger:
             self.logger.log_trade(order)
         return order
@@ -113,10 +168,48 @@ class PaperTrader:
 
         self._roll_day(order.exit_time)
         self._realized_pnl_today += order.realized_pnl
+        if order.strategy is not None:
+            self._update_circuit_breakers(order.strategy, order.realized_pnl, order.exit_time.date())
 
         if self.logger:
             self.logger.log_trade(order)
         return order
+
+    def _pause_strategy(self, strategy: str, from_date: date, cooldown_days: int) -> None:
+        resume_date = from_date + timedelta(days=cooldown_days)
+        current = self._strategy_paused_until.get(strategy)
+        if current is None or resume_date > current:
+            self._strategy_paused_until[strategy] = resume_date
+        if self.logger:
+            self.logger.log_error(
+                f"Circuit breaker: strategy '{strategy}' paused until {resume_date}",
+                {"strategy": strategy})
+
+    def _update_circuit_breakers(self, strategy: str, realized_pnl: float, exit_date: date) -> None:
+        if realized_pnl > 0:
+            self._strategy_consecutive_losses[strategy] = 0
+        else:
+            losses = self._strategy_consecutive_losses.get(strategy, 0) + 1
+            self._strategy_consecutive_losses[strategy] = losses
+            if self.consecutive_loss_limit is not None and losses >= self.consecutive_loss_limit:
+                self._pause_strategy(strategy, exit_date, self.consecutive_loss_cooldown_days)
+                self._strategy_consecutive_losses[strategy] = 0  # fresh count once it resumes
+
+        cumulative = self._strategy_cumulative_pnl.get(strategy, 0.0) + realized_pnl
+        self._strategy_cumulative_pnl[strategy] = cumulative
+        peak = max(self._strategy_peak_pnl.get(strategy, 0.0), cumulative)
+        self._strategy_peak_pnl[strategy] = peak
+
+        allocated_capital = self.capital_by_strategy.get(strategy)
+        if self.max_drawdown_pct_of_capital is not None and allocated_capital:
+            grace_remaining = self._strategy_drawdown_grace_remaining.get(strategy, 0)
+            if grace_remaining > 0:
+                self._strategy_drawdown_grace_remaining[strategy] = grace_remaining - 1
+            else:
+                drawdown = peak - cumulative
+                if drawdown >= allocated_capital * (self.max_drawdown_pct_of_capital / 100):
+                    self._pause_strategy(strategy, exit_date, self.drawdown_cooldown_days)
+                    self._strategy_drawdown_grace_remaining[strategy] = self.drawdown_breaker_grace_trades
 
     def update_positions(self, current_prices: dict, timestamp: datetime = None,
                           time_exit_mins: int = None) -> list[Order]:
@@ -128,16 +221,42 @@ class PaperTrader:
             if price is None:
                 continue
 
+            trailing_stop_price = None
+            if self.trailing_stop_enabled:
+                order.peak_price = max(order.peak_price, price)
+                if not order.trailing_active and order.peak_price >= order.entry_price * (
+                        1 + self.trailing_activation_pct / 100):
+                    order.trailing_active = True
+                if order.trailing_active:
+                    # Clamped to never go below entry: with trailing_stop_pct wider than the
+                    # activation cushion (e.g. 15% trail on a 10% activation), the raw trail price
+                    # right after arming can sit BELOW entry — a "trailing stop" that locks in a
+                    # loss defeats its whole purpose. A 90-day backtest showed exactly this: several
+                    # strategies' TRAILING_STOP exits were net losers. See docs/ARCHITECTURE.md.
+                    trailing_stop_price = max(
+                        order.peak_price * (1 - self.trailing_stop_pct / 100), order.entry_price)
+
             reason = None
+            fill_price = price
             if order.stop_loss is not None and price <= order.stop_loss:
+                # Fill at the configured stop, not the (possibly gapped-through) mark: exits are
+                # only checked once per candle close, so on a fast-moving candle `price` can already
+                # be well past the stop. Marking the loss to that overshot price systematically
+                # inflates every SL loss beyond the intended stop_loss risk — see
+                # docs/ARCHITECTURE.md for the backtest analysis that surfaced this.
                 reason = "STOP_LOSS"
+                fill_price = order.stop_loss
+            elif trailing_stop_price is not None and price <= trailing_stop_price:
+                reason = "TRAILING_STOP"
+                fill_price = trailing_stop_price
             elif order.take_profit is not None and price >= order.take_profit:
                 reason = "TAKE_PROFIT"
+                fill_price = order.take_profit
             elif time_exit_mins is not None and timestamp - order.entry_time >= timedelta(minutes=time_exit_mins):
                 reason = "TIME_EXIT"
 
             if reason:
-                closed_order = self.close_position(order.order_id, price, timestamp, reason)
+                closed_order = self.close_position(order.order_id, fill_price, timestamp, reason)
                 if closed_order:
                     closed.append(closed_order)
         return closed

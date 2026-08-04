@@ -10,7 +10,7 @@ NIFTY_SYMBOL = "NSE:NIFTY50-INDEX"
 OUTPUT_PATH = Path(__file__).resolve().parent / "data" / "historical" / "nifty_90days.csv"
 
 
-def main(days: int = 90) -> None:
+def main(days: int = 365) -> None:
     config = Config.load()
     config.validate(require_fyers=True, require_telegram=False)
 
@@ -34,5 +34,5 @@ def main(days: int = 90) -> None:
 
 
 if __name__ == "__main__":
-    days_arg = int(sys.argv[1]) if len(sys.argv) > 1 else 90
+    days_arg = int(sys.argv[1]) if len(sys.argv) > 1 else 365
     main(days_arg)

@@ -1,16 +1,18 @@
 {
   "position_sizing": {
     "qty_per_signal": 1,
-    "lot_size": 75,
+    "lot_size": 65,
     "max_concurrent_positions": 5,
-    "max_daily_loss": 5000
+    "max_daily_loss": 5000,
+    "max_trades_per_day_per_strategy": 2
   },
   "exit_rules": {
-    "stop_loss_pts": 50,
+    "stop_loss_pct": 20,
     "take_profit_pts": 150,
     "time_exit_mins": 120,
-    "trailing_stop_enabled": false,
-    "trailing_stop_pts": 30
+    "trailing_stop_enabled": true,
+    "trailing_activation_pct": 10,
+    "trailing_stop_pct": 15
   },
   "strike_selection": {
     "preference": "ATM_or_100pts_OTM",
@@ -22,6 +24,26 @@
     "start": "09:15",
     "end": "15:30",
     "timezone": "Asia/Kolkata"
+  },
+  "iron_fly": {
+    "enabled": false,
+    "wing_width_pts": 200,
+    "strike_step": 100,
+    "entry_time": "09:45",
+    "force_exit_time": "15:15",
+    "profit_target_pct_of_credit": 50,
+    "stop_loss_pct_of_max_loss": 50,
+    "max_vol_regime_ratio_to_enter": 1.5
+  },
+  "circuit_breaker": {
+    "consecutive_loss_limit": 3,
+    "consecutive_loss_cooldown_days": 1,
+    "max_drawdown_pct_of_capital": 25,
+    "drawdown_cooldown_days": 3,
+    "drawdown_breaker_grace_trades": 3
+  },
+  "live_mode": {
+    "auto_approve": true
   },
   "polling": {
     "option_chain_interval_secs": 10

@@ -1,11 +1,22 @@
 """
 Live paper-trading loop: WebSocket ticks feed the DataManager continuously, option chain
-is polled every 10s, strategies are evaluated on every tick, and every signal requires an
-explicit Telegram approval tap before the PaperTrader fires a (simulated) order.
+is polled every 10s, strategies are evaluated on every tick. By default every signal is
+auto-approved into a (simulated) order — see WebLiveEngine.execute_signal and
+config/risk_params.json's live_mode.auto_approve; a manual Telegram/web approval tap is
+still available by turning that off, but isn't required for paper trading (no real order
+ever reaches a broker either way — see docs/planning-archive/FYERS_FEASIBILITY_REPORT.md).
+
+Every "now" used for market-hours/login-time decisions MUST be IST wall-clock time, built via
+datetime.now(IST) — never bare datetime.now(). The deploy VM's system clock runs UTC (confirmed
+via `timedatectl`), so a naive datetime.now() is off from real IST time by 5.5 hours; comparing
+that against "09:15"-"15:30" market hours would have silently never detected market-open at all.
 """
 import asyncio
 from datetime import datetime, time as dtime
+from pathlib import Path
+from zoneinfo import ZoneInfo
 
+from src.backtester.report import load_capital_by_strategy
 from src.config import Config
 from src.data_manager import DataManager
 from src.fyers.api_client import FyersAPIClient
@@ -16,9 +27,20 @@ from src.persistence.state_manager import StateManager
 from src.utils.logger import get_logger
 
 NIFTY_SYMBOL = "NSE:NIFTY50-INDEX"
+IST = ZoneInfo("Asia/Kolkata")
+# Fyers tokens are valid for the calendar day only. TradeDashBoard's own proven scheduler
+# refreshes at 08:45 IST before market open; ours does the same at 08:50 IST — see
+# LiveTrader.start(). This entire mechanism lives inside OUR process/event loop only (no shared
+# scheduler, no shared Fyers app/credentials with TradeDashBoard — see docs/ARCHITECTURE.md).
+DAILY_LOGIN_TIME = dtime(8, 50)
+CAPITAL_REQUIREMENTS_PATH = (
+    Path(__file__).resolve().parent.parent / "data" / "backtest_results" / "capital_requirements.json"
+)
 
 
 def is_market_open(now: datetime, risk_params: dict) -> bool:
+    """`now` must already be IST wall-clock time — build it with datetime.now(IST), not bare
+    datetime.now() (see module docstring)."""
     hours = risk_params.get("market_hours", {})
     start = dtime.fromisoformat(hours.get("start", "09:15"))
     end = dtime.fromisoformat(hours.get("end", "15:30"))
@@ -34,17 +56,33 @@ class LiveTrader:
         self.strategy_engine = StrategyEngine(logger=self.logger)
         sizing = config.risk_params.get("position_sizing", {})
         exits = config.risk_params.get("exit_rules", {})
+        # Same circuit breakers validated in backtesting (see BacktestEngine) — capital_by_strategy
+        # comes from the latest data/backtest_results/capital_requirements.json (written by
+        # `python main.py`); missing/empty file just disables the drawdown breaker until one exists.
+        breaker = config.risk_params.get("circuit_breaker", {})
+        capital_by_strategy = load_capital_by_strategy(CAPITAL_REQUIREMENTS_PATH)
         self.paper_trader = PaperTrader(
-            lot_size=sizing.get("lot_size", 75),
+            lot_size=sizing.get("lot_size", 65),
             max_concurrent_positions=sizing.get("max_concurrent_positions", 5),
             max_daily_loss=sizing.get("max_daily_loss", 5000),
+            max_trades_per_day_per_strategy=sizing.get("max_trades_per_day_per_strategy", 2),
+            trailing_stop_enabled=exits.get("trailing_stop_enabled", False),
+            trailing_activation_pct=exits.get("trailing_activation_pct", 10.0),
+            trailing_stop_pct=exits.get("trailing_stop_pct", 15.0),
+            consecutive_loss_limit=breaker.get("consecutive_loss_limit"),
+            consecutive_loss_cooldown_days=breaker.get("consecutive_loss_cooldown_days", 1),
+            max_drawdown_pct_of_capital=breaker.get("max_drawdown_pct_of_capital"),
+            drawdown_cooldown_days=breaker.get("drawdown_cooldown_days", 3),
+            drawdown_breaker_grace_trades=breaker.get("drawdown_breaker_grace_trades", 3),
+            capital_by_strategy=capital_by_strategy,
             logger=self.logger,
         )
         self.qty_per_signal = sizing.get("qty_per_signal", 1)
-        self.stop_loss_pts = exits.get("stop_loss_pts", 50)
+        self.stop_loss_pct = exits.get("stop_loss_pct", 20)
         self.take_profit_pts = exits.get("take_profit_pts", 150)
         self.time_exit_mins = exits.get("time_exit_mins", 120)
         self.poll_interval = config.risk_params.get("polling", {}).get("option_chain_interval_secs", 10)
+        self.auto_mode = config.risk_params.get("live_mode", {}).get("auto_approve", True)
 
         self.fyers = FyersAPIClient(
             client_id=config.fyers_client_id, secret_key=config.fyers_secret_key,
@@ -60,6 +98,8 @@ class LiveTrader:
         self.is_running = False
         self._monitored_symbols: set[str] = set()
         self.recent_signals: list = []
+        self._connected = False
+        self._last_login_date = None
 
     # ---- Tick handlers (called synchronously from the WebSocket thread) --------
 
@@ -68,7 +108,7 @@ class LiveTrader:
         if symbol is None:
             return
         tick = {"ltp": message.get("ltp"), "volume": message.get("vol_traded_today", 0),
-                "timestamp": datetime.now()}
+                "timestamp": datetime.now(IST)}
         if symbol == NIFTY_SYMBOL:
             self.data_manager.on_nifty_tick(tick)
         else:
@@ -85,14 +125,45 @@ class LiveTrader:
         except Exception as e:
             self.logger.log_error(f"Historical seeding failed, starting cold: {e}")
 
+    # ---- Daily login / connect / disconnect state machine ------------------------
+
+    def ensure_connection_state(self, now: datetime) -> bool:
+        """Given the current IST wall-clock time: performs the daily Fyers login if due, and
+        connects/disconnects the websocket to match market-open state. Returns whether the
+        market is open right now (so the caller knows whether to run strategy evaluation this
+        tick). Pure decision logic, deliberately factored out of the polling loop below so it's
+        directly unit-testable without mocking asyncio.sleep."""
+        market_open = self.config.force_market_open or is_market_open(now, self.config.risk_params)
+        # force_market_open also bypasses the wall-clock login gate, so testing outside
+        # 08:50-market-hours (or on a weekend) still authenticates immediately.
+        past_login_time = self.config.force_market_open or (now.weekday() < 5 and now.time() >= DAILY_LOGIN_TIME)
+
+        # Daily fresh token, once per calendar day — previously authenticate_with_totp() only ran
+        # once at process start, ever, with no re-login mechanism at all. A token is only valid
+        # for its calendar day, so a process left running past midnight would silently go dark
+        # with no valid token until someone manually restarted it. See docs/ARCHITECTURE.md.
+        if past_login_time and self._last_login_date != now.date():
+            if self.fyers.refresh_access_token():
+                self._last_login_date = now.date()
+                self._connected = False  # reconnect below with the fresh token
+            else:
+                self.logger.log_error("Daily Fyers token refresh failed; will retry next tick.")
+
+        if market_open and not self._connected and self.fyers.access_token:
+            self._seed_historical_candles()
+            self.fyers.start_websocket(self.on_tick)
+            self.fyers.subscribe_symbols([NIFTY_SYMBOL])
+            self._connected = True
+        elif not market_open and self._connected:
+            self.fyers.stop_websocket()
+            self._connected = False
+            self._monitored_symbols = set()
+
+        return market_open
+
     # ---- Main loop ---------------------------------------------------------------
 
     async def start(self) -> None:
-        self.fyers.authenticate_with_totp()
-        self._seed_historical_candles()
-        self.fyers.start_websocket(self.on_tick)
-        self.fyers.subscribe_symbols([NIFTY_SYMBOL])
-
         if self.telegram:
             await self.telegram.start_listening()
 
@@ -102,8 +173,10 @@ class LiveTrader:
 
         try:
             while self.is_running:
-                now = datetime.now()
-                if not self.config.force_market_open and not is_market_open(now, self.config.risk_params):
+                now = datetime.now(IST)
+                market_open = self.ensure_connection_state(now)
+
+                if not market_open:
                     await asyncio.sleep(5)
                     continue
 
@@ -142,13 +215,13 @@ class LiveTrader:
         return signals
 
     async def execute_signal(self, signal) -> None:
-        if self.telegram:
+        if self.telegram and not self.auto_mode:
             signal_id = await self.telegram.send_signal_alert(signal)
             decision = await self.telegram.await_decision(signal_id, timeout_secs=300)
             if decision != "approve":
                 return
 
-        stop_loss = max(signal.entry_price - self.stop_loss_pts, 0.05)
+        stop_loss = max(signal.entry_price * (1 - self.stop_loss_pct / 100), 0.05)
         take_profit = signal.entry_price + self.take_profit_pts
         try:
             order = self.paper_trader.place_order(

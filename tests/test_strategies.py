@@ -1,4 +1,5 @@
 from datetime import datetime
+from datetime import time as dtime
 
 from src.data_manager import Candle
 from src.strategies.rsi_oversold_bullish import RSIOversoldBullish
@@ -7,6 +8,8 @@ from src.strategies.macd_bullish import MACDBullish
 from src.strategies.macd_bearish import MACDBearish
 from src.strategies.support_bounce_bullish import SupportBounceBullish
 from src.strategies.resistance_rejection_bearish import ResistanceRejectionBearish
+from src.strategies.orb_bullish import ORBBullish
+from src.strategies.orb_bearish import ORBBearish
 from src.strategies.engine import StrategyEngine, create_all_strategies
 
 NOW = datetime(2026, 1, 1, 10, 0)
@@ -27,7 +30,7 @@ def base_state(**overrides):
 def test_rsi_oversold_bullish_signal_generated():
     strategy = RSIOversoldBullish()
     state = base_state(indicators={
-        "rsi_1h": 30, "stochastic_k_15m": 15, "ema_20_1h": 23950, "volume_ratio": 2.0,
+        "rsi_1h": 30, "stochastic_k_15m": 15, "ema_20_1h": 23950, "ema_50_1h": 23900, "volume_ratio": 2.0,
     })
     signal = strategy.evaluate(state)
     assert signal is not None
@@ -38,7 +41,15 @@ def test_rsi_oversold_bullish_signal_generated():
 def test_rsi_oversold_bullish_no_signal_when_rsi_above_35():
     strategy = RSIOversoldBullish()
     state = base_state(indicators={
-        "rsi_1h": 50, "stochastic_k_15m": 15, "ema_20_1h": 23950, "volume_ratio": 2.0,
+        "rsi_1h": 50, "stochastic_k_15m": 15, "ema_20_1h": 23950, "ema_50_1h": 23900, "volume_ratio": 2.0,
+    })
+    assert strategy.evaluate(state) is None
+
+
+def test_rsi_oversold_bullish_blocked_against_the_broader_downtrend():
+    strategy = RSIOversoldBullish()
+    state = base_state(indicators={
+        "rsi_1h": 30, "stochastic_k_15m": 15, "ema_20_1h": 23950, "ema_50_1h": 24100, "volume_ratio": 2.0,
     })
     assert strategy.evaluate(state) is None
 
@@ -46,18 +57,25 @@ def test_rsi_oversold_bullish_no_signal_when_rsi_above_35():
 def test_rsi_overbought_bearish_signal_generated():
     strategy = RSIOverboughtBearish()
     state = base_state(indicators={
-        "rsi_1h": 70, "stochastic_k_15m": 85, "ema_20_1h": 24050, "volume_ratio": 2.0,
+        "rsi_1h": 70, "stochastic_k_15m": 85, "ema_20_1h": 24050, "ema_50_1h": 24100, "volume_ratio": 2.0,
     })
     signal = strategy.evaluate(state)
     assert signal is not None
     assert signal.direction == "PE"
 
 
+def test_rsi_overbought_bearish_blocked_against_the_broader_uptrend():
+    strategy = RSIOverboughtBearish()
+    state = base_state(indicators={
+        "rsi_1h": 70, "stochastic_k_15m": 85, "ema_20_1h": 24050, "ema_50_1h": 23900, "volume_ratio": 2.0,
+    })
+    assert strategy.evaluate(state) is None
+
+
 def test_macd_bullish_signal_on_cross():
     strategy = MACDBullish()
     state = base_state(indicators={
-        "macd_histogram_1h": 1.5, "macd_histogram_1h_prev": -0.5,
-        "volume_ratio_5m": 2.5, "ema_50_1h": 23900,
+        "macd_histogram_15m": 1.5, "macd_histogram_15m_prev": -0.5, "ema_50_1h": 23900,
     })
     signal = strategy.evaluate(state)
     assert signal is not None
@@ -67,8 +85,8 @@ def test_macd_bullish_signal_on_cross():
 def test_macd_bullish_no_signal_without_cross():
     strategy = MACDBullish()
     state = base_state(indicators={
-        "macd_histogram_1h": 1.5, "macd_histogram_1h_prev": 1.0,  # already positive, no cross
-        "volume_ratio_5m": 2.5, "ema_50_1h": 23900,
+        "macd_histogram_15m": 1.5, "macd_histogram_15m_prev": 1.0,  # already positive, no cross
+        "ema_50_1h": 23900,
     })
     assert strategy.evaluate(state) is None
 
@@ -76,8 +94,7 @@ def test_macd_bullish_no_signal_without_cross():
 def test_macd_bearish_signal_on_cross():
     strategy = MACDBearish()
     state = base_state(indicators={
-        "macd_histogram_1h": -1.5, "macd_histogram_1h_prev": 0.5,
-        "volume_ratio_5m": 2.5, "ema_50_1h": 24100,
+        "macd_histogram_15m": -1.5, "macd_histogram_15m_prev": 0.5, "ema_50_1h": 24100,
     })
     signal = strategy.evaluate(state)
     assert signal is not None
@@ -88,28 +105,136 @@ def test_support_bounce_bullish_signal():
     strategy = SupportBounceBullish()
     prev = Candle(timestamp=NOW, open=23960, high=23970, low=23945, close=23955, volume=500)
     current = Candle(timestamp=NOW, open=23955, high=23980, low=23950, close=23975, volume=1500)
-    state = base_state(indicators={"ema_20_1h": 23950, "avg_volume": 1000}, candles=[prev, current])
+    state = base_state(indicators={"ema_20_1h": 23950, "ema_50_1h": 23900, "avg_volume": 1000},
+                        candles=[prev, current])
     signal = strategy.evaluate(state)
     assert signal is not None
     assert signal.direction == "CE"
+
+
+def test_support_bounce_bullish_blocked_against_the_broader_downtrend():
+    strategy = SupportBounceBullish()
+    prev = Candle(timestamp=NOW, open=23960, high=23970, low=23945, close=23955, volume=500)
+    current = Candle(timestamp=NOW, open=23955, high=23980, low=23950, close=23975, volume=1500)
+    # Same 20-EMA bounce setup, but the 50-EMA trend is still above price — a countertrend bounce.
+    state = base_state(indicators={"ema_20_1h": 23950, "ema_50_1h": 24100, "avg_volume": 1000},
+                        candles=[prev, current])
+    assert strategy.evaluate(state) is None
+
+
+def test_support_bounce_bullish_blocked_on_a_weak_close():
+    strategy = SupportBounceBullish()
+    prev = Candle(timestamp=NOW, open=23960, high=23970, low=23945, close=23955, volume=500)
+    # Same bounce setup, but the candle closes near the bottom of its own range — a half-hearted
+    # reclaim, not a strong bounce.
+    current = Candle(timestamp=NOW, open=23955, high=24000, low=23950, close=23955, volume=1500)
+    state = base_state(indicators={"ema_20_1h": 23950, "ema_50_1h": 23900, "avg_volume": 1000},
+                        candles=[prev, current])
+    assert strategy.evaluate(state) is None
 
 
 def test_resistance_rejection_bearish_signal():
     strategy = ResistanceRejectionBearish()
     prev = Candle(timestamp=NOW, open=24040, high=24055, low=24035, close=24045, volume=500)
     current = Candle(timestamp=NOW, open=24045, high=24050, low=24010, close=24020, volume=1500)
-    state = base_state(indicators={"ema_20_1h": 24050, "avg_volume": 1000}, candles=[prev, current])
+    state = base_state(indicators={"ema_20_1h": 24050, "ema_50_1h": 24100, "avg_volume": 1000},
+                        candles=[prev, current])
     signal = strategy.evaluate(state)
     assert signal is not None
     assert signal.direction == "PE"
 
 
+def test_resistance_rejection_bearish_blocked_against_the_broader_uptrend():
+    strategy = ResistanceRejectionBearish()
+    prev = Candle(timestamp=NOW, open=24040, high=24055, low=24035, close=24045, volume=500)
+    current = Candle(timestamp=NOW, open=24045, high=24050, low=24010, close=24020, volume=1500)
+    state = base_state(indicators={"ema_20_1h": 24050, "ema_50_1h": 23900, "avg_volume": 1000},
+                        candles=[prev, current])
+    assert strategy.evaluate(state) is None
+
+
+def test_resistance_rejection_bearish_blocked_on_a_weak_close():
+    strategy = ResistanceRejectionBearish()
+    prev = Candle(timestamp=NOW, open=24040, high=24055, low=24035, close=24045, volume=500)
+    # Closes near the top of its own range — a half-hearted rejection, not a strong one.
+    current = Candle(timestamp=NOW, open=24045, high=24050, low=24000, close=24045, volume=1500)
+    state = base_state(indicators={"ema_20_1h": 24050, "ema_50_1h": 24100, "avg_volume": 1000},
+                        candles=[prev, current])
+    assert strategy.evaluate(state) is None
+
+
+def _orb_day_candles(day, range_high=24020, range_low=23985):
+    return [
+        Candle(timestamp=datetime.combine(day, dtime(9, 15)), open=24000, high=24010, low=23995, close=24005, volume=1000),
+        Candle(timestamp=datetime.combine(day, dtime(9, 20)), open=24005, high=range_high, low=range_low, close=24010, volume=1000),
+        Candle(timestamp=datetime.combine(day, dtime(9, 29)), open=24010, high=24015, low=23995, close=24012, volume=1000),
+    ]
+
+
+def test_orb_bullish_fires_on_breakout_above_opening_range_and_not_before():
+    strategy = ORBBullish()
+    day = datetime(2026, 1, 1).date()
+    candles = _orb_day_candles(day)
+
+    # While the opening range (09:15-09:30) is still forming, no signal.
+    for i in range(len(candles)):
+        state = base_state(indicators={"avg_volume": 1000}, candles=candles[: i + 1])
+        assert strategy.evaluate(state) is None
+
+    # After the window, a close still inside the range (24020) shouldn't fire.
+    inside = Candle(timestamp=datetime.combine(day, dtime(9, 35)), open=24012, high=24018, low=24005, close=24015, volume=1000)
+    candles.append(inside)
+    assert strategy.evaluate(base_state(indicators={"avg_volume": 1000}, candles=candles)) is None
+
+    # Breakout candle: close above the range high, on volume.
+    breakout = Candle(timestamp=datetime.combine(day, dtime(9, 40)), open=24015, high=24030, low=24014, close=24025, volume=1500)
+    candles.append(breakout)
+    signal = strategy.evaluate(base_state(indicators={"avg_volume": 1000}, candles=candles))
+    assert signal is not None
+    assert signal.direction == "CE"
+
+    # Staying above the range afterwards doesn't refire — only the crossing candle does.
+    still_up = Candle(timestamp=datetime.combine(day, dtime(9, 45)), open=24025, high=24035, low=24022, close=24028, volume=1200)
+    candles.append(still_up)
+    assert strategy.evaluate(base_state(indicators={"avg_volume": 1000}, candles=candles)) is None
+
+
+def test_orb_bearish_fires_on_breakdown_below_opening_range():
+    strategy = ORBBearish()
+    day = datetime(2026, 1, 1).date()
+    candles = _orb_day_candles(day)
+    for i in range(len(candles)):
+        assert strategy.evaluate(base_state(indicators={"avg_volume": 1000}, candles=candles[: i + 1])) is None
+
+    breakdown = Candle(timestamp=datetime.combine(day, dtime(9, 40)), open=23990, high=23992, low=23970, close=23975, volume=1500)
+    candles.append(breakdown)
+    signal = strategy.evaluate(base_state(indicators={"avg_volume": 1000}, candles=candles))
+    assert signal is not None
+    assert signal.direction == "PE"
+
+
+def test_orb_range_resets_on_a_new_day():
+    strategy = ORBBullish()
+    day1 = datetime(2026, 1, 1).date()
+    day2 = datetime(2026, 1, 2).date()
+    candles = _orb_day_candles(day1, range_high=24020)
+    for i in range(len(candles)):
+        strategy.evaluate(base_state(indicators={"avg_volume": 1000}, candles=candles[: i + 1]))
+    assert strategy._range_high == 24020
+
+    day2_candles = _orb_day_candles(day2, range_high=24500)
+    combined = candles + day2_candles
+    for i in range(len(candles), len(combined)):
+        strategy.evaluate(base_state(indicators={"avg_volume": 1000}, candles=combined[: i + 1]))
+    assert strategy._range_high == 24500  # rebuilt fresh for the new day, not carried over
+
+
 def test_confidence_score_present_on_all_strategies():
-    assert len(create_all_strategies()) == 6
+    assert len(create_all_strategies()) == 7  # RSIOversoldBullish deliberately excluded — no genuine edge
     # RSI strategy confidence is fixed at 0.75 by design
     strategy = RSIOversoldBullish()
     signal = strategy.evaluate(base_state(indicators={
-        "rsi_1h": 30, "stochastic_k_15m": 15, "ema_20_1h": 23950, "volume_ratio": 2.0,
+        "rsi_1h": 30, "stochastic_k_15m": 15, "ema_20_1h": 23950, "ema_50_1h": 23900, "volume_ratio": 2.0,
     }))
     assert signal.confidence == 0.75
 
@@ -117,7 +242,7 @@ def test_confidence_score_present_on_all_strategies():
 def test_engine_deduplicates_within_cooldown():
     engine = StrategyEngine(strategies=[RSIOversoldBullish()], signal_cooldown_mins=5)
     state = base_state(indicators={
-        "rsi_1h": 30, "stochastic_k_15m": 15, "ema_20_1h": 23950, "volume_ratio": 2.0,
+        "rsi_1h": 30, "stochastic_k_15m": 15, "ema_20_1h": 23950, "ema_50_1h": 23900, "volume_ratio": 2.0,
     })
     first = engine.evaluate_all(state)
     second = engine.evaluate_all(state)  # same timestamp, within cooldown
@@ -125,12 +250,12 @@ def test_engine_deduplicates_within_cooldown():
     assert len(second) == 0
 
 
-def test_engine_runs_all_six_strategies_without_error():
+def test_engine_runs_all_seven_strategies_without_error():
     engine = StrategyEngine()
     state = base_state(indicators={
         "rsi_1h": 50, "stochastic_k_15m": 50, "ema_20_1h": 24000, "ema_50_1h": 24000,
         "volume_ratio": 1.0, "volume_ratio_5m": 1.0, "avg_volume": 1000,
-        "macd_histogram_1h": 0, "macd_histogram_1h_prev": 0,
+        "macd_histogram_15m": 0, "macd_histogram_15m_prev": 0,
     }, candles=[
         Candle(timestamp=NOW, open=24000, high=24010, low=23990, close=24000, volume=1000),
         Candle(timestamp=NOW, open=24000, high=24010, low=23990, close=24000, volume=1000),

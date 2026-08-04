@@ -55,6 +55,25 @@ def test_indicators_calculated():
     assert "macd_histogram_1h" in indicators
 
 
+def test_vol_regime_ratio_calculated_with_enough_history():
+    dm = DataManager()
+    for c in _synthetic_candles(2400):  # ~40 hours -> enough 1H bars for ATR(14) + its 20-bar average
+        dm.replay_candle(c)
+
+    indicators = dm.calculate_indicators()
+    assert "vol_regime_ratio" in indicators
+    assert indicators["vol_regime_ratio"] > 0
+
+
+def test_vol_regime_ratio_absent_without_enough_history():
+    dm = DataManager()
+    for c in _synthetic_candles(1000):  # ~16.7 hours -> not enough for the 35-bar ATR warmup
+        dm.replay_candle(c)
+
+    indicators = dm.calculate_indicators()
+    assert "vol_regime_ratio" not in indicators
+
+
 def test_option_chain_tracks_quotes():
     dm = DataManager()
     dm.on_option_tick("NIFTY24500CE", {"ltp": 65.5, "bid": 65, "ask": 66, "oi": 1000})

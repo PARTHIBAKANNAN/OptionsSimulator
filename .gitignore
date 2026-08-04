@@ -5,8 +5,12 @@ __pycache__/
 .pytest_cache/
 logs/*.log
 data/backtest_results/*.json
+data/backtest_results/*.html
 data/historical/*.csv
 !data/historical/.gitkeep
+data/positions.json
+data/trade_history.csv
+data/daily_summary.json
 fyers_token_cache.json
 *.egg-info/
 .vscode/
