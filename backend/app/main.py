@@ -61,7 +61,15 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="OptionsSimulator", lifespan=lifespan)
 
-app.add_middleware(SessionMiddleware, secret_key=config.session_secret or "dev-only-insecure-secret", same_site="lax")
+# session_cookie is explicitly namespaced: Starlette's SessionMiddleware defaults to a cookie
+# literally named "session" on path "/" — TradeDashBoard's own backend uses the same default on
+# the same domain (trading-dashboard-1.duckdns.org), so without this, whichever site you visit
+# most recently overwrites the other's cookie (same name/domain/path, different secret_key), and
+# the other site fails to decrypt it and treats you as logged out. See docs/ARCHITECTURE.md.
+app.add_middleware(
+    SessionMiddleware, secret_key=config.session_secret or "dev-only-insecure-secret",
+    session_cookie="optionssimulator_session", same_site="lax",
+)
 app.add_middleware(CORSMiddleware, allow_origins=config.cors_origins, allow_credentials=True,
                     allow_methods=["*"], allow_headers=["*"])
 
