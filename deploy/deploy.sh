@@ -61,13 +61,27 @@ log "polling $HEALTH_URL"
 # endpoint responds "ok" a beat before fyers_authenticated catches back up to its pre-deploy
 # value. Keep polling (not just the first successful response) until it actually catches up,
 # or genuinely fail after the full window instead of false-positive-rolling-back a good deploy.
+#
+# Only REQUIRE that catch-up if it's actually past today's daily-login gate (08:50 IST, Mon-Fri —
+# mirrors DAILY_LOGIN_TIME in src/trader.py). A deploy overnight or on a weekend restarts into a
+# process that correctly hasn't logged in yet (by design, not by breakage) and won't until the
+# next gate — the fyers_authenticated check would otherwise time out and roll back a perfectly
+# good deploy every single time outside that window, which is exactly what happened at 2026-08-06
+# 00:55 IST.
+IST_HHMM=$(TZ=Asia/Kolkata date +%H%M)
+IST_DOW=$(TZ=Asia/Kolkata date +%u)  # 1=Monday .. 7=Sunday
+PAST_LOGIN_GATE=0
+if [ "$IST_DOW" -le 5 ] && [ "$IST_HHMM" -ge 0850 ]; then
+  PAST_LOGIN_GATE=1
+fi
+
 PRE_FYERS=$(echo "$PRE_HEALTH" | json_field fyers_authenticated "null")
 HEALTHY=0
 for i in $(seq 1 20); do
   if curl -sf --max-time 3 "$HEALTH_URL" > /tmp/optionssimulator-health-post.json 2>/dev/null; then
     POST_STATUS=$(json_field status "unknown" < /tmp/optionssimulator-health-post.json)
     POST_FYERS=$(json_field fyers_authenticated "null" < /tmp/optionssimulator-health-post.json)
-    if [ "$POST_STATUS" = "ok" ] && { [ "$PRE_FYERS" != "True" ] || [ "$POST_FYERS" = "True" ]; }; then
+    if [ "$POST_STATUS" = "ok" ] && { [ "$PRE_FYERS" != "True" ] || [ "$PAST_LOGIN_GATE" -eq 0 ] || [ "$POST_FYERS" = "True" ]; }; then
       HEALTHY=1
       break
     fi
