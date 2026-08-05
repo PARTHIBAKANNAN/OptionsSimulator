@@ -11,6 +11,7 @@ import json
 import time
 from pathlib import Path
 from urllib.parse import urlparse, parse_qs
+from zoneinfo import ZoneInfo
 
 import truststore
 truststore.inject_into_ssl()  # trust the OS cert store (corporate TLS-inspecting proxies aren't in certifi)
@@ -25,6 +26,8 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 TOKEN_CACHE_PATH = PROJECT_ROOT / "fyers_token_cache.json"
 SDK_LOG_DIR = PROJECT_ROOT / "logs"
 SDK_LOG_DIR.mkdir(exist_ok=True)
+
+IST = ZoneInfo("Asia/Kolkata")
 
 BASE_URL = "https://api-t2.fyers.in"
 URL_SEND_LOGIN_OTP = f"{BASE_URL}/vagator/v2/send_login_otp_v2"
@@ -262,6 +265,15 @@ class FyersAPIClient:
             remaining_days -= chunk_days
 
         df = pd.DataFrame(all_rows, columns=["Timestamp", "Open", "High", "Low", "Close", "Volume"])
-        df["Timestamp"] = pd.to_datetime(df["Timestamp"], unit="s", utc=True).dt.tz_convert("Asia/Kolkata")
+        # tz_convert(IST) (a zoneinfo.ZoneInfo object), not the string "Asia/Kolkata" — pandas
+        # resolves a string zone name via pytz, while src/trader.py's on_tick() stamps live
+        # candles with zoneinfo.ZoneInfo. Mixing a pytz-tz column with zoneinfo-tz values in the
+        # same DataFrame (once _seed_historical_candles' rows and on_tick's live rows both land in
+        # DataManager.candles) makes pandas fall back to a plain object-dtype Timestamp column
+        # instead of datetime64[ns, tz] — which then makes .resample() raise
+        # "Only valid with DatetimeIndex..." on every single tick, breaking indicator calculation
+        # (and therefore every strategy) for the rest of the session. Consistent zoneinfo on both
+        # sides avoids the mixed-dtype column entirely.
+        df["Timestamp"] = pd.to_datetime(df["Timestamp"], unit="s", utc=True).dt.tz_convert(IST)
         df = df.sort_values("Timestamp").drop_duplicates(subset="Timestamp").reset_index(drop=True)
         return df

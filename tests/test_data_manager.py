@@ -1,8 +1,11 @@
 from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
 
 import pandas as pd
 
 from src.data_manager import Candle, DataManager
+
+IST = ZoneInfo("Asia/Kolkata")
 
 
 def _synthetic_candles(n=200, start_price=24000.0):
@@ -53,6 +56,32 @@ def test_indicators_calculated():
     assert 0 <= indicators["rsi_1h"] <= 100
     assert "ema_20_1h" in indicators
     assert "macd_histogram_1h" in indicators
+
+
+def test_indicators_survive_mixing_seeded_historical_and_live_tick_candles():
+    # Regression: LiveTrader._seed_historical_candles() loads Fyers historical candles (pandas
+    # Timestamps, tz-converted in FyersAPIClient.get_historical_data) and then on_tick() appends
+    # live candles (plain datetime, tz from src.trader.IST) into the SAME DataManager.candles
+    # list. If those two use different tz implementations (e.g. pandas' string-based tz_convert,
+    # which resolves via pytz, vs on_tick's zoneinfo.ZoneInfo), pandas silently builds an
+    # object-dtype Timestamp column instead of datetime64[ns, tz] once both are combined, and
+    # .resample() then raises "Only valid with DatetimeIndex..." on every single tick -- breaking
+    # every strategy's indicators for the rest of the session. See docs/ARCHITECTURE.md.
+    dm = DataManager()
+    base = pd.Timestamp(datetime(2026, 1, 1, 9, 15), tz=IST)
+    historical_df = pd.DataFrame([
+        {"Timestamp": base + timedelta(minutes=i), "Open": 24000 + i, "High": 24002 + i,
+         "Low": 23998 + i, "Close": 24000.0 + i, "Volume": 1000}
+        for i in range(999)
+    ])
+    dm.load_historical(historical_df)
+
+    live_ts = datetime(2026, 1, 1, 9, 15, tzinfo=IST) + timedelta(minutes=999)
+    dm.on_nifty_tick({"ltp": 25000, "volume": 500, "timestamp": live_ts})
+    dm.on_nifty_tick({"ltp": 25010, "volume": 500, "timestamp": live_ts + timedelta(minutes=1)})
+
+    indicators = dm.calculate_indicators()  # must not raise
+    assert "rsi_1h" in indicators
 
 
 def test_vol_regime_ratio_calculated_with_enough_history():
