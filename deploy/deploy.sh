@@ -56,24 +56,25 @@ log "restarting $SERVICE"
 sudo systemctl restart "$SERVICE"
 
 log "polling $HEALTH_URL"
+# The daily Fyers login now happens inside the engine's first loop tick (see
+# LiveTrader.ensure_connection_state), not synchronously at process boot — so the health
+# endpoint responds "ok" a beat before fyers_authenticated catches back up to its pre-deploy
+# value. Keep polling (not just the first successful response) until it actually catches up,
+# or genuinely fail after the full window instead of false-positive-rolling-back a good deploy.
+PRE_FYERS=$(echo "$PRE_HEALTH" | json_field fyers_authenticated "null")
 HEALTHY=0
-for i in $(seq 1 15); do
+for i in $(seq 1 20); do
   if curl -sf --max-time 3 "$HEALTH_URL" > /tmp/optionssimulator-health-post.json 2>/dev/null; then
-    HEALTHY=1
-    break
+    POST_STATUS=$(json_field status "unknown" < /tmp/optionssimulator-health-post.json)
+    POST_FYERS=$(json_field fyers_authenticated "null" < /tmp/optionssimulator-health-post.json)
+    if [ "$POST_STATUS" = "ok" ] && { [ "$PRE_FYERS" != "True" ] || [ "$POST_FYERS" = "True" ]; }; then
+      HEALTHY=1
+      break
+    fi
   fi
   sleep 2
 done
-[ "$HEALTHY" -eq 1 ] || fail "backend did not become healthy within 30s of restart (journalctl -u $SERVICE)"
+[ "$HEALTHY" -eq 1 ] || fail "backend did not become healthy (with Fyers auth restored) within 40s of restart (journalctl -u $SERVICE)"
 
 POST_HEALTH=$(cat /tmp/optionssimulator-health-post.json)
-POST_STATUS=$(echo "$POST_HEALTH" | json_field status "unknown")
-[ "$POST_STATUS" = "ok" ] || fail "post-deploy health status is '$POST_STATUS', not 'ok': $POST_HEALTH"
-
-PRE_FYERS=$(echo "$PRE_HEALTH" | json_field fyers_authenticated "null")
-POST_FYERS=$(echo "$POST_HEALTH" | json_field fyers_authenticated "null")
-if [ "$PRE_FYERS" = "True" ] && [ "$POST_FYERS" != "True" ]; then
-  fail "Fyers auth was up before this deploy and isn't now — restart dropped the session"
-fi
-
 log "deploy succeeded: $POST_HEALTH"
