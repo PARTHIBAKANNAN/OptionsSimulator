@@ -2,6 +2,9 @@
 snapshot the engine publishes; trade history reads Postgres since it must survive a restart."""
 from fastapi import APIRouter, Depends, HTTPException, Request
 
+from src.trader import IST
+from src.utils.options_pricing import format_display_symbol, next_weekly_expiry_date
+
 from .security import require_login
 from .state import shared_state
 from . import db
@@ -36,7 +39,15 @@ async def get_trade_history(request: Request, limit: int = 100, offset: int = 0)
            ORDER BY exit_time DESC LIMIT $1 OFFSET $2""",
         limit, offset,
     )
-    return [dict(row) for row in rows]
+    result = []
+    for row in rows:
+        trade = dict(row)
+        # asyncpg returns timestamptz columns aware in UTC — must convert to IST before deriving
+        # the expiry weekday/date, or a late-UTC-evening entry can resolve to the wrong calendar day.
+        trade["contract"] = format_display_symbol(
+            trade["symbol"], next_weekly_expiry_date(trade["entry_time"].astimezone(IST)))
+        result.append(trade)
+    return result
 
 
 def _get_engine(request: Request):

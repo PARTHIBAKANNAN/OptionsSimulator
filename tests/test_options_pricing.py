@@ -1,7 +1,8 @@
-from datetime import datetime
+from datetime import date, datetime
 
 from src.utils.options_pricing import (
-    black_scholes_price, is_expiry_day, next_weekly_expiry_days, parse_option_symbol,
+    black_scholes_price, format_display_symbol, is_expiry_day, next_weekly_expiry_date,
+    next_weekly_expiry_days, parse_option_symbol,
 )
 
 
@@ -68,3 +69,27 @@ def test_is_expiry_day_before_the_change_uses_thursday_not_tuesday():
 def test_is_expiry_day_right_at_the_cutover():
     assert is_expiry_day(datetime(2025, 9, 2, 10, 0)) is True  # first Tuesday expiry, new regime
     assert is_expiry_day(datetime(2025, 9, 4, 10, 0)) is False  # that week's Thursday, no longer expiry
+
+
+# ---- next_weekly_expiry_date / format_display_symbol (display-only contract naming) ----------
+
+def test_next_weekly_expiry_date_on_a_monday_counts_forward_to_tuesday():
+    monday = datetime(2026, 8, 3, 10, 0)  # 2026-08-03 is a Monday
+    assert next_weekly_expiry_date(monday) == date(2026, 8, 4)
+
+
+def test_next_weekly_expiry_date_on_expiry_day_before_close_is_today():
+    assert next_weekly_expiry_date(datetime(2026, 8, 4, 9, 20)) == date(2026, 8, 4)
+
+
+def test_next_weekly_expiry_date_on_expiry_day_after_close_rolls_to_next_week():
+    assert next_weekly_expiry_date(datetime(2026, 8, 4, 16, 0)) == date(2026, 8, 11)
+
+
+def test_format_display_symbol_embeds_the_expiry_date():
+    assert format_display_symbol("NIFTY22400PE", date(2026, 8, 11)) == "NIFTY11Aug202622400PE"
+    assert format_display_symbol("NIFTY24600CE", date(2026, 1, 6)) == "NIFTY06Jan202624600CE"
+
+
+def test_format_display_symbol_passes_through_unparseable_symbols_unchanged():
+    assert format_display_symbol("garbage", date(2026, 8, 11)) == "garbage"

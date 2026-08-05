@@ -6,7 +6,7 @@ should always prefer the actual LTP from the option chain over this estimate.
 """
 import math
 import re
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from datetime import time as dtime
 
 RISK_FREE_RATE = 0.07
@@ -78,3 +78,27 @@ def is_expiry_day(from_date: datetime) -> bool:
     the 15:30 IST close — the window an expiry-day strategy can act in."""
     return (from_date.weekday() == _expiry_weekday(from_date.date())
             and from_date.time() < dtime(15, 30))
+
+
+def next_weekly_expiry_date(from_date: datetime) -> date:
+    """Calendar date of the applicable weekly expiry — same weekday-selection rule as
+    next_weekly_expiry_days, but returning the actual date instead of a day-count (for display)."""
+    expiry_weekday = _expiry_weekday(from_date.date())
+    days_ahead = (expiry_weekday - from_date.weekday()) % 7
+    if days_ahead != 0:
+        return from_date.date() + timedelta(days=days_ahead)
+
+    market_close = from_date.replace(hour=15, minute=30, second=0, microsecond=0)
+    if from_date >= market_close:
+        return from_date.date() + timedelta(days=7)
+    return from_date.date()
+
+
+def format_display_symbol(symbol: str, expiry: date) -> str:
+    """'NIFTY24600CE' + 2026-08-11 -> 'NIFTY11Aug202624600CE'. Display-only: the bare
+    strike+type symbol is ambiguous about which week's contract it is, but this is never used as
+    a lookup key — order.symbol / option-chain quote keys are untouched everywhere else."""
+    strike, option_type = parse_option_symbol(symbol)
+    if strike is None:
+        return symbol
+    return f"NIFTY{expiry.day:02d}{expiry.strftime('%b')}{expiry.year}{int(strike)}{option_type}"

@@ -156,3 +156,57 @@ def test_circuit_breaker_disabled_by_default_when_no_config_section():
     trader = engine.paper_trader
     assert trader.consecutive_loss_limit is None
     assert trader.max_drawdown_pct_of_capital is None
+
+
+# ---- strategy_status_list: quantman-style per-strategy waiting/entered summary ----------------
+
+def test_strategy_status_list_reports_waiting_for_every_registered_strategy_with_no_positions():
+    engine = _make_engine()
+    rows = engine._strategy_status_list(current_prices={})
+
+    assert len(rows) == len(engine.strategy_engine.strategies)
+    assert {r["strategy"] for r in rows} == {s.name for s in engine.strategy_engine.strategies}
+    for row in rows:
+        assert row["status"] == "WAITING"
+        assert row["entry"] is None
+        assert row["today_pnl"] == 0.0
+
+
+def test_strategy_status_list_reports_signal_entered_with_contract_entry_ltp_and_pnl():
+    engine = _make_engine()
+    entry_time = IST.localize(datetime(2026, 8, 4, 10, 0))  # 2026-08-04 is a Tuesday (expiry day)
+    engine.paper_trader.place_order(
+        symbol="NIFTY24600CE", side="BUY", qty=1, price=200.0,
+        stop_loss=160.0, take_profit=350.0, strategy="MACD_BULLISH", timestamp=entry_time,
+    )
+
+    rows = engine._strategy_status_list(current_prices={"NIFTY24600CE": 250.0})
+    row = next(r for r in rows if r["strategy"] == "MACD_BULLISH")
+
+    assert row["status"] == "SIGNAL_ENTERED"
+    assert row["entry"]["contract"] == "NIFTY04Aug202624600CE"
+    assert row["entry"]["ltp"] == 250.0
+    assert row["entry"]["trade_pnl"] == pytest.approx((250.0 - row["entry"]["entry_price"]) * engine.paper_trader.lot_size)
+    assert row["today_pnl"] == pytest.approx(row["entry"]["trade_pnl"])
+
+    # every other strategy is untouched and still waiting
+    others = [r for r in rows if r["strategy"] != "MACD_BULLISH"]
+    assert all(r["status"] == "WAITING" for r in others)
+
+
+def test_strategy_status_list_includes_realized_pnl_from_trades_closed_today():
+    engine = _make_engine()
+    # "today" in _strategy_status_list is real wall-clock IST, not a fixed historical date — the
+    # closed trade must actually fall on today's date for the filter to pick it up.
+    entry_time = datetime.now(IST)
+    order = engine.paper_trader.place_order(
+        symbol="NIFTY24600CE", side="BUY", qty=1, price=200.0,
+        strategy="MACD_BULLISH", timestamp=entry_time,
+    )
+    engine.paper_trader.close_position(order.order_id, 230.0, timestamp=entry_time + timedelta(minutes=30))
+
+    rows = engine._strategy_status_list(current_prices={})
+    row = next(r for r in rows if r["strategy"] == "MACD_BULLISH")
+
+    assert row["status"] == "WAITING"  # no longer open
+    assert row["today_pnl"] == pytest.approx((230.0 - order.entry_price) * engine.paper_trader.lot_size)

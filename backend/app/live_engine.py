@@ -19,7 +19,10 @@ import pandas as pd
 from src.trader import IST, LiveTrader
 from src.data_manager import Candle
 from src.simulator.paper_trader import RiskLimitExceeded
-from src.utils.options_pricing import black_scholes_price, next_weekly_expiry_days, parse_option_symbol
+from src.utils.options_pricing import (
+    black_scholes_price, format_display_symbol, next_weekly_expiry_date, next_weekly_expiry_days,
+    parse_option_symbol,
+)
 
 from .state import shared_state, pending_signals
 from . import db
@@ -50,7 +53,50 @@ class WebLiveEngine(LiveTrader):
             "positions": [self._order_dict(o) for o in self.paper_trader.get_positions()],
             "pnl": pnl,
             "fyers_authenticated": bool(self.fyers.access_token) if self.data_engine_enabled else None,
+            "strategy_status": self._strategy_status_list(current_prices),
         })
+
+    def _strategy_status_list(self, current_prices: dict) -> list[dict]:
+        """One row per registered strategy (see create_all_strategies) — quantman-style: waiting
+        for a signal, or the currently open position's contract/entry/LTP/trade P&L, plus that
+        strategy's own P&L for today (realized trades today + any open position's unrealized)."""
+        today = datetime.now(IST).date()
+        open_by_strategy: dict[str, list] = {}
+        for order in self.paper_trader.get_positions():
+            open_by_strategy.setdefault(order.strategy, []).append(order)
+
+        today_realized: dict[str, float] = {}
+        for order in self.paper_trader.get_trade_history():
+            if order.exit_time and order.exit_time.astimezone(IST).date() == today:
+                today_realized[order.strategy] = today_realized.get(order.strategy, 0.0) + order.realized_pnl
+
+        rows = []
+        for strategy in self.strategy_engine.strategies:
+            name = strategy.name
+            opens = open_by_strategy.get(name, [])
+            today_pnl = today_realized.get(name, 0.0)
+
+            entry = None
+            if opens:
+                latest = max(opens, key=lambda o: o.entry_time)
+                ltp = current_prices.get(latest.symbol)
+                trade_pnl = latest.unrealized_pnl(ltp) if ltp is not None else None
+                if trade_pnl is not None:
+                    today_pnl += trade_pnl
+                entry = {
+                    "contract": format_display_symbol(latest.symbol, next_weekly_expiry_date(latest.entry_time)),
+                    "entry_price": latest.entry_price,
+                    "ltp": ltp,
+                    "trade_pnl": trade_pnl,
+                }
+
+            rows.append({
+                "strategy": name,
+                "status": "SIGNAL_ENTERED" if opens else "WAITING",
+                "entry": entry,
+                "today_pnl": round(today_pnl, 2),
+            })
+        return rows
 
     @staticmethod
     def _signal_dict(signal) -> dict:
@@ -58,6 +104,7 @@ class WebLiveEngine(LiveTrader):
             "strategy": signal.strategy, "direction": signal.direction, "strike": signal.strike,
             "entry_price": signal.entry_price, "confidence": signal.confidence,
             "rationale": signal.rationale, "timestamp": signal.timestamp.isoformat(),
+            "contract": format_display_symbol(signal.strike, next_weekly_expiry_date(signal.timestamp)),
         }
 
     @staticmethod
@@ -67,6 +114,7 @@ class WebLiveEngine(LiveTrader):
             "entry_price": order.entry_price, "stop_loss": order.stop_loss,
             "take_profit": order.take_profit, "strategy": order.strategy,
             "entry_time": order.entry_time.isoformat(),
+            "contract": format_display_symbol(order.symbol, next_weekly_expiry_date(order.entry_time)),
         }
 
     # ---- Postgres persistence (replaces StateManager's files for the web path) -----

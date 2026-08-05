@@ -24,7 +24,7 @@ export function TradeHistoryScreen() {
           <thead>
             <tr className="text-left text-faint">
               <th className="pb-1 font-normal">Exit Time</th>
-              <th className="pb-1 font-normal">Symbol</th>
+              <th className="pb-1 font-normal">Contract</th>
               <th className="pb-1 font-normal">Entry</th>
               <th className="pb-1 font-normal">Exit</th>
               <th className="pb-1 font-normal">Reason</th>
@@ -39,7 +39,7 @@ export function TradeHistoryScreen() {
             {trades.map((t) => (
               <tr key={t.order_id} className="border-t border-subtle">
                 <td className="py-1.5">{formatDateTime(t.exit_time)}</td>
-                <td className="py-1.5 font-medium">{t.symbol}</td>
+                <td className="py-1.5 font-medium">{t.contract ?? t.symbol}</td>
                 <td className="py-1.5">Rs.{Number(t.entry_price).toFixed(2)}</td>
                 <td className="py-1.5">Rs.{Number(t.exit_price).toFixed(2)}</td>
                 <td className="py-1.5 text-muted">{t.exit_reason}</td>

@@ -10,6 +10,7 @@ let state = {
   positions: [],
   pnl: {},
   fyers_authenticated: null,
+  strategy_status: [],
 };
 
 const listeners = new Set();

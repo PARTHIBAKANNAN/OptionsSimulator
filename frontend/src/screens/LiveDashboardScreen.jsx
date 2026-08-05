@@ -2,6 +2,7 @@ import { useMarketState } from "../hooks/useMarketStream";
 import { SignalsTable } from "../components/SignalsTable";
 import { PositionsTable } from "../components/PositionsTable";
 import { PnlSummaryCard } from "../components/PnlSummaryCard";
+import { StrategyStatusList } from "../components/StrategyStatusCard";
 import { Card } from "../components/ui/Card";
 import { Badge } from "../components/ui/Badge";
 
@@ -29,6 +30,7 @@ export function LiveDashboardScreen() {
         </div>
       </Card>
 
+      <StrategyStatusList strategies={state.strategy_status} />
       <SignalsTable signals={state.signals} pendingSignals={state.pending_signals} />
       <PositionsTable positions={state.positions} />
       <PnlSummaryCard pnl={state.pnl} />

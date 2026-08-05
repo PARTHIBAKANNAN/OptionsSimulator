@@ -6,7 +6,7 @@ export function PositionsTable({ positions }) {
       <table className="w-full text-sm">
         <thead>
           <tr className="text-left text-faint">
-            <th className="pb-1 font-normal">Symbol</th>
+            <th className="pb-1 font-normal">Contract</th>
             <th className="pb-1 font-normal">Entry</th>
             <th className="pb-1 font-normal">SL</th>
             <th className="pb-1 font-normal">TP</th>
@@ -19,7 +19,7 @@ export function PositionsTable({ positions }) {
           )}
           {positions.map((p) => (
             <tr key={p.order_id} className="border-t border-subtle">
-              <td className="py-1.5 font-medium">{p.symbol}</td>
+              <td className="py-1.5 font-medium">{p.contract ?? p.symbol}</td>
               <td className="py-1.5">Rs.{p.entry_price?.toFixed(2)}</td>
               <td className="py-1.5 text-bear">Rs.{p.stop_loss?.toFixed(2)}</td>
               <td className="py-1.5 text-bull">Rs.{p.take_profit?.toFixed(2)}</td>

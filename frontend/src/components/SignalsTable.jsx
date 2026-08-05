@@ -16,7 +16,7 @@ export function SignalsTable({ signals, pendingSignals }) {
             <div key={s.id} className="flex items-center justify-between rounded border border-accent/40 bg-accent/10 px-3 py-2">
               <div className="text-sm">
                 <span className="font-medium">{s.strategy}</span>{" "}
-                <Badge variant={s.direction === "CE" ? "bull" : "bear"}>{s.strike}</Badge>{" "}
+                <Badge variant={s.direction === "CE" ? "bull" : "bear"}>{s.contract ?? s.strike}</Badge>{" "}
                 <span className="text-muted">@ Rs.{s.entry_price?.toFixed(2)}</span>
               </div>
               <div className="flex gap-2">
@@ -43,7 +43,7 @@ export function SignalsTable({ signals, pendingSignals }) {
           <tr className="text-left text-faint">
             <th className="pb-1 font-normal">Time</th>
             <th className="pb-1 font-normal">Strategy</th>
-            <th className="pb-1 font-normal">Strike</th>
+            <th className="pb-1 font-normal">Contract</th>
             <th className="pb-1 font-normal">Entry</th>
             <th className="pb-1 font-normal">Confidence</th>
           </tr>
