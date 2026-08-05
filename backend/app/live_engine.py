@@ -11,11 +11,12 @@ has something to show.
 import asyncio
 import traceback
 import uuid
+from datetime import datetime
 from pathlib import Path
 
 import pandas as pd
 
-from src.trader import LiveTrader
+from src.trader import IST, LiveTrader
 from src.data_manager import Candle
 from src.simulator.paper_trader import RiskLimitExceeded
 from src.utils.options_pricing import black_scholes_price, next_weekly_expiry_days, parse_option_symbol
@@ -208,8 +209,15 @@ class WebLiveEngine(LiveTrader):
     # ---- Live-mode exit checks (option-chain LTP, matches the CLI's behavior) -------
 
     def check_exits(self) -> None:
+        # Must pass an explicit IST-aware timestamp — otherwise update_positions() defaults to
+        # tz-naive datetime.now(), which raises `TypeError: Cannot subtract tz-naive and
+        # tz-aware datetime-like objects` against order.entry_time (tz-aware, from on_tick's
+        # datetime.now(IST)) the instant a position survives to its time-exit check. This was
+        # the real-money-free repeat of the original freeze bug (see _check_exits_replay) — it
+        # hit live mode the first time it ever ran with a real open position (2026-08-05).
         current_prices = {sym: q.ltp for sym, q in self.data_manager.get_option_chain().items()}
-        closed = self.paper_trader.update_positions(current_prices, time_exit_mins=self.time_exit_mins)
+        closed = self.paper_trader.update_positions(
+            current_prices, timestamp=datetime.now(IST), time_exit_mins=self.time_exit_mins)
         for order in closed:
             asyncio.create_task(self._close_position_db(order))
         self._publish_state()

@@ -12,6 +12,7 @@ via `timedatectl`), so a naive datetime.now() is off from real IST time by 5.5 h
 that against "09:15"-"15:30" market hours would have silently never detected market-open at all.
 """
 import asyncio
+import traceback
 from datetime import datetime, time as dtime
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -173,22 +174,32 @@ class LiveTrader:
 
         try:
             while self.is_running:
-                now = datetime.now(IST)
-                market_open = self.ensure_connection_state(now)
+                try:
+                    now = datetime.now(IST)
+                    market_open = self.ensure_connection_state(now)
 
-                if not market_open:
-                    await asyncio.sleep(5)
-                    continue
+                    if not market_open:
+                        await asyncio.sleep(5)
+                        continue
 
-                if loop.time() - last_poll >= self.poll_interval:
-                    await self.poll_option_chain()
-                    last_poll = loop.time()
+                    if loop.time() - last_poll >= self.poll_interval:
+                        await self.poll_option_chain()
+                        last_poll = loop.time()
 
-                signals = self.evaluate_strategies()
-                for signal in signals:
-                    asyncio.create_task(self.execute_signal(signal))
+                    signals = self.evaluate_strategies()
+                    for signal in signals:
+                        asyncio.create_task(self.execute_signal(signal))
 
-                self.check_exits()
+                    self.check_exits()
+                except Exception:
+                    # An uncaught exception here would otherwise silently kill the whole engine
+                    # task with no visible trace (asyncio's default handler for an unretrieved
+                    # task exception can go missing once uvicorn reconfigures the root logger) —
+                    # exactly what caused the original freeze bug (see _start_replay). Log with
+                    # the full traceback and keep looping instead of dying on whatever tick
+                    # triggers this.
+                    self.logger.log_error(f"Unhandled exception in live loop:\n{traceback.format_exc()}")
+
                 await asyncio.sleep(1)
         finally:
             await self.stop()
@@ -238,8 +249,14 @@ class LiveTrader:
             await self.telegram.send_trade_execution(order)
 
     def check_exits(self) -> None:
+        # Must pass an explicit IST-aware timestamp — otherwise update_positions() defaults to
+        # tz-naive datetime.now(), which raises `TypeError: Cannot subtract tz-naive and
+        # tz-aware datetime-like objects` against order.entry_time (tz-aware, from on_tick's
+        # datetime.now(IST)) the instant a position survives to its time-exit check. See
+        # WebLiveEngine._check_exits_replay's identical fix for the original freeze bug.
         current_prices = {sym: q.ltp for sym, q in self.data_manager.get_option_chain().items()}
-        closed = self.paper_trader.update_positions(current_prices, time_exit_mins=self.time_exit_mins)
+        closed = self.paper_trader.update_positions(
+            current_prices, timestamp=datetime.now(IST), time_exit_mins=self.time_exit_mins)
         for order in closed:
             self.state_manager.append_trade(order)
         if closed:
