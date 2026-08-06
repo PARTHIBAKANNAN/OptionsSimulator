@@ -7,6 +7,8 @@ from dataclasses import dataclass, field
 from datetime import date, datetime, timedelta
 from typing import Optional
 
+from src.utils.charges import calculate_charges
+
 
 @dataclass
 class Order:
@@ -24,12 +26,22 @@ class Order:
     exit_price: Optional[float] = None
     exit_time: Optional[datetime] = None
     exit_reason: Optional[str] = None
-    realized_pnl: Optional[float] = None
+    realized_pnl: Optional[float] = None  # gross — price difference only, unchanged meaning
     peak_price: Optional[float] = None  # high-water mark since entry, for the trailing stop
     trailing_active: bool = False
+    entry_charges: float = 0.0
+    exit_charges: float = 0.0
 
     def unrealized_pnl(self, current_price: float) -> float:
         return (current_price - self.entry_price) * self.qty * self.lot_size
+
+    @property
+    def net_pnl(self) -> Optional[float]:
+        """realized_pnl net of both legs' charges — the actual cash-flow effect on the wallet.
+        None while still open (exit_charges aren't known yet)."""
+        if self.realized_pnl is None:
+            return None
+        return round(self.realized_pnl - self.entry_charges - self.exit_charges, 2)
 
 
 class RiskLimitExceeded(Exception):
@@ -45,7 +57,8 @@ class PaperTrader:
                  consecutive_loss_limit: int = None, consecutive_loss_cooldown_days: int = 1,
                  max_drawdown_pct_of_capital: float = None, drawdown_cooldown_days: int = 3,
                  drawdown_breaker_grace_trades: int = 3,
-                 capital_by_strategy: dict = None, logger=None):
+                 capital_by_strategy: dict = None, charges_rates: dict = None,
+                 enable_wallets: bool = False, logger=None):
         self.initial_capital = initial_capital
         self.slippage_pct = slippage_pct
         self.lot_size = lot_size
@@ -80,7 +93,18 @@ class PaperTrader:
         # docs/ARCHITECTURE.md.
         self.drawdown_breaker_grace_trades = drawdown_breaker_grace_trades
         self.capital_by_strategy = capital_by_strategy or {}
+        self.charges_rates = charges_rates
         self.logger = logger
+
+        # Each strategy with an allocated capital gets a real, compounding wallet: paper orders
+        # debit it on entry and credit back on exit (net of charges), so a strategy that keeps
+        # winning gets more headroom and one that keeps losing runs dry and gets blocked from new
+        # entries — see docs/ARCHITECTURE.md. Opt-in via enable_wallets (only LiveTrader turns
+        # this on): BacktestEngine already passes capital_by_strategy for the drawdown breaker's
+        # allocated_capital lookup, and defaulting wallets on too would silently change historical
+        # backtest trade counts/P&L (a strategy could now get wallet-blocked mid-backtest) with no
+        # one having asked for that.
+        self.wallet_balance: dict[str, float] = dict(self.capital_by_strategy) if enable_wallets else {}
 
         self.orders: dict[str, Order] = {}
         self._realized_pnl_today = 0.0
@@ -122,6 +146,16 @@ class PaperTrader:
                     f"Strategy '{strategy}' is paused by a circuit breaker until {paused_until}")
 
         fill_price = price * (1 + self.slippage_pct / 100) if side == "BUY" else price * (1 - self.slippage_pct / 100)
+        order_value = fill_price * qty * self.lot_size
+        entry_charges = calculate_charges(order_value, "BUY", self.charges_rates).total
+
+        if strategy is not None and strategy in self.wallet_balance:
+            required = order_value + entry_charges
+            available = self.wallet_balance[strategy]
+            if required > available:
+                raise RiskLimitExceeded(
+                    f"Strategy '{strategy}' wallet balance (Rs.{available:,.2f}) insufficient "
+                    f"for this order (Rs.{required:,.2f} needed)")
 
         order = Order(
             # UUID, not a sequential counter: the web backend persists orders to Postgres across
@@ -139,10 +173,13 @@ class PaperTrader:
             take_profit=take_profit,
             strategy=strategy,
             peak_price=fill_price,
+            entry_charges=round(entry_charges, 2),
         )
         self.orders[order.order_id] = order
         if strategy is not None:
             self._strategy_trades_today[strategy] = self._strategy_trades_today.get(strategy, 0) + 1
+            if strategy in self.wallet_balance:
+                self.wallet_balance[strategy] -= order_value + entry_charges
         if self.logger:
             self.logger.log_trade(order)
         return order
@@ -164,16 +201,31 @@ class PaperTrader:
         order.exit_time = timestamp or datetime.now()
         order.exit_reason = reason
         order.realized_pnl = (order.exit_price - order.entry_price) * order.qty * order.lot_size
+        exit_value = order.exit_price * order.qty * order.lot_size
+        order.exit_charges = round(calculate_charges(exit_value, "SELL", self.charges_rates).total, 2)
         order.status = "CLOSED"
 
         self._roll_day(order.exit_time)
         self._realized_pnl_today += order.realized_pnl
         if order.strategy is not None:
             self._update_circuit_breakers(order.strategy, order.realized_pnl, order.exit_time.date())
+            if order.strategy in self.wallet_balance:
+                self.wallet_balance[order.strategy] += exit_value - order.exit_charges
 
         if self.logger:
             self.logger.log_trade(order)
         return order
+
+    def get_wallet(self, strategy: str) -> Optional[dict]:
+        if strategy not in self.wallet_balance:
+            return None
+        allocated = self.capital_by_strategy.get(strategy, 0.0)
+        balance = self.wallet_balance[strategy]
+        return {"strategy": strategy, "balance": round(balance, 2), "allocated_capital": allocated,
+                "pnl_in_wallet": round(balance - allocated, 2)}
+
+    def get_all_wallets(self) -> dict[str, dict]:
+        return {s: self.get_wallet(s) for s in self.wallet_balance}
 
     def _pause_strategy(self, strategy: str, from_date: date, cooldown_days: int) -> None:
         resume_date = from_date + timedelta(days=cooldown_days)

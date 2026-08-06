@@ -278,3 +278,85 @@ def test_drawdown_breaker_disabled_without_allocated_capital():
     # No entry in capital_by_strategy for ORB_BULLISH -> breaker can't evaluate, never trips.
     order = trader.place_order("NIFTY24500CE", "BUY", qty=1, price=100.0, strategy="ORB_BULLISH", timestamp=day)
     assert order.status == "OPEN"
+
+
+# ---- Wallets: compounding per-strategy balances, debited/credited net of charges -------------
+
+def test_wallets_disabled_by_default_even_with_capital_by_strategy():
+    # BacktestEngine already passes capital_by_strategy for the drawdown breaker -- wallets must
+    # stay off unless explicitly enabled, or historical backtest trade counts would silently
+    # change the moment this feature shipped.
+    trader = PaperTrader(slippage_pct=0, lot_size=65, capital_by_strategy={"MACD_BULLISH": 100.0})
+    assert trader.get_wallet("MACD_BULLISH") is None
+    # A wallet this small would reject a 100-premium order if it were enabled -- confirm it isn't.
+    order = trader.place_order("NIFTY24500CE", "BUY", qty=1, price=100.0, strategy="MACD_BULLISH")
+    assert order.status == "OPEN"
+
+
+def test_wallet_seeded_from_capital_by_strategy_when_enabled():
+    trader = PaperTrader(capital_by_strategy={"MACD_BULLISH": 85000.0}, enable_wallets=True)
+    wallet = trader.get_wallet("MACD_BULLISH")
+    assert wallet["balance"] == 85000.0
+    assert wallet["allocated_capital"] == 85000.0
+    assert wallet["pnl_in_wallet"] == 0.0
+
+
+def test_wallet_debited_on_entry_and_credited_on_exit_net_of_charges():
+    trader = PaperTrader(slippage_pct=0, lot_size=65,
+                          capital_by_strategy={"MACD_BULLISH": 85000.0}, enable_wallets=True)
+    day = datetime(2026, 1, 5, 9, 20)
+    order = trader.place_order("NIFTY24500CE", "BUY", qty=1, price=100.0,
+                                strategy="MACD_BULLISH", timestamp=day)
+    order_value = 100.0 * 1 * 65  # 6500
+    assert order.entry_charges > 0
+    assert trader.get_wallet("MACD_BULLISH")["balance"] == pytest.approx(85000.0 - order_value - order.entry_charges)
+
+    closed = trader.close_position(order.order_id, price=120.0, timestamp=day)
+    exit_value = 120.0 * 1 * 65  # 7800
+    assert closed.exit_charges > 0
+    expected_balance = 85000.0 - order_value - order.entry_charges + exit_value - closed.exit_charges
+    assert trader.get_wallet("MACD_BULLISH")["balance"] == pytest.approx(expected_balance)
+    # Net effect over the round trip must equal the wallet's own compounded change.
+    assert trader.get_wallet("MACD_BULLISH")["pnl_in_wallet"] == pytest.approx(closed.net_pnl)
+
+
+def test_wallet_compounds_losses_across_trades():
+    trader = PaperTrader(slippage_pct=0, lot_size=65, max_trades_per_day_per_strategy=10,
+                          capital_by_strategy={"MACD_BULLISH": 85000.0}, enable_wallets=True)
+    day = datetime(2026, 1, 5, 9, 20)
+    for _ in range(3):
+        order = trader.place_order("NIFTY24500CE", "BUY", qty=1, price=100.0,
+                                    strategy="MACD_BULLISH", timestamp=day)
+        trader.close_position(order.order_id, price=80.0, timestamp=day)  # a loss each time
+
+    wallet = trader.get_wallet("MACD_BULLISH")
+    assert wallet["balance"] < 85000.0
+    assert wallet["pnl_in_wallet"] < 0
+
+
+def test_order_rejected_when_wallet_balance_insufficient():
+    trader = PaperTrader(slippage_pct=0, lot_size=65,
+                          capital_by_strategy={"MACD_BULLISH": 1000.0}, enable_wallets=True)
+    with pytest.raises(RiskLimitExceeded, match="wallet balance"):
+        trader.place_order("NIFTY24500CE", "BUY", qty=1, price=100.0,
+                            strategy="MACD_BULLISH", timestamp=datetime(2026, 1, 5, 9, 20))
+    # Rejected order must not have been recorded or debited.
+    assert trader.get_positions() == []
+    assert trader.get_wallet("MACD_BULLISH")["balance"] == 1000.0
+
+
+def test_strategy_with_no_wallet_entry_is_never_gated():
+    trader = PaperTrader(slippage_pct=0, lot_size=65,
+                          capital_by_strategy={"MACD_BULLISH": 85000.0}, enable_wallets=True)
+    # ORB_BULLISH has no capital_by_strategy entry -> no wallet -> never blocked regardless of size.
+    order = trader.place_order("NIFTY24500CE", "BUY", qty=1, price=100000.0, strategy="ORB_BULLISH")
+    assert order.status == "OPEN"
+    assert trader.get_wallet("ORB_BULLISH") is None
+
+
+def test_get_all_wallets_returns_every_seeded_strategy():
+    trader = PaperTrader(capital_by_strategy={"MACD_BULLISH": 85000.0, "ORB_BULLISH": 115000.0},
+                          enable_wallets=True)
+    wallets = trader.get_all_wallets()
+    assert set(wallets.keys()) == {"MACD_BULLISH", "ORB_BULLISH"}
+    assert wallets["ORB_BULLISH"]["balance"] == 115000.0

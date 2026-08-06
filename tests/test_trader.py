@@ -172,3 +172,32 @@ def test_ensure_connection_state_force_market_open_bypasses_the_wall_clock():
     assert market_open is True
     trader.fyers.refresh_access_token.assert_called_once()
     trader.fyers.start_websocket.assert_called_once()
+
+
+def test_ensure_connection_state_seeds_historical_candles_before_market_opens():
+    # Regression: the dashboard had nothing to show (no NIFTY price at all) outside market hours
+    # because historical seeding only ever ran once the websocket connected at market-open.
+    trader = _make_trader_with_mock_fyers()
+    trader.fyers.access_token = "token-after-refresh"  # already logged in, market still shut
+
+    market_open = trader.ensure_connection_state(datetime(2026, 8, 4, 8, 55, tzinfo=IST))
+
+    assert market_open is False
+    trader.fyers.get_historical_data.assert_called_once()
+    trader.fyers.start_websocket.assert_not_called()  # still shouldn't connect the live stream
+
+
+def test_ensure_connection_state_only_seeds_historical_candles_once_per_day():
+    trader = _make_trader_with_mock_fyers()
+    trader.fyers.access_token = "token"
+
+    trader.ensure_connection_state(datetime(2026, 8, 4, 8, 55, tzinfo=IST))
+    trader.ensure_connection_state(datetime(2026, 8, 4, 9, 15, tzinfo=IST))
+    trader.ensure_connection_state(datetime(2026, 8, 4, 14, 0, tzinfo=IST))
+
+    assert trader.fyers.get_historical_data.call_count == 1
+
+
+def test_on_market_closed_tick_is_a_noop_on_the_base_cli_trader():
+    trader = _make_trader_with_mock_fyers()
+    trader._on_market_closed_tick()  # must not raise

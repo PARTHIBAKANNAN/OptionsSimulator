@@ -18,7 +18,7 @@ import pandas as pd
 
 from src.trader import IST, LiveTrader
 from src.data_manager import Candle
-from src.simulator.paper_trader import RiskLimitExceeded
+from src.simulator.paper_trader import Order, RiskLimitExceeded
 from src.utils.options_pricing import (
     black_scholes_price, format_display_symbol, next_weekly_expiry_date, next_weekly_expiry_days,
     parse_option_symbol,
@@ -143,21 +143,75 @@ class WebLiveEngine(LiveTrader):
         await self._db_execute(
             """INSERT INTO options_positions
                (order_id, symbol, side, qty, lot_size, entry_price, entry_time, status,
-                stop_loss, take_profit, strategy)
-               VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
+                stop_loss, take_profit, strategy, entry_charges)
+               VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
                ON CONFLICT (order_id) DO UPDATE SET status = EXCLUDED.status""",
             order.order_id, order.symbol, order.side, order.qty, order.lot_size,
             order.entry_price, order.entry_time, order.status, order.stop_loss,
-            order.take_profit, order.strategy,
+            order.take_profit, order.strategy, order.entry_charges,
         )
 
     async def _close_position_db(self, order) -> None:
         await self._db_execute(
             """UPDATE options_positions SET status=$2, exit_price=$3, exit_time=$4,
-               exit_reason=$5, realized_pnl=$6 WHERE order_id=$1""",
+               exit_reason=$5, realized_pnl=$6, exit_charges=$7 WHERE order_id=$1""",
             order.order_id, order.status, order.exit_price, order.exit_time,
-            order.exit_reason, order.realized_pnl,
+            order.exit_reason, order.realized_pnl, order.exit_charges,
         )
+
+    async def _save_wallet_db(self, strategy: str) -> None:
+        wallet = self.paper_trader.get_wallet(strategy)
+        if wallet is None:
+            return
+        await self._db_execute(
+            """INSERT INTO options_wallets (strategy, balance, allocated_capital, updated_at)
+               VALUES ($1, $2, $3, now())
+               ON CONFLICT (strategy) DO UPDATE SET balance = EXCLUDED.balance, updated_at = now()""",
+            strategy, wallet["balance"], wallet["allocated_capital"],
+        )
+
+    async def _restore_state(self) -> None:
+        """Restores durable state across a restart: without this, a fresh WebLiveEngine always
+        rebuilds an empty in-memory PaperTrader, silently discarding every strategy's compounded
+        wallet balance and orphaning any position that was still OPEN at the moment of restart
+        (this happened for real on 2026-08-05 — two live orders were never seen again). Best-effort
+        like every other DB call here: if this fails, start fresh rather than block startup."""
+        try:
+            pool = db.get_pool()
+        except RuntimeError:
+            return
+
+        try:
+            wallet_rows = await asyncio.wait_for(
+                pool.fetch("SELECT strategy, balance FROM options_wallets"), timeout=self.DB_TIMEOUT_SECS)
+            restored_wallets = 0
+            for row in wallet_rows:
+                if row["strategy"] in self.paper_trader.wallet_balance:
+                    self.paper_trader.wallet_balance[row["strategy"]] = float(row["balance"])
+                    restored_wallets += 1
+
+            open_rows = await asyncio.wait_for(
+                pool.fetch(
+                    """SELECT order_id, symbol, side, qty, lot_size, entry_price, entry_time,
+                              stop_loss, take_profit, strategy, entry_charges
+                       FROM options_positions WHERE status = 'OPEN'"""),
+                timeout=self.DB_TIMEOUT_SECS)
+            for row in open_rows:
+                entry_price = float(row["entry_price"])
+                order = Order(
+                    order_id=row["order_id"], symbol=row["symbol"], side=row["side"], qty=row["qty"],
+                    lot_size=row["lot_size"], entry_price=entry_price, entry_time=row["entry_time"],
+                    status="OPEN", stop_loss=row["stop_loss"] and float(row["stop_loss"]),
+                    take_profit=row["take_profit"] and float(row["take_profit"]), strategy=row["strategy"],
+                    peak_price=entry_price, entry_charges=float(row["entry_charges"] or 0.0),
+                )
+                self.paper_trader.orders[order.order_id] = order
+
+            if restored_wallets or open_rows:
+                self.logger.log_websocket_event(
+                    "state_restored", {"wallets": restored_wallets, "open_positions": len(open_rows)})
+        except Exception as e:
+            self.logger.log_error(f"State restore failed, starting fresh: {e}")
 
     async def _save_signal_db(self, signal_id: str, signal, status: str) -> None:
         await self._db_execute(
@@ -175,6 +229,9 @@ class WebLiveEngine(LiveTrader):
         signals = super().evaluate_strategies()
         self._publish_state()
         return signals
+
+    def _on_market_closed_tick(self) -> None:
+        self._publish_state()
 
     async def execute_signal(self, signal) -> None:
         signal_id = str(uuid.uuid4())
@@ -234,6 +291,8 @@ class WebLiveEngine(LiveTrader):
             return
 
         await self._save_position_db(order)
+        if order.strategy:
+            asyncio.create_task(self._save_wallet_db(order.strategy))
         self._publish_state()
         # Gated by data_engine_enabled, not just `if self.telegram:` — Telegram credentials are
         # configured VM-wide, so this ran unconditionally on every fill regardless of mode. Fixed
@@ -268,12 +327,15 @@ class WebLiveEngine(LiveTrader):
             current_prices, timestamp=datetime.now(IST), time_exit_mins=self.time_exit_mins)
         for order in closed:
             asyncio.create_task(self._close_position_db(order))
+            if order.strategy:
+                asyncio.create_task(self._save_wallet_db(order.strategy))
         self._publish_state()
 
     # ---- Entry point: live Fyers vs local replay -------------------------------------
 
     async def start(self) -> None:
         if self.data_engine_enabled:
+            await self._restore_state()
             await super().start()
         else:
             await self._start_replay()

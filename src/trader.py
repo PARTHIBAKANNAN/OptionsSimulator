@@ -76,6 +76,8 @@ class LiveTrader:
             drawdown_cooldown_days=breaker.get("drawdown_cooldown_days", 3),
             drawdown_breaker_grace_trades=breaker.get("drawdown_breaker_grace_trades", 3),
             capital_by_strategy=capital_by_strategy,
+            charges_rates=config.risk_params.get("charges"),
+            enable_wallets=True,
             logger=self.logger,
         )
         self.qty_per_signal = sizing.get("qty_per_signal", 1)
@@ -101,6 +103,7 @@ class LiveTrader:
         self.recent_signals: list = []
         self._connected = False
         self._last_login_date = None
+        self._historical_seeded_date = None
 
     # ---- Tick handlers (called synchronously from the WebSocket thread) --------
 
@@ -150,8 +153,15 @@ class LiveTrader:
             else:
                 self.logger.log_error("Daily Fyers token refresh failed; will retry next tick.")
 
-        if market_open and not self._connected and self.fyers.access_token:
+        # Seed recent historical candles (including the last close) as soon as there's a valid
+        # token, even before market opens — otherwise the dashboard has nothing at all to show
+        # (no NIFTY price, every strategy indistinguishable from "never started") until the first
+        # live tick arrives, hours later. Once per calendar day, independent of market_open.
+        if self.fyers.access_token and self._historical_seeded_date != now.date():
             self._seed_historical_candles()
+            self._historical_seeded_date = now.date()
+
+        if market_open and not self._connected and self.fyers.access_token:
             self.fyers.start_websocket(self.on_tick)
             self.fyers.subscribe_symbols([NIFTY_SYMBOL])
             self._connected = True
@@ -179,6 +189,7 @@ class LiveTrader:
                     market_open = self.ensure_connection_state(now)
 
                     if not market_open:
+                        self._on_market_closed_tick()
                         await asyncio.sleep(5)
                         continue
 
@@ -261,6 +272,13 @@ class LiveTrader:
             self.state_manager.append_trade(order)
         if closed:
             self.state_manager.save_positions(self.paper_trader.get_positions())
+
+    def _on_market_closed_tick(self) -> None:
+        """Called every ~5s while the market is shut, instead of evaluate_strategies()/
+        check_exits() (which the main loop skips entirely in that branch). No-op here — the CLI
+        trader has no shared state to keep fresh — but WebLiveEngine overrides this to keep
+        publishing state (last NIFTY price, every strategy as WAITING) so the web dashboard shows
+        a proper "market closed" picture instead of going stale or blank. See docs/ARCHITECTURE.md."""
 
     async def stop(self) -> None:
         self.is_running = False

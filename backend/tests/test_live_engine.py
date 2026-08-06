@@ -7,12 +7,13 @@ entire replay loop forever after exactly one trade. See docs/ARCHITECTURE.md.
 """
 import asyncio
 from datetime import datetime, timedelta
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 import pytz
 
 from backend.app.live_engine import WebLiveEngine
-from backend.app.state import pending_signals
+from backend.app.state import pending_signals, shared_state
 from src.config import Config
 from src.data_manager import Candle
 from src.strategies.base_strategy import Signal
@@ -210,3 +211,92 @@ def test_strategy_status_list_includes_realized_pnl_from_trades_closed_today():
 
     assert row["status"] == "WAITING"  # no longer open
     assert row["today_pnl"] == pytest.approx((230.0 - order.entry_price) * engine.paper_trader.lot_size)
+
+
+# ---- Restore-on-boot: wallets and orphaned open positions survive a restart -------------------
+
+@pytest.mark.asyncio
+async def test_restore_state_does_nothing_without_a_configured_db():
+    engine = _make_engine(data_engine_enabled=True)
+    with patch("backend.app.live_engine.db.get_pool", side_effect=RuntimeError):
+        await engine._restore_state()  # must not raise
+    assert engine.paper_trader.get_positions() == []
+
+
+@pytest.mark.asyncio
+async def test_restore_state_loads_wallet_balance_and_reopens_orphaned_positions():
+    engine = _make_engine(data_engine_enabled=True)
+    # Simulate what capital_by_strategy would have seeded before the (simulated) restart.
+    engine.paper_trader.wallet_balance["MACD_BULLISH"] = 85000.0
+
+    fake_pool = MagicMock()
+    fake_pool.fetch = AsyncMock(side_effect=[
+        [{"strategy": "MACD_BULLISH", "balance": 78000.0}],
+        [{
+            "order_id": "abc-123", "symbol": "NIFTY24500CE", "side": "BUY", "qty": 1,
+            "lot_size": 65, "entry_price": 100.0,
+            "entry_time": pytz.utc.localize(datetime(2026, 8, 5, 9, 20)),
+            "stop_loss": 80.0, "take_profit": 150.0, "strategy": "MACD_BULLISH", "entry_charges": 25.0,
+        }],
+    ])
+
+    with patch("backend.app.live_engine.db.get_pool", return_value=fake_pool):
+        await engine._restore_state()
+
+    assert engine.paper_trader.wallet_balance["MACD_BULLISH"] == 78000.0
+    positions = engine.paper_trader.get_positions()
+    assert len(positions) == 1
+    assert positions[0].order_id == "abc-123"
+    assert positions[0].entry_charges == 25.0
+    assert positions[0].status == "OPEN"
+
+
+@pytest.mark.asyncio
+async def test_restore_state_ignores_wallet_rows_for_unseeded_strategies():
+    # A strategy with no capital_by_strategy entry has no wallet at all (see PaperTrader) -- a
+    # stale DB row for it must not create one out of nowhere.
+    engine = _make_engine(data_engine_enabled=True)
+    fake_pool = MagicMock()
+    fake_pool.fetch = AsyncMock(side_effect=[
+        [{"strategy": "SOME_OLD_STRATEGY", "balance": 1000.0}],
+        [],
+    ])
+    with patch("backend.app.live_engine.db.get_pool", return_value=fake_pool):
+        await engine._restore_state()
+    assert "SOME_OLD_STRATEGY" not in engine.paper_trader.wallet_balance
+
+
+@pytest.mark.asyncio
+async def test_save_wallet_db_upserts_current_balance_for_seeded_strategies():
+    engine = _make_engine(data_engine_enabled=True)
+    engine.paper_trader.wallet_balance["MACD_BULLISH"] = 12345.67
+    engine.paper_trader.capital_by_strategy["MACD_BULLISH"] = 85000.0
+    engine._db_execute = AsyncMock()
+
+    await engine._save_wallet_db("MACD_BULLISH")
+
+    engine._db_execute.assert_awaited_once()
+    query, strategy, balance, allocated = engine._db_execute.call_args.args
+    assert "options_wallets" in query
+    assert (strategy, balance, allocated) == ("MACD_BULLISH", 12345.67, 85000.0)
+
+
+@pytest.mark.asyncio
+async def test_save_wallet_db_is_a_noop_for_strategies_without_a_wallet():
+    engine = _make_engine(data_engine_enabled=True)
+    engine._db_execute = AsyncMock()
+
+    await engine._save_wallet_db("NO_WALLET_STRATEGY")
+
+    engine._db_execute.assert_not_awaited()
+
+
+# ---- Keep publishing state while the market is closed (fixes the "dashes/stopped" bug) --------
+
+def test_on_market_closed_tick_still_publishes_every_strategy_as_waiting():
+    engine = _make_engine(data_engine_enabled=True)
+    engine._on_market_closed_tick()
+
+    state = shared_state.get()
+    assert len(state["strategy_status"]) == len(engine.strategy_engine.strategies)
+    assert all(row["status"] == "WAITING" for row in state["strategy_status"])
