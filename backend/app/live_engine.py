@@ -16,7 +16,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from src.trader import IST, LiveTrader
+from src.trader import IST, LiveTrader, is_market_open
 from src.data_manager import Candle
 from src.simulator.paper_trader import Order, RiskLimitExceeded
 from src.utils.options_pricing import (
@@ -43,10 +43,27 @@ class WebLiveEngine(LiveTrader):
         state = self.data_manager.get_state()
         current_prices = {sym: q.ltp for sym, q in self.data_manager.get_option_chain().items()}
         pnl = self.paper_trader.get_pnl(current_prices)
+
+        now = datetime.now(IST)
+        today = now.date()
+        nifty_price = state["nifty_price"]
+        prev_close = self.data_manager.get_prev_close(today)
+        change = (nifty_price - prev_close) if (nifty_price is not None and prev_close) else None
+        change_pct = (change / prev_close * 100) if (change is not None and prev_close) else None
+
         shared_state.update({
-            "nifty_price": state["nifty_price"],
+            "nifty_price": nifty_price,
+            "nifty_prev_close": prev_close,
+            "nifty_change": round(change, 2) if change is not None else None,
+            "nifty_change_pct": round(change_pct, 2) if change_pct is not None else None,
+            "nifty_sparkline": [c.close for c in self.data_manager.get_today_candles(today)],
             "timestamp": state["timestamp"].isoformat() if state["timestamp"] else None,
             "market_open": self.is_running,
+            # Real exchange-hours state (item 3C/B) — distinct from market_open above, which is
+            # actually just "is the engine process running" and stays true all day regardless of
+            # trading hours. Always real wall-clock time, even in replay mode (the simulated data's
+            # own clock isn't what a "market closed" pill should reflect for a local-dev fallback).
+            "exchange_open": self.config.force_market_open or is_market_open(now, self.config.risk_params),
             "mode": "live" if self.data_engine_enabled else "replay",
             "signals": [self._signal_dict(s) for s in self.recent_signals],
             "pending_signals": pending_signals.list_pending(),
@@ -58,25 +75,30 @@ class WebLiveEngine(LiveTrader):
 
     def _strategy_status_list(self, current_prices: dict) -> list[dict]:
         """One row per registered strategy (see create_all_strategies) — quantman-style: waiting
-        for a signal, or the currently open position's contract/entry/LTP/trade P&L, plus that
-        strategy's own P&L for today (realized trades today + any open position's unrealized)."""
+        for a signal, the currently open position's contract/entry/LTP/trade P&L/SL/TP, or (once
+        flat) the last signal closed today with the same shape, plus that strategy's own P&L for
+        today (realized trades today + any open position's unrealized). last_closed_today is what
+        lets the UI keep an expand affordance up after a signal closes for the day, not just while
+        it's open — see docs/ARCHITECTURE.md."""
         today = datetime.now(IST).date()
         open_by_strategy: dict[str, list] = {}
         for order in self.paper_trader.get_positions():
             open_by_strategy.setdefault(order.strategy, []).append(order)
 
-        today_realized: dict[str, float] = {}
+        closed_today_by_strategy: dict[str, list] = {}
         for order in self.paper_trader.get_trade_history():
             if order.exit_time and order.exit_time.astimezone(IST).date() == today:
-                today_realized[order.strategy] = today_realized.get(order.strategy, 0.0) + order.realized_pnl
+                closed_today_by_strategy.setdefault(order.strategy, []).append(order)
 
         rows = []
         for strategy in self.strategy_engine.strategies:
             name = strategy.name
             opens = open_by_strategy.get(name, [])
-            today_pnl = today_realized.get(name, 0.0)
+            closed_today = closed_today_by_strategy.get(name, [])
+            today_pnl = sum(o.realized_pnl for o in closed_today)
 
             entry = None
+            last_closed = None
             if opens:
                 latest = max(opens, key=lambda o: o.entry_time)
                 ltp = current_prices.get(latest.symbol)
@@ -86,14 +108,31 @@ class WebLiveEngine(LiveTrader):
                 entry = {
                     "contract": format_display_symbol(latest.symbol, next_weekly_expiry_date(latest.entry_time)),
                     "entry_price": latest.entry_price,
+                    "entry_time": latest.entry_time.isoformat(),
                     "ltp": ltp,
                     "trade_pnl": trade_pnl,
+                    "stop_loss": latest.stop_loss,
+                    "take_profit": latest.take_profit,
+                }
+            elif closed_today:
+                last = max(closed_today, key=lambda o: o.exit_time)
+                last_closed = {
+                    "contract": format_display_symbol(last.symbol, next_weekly_expiry_date(last.entry_time)),
+                    "entry_price": last.entry_price,
+                    "entry_time": last.entry_time.isoformat(),
+                    "exit_price": last.exit_price,
+                    "exit_time": last.exit_time.isoformat(),
+                    "pnl": last.net_pnl if last.net_pnl is not None else last.realized_pnl,
+                    "exit_reason": last.exit_reason,
+                    "stop_loss": last.stop_loss,
+                    "take_profit": last.take_profit,
                 }
 
             rows.append({
                 "strategy": name,
                 "status": "SIGNAL_ENTERED" if opens else "WAITING",
                 "entry": entry,
+                "last_closed_today": last_closed,
                 "today_pnl": round(today_pnl, 2),
             })
         return rows
@@ -130,6 +169,15 @@ class WebLiveEngine(LiveTrader):
     TELEGRAM_TIMEOUT_SECS = 10.0
 
     async def _db_execute(self, query: str, *args) -> None:
+        # Replay mode is a local-dev/fallback data source (simulated historical candles fired at
+        # ~50ms/candle) -- it must never write to the SAME Postgres table live trading uses. This
+        # was a real incident: replay test runs on 2026-08-03 left 11 never-closed positions in
+        # options_positions with entry_time values from May-July (the replayed CSV's own dates),
+        # which _restore_state() then resurrected as if they were live open positions on every
+        # subsequent restart -- 13 phantom "open positions" blocked every real signal from firing
+        # at all once they exceeded max_concurrent_positions. See docs/ARCHITECTURE.md.
+        if not self.data_engine_enabled:
+            return
         try:
             pool = db.get_pool()
         except RuntimeError:
@@ -175,12 +223,19 @@ class WebLiveEngine(LiveTrader):
         rebuilds an empty in-memory PaperTrader, silently discarding every strategy's compounded
         wallet balance and orphaning any position that was still OPEN at the moment of restart
         (this happened for real on 2026-08-05 — two live orders were never seen again). Best-effort
-        like every other DB call here: if this fails, start fresh rather than block startup."""
+        like every other DB call here: if this fails, start fresh rather than block startup.
+
+        Scoped to positions opened TODAY (IST) only — these are intraday options with a 2-hour
+        time-exit, so anything still OPEN from an earlier calendar day is by definition stale data
+        from a crash or (before _db_execute's data_engine_enabled guard existed) a replay test run,
+        never a real position waiting to be managed. Restoring those unconditionally is exactly
+        what caused 13 phantom "open positions" to block every real signal on 2026-08-06."""
         try:
             pool = db.get_pool()
         except RuntimeError:
             return
 
+        today = datetime.now(IST).date()
         try:
             wallet_rows = await asyncio.wait_for(
                 pool.fetch("SELECT strategy, balance FROM options_wallets"), timeout=self.DB_TIMEOUT_SECS)
@@ -194,7 +249,9 @@ class WebLiveEngine(LiveTrader):
                 pool.fetch(
                     """SELECT order_id, symbol, side, qty, lot_size, entry_price, entry_time,
                               stop_loss, take_profit, strategy, entry_charges
-                       FROM options_positions WHERE status = 'OPEN'"""),
+                       FROM options_positions
+                       WHERE status = 'OPEN' AND (entry_time AT TIME ZONE 'Asia/Kolkata')::date = $1""",
+                    today),
                 timeout=self.DB_TIMEOUT_SECS)
             for row in open_rows:
                 entry_price = float(row["entry_price"])

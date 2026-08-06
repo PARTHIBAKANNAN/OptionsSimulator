@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 from zoneinfo import ZoneInfo
 
 import pandas as pd
@@ -116,3 +116,36 @@ def test_window_size_trims_candles():
     for c in _synthetic_candles(200):
         dm.replay_candle(c)
     assert len(dm.candles) == 50
+
+
+# ---- get_prev_close / get_today_candles: feed the NIFTY header's change/%/sparkline ----------
+
+def test_get_prev_close_returns_the_last_candle_close_before_today():
+    dm = DataManager()
+    dm.replay_candle(Candle(timestamp=datetime(2026, 8, 4, 15, 29), open=24000, high=24005,
+                             low=23995, close=24010, volume=1000))
+    dm.replay_candle(Candle(timestamp=datetime(2026, 8, 5, 9, 15), open=24020, high=24025,
+                             low=24015, close=24022, volume=1000))
+    assert dm.get_prev_close(date(2026, 8, 5)) == 24010
+
+
+def test_get_prev_close_none_without_any_earlier_day_data():
+    dm = DataManager()
+    dm.replay_candle(Candle(timestamp=datetime(2026, 8, 5, 9, 15), open=24020, high=24025,
+                             low=24015, close=24022, volume=1000))
+    assert dm.get_prev_close(date(2026, 8, 5)) is None
+
+
+def test_get_today_candles_excludes_earlier_days_and_includes_the_forming_candle():
+    dm = DataManager()
+    dm.replay_candle(Candle(timestamp=datetime(2026, 8, 4, 15, 29), open=24000, high=24005,
+                             low=23995, close=24010, volume=1000))
+    dm.replay_candle(Candle(timestamp=datetime(2026, 8, 5, 9, 15), open=24020, high=24025,
+                             low=24015, close=24022, volume=1000))
+    dm.on_nifty_tick({"ltp": 24030, "volume": 50, "timestamp": datetime(2026, 8, 5, 9, 16)})
+
+    today_candles = dm.get_today_candles(date(2026, 8, 5))
+
+    assert len(today_candles) == 2  # the pushed 09:15 candle + the still-forming 09:16 one
+    assert today_candles[0].close == 24022
+    assert today_candles[1].close == 24030

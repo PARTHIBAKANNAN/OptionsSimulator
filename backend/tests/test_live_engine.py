@@ -6,7 +6,7 @@ entry_time (from the replayed CSV), that raised TypeError — uncaught, this sil
 entire replay loop forever after exactly one trade. See docs/ARCHITECTURE.md.
 """
 import asyncio
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -213,6 +213,46 @@ def test_strategy_status_list_includes_realized_pnl_from_trades_closed_today():
     assert row["today_pnl"] == pytest.approx((230.0 - order.entry_price) * engine.paper_trader.lot_size)
 
 
+def test_strategy_status_list_surfaces_last_closed_today_when_flat():
+    # Item D: the expand affordance must stay available after a signal closes for the day, not
+    # just while it's open -- the frontend needs somewhere to read that last signal's details from.
+    engine = _make_engine()
+    entry_time = datetime.now(IST)
+    order = engine.paper_trader.place_order(
+        symbol="NIFTY24600CE", side="BUY", qty=1, price=200.0, stop_loss=160.0, take_profit=350.0,
+        strategy="MACD_BULLISH", timestamp=entry_time,
+    )
+    engine.paper_trader.close_position(order.order_id, 230.0, timestamp=entry_time + timedelta(minutes=30),
+                                        reason="TAKE_PROFIT")
+
+    rows = engine._strategy_status_list(current_prices={})
+    row = next(r for r in rows if r["strategy"] == "MACD_BULLISH")
+
+    assert row["entry"] is None
+    assert row["last_closed_today"]["contract"].startswith("NIFTY")
+    assert row["last_closed_today"]["exit_reason"] == "TAKE_PROFIT"
+    assert row["last_closed_today"]["exit_price"] == 230.0
+    assert row["last_closed_today"]["stop_loss"] == 160.0
+    assert row["last_closed_today"]["take_profit"] == 350.0
+
+
+def test_strategy_status_list_entry_includes_time_and_sl_tp():
+    engine = _make_engine()
+    entry_time = datetime.now(IST)
+    engine.paper_trader.place_order(
+        symbol="NIFTY24600CE", side="BUY", qty=1, price=200.0, stop_loss=160.0, take_profit=350.0,
+        strategy="MACD_BULLISH", timestamp=entry_time,
+    )
+
+    rows = engine._strategy_status_list(current_prices={"NIFTY24600CE": 210.0})
+    row = next(r for r in rows if r["strategy"] == "MACD_BULLISH")
+
+    assert row["entry"]["entry_time"] == entry_time.isoformat()
+    assert row["entry"]["stop_loss"] == 160.0
+    assert row["entry"]["take_profit"] == 350.0
+    assert row["last_closed_today"] is None
+
+
 # ---- Restore-on-boot: wallets and orphaned open positions survive a restart -------------------
 
 @pytest.mark.asyncio
@@ -267,6 +307,47 @@ async def test_restore_state_ignores_wallet_rows_for_unseeded_strategies():
 
 
 @pytest.mark.asyncio
+async def test_restore_state_only_queries_positions_opened_today():
+    # Regression: an unscoped "WHERE status = 'OPEN'" resurrected 11 never-closed positions left
+    # over from replay-mode test runs (entry_time values from May-July, replayed CSV dates) as if
+    # they were live open positions, on every restart -- 13 phantom positions exceeded
+    # max_concurrent_positions and silently blocked every real signal from firing at all. The
+    # query must filter to today (IST) so old test/crash artifacts are never restored.
+    engine = _make_engine(data_engine_enabled=True)
+    fake_pool = MagicMock()
+    fake_pool.fetch = AsyncMock(side_effect=[[], []])
+
+    with patch("backend.app.live_engine.db.get_pool", return_value=fake_pool):
+        with patch("backend.app.live_engine.datetime") as mock_dt:
+            mock_dt.now.return_value = IST.localize(datetime(2026, 8, 6, 9, 0))
+            await engine._restore_state()
+
+    positions_query, today_param = fake_pool.fetch.call_args_list[1].args
+    assert "entry_time AT TIME ZONE" in positions_query
+    assert today_param == date(2026, 8, 6)
+
+
+@pytest.mark.asyncio
+async def test_db_execute_is_a_noop_in_replay_mode():
+    # Replay mode must never write to the same Postgres table live trading uses -- this exact gap
+    # is what let 11 replay-test orders pollute options_positions in the first place.
+    engine = _make_engine(data_engine_enabled=False)
+    with patch("backend.app.live_engine.db.get_pool") as mock_get_pool:
+        await engine._db_execute("INSERT INTO options_positions (order_id) VALUES ($1)", "x")
+    mock_get_pool.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_db_execute_writes_in_live_mode():
+    engine = _make_engine(data_engine_enabled=True)
+    fake_pool = MagicMock()
+    fake_pool.execute = AsyncMock()
+    with patch("backend.app.live_engine.db.get_pool", return_value=fake_pool):
+        await engine._db_execute("INSERT INTO options_positions (order_id) VALUES ($1)", "x")
+    fake_pool.execute.assert_awaited_once()
+
+
+@pytest.mark.asyncio
 async def test_save_wallet_db_upserts_current_balance_for_seeded_strategies():
     engine = _make_engine(data_engine_enabled=True)
     engine.paper_trader.wallet_balance["MACD_BULLISH"] = 12345.67
@@ -300,3 +381,43 @@ def test_on_market_closed_tick_still_publishes_every_strategy_as_waiting():
     state = shared_state.get()
     assert len(state["strategy_status"]) == len(engine.strategy_engine.strategies)
     assert all(row["status"] == "WAITING" for row in state["strategy_status"])
+
+
+# ---- NIFTY header: prev close / change / % / sparkline / real exchange-hours state ------------
+
+def test_publish_state_computes_nifty_change_and_pct_from_prev_close():
+    engine = _make_engine(data_engine_enabled=True)
+    engine.data_manager.replay_candle(Candle(timestamp=datetime(2026, 8, 4, 15, 29), open=24000,
+                                              high=24005, low=23995, close=24000, volume=1000))
+    engine.data_manager.replay_candle(Candle(timestamp=datetime(2026, 8, 5, 9, 15), open=24000,
+                                              high=24130, low=23990, close=24120, volume=1000))
+
+    with patch("backend.app.live_engine.datetime") as mock_dt:
+        mock_dt.now.return_value = IST.localize(datetime(2026, 8, 5, 9, 20))
+        engine._publish_state()
+
+    state = shared_state.get()
+    assert state["nifty_prev_close"] == 24000
+    assert state["nifty_change"] == 120
+    assert state["nifty_change_pct"] == 0.5
+    assert state["nifty_sparkline"] == [24120]
+
+
+def test_publish_state_exchange_open_true_when_force_market_open_regardless_of_wall_clock():
+    engine = _make_engine(data_engine_enabled=True)
+    engine.config.force_market_open = True
+    engine._publish_state()
+    assert shared_state.get()["exchange_open"] is True
+
+
+def test_publish_state_exchange_open_reflects_real_market_hours():
+    engine = _make_engine(data_engine_enabled=True)
+    with patch("backend.app.live_engine.datetime") as mock_dt:
+        mock_dt.now.return_value = IST.localize(datetime(2026, 8, 4, 12, 0))  # Tuesday, midday
+        engine._publish_state()
+    assert shared_state.get()["exchange_open"] is True
+
+    with patch("backend.app.live_engine.datetime") as mock_dt:
+        mock_dt.now.return_value = IST.localize(datetime(2026, 8, 4, 20, 0))  # well after close
+        engine._publish_state()
+    assert shared_state.get()["exchange_open"] is False

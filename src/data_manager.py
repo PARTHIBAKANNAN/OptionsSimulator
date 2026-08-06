@@ -4,7 +4,7 @@ resamples to the timeframes each strategy needs, and exposes a single `data_stat
 that strategies evaluate against.
 """
 from dataclasses import dataclass
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 from typing import Optional
 
 import pandas as pd
@@ -212,6 +212,21 @@ class DataManager:
 
         self._cached_values = out
         return out
+
+    def get_prev_close(self, today: date) -> Optional[float]:
+        """Last candle's close from before `today` — the NIFTY header's change/% needs this and
+        Fyers' own historical-candle response has no explicit prev-close field. None until the
+        historical seed has loaded at least one candle from an earlier day."""
+        prior = [c for c in self.candles if c.timestamp.date() < today]
+        return prior[-1].close if prior else None
+
+    def get_today_candles(self, today: date) -> list[Candle]:
+        """Closes-so-far for `today`'s session, including the still-forming current candle —
+        feeds the header's intraday sparkline."""
+        candles = [c for c in self.candles if c.timestamp.date() == today]
+        if self._current is not None and self._current.timestamp.date() == today:
+            candles.append(self._current)
+        return candles
 
     def get_state(self) -> dict:
         current = self.get_current_candle()
