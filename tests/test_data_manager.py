@@ -111,6 +111,30 @@ def test_option_chain_tracks_quotes():
     assert chain["NIFTY24500CE"].oi == 1000
 
 
+def test_update_option_chain_stores_both_the_raw_fyers_symbol_and_the_simplified_key():
+    # Regression: Fyers' real option symbols are date-coded ("NSE:NIFTY2681124600CE"), but
+    # select_strike() generates the simplified "NIFTY24600CE" order.symbol actually uses
+    # everywhere -- these never matched, so every live-mode price lookup (SL/TP/time-exit checks,
+    # the UI's live LTP) silently missed and returned None forever. Confirmed against a real Fyers
+    # optionchain response on 2026-08-06.
+    dm = DataManager()
+    chain_data = {"optionsChain": [
+        {"symbol": "NSE:NIFTY50-INDEX", "strike_price": -1, "option_type": "", "ltp": 24627.4},
+        {"symbol": "NSE:NIFTY2681124600CE", "strike_price": 24600, "option_type": "CE", "ltp": 172.1, "oi": 500},
+        {"symbol": "NSE:NIFTY2681124600PE", "strike_price": 24600, "option_type": "PE", "ltp": 108.75, "oi": 300},
+    ]}
+
+    dm.update_option_chain(chain_data)
+    chain = dm.get_option_chain()
+
+    assert chain["NSE:NIFTY2681124600CE"].ltp == 172.1
+    assert chain["NIFTY24600CE"].ltp == 172.1
+    assert chain["NIFTY24600CE"].oi == 500
+    assert chain["NIFTY24600PE"].ltp == 108.75
+    assert "NSE:NIFTY50-INDEX" in chain
+    assert "NIFTY-1CE" not in chain and "NIFTY-1PE" not in chain  # the index row itself, excluded
+
+
 def test_window_size_trims_candles():
     dm = DataManager(window_size=50)
     for c in _synthetic_candles(200):

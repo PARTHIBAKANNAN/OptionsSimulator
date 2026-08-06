@@ -16,6 +16,7 @@ from backend.app.live_engine import WebLiveEngine
 from backend.app.state import pending_signals, shared_state
 from src.config import Config
 from src.data_manager import Candle
+from src.simulator.paper_trader import RiskLimitExceeded
 from src.strategies.base_strategy import Signal
 
 IST = pytz.timezone("Asia/Kolkata")
@@ -278,12 +279,16 @@ async def test_restore_state_loads_wallet_balance_and_reopens_orphaned_positions
             "entry_time": pytz.utc.localize(datetime(2026, 8, 5, 9, 20)),
             "stop_loss": 80.0, "take_profit": 150.0, "strategy": "MACD_BULLISH", "entry_charges": 25.0,
         }],
+        [{"strategy": "MACD_BULLISH", "cnt": 1}],
     ])
+    fake_pool.fetchrow = AsyncMock(return_value={"total": -150.0})
 
     with patch("backend.app.live_engine.db.get_pool", return_value=fake_pool):
         await engine._restore_state()
 
     assert engine.paper_trader.wallet_balance["MACD_BULLISH"] == 78000.0
+    assert engine.paper_trader._strategy_trades_today["MACD_BULLISH"] == 1
+    assert engine.paper_trader._realized_pnl_today == -150.0
     positions = engine.paper_trader.get_positions()
     assert len(positions) == 1
     assert positions[0].order_id == "abc-123"
@@ -300,10 +305,36 @@ async def test_restore_state_ignores_wallet_rows_for_unseeded_strategies():
     fake_pool.fetch = AsyncMock(side_effect=[
         [{"strategy": "SOME_OLD_STRATEGY", "balance": 1000.0}],
         [],
+        [],
     ])
+    fake_pool.fetchrow = AsyncMock(return_value={"total": 0.0})
     with patch("backend.app.live_engine.db.get_pool", return_value=fake_pool):
         await engine._restore_state()
     assert "SOME_OLD_STRATEGY" not in engine.paper_trader.wallet_balance
+
+
+@pytest.mark.asyncio
+async def test_restore_state_reconstructs_daily_trade_count_so_the_cap_survives_a_restart():
+    # Regression: 3 restarts in one trading day let MACD_BULLISH place 3 entries despite its
+    # 2/day cap, because each fresh in-memory counter had no idea about the previous run's trades.
+    engine = _make_engine(data_engine_enabled=True, extra_risk_params={
+        "position_sizing": {"qty_per_signal": 1, "lot_size": 65, "max_concurrent_positions": 5,
+                             "max_daily_loss": 5000, "max_trades_per_day_per_strategy": 2},
+    })
+    fake_pool = MagicMock()
+    fake_pool.fetch = AsyncMock(side_effect=[[], [], [{"strategy": "MACD_BULLISH", "cnt": 2}]])
+    fake_pool.fetchrow = AsyncMock(return_value={"total": -300.0})
+
+    with patch("backend.app.live_engine.db.get_pool", return_value=fake_pool):
+        with patch("backend.app.live_engine.datetime") as mock_dt:
+            mock_dt.now.return_value = IST.localize(datetime(2026, 8, 6, 9, 0))
+            await engine._restore_state()
+
+    assert engine.paper_trader._strategy_trades_today["MACD_BULLISH"] == 2
+    assert engine.paper_trader._realized_pnl_today == -300.0
+    with pytest.raises(RiskLimitExceeded, match="trades/day limit"):
+        engine.paper_trader.place_order("NIFTY24600CE", "BUY", qty=1, price=100.0,
+                                         strategy="MACD_BULLISH", timestamp=datetime(2026, 8, 6, 10, 0))
 
 
 @pytest.mark.asyncio
@@ -315,7 +346,8 @@ async def test_restore_state_only_queries_positions_opened_today():
     # query must filter to today (IST) so old test/crash artifacts are never restored.
     engine = _make_engine(data_engine_enabled=True)
     fake_pool = MagicMock()
-    fake_pool.fetch = AsyncMock(side_effect=[[], []])
+    fake_pool.fetch = AsyncMock(side_effect=[[], [], []])
+    fake_pool.fetchrow = AsyncMock(return_value={"total": 0.0})
 
     with patch("backend.app.live_engine.db.get_pool", return_value=fake_pool):
         with patch("backend.app.live_engine.datetime") as mock_dt:

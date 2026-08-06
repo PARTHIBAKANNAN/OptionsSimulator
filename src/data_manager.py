@@ -109,17 +109,30 @@ class DataManager:
         return self.candles[-count:] if count else list(self.candles)
 
     def update_option_chain(self, chain_data: dict) -> None:
+        """Fyers' real option symbols are date-coded (e.g. 'NSE:NIFTY2681124600CE'), but
+        select_strike() (see base_strategy.py) generates the simple 'NIFTY24600CE' form that
+        order.symbol/strategies actually use everywhere -- these never matched, so every live-mode
+        price lookup (entry pricing, SL/TP/time-exit checks, the UI's live LTP) silently missed and
+        returned None forever. Fyers' own response already separates strike_price/option_type
+        cleanly, so store each quote under BOTH the raw Fyers symbol and that simplified key rather
+        than parsing the Fyers string. See docs/ARCHITECTURE.md."""
         for row in chain_data.get("optionsChain", []):
             symbol = row.get("symbol")
             if not symbol:
                 continue
-            self.option_chain[symbol] = OptionQuote(
+            quote = OptionQuote(
                 symbol=symbol,
                 ltp=float(row.get("ltp", 0)),
                 oi=int(row.get("oi", 0)),
                 volume=int(row.get("volume", 0)),
                 updated_at=datetime.now(),
             )
+            self.option_chain[symbol] = quote
+
+            strike = row.get("strike_price")
+            option_type = row.get("option_type")
+            if strike is not None and strike > 0 and option_type in ("CE", "PE"):
+                self.option_chain[f"NIFTY{int(strike)}{option_type}"] = quote
 
     def get_option_chain(self) -> dict:
         return dict(self.option_chain)

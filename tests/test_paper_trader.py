@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 
 import pytest
 
@@ -360,3 +360,39 @@ def test_get_all_wallets_returns_every_seeded_strategy():
     wallets = trader.get_all_wallets()
     assert set(wallets.keys()) == {"MACD_BULLISH", "ORB_BULLISH"}
     assert wallets["ORB_BULLISH"]["balance"] == 115000.0
+
+
+# ---- restore_daily_counts: survive the trades/day and daily-loss limits across a restart ------
+
+def test_restore_daily_counts_enforces_the_per_day_cap_immediately():
+    # Regression: after a restart, max_trades_per_day_per_strategy silently reset to 0, letting a
+    # strategy exceed its daily cap across multiple restarts within the same trading day.
+    trader = PaperTrader(slippage_pct=0, lot_size=65, max_trades_per_day_per_strategy=2)
+    today = date(2026, 8, 6)
+    trader.restore_daily_counts(today, {"MACD_BULLISH": 2})
+
+    with pytest.raises(RiskLimitExceeded, match="trades/day limit"):
+        trader.place_order("NIFTY24600CE", "BUY", qty=1, price=100.0,
+                            strategy="MACD_BULLISH", timestamp=datetime(2026, 8, 6, 10, 0))
+
+
+def test_restore_daily_counts_sets_current_day_so_the_next_roll_day_does_not_wipe_it():
+    trader = PaperTrader(slippage_pct=0, lot_size=65, max_trades_per_day_per_strategy=2)
+    today = date(2026, 8, 6)
+    trader.restore_daily_counts(today, {"MACD_BULLISH": 2}, realized_pnl_today=-500.0)
+
+    # A same-day place_order() call must NOT roll the day over and reset what was just restored.
+    trader.place_order("NIFTY24600CE", "BUY", qty=1, price=100.0,
+                        strategy="ORB_BULLISH", timestamp=datetime(2026, 8, 6, 10, 0))
+
+    assert trader._strategy_trades_today["MACD_BULLISH"] == 2
+    assert trader._realized_pnl_today == -500.0
+
+
+def test_restore_daily_counts_does_not_affect_other_strategies():
+    trader = PaperTrader(slippage_pct=0, lot_size=65, max_trades_per_day_per_strategy=2)
+    trader.restore_daily_counts(date(2026, 8, 6), {"MACD_BULLISH": 2})
+
+    order = trader.place_order("NIFTY24600CE", "BUY", qty=1, price=100.0,
+                                strategy="ORB_BULLISH", timestamp=datetime(2026, 8, 6, 10, 0))
+    assert order.status == "OPEN"

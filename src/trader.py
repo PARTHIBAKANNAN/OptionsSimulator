@@ -219,7 +219,12 @@ class LiveTrader:
         try:
             chain = self.fyers.get_option_chain(NIFTY_SYMBOL)
             self.data_manager.update_option_chain(chain)
-            new_symbols = set(self.data_manager.get_option_chain().keys()) - self._monitored_symbols
+            # update_option_chain() now stores each quote under BOTH the raw Fyers symbol (e.g.
+            # "NSE:NIFTY2681124600CE") and a simplified "NIFTY24600CE" key strategies actually use
+            # (see its docstring) -- only the former is ever valid to hand to Fyers' own
+            # subscribe_symbols(); the simplified key isn't a real tradable symbol at all.
+            all_symbols = {s for s in self.data_manager.get_option_chain().keys() if s.startswith("NSE:")}
+            new_symbols = all_symbols - self._monitored_symbols
             if new_symbols:
                 self.fyers.subscribe_symbols(list(new_symbols))
                 self._monitored_symbols |= new_symbols

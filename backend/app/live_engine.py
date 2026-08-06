@@ -264,6 +264,30 @@ class WebLiveEngine(LiveTrader):
                 )
                 self.paper_trader.orders[order.order_id] = order
 
+            # Reconstructs today's per-strategy trade count and realized P&L too -- without this,
+            # max_trades_per_day_per_strategy and the daily-loss breaker both silently reset to
+            # zero on every restart. Confirmed live on 2026-08-06: 3 restarts in one trading day
+            # let MACD_BULLISH place 3 entries despite its 2/day cap, since each restart's fresh
+            # in-memory counter had no idea the previous run had already placed 2.
+            trade_count_rows = await asyncio.wait_for(
+                pool.fetch(
+                    """SELECT strategy, COUNT(*) AS cnt FROM options_positions
+                       WHERE strategy IS NOT NULL AND (entry_time AT TIME ZONE 'Asia/Kolkata')::date = $1
+                       GROUP BY strategy""",
+                    today),
+                timeout=self.DB_TIMEOUT_SECS)
+            trades_today = {row["strategy"]: row["cnt"] for row in trade_count_rows}
+
+            realized_row = await asyncio.wait_for(
+                pool.fetchrow(
+                    """SELECT COALESCE(SUM(realized_pnl), 0) AS total FROM options_positions
+                       WHERE status = 'CLOSED' AND (exit_time AT TIME ZONE 'Asia/Kolkata')::date = $1""",
+                    today),
+                timeout=self.DB_TIMEOUT_SECS)
+            realized_pnl_today = float(realized_row["total"]) if realized_row else 0.0
+
+            self.paper_trader.restore_daily_counts(today, trades_today, realized_pnl_today)
+
             if restored_wallets or open_rows:
                 self.logger.log_websocket_event(
                     "state_restored", {"wallets": restored_wallets, "open_positions": len(open_rows)})

@@ -201,3 +201,35 @@ def test_ensure_connection_state_only_seeds_historical_candles_once_per_day():
 def test_on_market_closed_tick_is_a_noop_on_the_base_cli_trader():
     trader = _make_trader_with_mock_fyers()
     trader._on_market_closed_tick()  # must not raise
+
+
+@pytest.mark.asyncio
+async def test_poll_option_chain_only_subscribes_to_real_fyers_symbols():
+    # Regression: update_option_chain() now stores both the raw Fyers symbol and a simplified
+    # "NIFTY24600CE" key (see DataManager) -- only the raw one is ever valid to hand to Fyers'
+    # own subscribe_symbols(); passing the simplified key would try to subscribe to a symbol
+    # that doesn't exist on the exchange at all.
+    trader = _make_trader_with_mock_fyers()
+    trader.fyers.get_option_chain.return_value = {"optionsChain": [
+        {"symbol": "NSE:NIFTY2681124600CE", "strike_price": 24600, "option_type": "CE", "ltp": 172.1},
+    ]}
+
+    await trader.poll_option_chain()
+
+    trader.fyers.subscribe_symbols.assert_called_once()
+    subscribed = trader.fyers.subscribe_symbols.call_args.args[0]
+    assert subscribed == ["NSE:NIFTY2681124600CE"]
+
+
+@pytest.mark.asyncio
+async def test_poll_option_chain_does_not_resubscribe_already_monitored_symbols():
+    trader = _make_trader_with_mock_fyers()
+    trader.fyers.get_option_chain.return_value = {"optionsChain": [
+        {"symbol": "NSE:NIFTY2681124600CE", "strike_price": 24600, "option_type": "CE", "ltp": 172.1},
+    ]}
+
+    await trader.poll_option_chain()
+    trader.fyers.subscribe_symbols.reset_mock()
+    await trader.poll_option_chain()
+
+    trader.fyers.subscribe_symbols.assert_not_called()

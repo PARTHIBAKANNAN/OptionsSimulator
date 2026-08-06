@@ -123,6 +123,20 @@ class PaperTrader:
             self._realized_pnl_today = 0.0
             self._strategy_trades_today = {}
 
+    def restore_daily_counts(self, day: date, trades_today: dict[str, int],
+                              realized_pnl_today: float = 0.0) -> None:
+        """Reconstructs today's per-strategy trade count and realized P&L after a restart (see
+        WebLiveEngine._restore_state). Without this, max_trades_per_day_per_strategy and the
+        overall daily-loss breaker both silently reset to zero on every restart -- confirmed live
+        on 2026-08-06, where 3 restarts in one trading day let MACD_BULLISH place 3 entries
+        despite its 2/day cap, each restart's fresh in-memory counter never knowing about the
+        entries the previous run had already placed. Must set _current_day too, or the very next
+        place_order()/close_position() call's _roll_day() sees a mismatched day and wipes this
+        right back out."""
+        self._current_day = day
+        self._strategy_trades_today = dict(trades_today)
+        self._realized_pnl_today = realized_pnl_today
+
     def _open_positions(self) -> list[Order]:
         return [o for o in self.orders.values() if o.status == "OPEN"]
 
