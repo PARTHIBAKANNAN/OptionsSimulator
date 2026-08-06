@@ -8,5 +8,6 @@ cryptography==44.0.0
 itsdangerous==2.2.0
 python-dotenv==1.0.1
 pytest-asyncio==0.24.0
+openpyxl==3.1.5
 # httpx is already pulled in transitively (needed for FastAPI's TestClient) — not pinned here
 # to avoid conflicting with whatever version python-telegram-bot/fyers-apiv3 already constrained.

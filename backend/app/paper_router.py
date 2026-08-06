@@ -1,13 +1,17 @@
 """Paper-trading REST endpoints. Live views (positions/pnl/pending signals) read the in-memory
 snapshot the engine publishes; trade history reads Postgres since it must survive a restart."""
-from fastapi import APIRouter, Depends, HTTPException, Request
+import io
+from datetime import date as date_cls
+
+from fastapi import APIRouter, Depends, HTTPException, Request, Response
 
 from src.trader import IST
+from src.utils.date_ranges import resolve_range
 from src.utils.options_pricing import format_display_symbol, next_weekly_expiry_date
 
 from .security import require_login
 from .state import shared_state
-from . import db
+from . import db, pnl_service
 
 router = APIRouter(prefix="/api/paper", dependencies=[Depends(require_login)])
 
@@ -55,6 +59,95 @@ def _get_engine(request: Request):
     if engine is None:
         raise HTTPException(status_code=503, detail="Live engine not running")
     return engine
+
+
+def _parse_range(range: str, start: str, end: str) -> tuple[date_cls, date_cls]:
+    try:
+        return resolve_range(
+            range, start=date_cls.fromisoformat(start) if start else None,
+            end=date_cls.fromisoformat(end) if end else None)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.get("/strategies/{name}/orders")
+async def get_strategy_orders(name: str, request: Request):
+    """Everything item 5's "Show Details" needs for one strategy: its current signal (live LTP/
+    P&L, if any), every closed trade, and its wallet — regardless of market hours."""
+    engine = _get_engine(request)
+    current_signal = next(
+        (r for r in shared_state.get().get("strategy_status", []) if r["strategy"] == name), None)
+
+    closed_trades = []
+    if getattr(request.app.state, "db_available", False):
+        pool = db.get_pool()
+        rows = await pool.fetch(
+            """SELECT order_id, symbol, qty, entry_price, entry_time, exit_price, exit_time,
+                      exit_reason, realized_pnl, entry_charges, exit_charges
+               FROM options_positions WHERE strategy = $1 AND status = 'CLOSED'
+               ORDER BY exit_time DESC""",
+            name,
+        )
+        for row in rows:
+            trade = dict(row)
+            trade["contract"] = format_display_symbol(
+                trade["symbol"], next_weekly_expiry_date(trade["entry_time"].astimezone(IST)))
+            gross = trade["realized_pnl"]
+            trade["net_pnl"] = (
+                round(float(gross) - float(trade["entry_charges"] or 0) - float(trade["exit_charges"] or 0), 2)
+                if gross is not None else None)
+            closed_trades.append(trade)
+
+    return {
+        "strategy": name,
+        "current_signal": current_signal,
+        "closed_trades": closed_trades,
+        "wallet": engine.paper_trader.get_wallet(name),
+    }
+
+
+@router.get("/pnl/report")
+async def get_pnl_report(request: Request, range: str = "today", start: str = None, end: str = None):
+    """Individual + combined P&L for item 6's summary tab: per-strategy trades/win-rate/gross/
+    charges/net/wallet, a combined total row, and a daily net-P&L series for the equity graph."""
+    engine = _get_engine(request)
+    start_date, end_date = _parse_range(range, start, end)
+
+    strategy_names = [s.name for s in engine.strategy_engine.strategies]
+    db_rows = await pnl_service.strategy_pnl_rows(start_date, end_date)
+    wallets = engine.paper_trader.get_all_wallets()
+    strategies = pnl_service.build_strategy_summary(strategy_names, db_rows, wallets)
+    combined = pnl_service.combine_totals(strategies)
+    daily_net_pnl = await pnl_service.daily_net_pnl_series(start_date, end_date)
+
+    return {
+        "range": {"start": start_date.isoformat(), "end": end_date.isoformat()},
+        "strategies": strategies, "combined": combined, "daily_net_pnl": daily_net_pnl,
+    }
+
+
+@router.get("/pnl/export")
+async def export_pnl(request: Request, range: str = "today", start: str = None, end: str = None):
+    engine = _get_engine(request)
+    start_date, end_date = _parse_range(range, start, end)
+
+    strategy_names = [s.name for s in engine.strategy_engine.strategies]
+    db_rows = await pnl_service.strategy_pnl_rows(start_date, end_date)
+    wallets = engine.paper_trader.get_all_wallets()
+    strategies = pnl_service.build_strategy_summary(strategy_names, db_rows, wallets)
+    combined = pnl_service.combine_totals(strategies)
+    trades = await pnl_service.closed_trades_in_range(start_date, end_date)
+
+    workbook = pnl_service.build_workbook(strategies, combined, trades, start_date, end_date)
+    buffer = io.BytesIO()
+    workbook.save(buffer)
+
+    filename = f"pnl_export_{start_date.isoformat()}_{end_date.isoformat()}.xlsx"
+    return Response(
+        content=buffer.getvalue(),
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
 
 
 @router.post("/signals/{signal_id}/approve")
