@@ -2,8 +2,13 @@
 // useSyncExternalStore in src/hooks/useMarketStream.js's useMarketState().
 let state = {
   nifty_price: null,
+  nifty_prev_close: null,
+  nifty_change: null,
+  nifty_change_pct: null,
+  nifty_sparkline: [],
   timestamp: null,
   market_open: false,
+  exchange_open: false,
   mode: null,
   signals: [],
   pending_signals: [],

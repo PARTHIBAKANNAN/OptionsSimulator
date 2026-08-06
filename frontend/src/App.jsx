@@ -1,15 +1,18 @@
 import { useEffect, useState } from "react";
 import { ThemeProvider, useTheme } from "./contexts/ThemeContext";
 import { Login } from "./components/Login";
+import { Sidebar } from "./components/Sidebar";
 import { LiveDashboardScreen } from "./screens/LiveDashboardScreen";
 import { BacktestReportScreen } from "./screens/BacktestReportScreen";
 import { TradeHistoryScreen } from "./screens/TradeHistoryScreen";
+import { PnlSummaryScreen } from "./screens/PnlSummaryScreen";
 import { useMarketStream } from "./hooks/useMarketStream";
 import { api } from "./hooks/usePaperTradingSync";
 import { supabase } from "./lib/supabaseClient";
 
 const TABS = [
   { key: "live", label: "Live", Component: LiveDashboardScreen },
+  { key: "pnl", label: "P&L Summary", Component: PnlSummaryScreen },
   { key: "backtest", label: "Backtest", Component: BacktestReportScreen },
   { key: "history", label: "History", Component: TradeHistoryScreen },
 ];
@@ -22,28 +25,15 @@ function Dashboard({ user, onLogout }) {
   const ActiveComponent = TABS.find((t) => t.key === activeTab).Component;
 
   return (
-    <div className="min-h-screen">
-      <nav className="flex items-center justify-between border-b border-subtle bg-surface px-4 py-3">
-        <div className="flex items-center gap-4">
-          <span className="font-semibold">OptionsSimulator</span>
-          {TABS.map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
-              className={activeTab === tab.key ? "text-sm font-medium text-primary" : "text-sm text-muted"}
-            >
-              {tab.label}
-            </button>
-          ))}
+    <div className="flex min-h-screen">
+      <Sidebar
+        tabs={TABS} activeTab={activeTab} onSelect={setActiveTab}
+        user={user} theme={theme} onToggleTheme={toggle} onLogout={onLogout}
+      />
+      <main className="flex-1 overflow-y-auto bg-surface2 p-6">
+        <div className="mx-auto max-w-6xl">
+          <ActiveComponent />
         </div>
-        <div className="flex items-center gap-3 text-sm">
-          <span className="text-faint">{user.email}</span>
-          <button onClick={toggle} className="text-muted">{theme === "dark" ? "Light" : "Dark"}</button>
-          <button onClick={onLogout} className="text-muted">Logout</button>
-        </div>
-      </nav>
-      <main className="mx-auto max-w-5xl p-4">
-        <ActiveComponent />
       </main>
     </div>
   );

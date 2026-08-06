@@ -3,6 +3,7 @@ const VARIANTS = {
   bull: "bg-bull/15 text-bull",
   bear: "bg-bear/15 text-bear",
   accent: "bg-accent/15 text-accent",
+  warn: "bg-warn/15 text-warn",
 };
 
 export function Badge({ children, variant = "neutral" }) {

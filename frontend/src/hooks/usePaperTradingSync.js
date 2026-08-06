@@ -49,4 +49,35 @@ export async function fetchBacktestReport() {
   return api("/api/backtest/report");
 }
 
+export async function fetchStrategyOrders(name) {
+  return api(`/api/paper/strategies/${encodeURIComponent(name)}/orders`);
+}
+
+export async function fetchPnlReport(params) {
+  const qs = new URLSearchParams(params).toString();
+  return api(`/api/paper/pnl/report?${qs}`);
+}
+
+export async function downloadPnlExport(params) {
+  const qs = new URLSearchParams(params).toString();
+  const res = await fetch(`${API_BASE}/api/paper/pnl/export?${qs}`, { credentials: "include" });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.detail || `Export failed (${res.status})`);
+  }
+  const blob = await res.blob();
+  const disposition = res.headers.get("Content-Disposition") || "";
+  const match = disposition.match(/filename="?([^"]+)"?/);
+  const filename = match ? match[1] : "pnl_export.xlsx";
+
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
 export { api };

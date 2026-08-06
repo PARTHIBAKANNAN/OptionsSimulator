@@ -18,6 +18,7 @@ export default {
         bull: "rgb(var(--bull) / <alpha-value>)",
         bear: "rgb(var(--bear) / <alpha-value>)",
         accent: "rgb(var(--accent) / <alpha-value>)",
+        warn: "rgb(var(--warn) / <alpha-value>)",
       },
     },
   },
