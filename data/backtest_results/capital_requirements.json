@@ -1,0 +1,77 @@
+{
+  "RSI_OVERSOLD_BULLISH": {
+    "avg_trade_risk": 8142.32,
+    "max_historical_drawdown": 23072.25,
+    "recommended_capital": 95000.0
+  },
+  "MACD_BULLISH": {
+    "avg_trade_risk": 8440.84,
+    "max_historical_drawdown": 20440.16,
+    "recommended_capital": 85000.0
+  },
+  "SUPPORT_BOUNCE_BULLISH": {
+    "avg_trade_risk": 8073.87,
+    "max_historical_drawdown": 18124.67,
+    "recommended_capital": 75000.0
+  },
+  "ORB_BULLISH": {
+    "avg_trade_risk": 8172.51,
+    "max_historical_drawdown": 28281.99,
+    "recommended_capital": 115000.0
+  },
+  "RSI_OVERBOUGHT_BEARISH": {
+    "avg_trade_risk": 6655.05,
+    "max_historical_drawdown": 4134.99,
+    "recommended_capital": 20000.0
+  },
+  "MACD_BEARISH": {
+    "avg_trade_risk": 7021.92,
+    "max_historical_drawdown": 16320.61,
+    "recommended_capital": 70000.0
+  },
+  "RESISTANCE_REJECTION_BEARISH": {
+    "avg_trade_risk": 6795.66,
+    "max_historical_drawdown": 12766.91,
+    "recommended_capital": 55000.0
+  },
+  "ORB_BEARISH": {
+    "avg_trade_risk": 6995.76,
+    "max_historical_drawdown": 18600.01,
+    "recommended_capital": 75000.0
+  },
+  "IRON_FLY_HEDGE": {
+    "avg_trade_risk": 8224.33,
+    "max_historical_drawdown": 54319.2,
+    "recommended_capital": 220000.0
+  },
+  "HEIKIN_ASHI_TREND_BEARISH": {
+    "avg_trade_risk": 7273.64,
+    "max_historical_drawdown": 13731.97,
+    "recommended_capital": 10000.0
+  },
+  "SENSEX_MACD_BULLISH": {
+    "avg_trade_risk": 7949.12,
+    "max_historical_drawdown": 45672.13,
+    "recommended_capital": 11000.0
+  },
+  "SENSEX_SUPPORT_BOUNCE_BULLISH": {
+    "avg_trade_risk": 7926.8,
+    "max_historical_drawdown": 7848.0,
+    "recommended_capital": 11000.0
+  },
+  "SENSEX_HEIKIN_ASHI_TREND_BEARISH": {
+    "avg_trade_risk": 6250.03,
+    "max_historical_drawdown": 13122.6,
+    "recommended_capital": 9000.0
+  },
+  "SENSEX_MACD_BEARISH": {
+    "avg_trade_risk": 5943.36,
+    "max_historical_drawdown": 18852.23,
+    "recommended_capital": 8000.0
+  },
+  "SENSEX_ORB_BEARISH": {
+    "avg_trade_risk": 6126.75,
+    "max_historical_drawdown": 12505.07,
+    "recommended_capital": 8000.0
+  }
+}

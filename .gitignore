@@ -5,6 +5,9 @@ __pycache__/
 .pytest_cache/
 logs/*.log
 data/backtest_results/*.json
+!data/backtest_results/report.json
+!data/backtest_results/daily_report.json
+!data/backtest_results/capital_requirements.json
 data/backtest_results/*.html
 data/historical/*.csv
 !data/historical/.gitkeep
