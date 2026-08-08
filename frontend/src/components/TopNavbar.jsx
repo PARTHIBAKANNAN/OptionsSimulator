@@ -7,15 +7,15 @@ const TAB_ICONS = { live: Activity, backtest: LineChart, pnl: Wallet };
 export function TopNavbar({ tabs, activeTab, onSelect, user, theme, onToggleTheme, onLogout }) {
   return (
     <nav className="sticky top-0 z-40 border-b border-subtle bg-surface">
-      <div className="mx-auto flex h-14 max-w-7xl items-center gap-4 px-4">
-        <div className="flex items-center gap-2">
+      <div className="mx-auto flex h-14 max-w-7xl items-center gap-2 px-2 sm:gap-4 sm:px-4">
+        <div className="flex shrink-0 items-center gap-2">
           <div className="flex h-8 w-8 items-center justify-center rounded-md bg-accent text-sm font-bold text-white">
             OS
           </div>
           <span className="hidden text-sm font-semibold sm:inline">OptionsSimulator</span>
         </div>
 
-        <div className="flex flex-1 items-center justify-center gap-1">
+        <div className="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto sm:justify-center">
           {tabs.map((tab) => {
             const Icon = TAB_ICONS[tab.key];
             const active = activeTab === tab.key;
@@ -23,7 +23,7 @@ export function TopNavbar({ tabs, activeTab, onSelect, user, theme, onToggleThem
               <button
                 key={tab.key}
                 onClick={() => onSelect(tab.key)}
-                className={`flex items-center gap-1.5 rounded-md px-3.5 py-1.5 text-sm font-medium transition-colors ${
+                className={`flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors sm:px-3.5 sm:text-sm ${
                   active ? "bg-accent text-white" : "text-muted hover:bg-surface3 hover:text-primary"
                 }`}
               >
@@ -34,7 +34,7 @@ export function TopNavbar({ tabs, activeTab, onSelect, user, theme, onToggleThem
           })}
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex shrink-0 items-center gap-1 sm:gap-3">
           <span className="hidden truncate text-xs text-faint md:inline">{user.email}</span>
           <button
             onClick={onToggleTheme}

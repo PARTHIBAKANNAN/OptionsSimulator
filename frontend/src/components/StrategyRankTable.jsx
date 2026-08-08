@@ -52,7 +52,8 @@ export function StrategyRankTable({ title, rows, topN = 3, dailyBreakdown = {}, 
   return (
     <div>
       {title && <div className="mb-2 text-sm font-medium text-muted">{title}</div>}
-      <table className="w-full text-sm">
+      <div className="overflow-x-auto">
+      <table className="w-full min-w-[640px] text-sm">
         <thead>
           <tr className="text-left text-faint">
             <th className="pb-1 font-normal">#</th>
@@ -130,6 +131,7 @@ export function StrategyRankTable({ title, rows, topN = 3, dailyBreakdown = {}, 
           })}
         </tbody>
       </table>
+      </div>
     </div>
   );
 }

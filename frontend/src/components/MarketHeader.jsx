@@ -84,7 +84,7 @@ export function MarketHeader({ state }) {
         </div>
 
         <div className="flex flex-col items-end gap-1.5 text-right">
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center justify-end gap-1.5 sm:gap-2">
             <span className={`inline-block h-1.5 w-1.5 rounded-full ${pill.dot}`} />
             <Badge variant={pill.variant}>{pill.label}</Badge>
             {mode === "live" && (

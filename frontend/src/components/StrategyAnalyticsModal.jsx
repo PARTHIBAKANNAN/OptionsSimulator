@@ -191,7 +191,7 @@ function CalendarHeatmap({ byMonth }) {
   return (
     <div>
       <div className="mb-2 text-xs font-semibold uppercase tracking-wider text-faint">P&amp;L Calendar &middot; {year}</div>
-      <div className="grid grid-cols-6 gap-1.5 sm:grid-cols-12">
+      <div className="grid grid-cols-3 gap-1.5 sm:grid-cols-6 lg:grid-cols-12">
         {MONTH_LABELS.map((label, i) => {
           const v = values[i];
           const intensity = v == null ? 0 : Math.min(1, Math.abs(v) / maxAbs);
@@ -201,7 +201,7 @@ function CalendarHeatmap({ byMonth }) {
           return (
             <div
               key={label}
-              className="rounded p-2 text-center text-[10px]"
+              className="min-w-0 rounded p-1.5 text-center text-[10px] sm:p-2"
               style={{ background: v == null ? undefined : bg }}
               title={v == null ? `${label}: no trades` : `${label}: ${fmtRupee(Math.round(v))}`}
             >
@@ -333,18 +333,18 @@ export function StrategyAnalyticsModal({ strategy, onClose }) {
   return (
     <AnimatePresence>
       <motion.div
-        className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
+        className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-0 backdrop-blur-sm sm:p-4"
         onClick={onClose}
         initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }}
       >
         <motion.div
-          className="flex max-h-[90vh] w-full max-w-6xl flex-col rounded-xl border border-subtle bg-surface shadow-2xl"
+          className="flex h-full w-full max-w-6xl flex-col rounded-none border-0 border-subtle bg-surface shadow-2xl sm:h-auto sm:max-h-[90vh] sm:rounded-xl sm:border"
           onClick={(e) => e.stopPropagation()}
           initial={{ opacity: 0, scale: 0.97, y: 12 }} animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.97, y: 12 }} transition={{ duration: 0.18, ease: "easeOut" }}
         >
-          <div className="flex items-center justify-between border-b border-subtle px-5 py-3">
-            <div className="flex items-center gap-2">
+          <div className="flex items-center justify-between border-b border-subtle px-3 py-3 sm:px-5">
+            <div className="flex flex-wrap items-center gap-2">
               <h2 className="text-sm font-semibold">{strategy}</h2>
               <Badge variant="accent">Paper</Badge>
               <Badge variant={isLive ? "bull" : "neutral"}>{isLive ? "Signal Entered" : "Idle"}</Badge>
@@ -354,7 +354,7 @@ export function StrategyAnalyticsModal({ strategy, onClose }) {
             </button>
           </div>
 
-          <div className="flex-1 overflow-y-auto px-5 py-4">
+          <div className="flex-1 overflow-y-auto px-3 py-3 sm:px-5 sm:py-4">
             {error && <div className="py-8 text-center text-sm text-bear">{error}</div>}
             {!error && !stats && <div className="py-8 text-center text-sm text-faint">Loading…</div>}
 

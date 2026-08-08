@@ -234,11 +234,32 @@ def test_strategy_status_list_surfaces_last_closed_today_when_flat():
     row = next(r for r in rows if r["strategy"] == "MACD_BULLISH")
 
     assert row["entry"] is None
-    assert row["last_closed_today"]["contract"].startswith("NIFTY")
-    assert row["last_closed_today"]["exit_reason"] == "TAKE_PROFIT"
-    assert row["last_closed_today"]["exit_price"] == 230.0
-    assert row["last_closed_today"]["stop_loss"] == 160.0
-    assert row["last_closed_today"]["take_profit"] == 350.0
+    assert row["last_closed"]["contract"].startswith("NIFTY")
+    assert row["last_closed"]["exit_reason"] == "TAKE_PROFIT"
+    assert row["last_closed"]["exit_price"] == 230.0
+    assert row["last_closed"]["stop_loss"] == 160.0
+    assert row["last_closed"]["take_profit"] == 350.0
+
+
+def test_strategy_status_list_surfaces_last_closed_from_a_prior_day_too():
+    # A strategy whose most recent trade closed days ago (e.g. over a weekend) must still get the
+    # expand affordance -- last_closed is "most recent ever", not "most recent today". today_pnl
+    # stays scoped to today only, though, since that figure means something different.
+    engine = _make_engine()
+    stale_entry = datetime.now(IST) - timedelta(days=3)
+    order = engine.paper_trader.place_order(
+        symbol="NIFTY24600CE", side="BUY", qty=1, price=200.0, stop_loss=160.0, take_profit=350.0,
+        strategy="MACD_BULLISH", timestamp=stale_entry,
+    )
+    engine.paper_trader.close_position(order.order_id, 230.0, timestamp=stale_entry + timedelta(minutes=30),
+                                        reason="TAKE_PROFIT")
+
+    rows = engine._strategy_status_list(current_prices={})
+    row = next(r for r in rows if r["strategy"] == "MACD_BULLISH")
+
+    assert row["entry"] is None
+    assert row["last_closed"]["exit_price"] == 230.0
+    assert row["today_pnl"] == 0  # that close wasn't today, so it must not count toward today's P&L
 
 
 def test_strategy_status_list_entry_includes_time_and_sl_tp():
@@ -255,7 +276,7 @@ def test_strategy_status_list_entry_includes_time_and_sl_tp():
     assert row["entry"]["entry_time"] == entry_time.isoformat()
     assert row["entry"]["stop_loss"] == 160.0
     assert row["entry"]["take_profit"] == 350.0
-    assert row["last_closed_today"] is None
+    assert row["last_closed"] is None
 
 
 # ---- Restore-on-boot: wallets and orphaned open positions survive a restart -------------------

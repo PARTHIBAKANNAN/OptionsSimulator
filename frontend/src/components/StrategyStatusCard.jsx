@@ -117,7 +117,7 @@ function StrategyStatusRow({ row, pendingSignal }) {
   const [squaringOff, setSquaringOff] = useState(false);
   const [showAnalytics, setShowAnalytics] = useState(false);
   const entered = row.status === "SIGNAL_ENTERED";
-  const hasDetails = Boolean(row.entry || row.last_closed_today);
+  const hasDetails = Boolean(row.entry || row.last_closed);
 
   async function handleSquareOff() {
     if (!row.entry?.order_id) return;
@@ -135,7 +135,7 @@ function StrategyStatusRow({ row, pendingSignal }) {
   return (
     <div className="border-t border-subtle py-3 first:border-t-0 first:pt-0">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <span className="font-medium">{row.strategy}</span>
           <Badge variant="accent">Paper</Badge>
           <span className={`flex items-center gap-1.5 text-sm ${entered ? "text-bull" : "text-warn"}`}>
@@ -144,7 +144,7 @@ function StrategyStatusRow({ row, pendingSignal }) {
           </span>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
           <div className="text-sm">
             <span className="text-faint">Today P&amp;L: </span>
             <span className={`font-mono font-medium tabular-nums ${pnlClass(row.today_pnl)}`}>{fmtRupee(row.today_pnl)}</span>
@@ -181,7 +181,7 @@ function StrategyStatusRow({ row, pendingSignal }) {
       {pendingSignal && <PendingSignalBanner signal={pendingSignal} />}
 
       <AnimatePresence initial={false}>
-        {expanded && (row.entry || row.last_closed_today) && (
+        {expanded && (row.entry || row.last_closed) && (
           <motion.div
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
@@ -198,11 +198,11 @@ function StrategyStatusRow({ row, pendingSignal }) {
                 />
               ) : (
                 <InstrumentPanel
-                  contract={row.last_closed_today.contract} qty={row.last_closed_today.qty}
-                  entryTime={row.last_closed_today.entry_time} entryPrice={row.last_closed_today.entry_price}
-                  ltp={row.last_closed_today.exit_price} pnl={row.last_closed_today.pnl}
-                  stopLoss={row.last_closed_today.stop_loss} takeProfit={row.last_closed_today.take_profit}
-                  exitTime={row.last_closed_today.exit_time}
+                  contract={row.last_closed.contract} qty={row.last_closed.qty}
+                  entryTime={row.last_closed.entry_time} entryPrice={row.last_closed.entry_price}
+                  ltp={row.last_closed.exit_price} pnl={row.last_closed.pnl}
+                  stopLoss={row.last_closed.stop_loss} takeProfit={row.last_closed.take_profit}
+                  exitTime={row.last_closed.exit_time}
                 />
               )}
             </div>

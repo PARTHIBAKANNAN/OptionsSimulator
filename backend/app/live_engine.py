@@ -98,19 +98,27 @@ class WebLiveEngine(LiveTrader):
     def _strategy_status_list(self, current_prices: dict) -> list[dict]:
         """One row per registered strategy (see create_all_strategies) — quantman-style: waiting
         for a signal, the currently open position's contract/entry/LTP/trade P&L/SL/TP, or (once
-        flat) the last signal closed today with the same shape, plus that strategy's own P&L for
-        today (realized trades today + any open position's unrealized). last_closed_today is what
-        lets the UI keep an expand affordance up after a signal closes for the day, not just while
-        it's open — see docs/ARCHITECTURE.md."""
+        flat) the strategy's most recent closed trade with the same shape, plus that strategy's
+        own P&L for today (realized trades today + any open position's unrealized). last_closed
+        is scoped to "most recent ever", not "today" — a strategy that last traded on Friday still
+        has something to expand on Monday morning, not just on the day it happened, which is the
+        only thing that keeps the expand affordance from disappearing entirely over a weekend or
+        any other gap between trades. today_pnl is still computed from today's closes only."""
         today = datetime.now(IST).date()
         open_by_strategy: dict[str, list] = {}
         for order in self.paper_trader.get_positions():
             open_by_strategy.setdefault(order.strategy, []).append(order)
 
         closed_today_by_strategy: dict[str, list] = {}
+        last_closed_by_strategy: dict[str, object] = {}
         for order in self.paper_trader.get_trade_history():
-            if order.exit_time and order.exit_time.astimezone(IST).date() == today:
+            if not order.exit_time:
+                continue
+            if order.exit_time.astimezone(IST).date() == today:
                 closed_today_by_strategy.setdefault(order.strategy, []).append(order)
+            current_latest = last_closed_by_strategy.get(order.strategy)
+            if current_latest is None or order.exit_time > current_latest.exit_time:
+                last_closed_by_strategy[order.strategy] = order
 
         rows = []
         all_strategies = [s for engine in self.strategy_engines.values() for s in engine.strategies]
@@ -139,26 +147,27 @@ class WebLiveEngine(LiveTrader):
                     "stop_loss": latest.stop_loss,
                     "take_profit": latest.take_profit,
                 }
-            elif closed_today:
-                last = max(closed_today, key=lambda o: o.exit_time)
-                last_closed = {
-                    "contract": format_display_symbol(last.symbol, next_weekly_expiry_date(last.entry_time)),
-                    "qty": last.qty,
-                    "entry_price": last.entry_price,
-                    "entry_time": last.entry_time.isoformat(),
-                    "exit_price": last.exit_price,
-                    "exit_time": last.exit_time.isoformat(),
-                    "pnl": last.net_pnl if last.net_pnl is not None else last.realized_pnl,
-                    "exit_reason": last.exit_reason,
-                    "stop_loss": last.stop_loss,
-                    "take_profit": last.take_profit,
-                }
+            else:
+                last = last_closed_by_strategy.get(name)
+                if last is not None:
+                    last_closed = {
+                        "contract": format_display_symbol(last.symbol, next_weekly_expiry_date(last.entry_time)),
+                        "qty": last.qty,
+                        "entry_price": last.entry_price,
+                        "entry_time": last.entry_time.isoformat(),
+                        "exit_price": last.exit_price,
+                        "exit_time": last.exit_time.isoformat(),
+                        "pnl": last.net_pnl if last.net_pnl is not None else last.realized_pnl,
+                        "exit_reason": last.exit_reason,
+                        "stop_loss": last.stop_loss,
+                        "take_profit": last.take_profit,
+                    }
 
             rows.append({
                 "strategy": name,
                 "status": "SIGNAL_ENTERED" if opens else "WAITING",
                 "entry": entry,
-                "last_closed_today": last_closed,
+                "last_closed": last_closed,
                 "today_pnl": round(today_pnl, 2),
             })
         return rows

@@ -15,20 +15,20 @@ export function StrategyPnlComparisonChart({ strategies }) {
         const positive = s.total_pnl >= 0;
         const widthPct = (Math.abs(s.total_pnl) / maxAbs) * 100;
         return (
-          <div key={s.strategy} className="flex items-center gap-2 text-xs">
-            <div className="w-52 shrink-0 truncate text-faint" title={s.strategy}>
+          <div key={s.strategy} className="flex items-center gap-1.5 text-[11px] sm:gap-2 sm:text-xs">
+            <div className="w-20 shrink-0 truncate text-faint sm:w-52" title={s.strategy}>
               {s.strategy.replace(/^SENSEX_/, "")}
-              <span className="ml-1 text-[9px] uppercase text-faint/70">
+              <span className="ml-1 hidden text-[9px] uppercase text-faint/70 sm:inline">
                 {s.strategy.startsWith("SENSEX_") ? "SENSEX" : "NIFTY"}
               </span>
             </div>
-            <div className="relative h-4 flex-1 rounded bg-surface3">
+            <div className="relative h-4 min-w-0 flex-1 rounded bg-surface3">
               <div
                 className={`h-4 rounded ${positive ? "bg-bull" : "bg-bear"}`}
                 style={{ width: `${widthPct}%` }}
               />
             </div>
-            <div className={`w-24 shrink-0 text-right font-mono tabular-nums ${positive ? "text-bull" : "text-bear"}`}>
+            <div className={`w-16 shrink-0 text-right font-mono tabular-nums sm:w-24 ${positive ? "text-bull" : "text-bear"}`}>
               {fmtRupee(s.total_pnl)}
             </div>
           </div>
