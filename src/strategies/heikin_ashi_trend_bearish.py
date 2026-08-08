@@ -14,17 +14,23 @@ DEAD_ZONE_END = dtime(12, 0)
 
 
 class HeikinAshiTrendBearish(BaseStrategy):
-    def __init__(self):
-        super().__init__(name="HEIKIN_ASHI_TREND_BEARISH", direction="PE")
+    def __init__(self, name: str = "HEIKIN_ASHI_TREND_BEARISH", strike_step: int = 50, underlying: str = "NIFTY",
+                 apply_day_time_filter: bool = True):
+        super().__init__(name=name, direction="PE", strike_step=strike_step, underlying=underlying)
+        # The Mon/Tue + 10:00-12:00 exclusion was tuned on NIFTY's own trade-log analysis -- not
+        # assumed to transfer to a different underlying. SENSEX's variant starts with this off so
+        # it can be tested unfiltered first, same discipline as every other strategy here.
+        self.apply_day_time_filter = apply_day_time_filter
 
     def evaluate(self, data_state: dict):
         timestamp = data_state.get("timestamp")
         if timestamp is None:
             return None
-        if timestamp.weekday() in EXCLUDED_WEEKDAYS:
-            return None
-        if DEAD_ZONE_START <= timestamp.time() < DEAD_ZONE_END:
-            return None
+        if self.apply_day_time_filter:
+            if timestamp.weekday() in EXCLUDED_WEEKDAYS:
+                return None
+            if DEAD_ZONE_START <= timestamp.time() < DEAD_ZONE_END:
+                return None
 
         indicators = data_state.get("indicators", {})
         nifty = data_state.get("nifty_price")
@@ -57,4 +63,5 @@ class HeikinAshiTrendBearish(BaseStrategy):
             rationale="Heikin Ashi bearish, no upper wick, price below 50-EMA",
             entry_price=price,
             timestamp=data_state["timestamp"],
+            underlying=self.underlying,
         )

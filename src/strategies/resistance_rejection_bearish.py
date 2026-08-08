@@ -40,5 +40,6 @@ class ResistanceRejectionBearish(BaseStrategy):
                 rationale=f"Resistance rejection at 20-EMA, Close:{current.close:.1f} < EMA:{ema20:.1f}",
                 entry_price=price,
                 timestamp=data_state["timestamp"],
+                underlying=self.underlying,
             )
         return None

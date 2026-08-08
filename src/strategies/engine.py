@@ -4,32 +4,24 @@ from datetime import datetime, timedelta
 from src.strategies.base_strategy import BaseStrategy, Signal
 from src.strategies.heikin_ashi_trend_bearish import HeikinAshiTrendBearish
 from src.strategies.macd_bullish import MACDBullish
-from src.strategies.support_bounce_bullish import SupportBounceBullish
 from src.strategies.orb_bullish import ORBBullish
-from src.strategies.rsi_overbought_bearish import RSIOverboughtBearish
 from src.strategies.macd_bearish import MACDBearish
-from src.strategies.resistance_rejection_bearish import ResistanceRejectionBearish
-from src.strategies.orb_bearish import ORBBearish
 
 
 def create_all_strategies() -> list[BaseStrategy]:
-    # RSIOversoldBullish is deliberately excluded: a full-year out-of-sample backtest showed it
-    # has no genuine edge (only profitable on the exact 90-day window it was originally tuned on,
-    # net negative everywhere else, 300+ days continuously underwater). Dropped rather than run
-    # live — see docs/ARCHITECTURE.md.
-    #
-    # HeikinAshiTrendBearish cleared its own 2-year out-of-sample check (profit factor held up
-    # across both halves) and is going live for a 1-2 month paper-trading pilot alongside
-    # ORB_BULLISH. HeikinAshiTrendBullish has not been validated the same way and stays excluded.
+    # Curated live roster, replacing the original 8-strategy NIFTY set after a full backtest
+    # comparison across all of them plus a 2-year out-of-sample check on the two newer additions
+    # (ORB_BULLISH already had a strike-step fix validated; HeikinAshiTrendBearish's profit factor
+    # held up across both halves of its 2-year window). MACD_BULLISH/MACD_BEARISH were already the
+    # strongest performers in the original comparison. SupportBounceBullish, RSIOverboughtBearish,
+    # ResistanceRejectionBearish, ORBBearish, and RSIOversoldBullish (no genuine out-of-sample edge)
+    # are dropped from the live roster -- see docs/ARCHITECTURE.md. HeikinAshiTrendBullish has not
+    # been validated the same way as its bearish counterpart and stays excluded.
     return [
-        MACDBullish(),
-        SupportBounceBullish(),
         ORBBullish(),
-        RSIOverboughtBearish(),
-        MACDBearish(),
-        ResistanceRejectionBearish(),
-        ORBBearish(),
+        MACDBullish(),
         HeikinAshiTrendBearish(),
+        MACDBearish(),
     ]
 
 

@@ -5,7 +5,7 @@ import pytest
 
 from src.config import Config
 from src.strategies.base_strategy import Signal
-from src.trader import IST, LiveTrader, is_market_open
+from src.trader import IST, LiveTrader, NIFTY_SYMBOL, SENSEX_SYMBOL, is_market_open
 
 
 def _make_config(extra_risk_params: dict = None) -> Config:
@@ -183,7 +183,7 @@ def test_ensure_connection_state_seeds_historical_candles_before_market_opens():
     market_open = trader.ensure_connection_state(datetime(2026, 8, 4, 8, 55, tzinfo=IST))
 
     assert market_open is False
-    trader.fyers.get_historical_data.assert_called_once()
+    assert trader.fyers.get_historical_data.call_count == 2  # once each for NIFTY and SENSEX
     trader.fyers.start_websocket.assert_not_called()  # still shouldn't connect the live stream
 
 
@@ -195,7 +195,33 @@ def test_ensure_connection_state_only_seeds_historical_candles_once_per_day():
     trader.ensure_connection_state(datetime(2026, 8, 4, 9, 15, tzinfo=IST))
     trader.ensure_connection_state(datetime(2026, 8, 4, 14, 0, tzinfo=IST))
 
-    assert trader.fyers.get_historical_data.call_count == 1
+    assert trader.fyers.get_historical_data.call_count == 2  # once each for NIFTY and SENSEX, not re-triggered
+
+
+def test_on_tick_routes_index_ticks_to_the_matching_data_manager():
+    trader = LiveTrader(_make_config())
+    trader.on_tick({"symbol": NIFTY_SYMBOL, "ltp": 24500.0, "vol_traded_today": 1000})
+    trader.on_tick({"symbol": SENSEX_SYMBOL, "ltp": 81500.0, "vol_traded_today": 500})
+
+    assert trader.data_managers["NIFTY"].get_state()["nifty_price"] == 24500.0
+    assert trader.data_managers["SENSEX"].get_state()["nifty_price"] == 81500.0
+
+
+def test_on_tick_routes_option_ticks_by_exchange_prefix():
+    trader = LiveTrader(_make_config())
+    trader.on_tick({"symbol": "NSE:NIFTY2681124600CE", "ltp": 172.1})
+    trader.on_tick({"symbol": "BSE:SENSEX2681181500CE", "ltp": 250.0})
+
+    assert trader.data_managers["NIFTY"].get_option_chain()["NSE:NIFTY2681124600CE"].ltp == 172.1
+    assert trader.data_managers["SENSEX"].get_option_chain()["BSE:SENSEX2681181500CE"].ltp == 250.0
+
+
+def test_on_tick_drops_a_tick_with_an_unrecognized_exchange_prefix():
+    trader = LiveTrader(_make_config())
+    trader.on_tick({"symbol": "XYZ:SOMETHING24500CE", "ltp": 100.0})  # must not raise
+
+    assert trader.data_managers["NIFTY"].get_option_chain() == {}
+    assert trader.data_managers["SENSEX"].get_option_chain() == {}
 
 
 def test_on_market_closed_tick_is_a_noop_on_the_base_cli_trader():

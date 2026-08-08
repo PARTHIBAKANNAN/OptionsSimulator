@@ -57,5 +57,6 @@ class ORBBearish(BaseStrategy):
                 rationale=f"ORB breakdown below opening range low {self._range_low:.1f}",
                 entry_price=price,
                 timestamp=data_state["timestamp"],
+                underlying=self.underlying,
             )
         return None

@@ -13,6 +13,25 @@ def test_order_placed_successfully():
     assert len(trader.get_positions()) == 1
 
 
+def test_order_underlying_derived_from_symbol_prefix():
+    trader = PaperTrader(slippage_pct=0)
+    nifty_order = trader.place_order("NIFTY24500CE", "BUY", qty=1, price=65.0)
+    sensex_order = trader.place_order("SENSEX81500CE", "BUY", qty=1, price=250.0)
+    assert nifty_order.underlying == "NIFTY"
+    assert sensex_order.underlying == "SENSEX"
+
+
+def test_place_order_lot_size_override_sizes_that_order_only():
+    # One shared PaperTrader across NIFTY (lot_size=65 default) and SENSEX (20) -- an explicit
+    # per-call override must size only that order, not change the instance default for the rest.
+    trader = PaperTrader(slippage_pct=0, lot_size=65)
+    nifty_order = trader.place_order("NIFTY24500CE", "BUY", qty=1, price=65.0)
+    sensex_order = trader.place_order("SENSEX81500CE", "BUY", qty=1, price=250.0, lot_size=20)
+    assert nifty_order.lot_size == 65
+    assert sensex_order.lot_size == 20
+    assert trader.lot_size == 65  # instance default untouched
+
+
 def test_slippage_applied_on_buy():
     trader = PaperTrader(slippage_pct=1.0)
     order = trader.place_order("NIFTY24500CE", "BUY", qty=1, price=100.0)

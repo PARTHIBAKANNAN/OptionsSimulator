@@ -58,5 +58,6 @@ class ORBBullish(BaseStrategy):
                 rationale=f"ORB breakout above opening range high {self._range_high:.1f}",
                 entry_price=price,
                 timestamp=data_state["timestamp"],
+                underlying=self.underlying,
             )
         return None

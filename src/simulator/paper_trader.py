@@ -5,6 +5,7 @@ applies stop-loss/take-profit/time-exit, and calculates realized + unrealized P&
 import uuid
 from dataclasses import dataclass, field
 from datetime import date, datetime, timedelta
+from functools import cached_property
 from typing import Optional
 
 from src.utils.charges import calculate_charges
@@ -34,6 +35,12 @@ class Order:
 
     def unrealized_pnl(self, current_price: float) -> float:
         return (current_price - self.entry_price) * self.qty * self.lot_size
+
+    @cached_property
+    def underlying(self) -> str:
+        """Derived from the symbol itself rather than a stored field/DB column -- avoids a
+        migration and avoids handling NULL on pre-migration rows. See docs/ARCHITECTURE.md."""
+        return "SENSEX" if self.symbol.startswith("SENSEX") else "NIFTY"
 
     @property
     def net_pnl(self) -> Optional[float]:
@@ -142,9 +149,14 @@ class PaperTrader:
 
     def place_order(self, symbol: str, side: str, qty: int, price: float,
                      stop_loss: float = None, take_profit: float = None,
-                     strategy: str = None, timestamp: datetime = None) -> Order:
+                     strategy: str = None, timestamp: datetime = None,
+                     lot_size: int = None) -> Order:
         timestamp = timestamp or datetime.now()
         self._roll_day(timestamp)
+        # Per-order override so one shared PaperTrader can size NIFTY (65) and SENSEX (20) orders
+        # correctly -- falls back to the instance default when a caller doesn't pass one, so any
+        # code path that forgets stays on today's single-index behavior instead of crashing.
+        lot_size = lot_size if lot_size is not None else self.lot_size
 
         if self._realized_pnl_today <= -abs(self.max_daily_loss):
             raise RiskLimitExceeded(f"Daily loss limit of {self.max_daily_loss} already hit")
@@ -160,7 +172,7 @@ class PaperTrader:
                     f"Strategy '{strategy}' is paused by a circuit breaker until {paused_until}")
 
         fill_price = price * (1 + self.slippage_pct / 100) if side == "BUY" else price * (1 - self.slippage_pct / 100)
-        order_value = fill_price * qty * self.lot_size
+        order_value = fill_price * qty * lot_size
         entry_charges = calculate_charges(order_value, "BUY", self.charges_rates).total
 
         if strategy is not None and strategy in self.wallet_balance:
@@ -179,7 +191,7 @@ class PaperTrader:
             symbol=symbol,
             side=side,
             qty=qty,
-            lot_size=self.lot_size,
+            lot_size=lot_size,
             entry_price=fill_price,
             entry_time=timestamp,
             status="OPEN",

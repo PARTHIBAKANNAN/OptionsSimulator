@@ -1,7 +1,7 @@
 """Paper-trading REST endpoints. Live views (positions/pnl/pending signals) read the in-memory
 snapshot the engine publishes; trade history reads Postgres since it must survive a restart."""
 import io
-from datetime import date as date_cls
+from datetime import date as date_cls, datetime
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
 
@@ -61,6 +61,65 @@ def _get_engine(request: Request):
     return engine
 
 
+def _all_strategy_names(engine) -> list[str]:
+    """Strategy names across both indices (engine.strategy_engines is {"NIFTY": ..., "SENSEX":
+    ...}) -- P&L reporting must cover both, not just NIFTY's."""
+    return [s.name for strategy_engine in engine.strategy_engines.values() for s in strategy_engine.strategies]
+
+
+def _current_price(engine, symbol: str) -> float | None:
+    """Live LTP for a symbol, checked across both indices' option chains (NIFTY/SENSEX symbols
+    are already uniquely prefixed, so there's no ambiguity in which chain to check first)."""
+    for data_manager in engine.data_managers.values():
+        quote = data_manager.get_option_chain().get(symbol)
+        if quote is not None and quote.ltp:
+            return quote.ltp
+    return None
+
+
+async def _close_and_persist(engine, order_id: str):
+    """Shared by the single and bulk square-off endpoints: closes one open position at its
+    current LTP (falling back to entry price -- a 0 P&L close -- only if no live quote is
+    available at all, rather than rejecting the square-off outright), persists it, and updates
+    that strategy's wallet. Returns the closed Order, or None if it wasn't open."""
+    order = engine.paper_trader.orders.get(order_id)
+    if order is None or order.status != "OPEN":
+        return None
+    price = _current_price(engine, order.symbol) or order.entry_price
+    closed = engine.paper_trader.close_position(
+        order_id, price=price, timestamp=datetime.now(IST), reason="MANUAL_SQUARE_OFF")
+    if closed is None:
+        return None
+    await engine._close_position_db(closed)
+    if closed.strategy:
+        await engine._save_wallet_db(closed.strategy)
+    return closed
+
+
+@router.post("/positions/{order_id}/close")
+async def close_position(order_id: str, request: Request):
+    """Square Off: manually closes one open (simulated) position at its current LTP."""
+    engine = _get_engine(request)
+    closed = await _close_and_persist(engine, order_id)
+    if closed is None:
+        raise HTTPException(status_code=404, detail="Open position not found")
+    engine._publish_state()
+    return {"order_id": closed.order_id, "exit_price": closed.exit_price, "realized_pnl": closed.realized_pnl}
+
+
+@router.post("/positions/close-all")
+async def close_all_positions(request: Request):
+    """Square Off All / Day Square Off: closes every currently open position."""
+    engine = _get_engine(request)
+    closed_ids = []
+    for order in list(engine.paper_trader.get_positions()):
+        closed = await _close_and_persist(engine, order.order_id)
+        if closed is not None:
+            closed_ids.append(closed.order_id)
+    engine._publish_state()
+    return {"closed_count": len(closed_ids), "order_ids": closed_ids}
+
+
 def _parse_range(range: str, start: str, end: str) -> tuple[date_cls, date_cls]:
     try:
         return resolve_range(
@@ -113,7 +172,7 @@ async def get_pnl_report(request: Request, range: str = "today", start: str = No
     engine = _get_engine(request)
     start_date, end_date = _parse_range(range, start, end)
 
-    strategy_names = [s.name for s in engine.strategy_engine.strategies]
+    strategy_names = _all_strategy_names(engine)
     db_rows = await pnl_service.strategy_pnl_rows(start_date, end_date)
     wallets = engine.paper_trader.get_all_wallets()
     strategies = pnl_service.build_strategy_summary(strategy_names, db_rows, wallets)
@@ -131,7 +190,7 @@ async def export_pnl(request: Request, range: str = "today", start: str = None, 
     engine = _get_engine(request)
     start_date, end_date = _parse_range(range, start, end)
 
-    strategy_names = [s.name for s in engine.strategy_engine.strategies]
+    strategy_names = _all_strategy_names(engine)
     db_rows = await pnl_service.strategy_pnl_rows(start_date, end_date)
     wallets = engine.paper_trader.get_all_wallets()
     strategies = pnl_service.build_strategy_summary(strategy_names, db_rows, wallets)

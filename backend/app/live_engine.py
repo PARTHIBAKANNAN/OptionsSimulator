@@ -11,7 +11,8 @@ has something to show.
 import asyncio
 import traceback
 import uuid
-from datetime import datetime
+from datetime import datetime, timedelta
+from datetime import time as dtime
 from pathlib import Path
 
 import pandas as pd
@@ -28,6 +29,7 @@ from .state import shared_state, pending_signals
 from . import db
 
 HISTORICAL_PATH = Path(__file__).resolve().parent.parent.parent / "data" / "historical" / "nifty_90days.csv"
+SENSEX_HISTORICAL_PATH = Path(__file__).resolve().parent.parent.parent / "data" / "historical" / "sensex_1year.csv"
 REPLAY_SECONDS_PER_CANDLE = 0.05
 
 
@@ -36,12 +38,18 @@ class WebLiveEngine(LiveTrader):
         super().__init__(config)
         self.data_engine_enabled = data_engine_enabled
         self._replay_df: pd.DataFrame | None = None
+        # Timestamp of the last 1-min candle already written to options_candle_history, per
+        # index -- lets _maybe_persist_new_candles() persist only what's new each cycle instead
+        # of re-scanning/re-inserting the whole in-memory window every time.
+        self._last_persisted_candle_ts: dict[str, datetime] = {}
 
     # ---- State publishing (feeds the Broadcaster) ----------------------------------
 
     def _publish_state(self) -> None:
         state = self.data_manager.get_state()
-        current_prices = {sym: q.ltp for sym, q in self.data_manager.get_option_chain().items()}
+        current_prices = {}
+        for data_manager in self.data_managers.values():
+            current_prices.update({sym: q.ltp for sym, q in data_manager.get_option_chain().items()})
         pnl = self.paper_trader.get_pnl(current_prices)
 
         now = datetime.now(IST)
@@ -51,12 +59,26 @@ class WebLiveEngine(LiveTrader):
         change = (nifty_price - prev_close) if (nifty_price is not None and prev_close) else None
         change_pct = (change / prev_close * 100) if (change is not None and prev_close) else None
 
+        sensex_state = self.data_managers["SENSEX"].get_state()
+        sensex_price = sensex_state["nifty_price"]
+        sensex_prev_close = self.data_managers["SENSEX"].get_prev_close(today)
+        sensex_change = (
+            (sensex_price - sensex_prev_close) if (sensex_price is not None and sensex_prev_close) else None)
+        sensex_change_pct = (
+            (sensex_change / sensex_prev_close * 100) if (sensex_change is not None and sensex_prev_close) else None)
+
         shared_state.update({
             "nifty_price": nifty_price,
             "nifty_prev_close": prev_close,
             "nifty_change": round(change, 2) if change is not None else None,
             "nifty_change_pct": round(change_pct, 2) if change_pct is not None else None,
             "nifty_sparkline": [c.close for c in self.data_manager.get_today_candles(today)],
+            "nifty_candles_5m": self.data_manager.get_candles_5m_with_delta(today),
+            "sensex_price": sensex_price,
+            "sensex_prev_close": sensex_prev_close,
+            "sensex_change": round(sensex_change, 2) if sensex_change is not None else None,
+            "sensex_change_pct": round(sensex_change_pct, 2) if sensex_change_pct is not None else None,
+            "sensex_candles_5m": self.data_managers["SENSEX"].get_candles_5m_with_delta(today),
             "timestamp": state["timestamp"].isoformat() if state["timestamp"] else None,
             "market_open": self.is_running,
             # Real exchange-hours state (item 3C/B) — distinct from market_open above, which is
@@ -91,7 +113,8 @@ class WebLiveEngine(LiveTrader):
                 closed_today_by_strategy.setdefault(order.strategy, []).append(order)
 
         rows = []
-        for strategy in self.strategy_engine.strategies:
+        all_strategies = [s for engine in self.strategy_engines.values() for s in engine.strategies]
+        for strategy in all_strategies:
             name = strategy.name
             opens = open_by_strategy.get(name, [])
             closed_today = closed_today_by_strategy.get(name, [])
@@ -106,7 +129,9 @@ class WebLiveEngine(LiveTrader):
                 if trade_pnl is not None:
                     today_pnl += trade_pnl
                 entry = {
+                    "order_id": latest.order_id,
                     "contract": format_display_symbol(latest.symbol, next_weekly_expiry_date(latest.entry_time)),
+                    "qty": latest.qty,
                     "entry_price": latest.entry_price,
                     "entry_time": latest.entry_time.isoformat(),
                     "ltp": ltp,
@@ -118,6 +143,7 @@ class WebLiveEngine(LiveTrader):
                 last = max(closed_today, key=lambda o: o.exit_time)
                 last_closed = {
                     "contract": format_display_symbol(last.symbol, next_weekly_expiry_date(last.entry_time)),
+                    "qty": last.qty,
                     "entry_price": last.entry_price,
                     "entry_time": last.entry_time.isoformat(),
                     "exit_price": last.exit_price,
@@ -294,6 +320,72 @@ class WebLiveEngine(LiveTrader):
         except Exception as e:
             self.logger.log_error(f"State restore failed, starting fresh: {e}")
 
+        # Separate try/except: a candle-history restore failure shouldn't be treated as if
+        # wallets/positions also failed to restore (they're independent DB reads).
+        try:
+            await self._restore_candle_history(pool, today)
+        except Exception as e:
+            self.logger.log_error(f"Candle history restore failed, starting with an empty chart: {e}")
+
+    async def _restore_candle_history(self, pool, today) -> None:
+        """Restores today's already-persisted 1-min candles (OHLCV + tick-rule delta) per index,
+        run BEFORE _seed_historical_candles() (called later, inside the main loop's first tick)
+        -- DataManager.load_historical() preserves delta on any timestamp that already has a
+        candle in memory, so seeding fresh REST OHLCV afterwards can't wipe out the real delta
+        history restored here. Without this, the chart's cumulative-delta view resets to empty on
+        every backend restart, even though the underlying data was never actually lost."""
+        for index, data_manager in self.data_managers.items():
+            rows = await asyncio.wait_for(
+                pool.fetch(
+                    """SELECT bucket_minute, open, high, low, close, volume, delta
+                       FROM options_candle_history WHERE underlying=$1 AND bucket_date=$2
+                       ORDER BY bucket_minute""",
+                    index, today),
+                timeout=self.DB_TIMEOUT_SECS)
+            if not rows:
+                continue
+            midnight = datetime.combine(today, dtime(0, 0), tzinfo=IST)
+            restored = [
+                Candle(
+                    timestamp=midnight + timedelta(minutes=row["bucket_minute"]),
+                    open=float(row["open"]), high=float(row["high"]), low=float(row["low"]),
+                    close=float(row["close"]), volume=int(row["volume"] or 0), delta=float(row["delta"] or 0),
+                )
+                for row in rows
+            ]
+            data_manager.candles = restored
+            self._last_persisted_candle_ts[index] = restored[-1].timestamp
+        self.logger.log_websocket_event(
+            "candle_history_restored", {index: len(dm.candles) for index, dm in self.data_managers.items()})
+
+    def _maybe_persist_new_candles(self) -> None:
+        """Detects and queues persistence of any 1-min candles that completed since the last
+        check, for both indices -- lets today's chart/CVD history survive a restart instead of
+        resetting to empty (only available from live ticks, never re-derivable from Fyers'
+        historical REST data). Fire-and-forget, same pattern as _save_wallet_db elsewhere here;
+        the sync/async split lets this run from evaluate_strategies() (not itself async) while
+        still doing the actual DB write asynchronously."""
+        for index, data_manager in self.data_managers.items():
+            last_ts = self._last_persisted_candle_ts.get(index)
+            new_candles = [c for c in data_manager.candles if last_ts is None or c.timestamp > last_ts]
+            if not new_candles:
+                continue
+            self._last_persisted_candle_ts[index] = new_candles[-1].timestamp
+            asyncio.create_task(self._persist_candles_db(index, new_candles))
+
+    async def _persist_candles_db(self, index: str, candles: list) -> None:
+        for candle in candles:
+            midnight = candle.timestamp.replace(hour=0, minute=0, second=0, microsecond=0)
+            bucket_minute = int((candle.timestamp - midnight).total_seconds() // 60)
+            await self._db_execute(
+                """INSERT INTO options_candle_history
+                   (underlying, bucket_date, bucket_minute, open, high, low, close, volume, delta)
+                   VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+                   ON CONFLICT (underlying, bucket_date, bucket_minute) DO NOTHING""",
+                index, candle.timestamp.date(), bucket_minute,
+                candle.open, candle.high, candle.low, candle.close, candle.volume, candle.delta,
+            )
+
     async def _save_signal_db(self, signal_id: str, signal, status: str) -> None:
         await self._db_execute(
             """INSERT INTO options_signals
@@ -309,9 +401,16 @@ class WebLiveEngine(LiveTrader):
     def evaluate_strategies(self):
         signals = super().evaluate_strategies()
         self._publish_state()
+        self._maybe_persist_new_candles()
         return signals
 
     def _on_market_closed_tick(self) -> None:
+        # Flushes the day's last still-forming candle once (idempotent -- a no-op on every
+        # subsequent closed-tick, see DataManager.flush_current_candle) so it isn't lost/left
+        # unpersisted, mirroring TradeDashBoard's end-of-day flush_all().
+        for data_manager in self.data_managers.values():
+            data_manager.flush_current_candle()
+        self._maybe_persist_new_candles()
         self._publish_state()
 
     async def execute_signal(self, signal) -> None:
@@ -403,7 +502,12 @@ class WebLiveEngine(LiveTrader):
         # datetime.now(IST)) the instant a position survives to its time-exit check. This was
         # the real-money-free repeat of the original freeze bug (see _check_exits_replay) — it
         # hit live mode the first time it ever ran with a real open position (2026-08-05).
-        current_prices = {sym: q.ltp for sym, q in self.data_manager.get_option_chain().items()}
+        #
+        # Merging both indices' option chains is safe (no key collisions): NIFTY and SENSEX
+        # symbols are already uniquely prefixed by select_strike().
+        current_prices = {}
+        for data_manager in self.data_managers.values():
+            current_prices.update({sym: q.ltp for sym, q in data_manager.get_option_chain().items()})
         closed = self.paper_trader.update_positions(
             current_prices, timestamp=datetime.now(IST), time_exit_mins=self.time_exit_mins)
         for order in closed:
@@ -427,10 +531,29 @@ class WebLiveEngine(LiveTrader):
             await super().stop()
 
     async def _start_replay(self) -> None:
-        if not HISTORICAL_PATH.exists():
+        # Merges both indices' historical CSVs by timestamp so SENSEX strategies aren't blind
+        # whenever replay mode triggers (local dev, or the corporate network blocking live
+        # Fyers) -- without this they'd evaluate against permanently-empty state, and any signal
+        # that DID fire on stale data would risk the same class of orphaned-position bug already
+        # fixed once for NIFTY-only replay. Falls back to NIFTY-only if the SENSEX CSV is
+        # missing, rather than failing replay mode entirely.
+        frames = []
+        if HISTORICAL_PATH.exists():
+            nifty_df = pd.read_csv(HISTORICAL_PATH, parse_dates=["Timestamp"])
+            nifty_df["underlying"] = "NIFTY"
+            frames.append(nifty_df)
+        else:
             self.logger.log_error(f"Replay mode: no historical data at {HISTORICAL_PATH}")
+        if SENSEX_HISTORICAL_PATH.exists():
+            sensex_df = pd.read_csv(SENSEX_HISTORICAL_PATH, parse_dates=["Timestamp"])
+            sensex_df["underlying"] = "SENSEX"
+            frames.append(sensex_df)
+        else:
+            self.logger.log_error(f"Replay mode: no SENSEX historical data at {SENSEX_HISTORICAL_PATH} "
+                                   f"-- continuing NIFTY-only")
+        if not frames:
             return
-        self._replay_df = pd.read_csv(HISTORICAL_PATH, parse_dates=["Timestamp"])
+        self._replay_df = pd.concat(frames, ignore_index=True).sort_values("Timestamp")
         self.is_running = True
 
         candle_count = 0
@@ -441,13 +564,14 @@ class WebLiveEngine(LiveTrader):
                 try:
                     candle = Candle(timestamp=row.Timestamp, open=row.Open, high=row.High,
                                      low=row.Low, close=row.Close, volume=int(row.Volume))
-                    self.data_manager.replay_candle(candle)
-                    state = self.data_manager.get_state()
+                    data_manager = self.data_managers[row.underlying]
+                    data_manager.replay_candle(candle)
+                    state = data_manager.get_state()
                     if state["nifty_price"] is None:
                         continue
 
                     candle_count += 1
-                    self._check_exits_replay()
+                    self._check_exits_replay(now=state["timestamp"])
 
                     for signal in self.evaluate_strategies():
                         asyncio.create_task(self.execute_signal(signal))
@@ -464,17 +588,24 @@ class WebLiveEngine(LiveTrader):
 
                 await asyncio.sleep(REPLAY_SECONDS_PER_CANDLE)
 
-    def _check_exits_replay(self) -> None:
+    def _check_exits_replay(self, now: datetime = None) -> None:
         """Replay has no live option-chain LTP — mark to market with the same Black-Scholes
-        estimate the backtester uses."""
-        state = self.data_manager.get_state()
-        days_to_expiry = next_weekly_expiry_days(state["timestamp"])
+        estimate the backtester uses. `now` is the just-replayed candle's own timestamp (the
+        simulated "current time" driving this exit check); defaults to the NIFTY DataManager's
+        latest state for back-compat with direct (NIFTY-only) callers/tests."""
+        if now is None:
+            now = self.data_manager.get_state()["timestamp"]
         current_prices = {}
         for order in self.paper_trader.get_positions():
+            data_manager = self.data_managers.get(order.underlying, self.data_manager)
+            spot = data_manager.get_state()["nifty_price"]
+            if spot is None:
+                continue
+            days_to_expiry = next_weekly_expiry_days(now, index=order.underlying)
             strike, option_type = parse_option_symbol(order.symbol)
             if strike is not None:
                 current_prices[order.symbol] = black_scholes_price(
-                    spot=state["nifty_price"], strike=strike,
+                    spot=spot, strike=strike,
                     days_to_expiry=days_to_expiry, option_type=option_type,
                 )
         # Must pass the simulated candle timestamp — otherwise update_positions() defaults to
@@ -484,7 +615,7 @@ class WebLiveEngine(LiveTrader):
         # freeze: every candle from then on hit the same exception, forever, on a position that
         # could never close (see the try/except around the caller in _start_replay).
         closed = self.paper_trader.update_positions(
-            current_prices, timestamp=state["timestamp"], time_exit_mins=self.time_exit_mins)
+            current_prices, timestamp=now, time_exit_mins=self.time_exit_mins)
         for order in closed:
             asyncio.create_task(self._close_position_db(order))
         self._publish_state()

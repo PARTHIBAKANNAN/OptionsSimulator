@@ -35,5 +35,6 @@ class MACDBullish(BaseStrategy):
                 rationale="MACD bullish cross, price above 50-EMA",
                 entry_price=price,
                 timestamp=data_state["timestamp"],
+                underlying=self.underlying,
             )
         return None

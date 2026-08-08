@@ -162,12 +162,16 @@ def test_circuit_breaker_disabled_by_default_when_no_config_section():
 
 # ---- strategy_status_list: quantman-style per-strategy waiting/entered summary ----------------
 
+def _all_strategies(engine):
+    return [s for strategy_engine in engine.strategy_engines.values() for s in strategy_engine.strategies]
+
+
 def test_strategy_status_list_reports_waiting_for_every_registered_strategy_with_no_positions():
     engine = _make_engine()
     rows = engine._strategy_status_list(current_prices={})
 
-    assert len(rows) == len(engine.strategy_engine.strategies)
-    assert {r["strategy"] for r in rows} == {s.name for s in engine.strategy_engine.strategies}
+    assert len(rows) == len(_all_strategies(engine))
+    assert {r["strategy"] for r in rows} == {s.name for s in _all_strategies(engine)}
     for row in rows:
         assert row["status"] == "WAITING"
         assert row["entry"] is None
@@ -359,6 +363,124 @@ async def test_restore_state_only_queries_positions_opened_today():
     assert today_param == date(2026, 8, 6)
 
 
+# ---- Candle history: today's chart/delta survives a restart -----------------------------------
+
+@pytest.mark.asyncio
+async def test_restore_candle_history_loads_todays_persisted_candles_with_delta():
+    engine = _make_engine(data_engine_enabled=True)
+    today = date(2026, 8, 6)
+    fake_pool = MagicMock()
+    fake_pool.fetch = AsyncMock(side_effect=[
+        [{"bucket_minute": 555, "open": 24000.0, "high": 24010.0, "low": 23990.0,
+          "close": 24005.0, "volume": 500, "delta": 42.0}],  # NIFTY
+        [],  # SENSEX -- nothing persisted yet
+    ])
+
+    await engine._restore_candle_history(fake_pool, today)
+
+    nifty_candles = engine.data_managers["NIFTY"].candles
+    assert len(nifty_candles) == 1
+    assert nifty_candles[0].delta == 42.0
+    assert nifty_candles[0].close == 24005.0
+    assert nifty_candles[0].timestamp == IST.localize(datetime(2026, 8, 6, 9, 15))
+    assert engine.data_managers["SENSEX"].candles == []
+    assert engine._last_persisted_candle_ts["NIFTY"] == nifty_candles[0].timestamp
+    assert "SENSEX" not in engine._last_persisted_candle_ts  # nothing restored, nothing to mark
+
+
+@pytest.mark.asyncio
+async def test_restore_state_candle_failure_does_not_affect_wallet_position_restore():
+    # A separate try/except from the wallet/position restore above -- a candle-history failure
+    # must not be mistaken for (or block) the more critical wallet/position restore succeeding.
+    engine = _make_engine(data_engine_enabled=True)
+    engine.paper_trader.wallet_balance["MACD_BULLISH"] = 85000.0
+    fake_pool = MagicMock()
+    fake_pool.fetch = AsyncMock(side_effect=[
+        [{"strategy": "MACD_BULLISH", "balance": 78000.0}], [], [],  # wallet/positions/trade-count
+        RuntimeError("candle history query failed"),  # NIFTY candle restore blows up
+    ])
+    fake_pool.fetchrow = AsyncMock(return_value={"total": 0.0})
+
+    with patch("backend.app.live_engine.db.get_pool", return_value=fake_pool):
+        await engine._restore_state()  # must not raise
+
+    assert engine.paper_trader.wallet_balance["MACD_BULLISH"] == 78000.0
+
+
+@pytest.mark.asyncio
+async def test_maybe_persist_new_candles_queues_only_candles_not_yet_persisted():
+    engine = _make_engine(data_engine_enabled=True)
+    ts1 = datetime(2026, 1, 1, 9, 15)
+    ts2 = datetime(2026, 1, 1, 9, 16)
+    engine.data_managers["NIFTY"].candles = [
+        Candle(timestamp=ts1, open=100, high=101, low=99, close=100, volume=10),
+        Candle(timestamp=ts2, open=100, high=102, low=100, close=101, volume=20),
+    ]
+    engine._persist_candles_db = AsyncMock()
+
+    engine._maybe_persist_new_candles()
+
+    assert engine._persist_candles_db.call_count == 1  # SENSEX has no candles, nothing queued for it
+    index, candles = engine._persist_candles_db.call_args.args
+    assert index == "NIFTY"
+    assert [c.timestamp for c in candles] == [ts1, ts2]
+    assert engine._last_persisted_candle_ts["NIFTY"] == ts2
+
+
+@pytest.mark.asyncio
+async def test_maybe_persist_new_candles_does_not_requeue_already_persisted_candles():
+    engine = _make_engine(data_engine_enabled=True)
+    ts1 = datetime(2026, 1, 1, 9, 15)
+    ts2 = datetime(2026, 1, 1, 9, 16)
+    engine.data_managers["NIFTY"].candles = [
+        Candle(timestamp=ts1, open=100, high=101, low=99, close=100, volume=10),
+    ]
+    engine._persist_candles_db = AsyncMock()
+    engine._maybe_persist_new_candles()
+    engine._persist_candles_db.reset_mock()
+
+    engine.data_managers["NIFTY"].candles.append(
+        Candle(timestamp=ts2, open=100, high=102, low=100, close=101, volume=20))
+    engine._maybe_persist_new_candles()
+
+    index, candles = engine._persist_candles_db.call_args.args
+    assert [c.timestamp for c in candles] == [ts2]  # only the newly-appended one
+
+
+@pytest.mark.asyncio
+async def test_persist_candles_db_writes_expected_columns():
+    engine = _make_engine(data_engine_enabled=True)
+    engine._db_execute = AsyncMock()
+    candle = Candle(timestamp=datetime(2026, 8, 6, 9, 15), open=100.0, high=101.0, low=99.0,
+                     close=100.5, volume=500, delta=42.0)
+
+    await engine._persist_candles_db("NIFTY", [candle])
+
+    query, *params = engine._db_execute.call_args.args
+    assert "options_candle_history" in query
+    assert params == ["NIFTY", date(2026, 8, 6), 555, 100.0, 101.0, 99.0, 100.5, 500, 42.0]
+
+
+@pytest.mark.asyncio
+async def test_on_market_closed_tick_flushes_the_forming_candle_and_persists_it():
+    engine = _make_engine(data_engine_enabled=True)
+    engine.data_managers["NIFTY"].on_nifty_tick(
+        {"ltp": 24000, "volume": 1000, "timestamp": datetime(2026, 1, 1, 9, 15)})
+    engine._persist_candles_db = AsyncMock()
+
+    engine._on_market_closed_tick()
+
+    assert engine.data_managers["NIFTY"]._current is None  # flushed
+    assert len(engine.data_managers["NIFTY"].candles) == 1
+    engine._persist_candles_db.assert_called_once()
+
+    # Calling it again (as the main loop does every ~5s while closed) must be a harmless no-op --
+    # nothing still forming, and the one candle is already marked persisted.
+    engine._persist_candles_db.reset_mock()
+    engine._on_market_closed_tick()
+    engine._persist_candles_db.assert_not_called()
+
+
 @pytest.mark.asyncio
 async def test_db_execute_is_a_noop_in_replay_mode():
     # Replay mode must never write to the same Postgres table live trading uses -- this exact gap
@@ -411,7 +533,7 @@ def test_on_market_closed_tick_still_publishes_every_strategy_as_waiting():
     engine._on_market_closed_tick()
 
     state = shared_state.get()
-    assert len(state["strategy_status"]) == len(engine.strategy_engine.strategies)
+    assert len(state["strategy_status"]) == len(_all_strategies(engine))
     assert all(row["status"] == "WAITING" for row in state["strategy_status"])
 
 

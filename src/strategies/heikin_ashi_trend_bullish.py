@@ -10,8 +10,8 @@ MAX_WICK_TO_BODY_RATIO = 0.15
 
 
 class HeikinAshiTrendBullish(BaseStrategy):
-    def __init__(self):
-        super().__init__(name="HEIKIN_ASHI_TREND_BULLISH", direction="CE")
+    def __init__(self, name: str = "HEIKIN_ASHI_TREND_BULLISH", strike_step: int = 50, underlying: str = "NIFTY"):
+        super().__init__(name=name, direction="CE", strike_step=strike_step, underlying=underlying)
 
     def evaluate(self, data_state: dict):
         indicators = data_state.get("indicators", {})
@@ -45,4 +45,5 @@ class HeikinAshiTrendBullish(BaseStrategy):
             rationale="Heikin Ashi bullish, no lower wick, price above 50-EMA",
             entry_price=price,
             timestamp=data_state["timestamp"],
+            underlying=self.underlying,
         )

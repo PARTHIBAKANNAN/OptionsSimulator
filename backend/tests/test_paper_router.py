@@ -22,13 +22,100 @@ def _make_app(db_available=False, wallets=None, wallet=None):
     app.dependency_overrides[require_login] = lambda: {"user_id": "test"}
 
     engine = MagicMock()
-    engine.strategy_engine.strategies = [
-        SimpleNamespace(name="MACD_BULLISH"), SimpleNamespace(name="ORB_BULLISH")]
+    engine.strategy_engines = {
+        "NIFTY": SimpleNamespace(strategies=[
+            SimpleNamespace(name="MACD_BULLISH"), SimpleNamespace(name="ORB_BULLISH")]),
+        "SENSEX": SimpleNamespace(strategies=[]),
+    }
     engine.paper_trader.get_wallet.return_value = wallet
     engine.paper_trader.get_all_wallets.return_value = wallets or {}
     app.state.live_engine = engine
     app.state.db_available = db_available
     return app, engine
+
+
+def test_close_position_squares_off_an_open_order_at_live_ltp():
+    app, engine = _make_app()
+    open_order = SimpleNamespace(order_id="abc", symbol="NIFTY24500CE", status="OPEN", entry_price=90.0)
+    engine.paper_trader.orders = {"abc": open_order}
+    closed_order = SimpleNamespace(order_id="abc", exit_price=105.0, realized_pnl=500.0, strategy="MACD_BULLISH")
+    engine.paper_trader.close_position.return_value = closed_order
+    engine._close_position_db = AsyncMock()
+    engine._save_wallet_db = AsyncMock()
+    engine._publish_state = MagicMock()
+
+    nifty_dm = MagicMock()
+    nifty_dm.get_option_chain.return_value = {"NIFTY24500CE": SimpleNamespace(ltp=105.0)}
+    sensex_dm = MagicMock()
+    sensex_dm.get_option_chain.return_value = {}
+    engine.data_managers = {"NIFTY": nifty_dm, "SENSEX": sensex_dm}
+
+    with TestClient(app) as client:
+        resp = client.post("/api/paper/positions/abc/close")
+
+    assert resp.status_code == 200
+    assert resp.json() == {"order_id": "abc", "exit_price": 105.0, "realized_pnl": 500.0}
+    _, kwargs = engine.paper_trader.close_position.call_args
+    assert kwargs["price"] == 105.0  # live LTP, not entry_price fallback
+    engine._close_position_db.assert_awaited_once_with(closed_order)
+    engine._save_wallet_db.assert_awaited_once_with("MACD_BULLISH")
+    engine._publish_state.assert_called_once()
+
+
+def test_close_position_falls_back_to_entry_price_when_no_live_quote():
+    app, engine = _make_app()
+    open_order = SimpleNamespace(order_id="abc", symbol="NIFTY24500CE", status="OPEN", entry_price=90.0)
+    engine.paper_trader.orders = {"abc": open_order}
+    engine.paper_trader.close_position.return_value = SimpleNamespace(
+        order_id="abc", exit_price=90.0, realized_pnl=0.0, strategy="MACD_BULLISH")
+    engine._close_position_db = AsyncMock()
+    engine._save_wallet_db = AsyncMock()
+    engine._publish_state = MagicMock()
+    empty_dm = MagicMock()
+    empty_dm.get_option_chain.return_value = {}
+    engine.data_managers = {"NIFTY": empty_dm, "SENSEX": empty_dm}
+
+    with TestClient(app) as client:
+        client.post("/api/paper/positions/abc/close")
+
+    _, kwargs = engine.paper_trader.close_position.call_args
+    assert kwargs["price"] == 90.0
+
+
+def test_close_position_404s_for_an_unknown_or_already_closed_order():
+    app, engine = _make_app()
+    engine.paper_trader.orders = {}
+
+    with TestClient(app) as client:
+        resp = client.post("/api/paper/positions/does-not-exist/close")
+
+    assert resp.status_code == 404
+
+
+def test_close_all_positions_squares_off_every_open_order():
+    app, engine = _make_app()
+    order1 = SimpleNamespace(order_id="a", symbol="NIFTY24500CE", status="OPEN", entry_price=90.0)
+    order2 = SimpleNamespace(order_id="b", symbol="SENSEX81500PE", status="OPEN", entry_price=200.0)
+    engine.paper_trader.orders = {"a": order1, "b": order2}
+    engine.paper_trader.get_positions.return_value = [order1, order2]
+    closed1 = SimpleNamespace(order_id="a", exit_price=100.0, realized_pnl=10.0, strategy="MACD_BULLISH")
+    closed2 = SimpleNamespace(order_id="b", exit_price=190.0, realized_pnl=-5.0, strategy="SENSEX_MACD_BEARISH")
+    engine.paper_trader.close_position.side_effect = [closed1, closed2]
+    engine._close_position_db = AsyncMock()
+    engine._save_wallet_db = AsyncMock()
+    engine._publish_state = MagicMock()
+    empty_dm = MagicMock()
+    empty_dm.get_option_chain.return_value = {}
+    engine.data_managers = {"NIFTY": empty_dm, "SENSEX": empty_dm}
+
+    with TestClient(app) as client:
+        resp = client.post("/api/paper/positions/close-all")
+
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["closed_count"] == 2
+    assert set(body["order_ids"]) == {"a", "b"}
+    assert engine._close_position_db.await_count == 2
 
 
 def test_strategy_orders_without_db_returns_current_signal_and_wallet_but_no_closed_trades():

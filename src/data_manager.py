@@ -20,6 +20,9 @@ class Candle:
     low: float
     close: float
     volume: int = 0
+    # Cumulative tick-rule delta for this bar (see DataManager._tick_rule_delta) -- stays 0.0 for
+    # candles built from historical/replay OHLCV bars, which carry no tick-level buy/sell info.
+    delta: float = 0.0
 
 
 @dataclass
@@ -34,13 +37,19 @@ class OptionQuote:
 
 
 class DataManager:
-    def __init__(self, window_size: int = 3000):
+    def __init__(self, window_size: int = 3000, underlying: str = "NIFTY"):
         # ~7-8 trading days of 1-min candles (390 min/day) — enough to accumulate
         # 15+ hourly candles for RSI(14)/EMA(50)/MACD(26) on the 1H timeframe.
         self.window_size = window_size
+        self.underlying = underlying  # 'NIFTY' or 'SENSEX' -- selects update_option_chain's key prefix
         self.candles: list[Candle] = []
         self._current: Optional[Candle] = None
         self.option_chain: dict[str, OptionQuote] = {}
+        # Previous tick's LTP/cumulative-volume, for the tick-rule delta classification below --
+        # simple instance attributes (not a per-symbol dict like TradeDashBoard's own version)
+        # since one DataManager already scopes to exactly one index's one spot-price series.
+        self._prev_ltp: Optional[float] = None
+        self._prev_volume: Optional[int] = None
 
         # Multi-timeframe indicators only change when their bar actually closes — recomputing a
         # full resample of up to `window_size` candles on every single 1-min tick is both wasteful
@@ -57,22 +66,52 @@ class DataManager:
         price = float(tick["ltp"])
         volume = int(tick.get("volume", 0))
         minute_bucket = ts.replace(second=0, microsecond=0)
+        tick_delta = self._tick_rule_delta(price, volume)
 
         if self._current is None or self._current.timestamp != minute_bucket:
             if self._current is not None:
                 self._push_candle(self._current)
             self._current = Candle(timestamp=minute_bucket, open=price, high=price, low=price,
-                                    close=price, volume=volume)
+                                    close=price, volume=volume, delta=tick_delta)
         else:
             self._current.high = max(self._current.high, price)
             self._current.low = min(self._current.low, price)
             self._current.close = price
             self._current.volume += volume
+            self._current.delta += tick_delta
+
+    def _tick_rule_delta(self, price: float, volume: int) -> float:
+        """Classifies this tick as buy-side (+) or sell-side (-) pressure by the tick rule: an
+        uptick vs the previous trade's price counts its traded quantity as buying pressure, a
+        downtick as selling, unchanged as neutral -- mirrors TradeDashBoard's proven approach
+        (backend/app/candle_aggregator.py's _tick_delta). `volume` is Fyers' cumulative
+        vol_traded_today, so the quantity attributed to THIS tick is its increase over the
+        previous tick's volume, not the raw value itself."""
+        vol_delta = max(0, volume - self._prev_volume) if self._prev_volume is not None else 0
+        if self._prev_ltp is None or vol_delta == 0:
+            signed = 0.0
+        elif price > self._prev_ltp:
+            signed = float(vol_delta)
+        elif price < self._prev_ltp:
+            signed = -float(vol_delta)
+        else:
+            signed = 0.0
+        self._prev_ltp = price
+        self._prev_volume = volume
+        return signed
 
     def _push_candle(self, candle: Candle) -> None:
         self.candles.append(candle)
         if len(self.candles) > self.window_size:
             self.candles = self.candles[-self.window_size:]
+
+    def flush_current_candle(self) -> None:
+        """Pushes the still-forming candle into history without waiting for the next tick to
+        start a new minute -- called at market close so the day's last partial candle isn't lost
+        (and therefore never persisted -- see WebLiveEngine._on_market_closed_tick)."""
+        if self._current is not None:
+            self._push_candle(self._current)
+            self._current = None
 
     def on_option_tick(self, symbol: str, tick: dict) -> None:
         quote = self.option_chain.get(symbol, OptionQuote(symbol=symbol))
@@ -87,10 +126,16 @@ class DataManager:
     # ---- Historical seeding (backtest) -------------------------------------
 
     def load_historical(self, df: pd.DataFrame) -> None:
-        """df columns: Timestamp, Open, High, Low, Close, Volume"""
+        """df columns: Timestamp, Open, High, Low, Close, Volume. Preserves delta on any
+        timestamp that already has a candle in memory (e.g. today's candles just restored from
+        options_candle_history) -- a fresh REST OHLCV pull has no tick-level delta of its own, so
+        overwriting unconditionally would silently erase real intraday delta history on every
+        daily historical-seed refresh. See docs/ARCHITECTURE.md."""
+        existing_delta = {c.timestamp: c.delta for c in self.candles}
         candles = [
             Candle(timestamp=row.Timestamp, open=row.Open, high=row.High,
-                   low=row.Low, close=row.Close, volume=int(row.Volume))
+                   low=row.Low, close=row.Close, volume=int(row.Volume),
+                   delta=existing_delta.get(row.Timestamp, 0.0))
             for row in df.itertuples(index=False)
         ]
         self.candles = candles[-self.window_size:]
@@ -132,7 +177,7 @@ class DataManager:
             strike = row.get("strike_price")
             option_type = row.get("option_type")
             if strike is not None and strike > 0 and option_type in ("CE", "PE"):
-                self.option_chain[f"NIFTY{int(strike)}{option_type}"] = quote
+                self.option_chain[f"{self.underlying}{int(strike)}{option_type}"] = quote
 
     def get_option_chain(self) -> dict:
         return dict(self.option_chain)
@@ -252,6 +297,35 @@ class DataManager:
         if self._current is not None and self._current.timestamp.date() == today:
             candles.append(self._current)
         return candles
+
+    def get_candles_5m_with_delta(self, today: date) -> list[dict]:
+        """5-min OHLCV + cumulative-tick-delta bars for today's session, for the live chart
+        (see CandleChart.jsx). Includes the still-forming current candle so the last bar updates
+        live instead of freezing until its 5-min bucket actually closes -- same reasoning as
+        get_today_candles above. `bucket` is minutes-since-midnight, matching TradeDashBoard's
+        own CandleChart.jsx convention (bucketToTime())."""
+        todays = self.get_today_candles(today)
+        if not todays:
+            return []
+        df = pd.DataFrame([{
+            "Timestamp": c.timestamp, "Open": c.open, "High": c.high, "Low": c.low,
+            "Close": c.close, "Volume": c.volume, "Delta": c.delta,
+        } for c in todays]).set_index("Timestamp")
+        resampled = df.resample("5min").agg({
+            "Open": "first", "High": "max", "Low": "min", "Close": "last",
+            "Volume": "sum", "Delta": "sum",
+        }).dropna()
+
+        bars = []
+        for ts, row in resampled.iterrows():
+            midnight = ts.replace(hour=0, minute=0, second=0, microsecond=0)
+            bucket = int((ts - midnight).total_seconds() // 60)
+            bars.append({
+                "bucket": bucket, "open": float(row["Open"]), "high": float(row["High"]),
+                "low": float(row["Low"]), "close": float(row["Close"]),
+                "volume": float(row["Volume"]), "delta": float(row["Delta"]),
+            })
+        return bars
 
     def get_state(self) -> dict:
         current = self.get_current_candle()

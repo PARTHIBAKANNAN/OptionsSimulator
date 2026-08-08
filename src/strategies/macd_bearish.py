@@ -32,5 +32,6 @@ class MACDBearish(BaseStrategy):
                 rationale="MACD bearish cross, price below 50-EMA",
                 entry_price=price,
                 timestamp=data_state["timestamp"],
+                underlying=self.underlying,
             )
         return None

@@ -46,6 +46,48 @@ def test_new_minute_pushes_previous_candle():
     assert dm.get_current_candle().open == 24020
 
 
+def test_tick_rule_delta_classifies_upticks_and_downticks():
+    dm = DataManager()
+    ts = datetime(2026, 1, 1, 9, 15, 5)
+    # volume here is Fyers' cumulative vol_traded_today -- monotonically increasing.
+    dm.on_nifty_tick({"ltp": 24000, "volume": 1000, "timestamp": ts})  # first tick: no prior, delta 0
+    dm.on_nifty_tick({"ltp": 24010, "volume": 1100, "timestamp": ts + timedelta(seconds=1)})  # uptick: +100
+    dm.on_nifty_tick({"ltp": 24005, "volume": 1150, "timestamp": ts + timedelta(seconds=2)})  # downtick: -50
+
+    assert dm.get_current_candle().delta == 100 - 50
+
+
+def test_tick_rule_delta_is_zero_on_unchanged_price_or_no_volume_change():
+    dm = DataManager()
+    ts = datetime(2026, 1, 1, 9, 15, 5)
+    dm.on_nifty_tick({"ltp": 24000, "volume": 1000, "timestamp": ts})
+    dm.on_nifty_tick({"ltp": 24000, "volume": 1100, "timestamp": ts + timedelta(seconds=1)})  # same price
+    dm.on_nifty_tick({"ltp": 24010, "volume": 1100, "timestamp": ts + timedelta(seconds=2)})  # no new volume
+
+    assert dm.get_current_candle().delta == 0
+
+
+def test_get_candles_5m_with_delta_resamples_and_sums_delta():
+    dm = DataManager()
+    today = date(2026, 1, 1)
+    base = datetime(2026, 1, 1, 9, 15)
+    ticks = [
+        (base, 24000, 1000), (base + timedelta(minutes=1), 24010, 1100),  # uptick +100
+        (base + timedelta(minutes=2), 24005, 1150),  # downtick -50
+        (base + timedelta(minutes=6), 24020, 1200),  # next 5-min bucket, uptick +50
+    ]
+    for ts, ltp, vol in ticks:
+        dm.on_nifty_tick({"ltp": ltp, "volume": vol, "timestamp": ts})
+
+    bars = dm.get_candles_5m_with_delta(today)
+    assert len(bars) == 2
+    assert bars[0]["bucket"] == 9 * 60 + 15  # 09:15 -> minutes since midnight
+    assert bars[0]["delta"] == 100 - 50
+    assert bars[0]["open"] == 24000
+    assert bars[0]["close"] == 24005
+    assert bars[1]["delta"] == 50
+
+
 def test_indicators_calculated():
     dm = DataManager()
     for c in _synthetic_candles(1000):  # ~16.7 hours -> enough 1H bars for RSI(14)/EMA(50)/MACD(26)
@@ -151,6 +193,60 @@ def test_update_option_chain_stores_both_the_raw_fyers_symbol_and_the_simplified
     assert chain["NIFTY24600PE"].ltp == 108.75
     assert "NSE:NIFTY50-INDEX" in chain
     assert "NIFTY-1CE" not in chain and "NIFTY-1PE" not in chain  # the index row itself, excluded
+
+
+def test_update_option_chain_respects_underlying_for_the_simplified_key():
+    # A SENSEX-underlying DataManager must generate "SENSEX...CE" simplified keys, not "NIFTY...CE"
+    # -- otherwise a second DataManager instance for a different index would silently collide with
+    # NIFTY's own simplified-key convention.
+    dm = DataManager(underlying="SENSEX")
+    chain_data = {"optionsChain": [
+        {"symbol": "BSE:SENSEX2681181500CE", "strike_price": 81500, "option_type": "CE", "ltp": 250.0},
+    ]}
+    dm.update_option_chain(chain_data)
+    chain = dm.get_option_chain()
+    assert chain["SENSEX81500CE"].ltp == 250.0
+    assert "NIFTY81500CE" not in chain
+
+
+def test_flush_current_candle_pushes_the_forming_candle_into_history():
+    dm = DataManager()
+    dm.on_nifty_tick({"ltp": 24000, "volume": 1000, "timestamp": datetime(2026, 1, 1, 9, 15)})
+    assert dm.get_current_candle() is not None
+    assert len(dm.candles) == 0
+
+    dm.flush_current_candle()
+
+    assert dm._current is None  # nothing still forming
+    assert len(dm.candles) == 1
+    assert dm.candles[0].close == 24000
+    # get_current_candle() now falls back to the just-flushed candle -- not a regression, just
+    # its documented behavior ("or the last closed one") once nothing is forming.
+    assert dm.get_current_candle() is dm.candles[0]
+
+
+def test_flush_current_candle_is_a_noop_when_nothing_is_forming():
+    dm = DataManager()
+    dm.flush_current_candle()  # must not raise
+    assert dm.candles == []
+
+
+def test_load_historical_preserves_existing_delta_for_matching_timestamps():
+    # A restart restores today's candles (with real tick-rule delta) from the DB before the daily
+    # historical-seed refresh runs; that fresh REST OHLCV pull has no delta of its own, and must
+    # not silently overwrite the real delta already in memory for timestamps it already covers.
+    dm = DataManager()
+    ts = datetime(2026, 1, 1, 9, 15)
+    dm.candles = [Candle(timestamp=ts, open=100, high=101, low=99, close=100.5, volume=500, delta=42.0)]
+
+    df = pd.DataFrame([
+        {"Timestamp": ts, "Open": 100, "High": 101, "Low": 99, "Close": 100.5, "Volume": 500},
+        {"Timestamp": ts + timedelta(minutes=1), "Open": 100.5, "High": 102, "Low": 100, "Close": 101, "Volume": 400},
+    ])
+    dm.load_historical(df)
+
+    assert dm.candles[0].delta == 42.0  # preserved
+    assert dm.candles[1].delta == 0.0   # no prior data for this new timestamp
 
 
 def test_window_size_trims_candles():

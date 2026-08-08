@@ -41,5 +41,6 @@ class RSIOversoldBullish(BaseStrategy):
                 rationale=f"RSI:{rsi:.1f} oversold, Stoch:{stoch_k:.1f}, Volume:{volume_ratio:.2f}x",
                 entry_price=price,
                 timestamp=data_state["timestamp"],
+                underlying=self.underlying,
             )
         return None

@@ -342,16 +342,15 @@ def test_heikin_ashi_trend_bearish_no_signal_in_the_10am_to_12pm_dead_zone():
     assert strategy.evaluate(state) is not None
 
 
-def test_heikin_ashi_bearish_is_live_eligible_but_bullish_is_not():
-    # Bearish cleared its 2-year out-of-sample check and went live for a paper-trading pilot
-    # alongside ORB_BULLISH; Bullish hasn't been validated the same way -- see docs/ARCHITECTURE.md.
+def test_nifty_live_roster_is_the_curated_four_strategy_set():
+    # Curated after the full backtest comparison + HeikinAshiTrendBearish's 2-year out-of-sample
+    # check -- see docs/ARCHITECTURE.md. Everything else from the original 8 is dropped.
     names = {s.name for s in create_all_strategies()}
-    assert "HEIKIN_ASHI_TREND_BEARISH" in names
-    assert "HEIKIN_ASHI_TREND_BULLISH" not in names
+    assert names == {"ORB_BULLISH", "MACD_BULLISH", "HEIKIN_ASHI_TREND_BEARISH", "MACD_BEARISH"}
 
 
 def test_confidence_score_present_on_all_strategies():
-    assert len(create_all_strategies()) == 8  # RSIOversoldBullish deliberately excluded — no genuine edge
+    assert len(create_all_strategies()) == 4
     # RSI strategy confidence is fixed at 0.75 by design
     strategy = RSIOversoldBullish()
     signal = strategy.evaluate(base_state(indicators={

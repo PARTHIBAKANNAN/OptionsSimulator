@@ -16,6 +16,7 @@ class Signal:
     rationale: str
     entry_price: float
     timestamp: datetime
+    underlying: str = "NIFTY"  # 'NIFTY' or 'SENSEX' -- selects lot size at execution time
 
 
 class BaseStrategy:

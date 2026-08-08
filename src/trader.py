@@ -6,6 +6,13 @@ config/risk_params.json's live_mode.auto_approve; a manual Telegram/web approval
 still available by turning that off, but isn't required for paper trading (no real order
 ever reaches a broker either way — see docs/planning-archive/FYERS_FEASIBILITY_REPORT.md).
 
+Runs NIFTY and SENSEX side by side: one DataManager + StrategyEngine pair per index (each
+strategy only ever evaluates against its own index's price/candles/indicators), sharing one
+PaperTrader (wallets/capital are already keyed by strategy name, and SENSEX strategy names are
+uniquely prefixed, so there's no collision risk — the only per-index knob is lot_size, resolved
+per signal via LOT_SIZE_BY_INDEX). See docs/ARCHITECTURE.md for why this shape was chosen over
+two separate PaperTrader instances.
+
 Every "now" used for market-hours/login-time decisions MUST be IST wall-clock time, built via
 datetime.now(IST) — never bare datetime.now(). The deploy VM's system clock runs UTC (confirmed
 via `timedatectl`), so a naive datetime.now() is off from real IST time by 5.5 hours; comparing
@@ -23,11 +30,18 @@ from src.data_manager import DataManager
 from src.fyers.api_client import FyersAPIClient
 from src.simulator.paper_trader import PaperTrader, RiskLimitExceeded
 from src.strategies.engine import StrategyEngine
+from src.strategies.sensex_strategies import create_live_sensex_strategies
 from src.alerts.telegram_alerts import TelegramAlertsManager
 from src.persistence.state_manager import StateManager
 from src.utils.logger import get_logger
 
 NIFTY_SYMBOL = "NSE:NIFTY50-INDEX"
+SENSEX_SYMBOL = "BSE:SENSEX-INDEX"
+INDEX_SYMBOLS = {"NIFTY": NIFTY_SYMBOL, "SENSEX": SENSEX_SYMBOL}
+SYMBOL_TO_INDEX = {symbol: index for index, symbol in INDEX_SYMBOLS.items()}
+EXCHANGE_TO_INDEX = {"NSE": "NIFTY", "BSE": "SENSEX"}
+INDEX_TO_EXCHANGE = {index: exchange for exchange, index in EXCHANGE_TO_INDEX.items()}
+LOT_SIZE_BY_INDEX = {"NIFTY": 65, "SENSEX": 20}
 IST = ZoneInfo("Asia/Kolkata")
 # Fyers tokens are valid for the calendar day only. TradeDashBoard's own proven scheduler
 # refreshes at 08:45 IST before market open; ours does the same at 08:50 IST — see
@@ -53,8 +67,13 @@ class LiveTrader:
         self.config = config
         self.logger = get_logger()
 
-        self.data_manager = DataManager()
-        self.strategy_engine = StrategyEngine(logger=self.logger)
+        self.data_managers = {"NIFTY": DataManager(), "SENSEX": DataManager(underlying="SENSEX")}
+        self.data_manager = self.data_managers["NIFTY"]  # back-compat alias for NIFTY-only callers/tests
+        self.strategy_engines = {
+            "NIFTY": StrategyEngine(logger=self.logger),  # defaults to create_all_strategies()
+            "SENSEX": StrategyEngine(strategies=create_live_sensex_strategies(), logger=self.logger),
+        }
+        self.strategy_engine = self.strategy_engines["NIFTY"]  # back-compat alias
         sizing = config.risk_params.get("position_sizing", {})
         exits = config.risk_params.get("exit_rules", {})
         # Same circuit breakers validated in backtesting (see BacktestEngine) — capital_by_strategy
@@ -113,21 +132,31 @@ class LiveTrader:
             return
         tick = {"ltp": message.get("ltp"), "volume": message.get("vol_traded_today", 0),
                 "timestamp": datetime.now(IST)}
-        if symbol == NIFTY_SYMBOL:
-            self.data_manager.on_nifty_tick(tick)
-        else:
-            tick.update({"bid": message.get("bid_price1", 0), "ask": message.get("ask_price1", 0),
-                         "oi": message.get("oi", 0)})
-            self.data_manager.on_option_tick(symbol, tick)
+
+        index = SYMBOL_TO_INDEX.get(symbol)
+        if index is not None:
+            self.data_managers[index].on_nifty_tick(tick)
+            return
+
+        exchange = symbol.split(":", 1)[0] if ":" in symbol else None
+        option_index = EXCHANGE_TO_INDEX.get(exchange)
+        if option_index is None:
+            self.logger.log_error(f"on_tick: unrecognized symbol/exchange, dropping tick: {symbol}")
+            return
+        tick.update({"bid": message.get("bid_price1", 0), "ask": message.get("ask_price1", 0),
+                     "oi": message.get("oi", 0)})
+        self.data_managers[option_index].on_option_tick(symbol, tick)
 
     def _seed_historical_candles(self) -> None:
-        """Warms up the 1H/15m/5m indicators before market open so day-1 strategies aren't blind."""
-        try:
-            history = self.fyers.get_historical_data(NIFTY_SYMBOL, resolution="1", days=10)
-            self.data_manager.load_historical(history)
-            self.logger.log_websocket_event("historical_seed_loaded", {"candles": len(history)})
-        except Exception as e:
-            self.logger.log_error(f"Historical seeding failed, starting cold: {e}")
+        """Warms up the 1H/15m/5m indicators before market open so day-1 strategies aren't blind,
+        for both indices."""
+        for index, symbol in INDEX_SYMBOLS.items():
+            try:
+                history = self.fyers.get_historical_data(symbol, resolution="1", days=10)
+                self.data_managers[index].load_historical(history)
+                self.logger.log_websocket_event("historical_seed_loaded", {"index": index, "candles": len(history)})
+            except Exception as e:
+                self.logger.log_error(f"Historical seeding failed for {index}, starting cold: {e}")
 
     # ---- Daily login / connect / disconnect state machine ------------------------
 
@@ -163,7 +192,7 @@ class LiveTrader:
 
         if market_open and not self._connected and self.fyers.access_token:
             self.fyers.start_websocket(self.on_tick)
-            self.fyers.subscribe_symbols([NIFTY_SYMBOL])
+            self.fyers.subscribe_symbols(list(INDEX_SYMBOLS.values()))
             self._connected = True
         elif not market_open and self._connected:
             self.fyers.stop_websocket()
@@ -216,30 +245,36 @@ class LiveTrader:
             await self.stop()
 
     async def poll_option_chain(self) -> None:
-        try:
-            chain = self.fyers.get_option_chain(NIFTY_SYMBOL)
-            self.data_manager.update_option_chain(chain)
-            # update_option_chain() now stores each quote under BOTH the raw Fyers symbol (e.g.
-            # "NSE:NIFTY2681124600CE") and a simplified "NIFTY24600CE" key strategies actually use
-            # (see its docstring) -- only the former is ever valid to hand to Fyers' own
-            # subscribe_symbols(); the simplified key isn't a real tradable symbol at all.
-            all_symbols = {s for s in self.data_manager.get_option_chain().keys() if s.startswith("NSE:")}
-            new_symbols = all_symbols - self._monitored_symbols
-            if new_symbols:
-                self.fyers.subscribe_symbols(list(new_symbols))
-                self._monitored_symbols |= new_symbols
-        except Exception as e:
-            self.logger.log_error(f"poll_option_chain failed: {e}")
+        for index, symbol in INDEX_SYMBOLS.items():
+            try:
+                chain = self.fyers.get_option_chain(symbol)
+                self.data_managers[index].update_option_chain(chain)
+                # update_option_chain() now stores each quote under BOTH the raw Fyers symbol
+                # (e.g. "NSE:NIFTY2681124600CE") and a simplified "NIFTY24600CE" key strategies
+                # actually use (see its docstring) -- only the former is ever valid to hand to
+                # Fyers' own subscribe_symbols(); the simplified key isn't a real tradable symbol
+                # at all. Filtered by this index's own exchange prefix so NIFTY's poll never
+                # tries to (re-)subscribe SENSEX's raw symbols and vice versa.
+                exchange_prefix = f"{INDEX_TO_EXCHANGE[index]}:"
+                all_symbols = {s for s in self.data_managers[index].get_option_chain().keys()
+                               if s.startswith(exchange_prefix)}
+                new_symbols = all_symbols - self._monitored_symbols
+                if new_symbols:
+                    self.fyers.subscribe_symbols(list(new_symbols))
+                    self._monitored_symbols |= new_symbols
+            except Exception as e:
+                self.logger.log_error(f"poll_option_chain failed for {index}: {e}")
 
     def evaluate_strategies(self):
-        state = self.data_manager.get_state()
-        if state["nifty_price"] is None:
-            return []
-        signals = self.strategy_engine.evaluate_all(state)
-        for signal in signals:
-            self.recent_signals.append(signal)
+        all_signals = []
+        for index, data_manager in self.data_managers.items():
+            state = data_manager.get_state()
+            if state["nifty_price"] is None:
+                continue
+            all_signals.extend(self.strategy_engines[index].evaluate_all(state))
+        self.recent_signals.extend(all_signals)
         self.recent_signals = self.recent_signals[-10:]
-        return signals
+        return all_signals
 
     async def execute_signal(self, signal) -> None:
         if self.telegram and not self.auto_mode:
@@ -250,11 +285,12 @@ class LiveTrader:
 
         stop_loss = max(signal.entry_price * (1 - self.stop_loss_pct / 100), 0.05)
         take_profit = signal.entry_price + self.take_profit_pts
+        lot_size = LOT_SIZE_BY_INDEX.get(signal.underlying, self.paper_trader.lot_size)
         try:
             order = self.paper_trader.place_order(
                 symbol=signal.strike, side="BUY", qty=self.qty_per_signal, price=signal.entry_price,
                 stop_loss=stop_loss, take_profit=take_profit, strategy=signal.strategy,
-                timestamp=signal.timestamp,
+                timestamp=signal.timestamp, lot_size=lot_size,
             )
         except RiskLimitExceeded as e:
             self.logger.log_error(f"Signal rejected by risk limits: {e}", {"strategy": signal.strategy})
@@ -270,7 +306,12 @@ class LiveTrader:
         # tz-aware datetime-like objects` against order.entry_time (tz-aware, from on_tick's
         # datetime.now(IST)) the instant a position survives to its time-exit check. See
         # WebLiveEngine._check_exits_replay's identical fix for the original freeze bug.
-        current_prices = {sym: q.ltp for sym, q in self.data_manager.get_option_chain().items()}
+        #
+        # Merging both indices' option chains into one flat dict is safe (no key collisions):
+        # NIFTY and SENSEX symbols are already uniquely prefixed by select_strike().
+        current_prices = {}
+        for data_manager in self.data_managers.values():
+            current_prices.update({sym: q.ltp for sym, q in data_manager.get_option_chain().items()})
         closed = self.paper_trader.update_positions(
             current_prices, timestamp=datetime.now(IST), time_exit_mins=self.time_exit_mins)
         for order in closed:
