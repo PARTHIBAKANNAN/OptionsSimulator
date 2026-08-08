@@ -13,25 +13,31 @@
   --text-primary: 20 22 26;
   --text-muted: 86 91 100;
   --text-faint: 138 143 152;
-  --bull: 26 143 90;
-  --bear: 209 65 74;
-  --accent: 59 111 224;
+  --bull: 22 163 74;
+  --bear: 220 38 38;
+  --accent: 37 99 235;
   --warn: 180 130 10;
+  --hit: 13 148 136;
 }
 
+/* QuantMan's own palette (from the reference screenshots): near-black panel backgrounds,
+   flat/dense, no glow or gradient effects -- surface/surface2/surface3 step up in lightness for
+   depth-via-layering only. */
 :root.dark {
-  --surface: 20 22 26;
-  --surface-2: 27 30 36;
-  --surface-3: 35 38 45;
-  --border-subtle: 43 47 55;
-  --border-strong: 58 63 73;
-  --text-primary: 238 240 243;
-  --text-muted: 168 173 182;
-  --text-faint: 107 112 120;
-  --bull: 55 201 128;
-  --bear: 255 93 104;
-  --accent: 109 148 255;
-  --warn: 217 165 32;
+  --surface: 24 29 40;      /* #181d28 -- cards */
+  --surface-2: 18 22 31;    /* #12161f -- page background, deepest */
+  --surface-3: 31 38 51;    /* one step up from cards, hover/active fills */
+  --surface-4: 40 48 62;    /* two steps up, e.g. table header rows */
+  --border-subtle: 30 37 50; /* #1e2532 */
+  --border-strong: 48 57 74;
+  --text-primary: 236 238 242;
+  --text-muted: 158 165 176;
+  --text-faint: 104 112 124;
+  --bull: 34 197 94;   /* #22c55e */
+  --bear: 239 68 68;   /* #ef4444 */
+  --accent: 59 130 246; /* QuantMan's active-pill/action-button blue */
+  --warn: 234 179 8;   /* #eab308 -- pending/waiting + MISS bars */
+  --hit: 20 184 166;   /* teal HIT bars, paired with --warn for MISS in the analytics breakdown */
 }
 
 body {

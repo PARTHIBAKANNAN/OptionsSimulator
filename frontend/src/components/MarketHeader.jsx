@@ -6,9 +6,9 @@ import { ChartModal } from "./ChartModal";
 import { closeAllPositions } from "../hooks/usePaperTradingSync";
 
 function marketStatePill(mode, exchangeOpen) {
-  if (mode !== "live") return { label: "REPLAY", variant: "accent" };
-  if (exchangeOpen) return { label: "MARKET OPEN", variant: "bull" };
-  return { label: "MARKET CLOSED", variant: "neutral" };
+  if (mode !== "live") return { label: "REPLAY", variant: "accent", dot: "bg-accent" };
+  if (exchangeOpen) return { label: "MARKET OPEN", variant: "bull", dot: "bg-bull animate-pulse" };
+  return { label: "MARKET CLOSED", variant: "neutral", dot: "bg-faint" };
 }
 
 function IndexBlock({ label, price, prevClose, change, changePct, exchangeOpen, onOpenChart }) {
@@ -85,6 +85,7 @@ export function MarketHeader({ state }) {
 
         <div className="flex flex-col items-end gap-1.5 text-right">
           <div className="flex items-center gap-2">
+            <span className={`inline-block h-1.5 w-1.5 rounded-full ${pill.dot}`} />
             <Badge variant={pill.variant}>{pill.label}</Badge>
             {mode === "live" && (
               <Badge variant={fyers_authenticated ? "bull" : "warn"}>
@@ -109,6 +110,9 @@ export function MarketHeader({ state }) {
         <ChartModal
           label={chartFor === "NIFTY" ? "NIFTY 50" : "SENSEX"}
           candles={chartFor === "NIFTY" ? nifty_candles_5m : sensex_candles_5m}
+          price={chartFor === "NIFTY" ? nifty_price : sensex_price}
+          change={chartFor === "NIFTY" ? nifty_change : sensex_change}
+          changePct={chartFor === "NIFTY" ? nifty_change_pct : sensex_change_pct}
           onClose={() => setChartFor(null)}
         />
       )}

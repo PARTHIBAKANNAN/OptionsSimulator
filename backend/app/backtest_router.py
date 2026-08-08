@@ -14,7 +14,10 @@ from .security import require_login
 
 router = APIRouter(prefix="/api/backtest", dependencies=[Depends(require_login)])
 
-REPORT_PATH = Path(__file__).resolve().parent.parent.parent / "data" / "backtest_results" / "report.json"
+RESULTS_DIR = Path(__file__).resolve().parent.parent.parent / "data" / "backtest_results"
+REPORT_PATH = RESULTS_DIR / "report.json"
+DAILY_REPORT_PATH = RESULTS_DIR / "daily_report.json"
+CAPITAL_REQUIREMENTS_PATH = RESULTS_DIR / "capital_requirements.json"
 
 
 def _sanitize(value):
@@ -38,3 +41,21 @@ async def get_report():
     if not REPORT_PATH.exists():
         raise HTTPException(status_code=404, detail="No backtest report yet — run the CLI backtester first")
     return _sanitize(json.loads(REPORT_PATH.read_text()))
+
+
+@router.get("/daily-breakdown")
+async def get_daily_breakdown():
+    """Per-strategy {date, trades, wins, losses, win_rate, pnl, cumulative_pnl}[] -- already
+    computed by build_daily_breakdown() and saved by the CLI backtester, just never routed."""
+    if not DAILY_REPORT_PATH.exists():
+        raise HTTPException(status_code=404, detail="No daily breakdown yet — run the CLI backtester first")
+    return _sanitize(json.loads(DAILY_REPORT_PATH.read_text()))
+
+
+@router.get("/capital-requirements")
+async def get_capital_requirements():
+    """Per-strategy {avg_trade_risk, max_historical_drawdown, recommended_capital} -- already
+    computed by required_capital_per_strategy() and saved by the CLI backtester."""
+    if not CAPITAL_REQUIREMENTS_PATH.exists():
+        raise HTTPException(status_code=404, detail="No capital requirements yet — run the CLI backtester first")
+    return _sanitize(json.loads(CAPITAL_REQUIREMENTS_PATH.read_text()))

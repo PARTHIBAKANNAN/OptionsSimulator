@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import { ThemeProvider, useTheme } from "./contexts/ThemeContext";
 import { Login } from "./components/Login";
-import { Sidebar } from "./components/Sidebar";
+import { TopNavbar } from "./components/TopNavbar";
 import { LiveDashboardScreen } from "./screens/LiveDashboardScreen";
 import { BacktestReportScreen } from "./screens/BacktestReportScreen";
-import { TradeHistoryScreen } from "./screens/TradeHistoryScreen";
 import { PnlSummaryScreen } from "./screens/PnlSummaryScreen";
 import { useMarketStream } from "./hooks/useMarketStream";
 import { api } from "./hooks/usePaperTradingSync";
@@ -14,7 +14,6 @@ const TABS = [
   { key: "live", label: "Live", Component: LiveDashboardScreen },
   { key: "pnl", label: "P&L Summary", Component: PnlSummaryScreen },
   { key: "backtest", label: "Backtest", Component: BacktestReportScreen },
-  { key: "history", label: "History", Component: TradeHistoryScreen },
 ];
 
 function Dashboard({ user, onLogout }) {
@@ -25,14 +24,24 @@ function Dashboard({ user, onLogout }) {
   const ActiveComponent = TABS.find((t) => t.key === activeTab).Component;
 
   return (
-    <div className="flex min-h-screen">
-      <Sidebar
+    <div className="min-h-screen">
+      <TopNavbar
         tabs={TABS} activeTab={activeTab} onSelect={setActiveTab}
         user={user} theme={theme} onToggleTheme={toggle} onLogout={onLogout}
       />
-      <main className="flex-1 overflow-y-auto bg-surface2 p-6">
+      <main className="bg-surface2 p-6">
         <div className="mx-auto max-w-6xl">
-          <ActiveComponent />
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeTab}
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.18 }}
+            >
+              <ActiveComponent />
+            </motion.div>
+          </AnimatePresence>
         </div>
       </main>
     </div>

@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
+import { Download } from "lucide-react";
 import { fetchPnlReport, downloadPnlExport } from "../hooks/usePaperTradingSync";
 import { Card } from "../components/ui/Card";
 import { DateRangePicker } from "../components/DateRangePicker";
 import { DailyPnlChart } from "../components/DailyPnlChart";
-import { StrategyDetailsDrawer } from "../components/StrategyDetailsDrawer";
-import { DownloadIcon } from "../components/icons";
+import { StrategyAnalyticsModal } from "../components/StrategyAnalyticsModal";
 
 function fmt(v) {
   if (v == null) return "—";
@@ -14,6 +14,15 @@ function fmt(v) {
 function pnlClass(v) {
   if (v == null) return "";
   return v > 0 ? "text-bull" : v < 0 ? "text-bear" : "";
+}
+
+function StatTile({ label, value, valueClass = "" }) {
+  return (
+    <div className="rounded-lg border border-subtle bg-surface2 px-4 py-3">
+      <div className="text-[10px] font-semibold uppercase tracking-wider text-faint">{label}</div>
+      <div className={`font-mono text-lg font-bold tabular-nums ${valueClass}`}>{value}</div>
+    </div>
+  );
 }
 
 export function PnlSummaryScreen() {
@@ -68,7 +77,7 @@ export function PnlSummaryScreen() {
             disabled={exporting || !canQuery}
             className="flex items-center gap-1.5 rounded-lg bg-surface3 px-3 py-1.5 text-sm font-medium text-muted hover:text-primary disabled:opacity-50"
           >
-            <DownloadIcon className="h-4 w-4" />
+            <Download className="h-4 w-4" />
             {exporting ? "Exporting…" : "Export to Excel"}
           </button>
         </div>
@@ -86,19 +95,12 @@ export function PnlSummaryScreen() {
       {report && view === "combined" && (
         <>
           <Card title="Combined Performance">
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-5">
-              {[
-                { label: "Trades", value: report.combined.trades, plain: true },
-                { label: "Gross P&L", value: fmt(report.combined.gross_pnl), cls: pnlClass(report.combined.gross_pnl) },
-                { label: "Charges", value: fmt(report.combined.charges) },
-                { label: "Net P&L", value: fmt(report.combined.net_pnl), cls: pnlClass(report.combined.net_pnl) },
-                { label: "Wallet Balance", value: fmt(report.combined.wallet_balance) },
-              ].map((item) => (
-                <div key={item.label}>
-                  <div className="text-xs text-faint">{item.label}</div>
-                  <div className={`text-lg font-semibold tabular-nums ${item.cls ?? ""}`}>{item.value}</div>
-                </div>
-              ))}
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
+              <StatTile label="Trades" value={report.combined.trades} />
+              <StatTile label="Gross P&L" value={fmt(report.combined.gross_pnl)} valueClass={pnlClass(report.combined.gross_pnl)} />
+              <StatTile label="Charges" value={fmt(report.combined.charges)} />
+              <StatTile label="Net P&L" value={fmt(report.combined.net_pnl)} valueClass={pnlClass(report.combined.net_pnl)} />
+              <StatTile label="Wallet Balance" value={fmt(report.combined.wallet_balance)} />
             </div>
           </Card>
           <Card title="Equity Curve">
@@ -109,42 +111,47 @@ export function PnlSummaryScreen() {
 
       {report && view === "individual" && (
         <Card title="Strategy Performance">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="text-left text-faint">
-                <th className="pb-1 font-normal">Strategy</th>
-                <th className="pb-1 font-normal">Trades</th>
-                <th className="pb-1 font-normal">Win %</th>
-                <th className="pb-1 font-normal">Gross P&amp;L</th>
-                <th className="pb-1 font-normal">Charges</th>
-                <th className="pb-1 font-normal">Net P&amp;L</th>
-                <th className="pb-1 font-normal">Wallet</th>
-                <th className="pb-1 font-normal"></th>
-              </tr>
-            </thead>
-            <tbody>
-              {report.strategies.map((s) => (
-                <tr key={s.strategy} className="border-t border-subtle">
-                  <td className="py-1.5 font-medium">{s.strategy}</td>
-                  <td className="py-1.5 tabular-nums">{s.trades}</td>
-                  <td className="py-1.5 tabular-nums">{s.win_rate}%</td>
-                  <td className={`py-1.5 tabular-nums ${pnlClass(s.gross_pnl)}`}>{fmt(s.gross_pnl)}</td>
-                  <td className="py-1.5 tabular-nums text-muted">{fmt(s.charges)}</td>
-                  <td className={`py-1.5 tabular-nums font-medium ${pnlClass(s.net_pnl)}`}>{fmt(s.net_pnl)}</td>
-                  <td className="py-1.5 tabular-nums">{fmt(s.wallet_balance)}</td>
-                  <td className="py-1.5 text-right">
-                    <button onClick={() => setDetailsFor(s.strategy)} className="text-xs font-medium text-accent hover:underline">
-                      Show Details
-                    </button>
-                  </td>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-left text-faint">
+                  <th className="pb-2 text-xs font-semibold uppercase tracking-wider">Strategy</th>
+                  <th className="pb-2 text-xs font-semibold uppercase tracking-wider">Trades</th>
+                  <th className="pb-2 text-xs font-semibold uppercase tracking-wider">Win %</th>
+                  <th className="pb-2 text-xs font-semibold uppercase tracking-wider">Gross P&amp;L</th>
+                  <th className="pb-2 text-xs font-semibold uppercase tracking-wider">Charges</th>
+                  <th className="pb-2 text-xs font-semibold uppercase tracking-wider">Net P&amp;L</th>
+                  <th className="pb-2 text-xs font-semibold uppercase tracking-wider">Wallet</th>
+                  <th className="pb-2"></th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {report.strategies.map((s) => (
+                  <tr key={s.strategy} className="border-t border-subtle hover:bg-surface2">
+                    <td className="py-2 font-medium">{s.strategy}</td>
+                    <td className="py-2 tabular-nums">{s.trades}</td>
+                    <td className="py-2 tabular-nums">{s.win_rate}%</td>
+                    <td className={`py-2 font-mono tabular-nums ${pnlClass(s.gross_pnl)}`}>{fmt(s.gross_pnl)}</td>
+                    <td className="py-2 font-mono tabular-nums text-muted">{fmt(s.charges)}</td>
+                    <td className={`py-2 font-mono tabular-nums font-medium ${pnlClass(s.net_pnl)}`}>{fmt(s.net_pnl)}</td>
+                    <td className="py-2 font-mono tabular-nums">{fmt(s.wallet_balance)}</td>
+                    <td className="py-2 text-right">
+                      <button
+                        onClick={() => setDetailsFor(s.strategy)}
+                        className="rounded bg-accent px-3 py-1 text-xs font-medium text-white hover:bg-accent/90"
+                      >
+                        Show Strategy
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </Card>
       )}
 
-      {detailsFor && <StrategyDetailsDrawer strategy={detailsFor} onClose={() => setDetailsFor(null)} />}
+      {detailsFor && <StrategyAnalyticsModal strategy={detailsFor} onClose={() => setDetailsFor(null)} />}
     </div>
   );
 }

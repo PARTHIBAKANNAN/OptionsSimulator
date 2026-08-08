@@ -1,11 +1,4 @@
-// Trade history isn't streamed — polled every 5s, same as TradeDashBoard's usePaperTradingSync.
-// Signal approve/reject are one-off mutations; their effect (position opened, signal resolved)
-// flows back to every client through the WS delta, not through this poll.
-import { useEffect, useSyncExternalStore } from "react";
-import { getSnapshot, setError, setTrades, subscribe } from "../store/tradingStore";
 import { API_BASE } from "../lib/apiBase";
-
-const POLL_INTERVAL_MS = 5000;
 
 async function api(path, opts) {
   const res = await fetch(`${API_BASE}${path}`, { credentials: "include", ...opts });
@@ -14,27 +7,6 @@ async function api(path, opts) {
     throw new Error(body.detail || `Request failed (${res.status})`);
   }
   return res.json();
-}
-
-async function fetchTradeHistory() {
-  try {
-    const trades = await api("/api/paper/trades/history");
-    setTrades(trades);
-  } catch (err) {
-    setError(err.message);
-  }
-}
-
-export function usePaperTradingSync() {
-  useEffect(() => {
-    fetchTradeHistory();
-    const interval = setInterval(fetchTradeHistory, POLL_INTERVAL_MS);
-    return () => clearInterval(interval);
-  }, []);
-}
-
-export function useTradeHistory() {
-  return useSyncExternalStore(subscribe, getSnapshot);
 }
 
 export async function approveSignal(signalId) {
@@ -55,6 +27,14 @@ export async function closeAllPositions() {
 
 export async function fetchBacktestReport() {
   return api("/api/backtest/report");
+}
+
+export async function fetchBacktestDailyBreakdown() {
+  return api("/api/backtest/daily-breakdown");
+}
+
+export async function fetchBacktestCapitalRequirements() {
+  return api("/api/backtest/capital-requirements");
 }
 
 export async function fetchStrategyOrders(name) {

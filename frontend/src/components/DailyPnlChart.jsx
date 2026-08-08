@@ -33,15 +33,24 @@ export function DailyPnlChart({ daily }) {
   const range = max - min || 1;
   const scaleX = (i) => PADDING + (i / (points.length - 1)) * (width - 2 * PADDING);
   const scaleY = (v) => HEIGHT - PADDING - ((v - min) / range) * (HEIGHT - 2 * PADDING);
-  const path = points.map((v, i) => `${scaleX(i)},${scaleY(v)}`).join(" ");
+  const linePath = points.map((v, i) => `${scaleX(i)},${scaleY(v)}`).join(" L ");
   const zeroY = scaleY(0);
   const final = points[points.length - 1];
+  const positive = final >= 0;
+  const areaPath = `M ${PADDING},${HEIGHT - PADDING} L ${linePath} L ${scaleX(points.length - 1)},${HEIGHT - PADDING} Z`;
 
   return (
     <div ref={containerRef}>
       <svg width={width} height={HEIGHT}>
+        <defs>
+          <linearGradient id="dailyPnlFill" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor={positive ? "#22c55e" : "#ef4444"} stopOpacity="0.35" />
+            <stop offset="100%" stopColor={positive ? "#22c55e" : "#ef4444"} stopOpacity="0" />
+          </linearGradient>
+        </defs>
         <line x1={0} y1={zeroY} x2={width} y2={zeroY} stroke="rgb(var(--border-subtle))" strokeDasharray="4 4" />
-        <polyline points={path} fill="none" stroke={final >= 0 ? "rgb(var(--bull))" : "rgb(var(--bear))"} strokeWidth={2} />
+        <path d={areaPath} fill="url(#dailyPnlFill)" />
+        <path d={`M ${linePath}`} fill="none" stroke={positive ? "rgb(var(--bull))" : "rgb(var(--bear))"} strokeWidth={2} />
       </svg>
     </div>
   );
