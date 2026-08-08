@@ -60,3 +60,21 @@ def atr(high: pd.Series, low: pd.Series, close: pd.Series, period: int = 14) -> 
 def volume_ratio(volume: pd.Series, period: int = 20) -> pd.Series:
     avg_volume = volume.rolling(window=period).mean()
     return (volume / avg_volume.replace(0, np.nan)).fillna(1.0)
+
+
+def heikin_ashi(df: pd.DataFrame) -> pd.DataFrame:
+    """Converts a regular OHLC DataFrame (columns: Open, High, Low, Close) into Heikin Ashi
+    candles — a smoothed, lagging transform (ha_open averages the PREVIOUS ha_open/ha_close),
+    not an independent snapshot of that bar. ha_open seeds from the first bar's own open+close
+    average, the standard convention when there's no prior HA candle to average from. ha_high/
+    ha_low are synthetic (not real traded prices) — never use them as an actual stop level."""
+    ha_close = (df["Open"] + df["High"] + df["Low"] + df["Close"]) / 4
+
+    ha_open = pd.Series(index=df.index, dtype=float)
+    ha_open.iloc[0] = (df["Open"].iloc[0] + df["Close"].iloc[0]) / 2
+    for i in range(1, len(df)):
+        ha_open.iloc[i] = (ha_open.iloc[i - 1] + ha_close.iloc[i - 1]) / 2
+
+    ha_high = pd.concat([df["High"], ha_open, ha_close], axis=1).max(axis=1)
+    ha_low = pd.concat([df["Low"], ha_open, ha_close], axis=1).min(axis=1)
+    return pd.DataFrame({"ha_open": ha_open, "ha_high": ha_high, "ha_low": ha_low, "ha_close": ha_close})

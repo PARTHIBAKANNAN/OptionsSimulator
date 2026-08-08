@@ -212,6 +212,18 @@ class DataManager:
                 out["macd_histogram_15m_prev"] = (
                     float(macd_df_15m["histogram"].iloc[-2]) if len(macd_df_15m) >= 2 else out["macd_histogram_15m"]
                 )
+
+                # Heikin Ashi on 15m: smoothed/lagging candles, not raw price -- see
+                # indicators.heikin_ashi's docstring. Exposed as raw open/close for both the
+                # latest and previous bar so a strategy can derive its own bullish/bearish +
+                # wick-size logic, same as how macd_histogram_15m/_prev are exposed raw above.
+                if len(resampled) >= 2:
+                    ha = ind.heikin_ashi(resampled)
+                    out["heikin_ashi_15m"] = {
+                        "open": float(ha["ha_open"].iloc[-1]), "high": float(ha["ha_high"].iloc[-1]),
+                        "low": float(ha["ha_low"].iloc[-1]), "close": float(ha["ha_close"].iloc[-1]),
+                        "prev_open": float(ha["ha_open"].iloc[-2]), "prev_close": float(ha["ha_close"].iloc[-2]),
+                    }
             elif rule == "5min" and len(resampled) >= 20:
                 out["volume_ratio_5m"] = float(ind.volume_ratio(resampled["Volume"]).iloc[-1])
 

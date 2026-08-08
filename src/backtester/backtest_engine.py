@@ -25,10 +25,11 @@ def _parse_hhmm(value: str) -> dtime:
 
 class BacktestEngine:
     def __init__(self, risk_params: dict, initial_capital: float = 1_000_000, logger=None,
-                 capital_by_strategy: dict = None):
+                 capital_by_strategy: dict = None, index: str = "NIFTY"):
         self.risk_params = risk_params
         self.initial_capital = initial_capital
         self.logger = logger
+        self.index = index  # 'NIFTY' or 'SENSEX' -- selects the expiry-day rule for pricing
         self.trade_histories: dict[str, list] = {}
         # {strategy_name: allocated_capital} from a prior run's capital_requirements.json — powers
         # PaperTrader's drawdown-%-of-capital circuit breaker below. None/{} disables it (no
@@ -161,12 +162,11 @@ class BacktestEngine:
 
         return closed
 
-    @staticmethod
-    def _mark_to_market(trader: PaperTrader, state: dict) -> dict:
+    def _mark_to_market(self, trader: PaperTrader, state: dict) -> dict:
         prices = {}
         nifty_price = state["nifty_price"]
         timestamp = state["timestamp"]
-        days_to_expiry = next_weekly_expiry_days(timestamp)
+        days_to_expiry = next_weekly_expiry_days(timestamp, index=self.index)
         for order in trader.get_positions():
             strike, option_type = parse_option_symbol(order.symbol)
             if strike is None:

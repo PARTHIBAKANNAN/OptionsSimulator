@@ -56,6 +56,24 @@ def test_indicators_calculated():
     assert 0 <= indicators["rsi_1h"] <= 100
     assert "ema_20_1h" in indicators
     assert "macd_histogram_1h" in indicators
+    assert "stochastic_k_15m" in indicators
+    assert "macd_histogram_15m" in indicators
+
+
+def test_heikin_ashi_15m_present_once_enough_15min_bars_exist():
+    dm = DataManager()
+    for c in _synthetic_candles(1000):
+        dm.replay_candle(c)
+
+    indicators = dm.calculate_indicators()
+    ha = indicators.get("heikin_ashi_15m")
+    assert ha is not None
+    for key in ("open", "high", "low", "close", "prev_open", "prev_close"):
+        assert key in ha
+    assert ha["high"] >= ha["open"]
+    assert ha["high"] >= ha["close"]
+    assert ha["low"] <= ha["open"]
+    assert ha["low"] <= ha["close"]
 
 
 def test_indicators_survive_mixing_seeded_historical_and_live_tick_candles():
