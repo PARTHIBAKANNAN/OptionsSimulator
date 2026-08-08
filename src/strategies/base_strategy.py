@@ -19,10 +19,11 @@ class Signal:
 
 
 class BaseStrategy:
-    def __init__(self, name: str, direction: str, strike_step: int = 100):
+    def __init__(self, name: str, direction: str, strike_step: int = 50, underlying: str = "NIFTY"):
         self.name = name
         self.direction = direction  # 'CE' or 'PE'
         self.strike_step = strike_step
+        self.underlying = underlying  # 'NIFTY' or 'SENSEX' -- symbol prefix and expiry-rule lookup
         self.last_signal_time: Optional[datetime] = None
 
     def evaluate(self, data_state: dict) -> Optional[Signal]:
@@ -31,7 +32,7 @@ class BaseStrategy:
     def select_strike(self, nifty_price: float, option_type: str) -> tuple[str, float]:
         """Returns (symbol, numeric_strike) for the ATM strike."""
         atm_strike = round(nifty_price / self.strike_step) * self.strike_step
-        symbol = f"NIFTY{int(atm_strike)}{option_type}"
+        symbol = f"{self.underlying}{int(atm_strike)}{option_type}"
         return symbol, float(atm_strike)
 
     def get_option_price(self, symbol: str, strike: float, nifty_price: float,
@@ -43,6 +44,6 @@ class BaseStrategy:
             return quote.ltp
 
         timestamp = data_state.get("timestamp") or datetime.now()
-        days_to_expiry = next_weekly_expiry_days(timestamp)
+        days_to_expiry = next_weekly_expiry_days(timestamp, index=self.underlying)
         return black_scholes_price(spot=nifty_price, strike=strike, days_to_expiry=days_to_expiry,
                                     option_type=option_type)

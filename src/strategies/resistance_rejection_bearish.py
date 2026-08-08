@@ -4,8 +4,8 @@ from src.strategies.base_strategy import BaseStrategy, Signal
 
 
 class ResistanceRejectionBearish(BaseStrategy):
-    def __init__(self):
-        super().__init__(name="RESISTANCE_REJECTION_BEARISH", direction="PE")
+    def __init__(self, name: str = "RESISTANCE_REJECTION_BEARISH", strike_step: int = 50, underlying: str = "NIFTY"):
+        super().__init__(name=name, direction="PE", strike_step=strike_step, underlying=underlying)
 
     def evaluate(self, data_state: dict):
         indicators = data_state.get("indicators", {})

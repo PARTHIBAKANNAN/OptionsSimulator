@@ -10,6 +10,8 @@ from src.strategies.support_bounce_bullish import SupportBounceBullish
 from src.strategies.resistance_rejection_bearish import ResistanceRejectionBearish
 from src.strategies.orb_bullish import ORBBullish
 from src.strategies.orb_bearish import ORBBearish
+from src.strategies.heikin_ashi_trend_bullish import HeikinAshiTrendBullish
+from src.strategies.heikin_ashi_trend_bearish import HeikinAshiTrendBearish
 from src.strategies.engine import StrategyEngine, create_all_strategies
 
 NOW = datetime(2026, 1, 1, 10, 0)
@@ -229,8 +231,127 @@ def test_orb_range_resets_on_a_new_day():
     assert strategy._range_high == 24500  # rebuilt fresh for the new day, not carried over
 
 
+def test_heikin_ashi_trend_bullish_signal_on_two_bullish_candles_no_lower_wick():
+    strategy = HeikinAshiTrendBullish()
+    state = base_state(indicators={
+        "ema_50_1h": 23900,
+        "heikin_ashi_15m": {
+            "open": 24000, "high": 24030, "low": 23999, "close": 24025,  # body 25, wick 1 (<15%)
+            "prev_open": 23980, "prev_close": 24000,  # prev bullish too
+        },
+    })
+    signal = strategy.evaluate(state)
+    assert signal is not None
+    assert signal.direction == "CE"
+    assert signal.confidence == 0.70
+
+
+def test_heikin_ashi_trend_bullish_no_signal_with_a_large_lower_wick():
+    strategy = HeikinAshiTrendBullish()
+    state = base_state(indicators={
+        "ema_50_1h": 23900,
+        "heikin_ashi_15m": {
+            "open": 24000, "high": 24030, "low": 23950, "close": 24025,  # body 25, wick 50 (weak trend)
+            "prev_open": 23980, "prev_close": 24000,
+        },
+    })
+    assert strategy.evaluate(state) is None
+
+
+def test_heikin_ashi_trend_bullish_no_signal_when_previous_candle_was_bearish():
+    strategy = HeikinAshiTrendBullish()
+    state = base_state(indicators={
+        "ema_50_1h": 23900,
+        "heikin_ashi_15m": {
+            "open": 24000, "high": 24030, "low": 23999, "close": 24025,
+            "prev_open": 24010, "prev_close": 23995,  # prev was bearish -- no 2-candle confirmation
+        },
+    })
+    assert strategy.evaluate(state) is None
+
+
+def test_heikin_ashi_trend_bullish_no_signal_below_50ema():
+    strategy = HeikinAshiTrendBullish()
+    state = base_state(nifty_price=24000.0, indicators={
+        "ema_50_1h": 24100,  # price below the trend filter
+        "heikin_ashi_15m": {
+            "open": 24000, "high": 24030, "low": 23999, "close": 24025,
+            "prev_open": 23980, "prev_close": 24000,
+        },
+    })
+    assert strategy.evaluate(state) is None
+
+
+def test_heikin_ashi_trend_bearish_signal_on_two_bearish_candles_no_upper_wick():
+    strategy = HeikinAshiTrendBearish()
+    # Thursday, 12:30 -- outside the excluded Mon/Tue days and the 10:00-12:00 dead zone.
+    state = base_state(nifty_price=24000.0, timestamp=datetime(2026, 1, 1, 12, 30), indicators={
+        "ema_50_1h": 24100,
+        "heikin_ashi_15m": {
+            "open": 24000, "high": 24001, "low": 23975, "close": 23980,  # body 20, wick 1
+            "prev_open": 24015, "prev_close": 24000,  # prev bearish too
+        },
+    })
+    signal = strategy.evaluate(state)
+    assert signal is not None
+    assert signal.direction == "PE"
+
+
+def test_heikin_ashi_trend_bearish_no_signal_with_a_large_upper_wick():
+    strategy = HeikinAshiTrendBearish()
+    state = base_state(nifty_price=24000.0, timestamp=datetime(2026, 1, 1, 12, 30), indicators={
+        "ema_50_1h": 24100,
+        "heikin_ashi_15m": {
+            "open": 24000, "high": 24040, "low": 23975, "close": 23980,  # body 20, wick 40
+            "prev_open": 24015, "prev_close": 24000,
+        },
+    })
+    assert strategy.evaluate(state) is None
+
+
+def test_heikin_ashi_trend_bearish_no_signal_on_monday_or_tuesday():
+    strategy = HeikinAshiTrendBearish()
+    good_indicators = {
+        "ema_50_1h": 24100,
+        "heikin_ashi_15m": {
+            "open": 24000, "high": 24001, "low": 23975, "close": 23980,
+            "prev_open": 24015, "prev_close": 24000,
+        },
+    }
+    monday = datetime(2026, 1, 5, 12, 30)  # 2026-01-05 is a Monday
+    tuesday = datetime(2026, 1, 6, 12, 30)  # 2026-01-06 is a Tuesday
+    assert strategy.evaluate(base_state(nifty_price=24000.0, timestamp=monday, indicators=good_indicators)) is None
+    assert strategy.evaluate(base_state(nifty_price=24000.0, timestamp=tuesday, indicators=good_indicators)) is None
+
+
+def test_heikin_ashi_trend_bearish_no_signal_in_the_10am_to_12pm_dead_zone():
+    strategy = HeikinAshiTrendBearish()
+    good_indicators = {
+        "ema_50_1h": 24100,
+        "heikin_ashi_15m": {
+            "open": 24000, "high": 24001, "low": 23975, "close": 23980,
+            "prev_open": 24015, "prev_close": 24000,
+        },
+    }
+    for hour, minute in [(10, 0), (11, 0), (11, 59)]:
+        state = base_state(nifty_price=24000.0, timestamp=datetime(2026, 1, 1, hour, minute),
+                            indicators=good_indicators)
+        assert strategy.evaluate(state) is None
+    # right at the boundary, the dead zone ends and signals resume
+    state = base_state(nifty_price=24000.0, timestamp=datetime(2026, 1, 1, 12, 0), indicators=good_indicators)
+    assert strategy.evaluate(state) is not None
+
+
+def test_heikin_ashi_bearish_is_live_eligible_but_bullish_is_not():
+    # Bearish cleared its 2-year out-of-sample check and went live for a paper-trading pilot
+    # alongside ORB_BULLISH; Bullish hasn't been validated the same way -- see docs/ARCHITECTURE.md.
+    names = {s.name for s in create_all_strategies()}
+    assert "HEIKIN_ASHI_TREND_BEARISH" in names
+    assert "HEIKIN_ASHI_TREND_BULLISH" not in names
+
+
 def test_confidence_score_present_on_all_strategies():
-    assert len(create_all_strategies()) == 7  # RSIOversoldBullish deliberately excluded — no genuine edge
+    assert len(create_all_strategies()) == 8  # RSIOversoldBullish deliberately excluded — no genuine edge
     # RSI strategy confidence is fixed at 0.75 by design
     strategy = RSIOversoldBullish()
     signal = strategy.evaluate(base_state(indicators={

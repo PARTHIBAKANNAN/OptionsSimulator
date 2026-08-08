@@ -15,8 +15,8 @@
     "trailing_stop_pct": 15
   },
   "strike_selection": {
-    "preference": "ATM_or_100pts_OTM",
-    "strike_step": 100,
+    "preference": "ATM_or_50pts_OTM",
+    "strike_step": 50,
     "max_delta": 0.85,
     "min_delta": 0.3
   },

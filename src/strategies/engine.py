@@ -2,6 +2,7 @@
 from datetime import datetime, timedelta
 
 from src.strategies.base_strategy import BaseStrategy, Signal
+from src.strategies.heikin_ashi_trend_bearish import HeikinAshiTrendBearish
 from src.strategies.macd_bullish import MACDBullish
 from src.strategies.support_bounce_bullish import SupportBounceBullish
 from src.strategies.orb_bullish import ORBBullish
@@ -16,6 +17,10 @@ def create_all_strategies() -> list[BaseStrategy]:
     # has no genuine edge (only profitable on the exact 90-day window it was originally tuned on,
     # net negative everywhere else, 300+ days continuously underwater). Dropped rather than run
     # live — see docs/ARCHITECTURE.md.
+    #
+    # HeikinAshiTrendBearish cleared its own 2-year out-of-sample check (profit factor held up
+    # across both halves) and is going live for a 1-2 month paper-trading pilot alongside
+    # ORB_BULLISH. HeikinAshiTrendBullish has not been validated the same way and stays excluded.
     return [
         MACDBullish(),
         SupportBounceBullish(),
@@ -24,6 +29,7 @@ def create_all_strategies() -> list[BaseStrategy]:
         MACDBearish(),
         ResistanceRejectionBearish(),
         ORBBearish(),
+        HeikinAshiTrendBearish(),
     ]
 
 

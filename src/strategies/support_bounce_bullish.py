@@ -4,8 +4,8 @@ from src.strategies.base_strategy import BaseStrategy, Signal
 
 
 class SupportBounceBullish(BaseStrategy):
-    def __init__(self):
-        super().__init__(name="SUPPORT_BOUNCE_BULLISH", direction="CE")
+    def __init__(self, name: str = "SUPPORT_BOUNCE_BULLISH", strike_step: int = 50, underlying: str = "NIFTY"):
+        super().__init__(name=name, direction="CE", strike_step=strike_step, underlying=underlying)
 
     def evaluate(self, data_state: dict):
         indicators = data_state.get("indicators", {})

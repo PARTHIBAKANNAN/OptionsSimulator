@@ -10,8 +10,8 @@ ORB_WINDOW_END = dtime(9, 30)
 
 
 class ORBBullish(BaseStrategy):
-    def __init__(self):
-        super().__init__(name="ORB_BULLISH", direction="CE")
+    def __init__(self, name: str = "ORB_BULLISH", strike_step: int = 50, underlying: str = "NIFTY"):
+        super().__init__(name=name, direction="CE", strike_step=strike_step, underlying=underlying)
         self._range_day = None
         self._range_high = None
         self._range_low = None
