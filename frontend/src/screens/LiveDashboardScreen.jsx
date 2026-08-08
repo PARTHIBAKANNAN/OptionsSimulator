@@ -3,14 +3,14 @@ import { SignalsTable } from "../components/SignalsTable";
 import { PositionsTable } from "../components/PositionsTable";
 import { PnlSummaryCard } from "../components/PnlSummaryCard";
 import { StrategyStatusList } from "../components/StrategyStatusCard";
-import { NiftyHeader } from "../components/NiftyHeader";
+import { MarketHeader } from "../components/MarketHeader";
 
 export function LiveDashboardScreen() {
   const state = useMarketState();
 
   return (
     <div className="space-y-4">
-      <NiftyHeader state={state} />
+      <MarketHeader state={state} />
       <StrategyStatusList strategies={state.strategy_status} />
       <SignalsTable signals={state.signals} pendingSignals={state.pending_signals} />
       <PositionsTable positions={state.positions} />

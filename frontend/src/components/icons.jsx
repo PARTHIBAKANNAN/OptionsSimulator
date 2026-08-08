@@ -49,3 +49,11 @@ export function ChevronDownIcon(props) {
 export function DownloadIcon(props) {
   return <Icon {...props}><path d="M12 3v12M7 10l5 5 5-5M4 20h16" /></Icon>;
 }
+
+export function ChartIcon(props) {
+  return <Icon {...props}><path d="M4 19V9M10 19V5M16 19v-7M4 19h16" /></Icon>;
+}
+
+export function XIcon(props) {
+  return <Icon {...props}><path d="M6 6l12 12M18 6L6 18" /></Icon>;
+}

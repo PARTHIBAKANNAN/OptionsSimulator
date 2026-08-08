@@ -45,6 +45,14 @@ export async function rejectSignal(signalId) {
   await api(`/api/paper/signals/${signalId}/reject`, { method: "POST" });
 }
 
+export async function closePosition(orderId) {
+  return api(`/api/paper/positions/${orderId}/close`, { method: "POST" });
+}
+
+export async function closeAllPositions() {
+  return api("/api/paper/positions/close-all", { method: "POST" });
+}
+
 export async function fetchBacktestReport() {
   return api("/api/backtest/report");
 }
