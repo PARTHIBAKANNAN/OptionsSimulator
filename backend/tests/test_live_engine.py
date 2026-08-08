@@ -203,8 +203,10 @@ def test_strategy_status_list_reports_signal_entered_with_contract_entry_ltp_and
 def test_strategy_status_list_includes_realized_pnl_from_trades_closed_today():
     engine = _make_engine()
     # "today" in _strategy_status_list is real wall-clock IST, not a fixed historical date — the
-    # closed trade must actually fall on today's date for the filter to pick it up.
-    entry_time = datetime.now(IST)
+    # closed trade must actually fall on today's date for the filter to pick it up. Pinned to
+    # 10:00 IST (rather than datetime.now()) so entry_time + 30min can never cross into tomorrow
+    # and flake right around midnight IST -- see the 2026-08-08 23:3x IST CI failure this fixed.
+    entry_time = datetime.now(IST).replace(hour=10, minute=0, second=0, microsecond=0)
     order = engine.paper_trader.place_order(
         symbol="NIFTY24600CE", side="BUY", qty=1, price=200.0,
         strategy="MACD_BULLISH", timestamp=entry_time,
@@ -222,7 +224,7 @@ def test_strategy_status_list_surfaces_last_closed_today_when_flat():
     # Item D: the expand affordance must stay available after a signal closes for the day, not
     # just while it's open -- the frontend needs somewhere to read that last signal's details from.
     engine = _make_engine()
-    entry_time = datetime.now(IST)
+    entry_time = datetime.now(IST).replace(hour=10, minute=0, second=0, microsecond=0)
     order = engine.paper_trader.place_order(
         symbol="NIFTY24600CE", side="BUY", qty=1, price=200.0, stop_loss=160.0, take_profit=350.0,
         strategy="MACD_BULLISH", timestamp=entry_time,
