@@ -28,6 +28,21 @@ function formatDelta(value) {
 
 const MIN_PX_PER_BAR_FOR_LABELS = 32;
 
+function readCandleColors() {
+  const styles = getComputedStyle(document.documentElement);
+  const getRgb = (prop, fallback) => {
+    const raw = (styles.getPropertyValue(prop) || "").trim();
+    if (!raw) return fallback;
+    if (raw.startsWith("#") || raw.startsWith("rgb")) return raw;
+    const formatted = raw.replace(/\s+/g, ", ");
+    return `rgb(${formatted})`;
+  };
+
+  const up = getRgb("--bull", "rgb(34, 197, 94)");
+  const down = getRgb("--bear", "rgb(239, 68, 68)");
+  return { up, down };
+}
+
 // 5-min candlestick + cumulative tick-rule delta histogram, backed by lightweight-charts --
 // mirrors TradeDashBoard's CandleChart.jsx (proven pattern), fed by our own live paper-trading
 // data (nifty_candles_5m / sensex_candles_5m) instead of TradeDashBoard's DB-backed candles.
@@ -69,9 +84,11 @@ export function CandleChart({ candles, height = 360 }) {
     const container = containerRef.current;
     if (!container) return;
 
+    const { up, down } = readCandleColors();
+
     const chart = createChart(container, {
       autoSize: true,
-      layout: { background: { color: "transparent" }, textColor: "rgb(var(--muted))" },
+      layout: { background: { color: "transparent" }, textColor: "rgb(158, 165, 176)" },
       grid: {
         vertLines: { visible: false },
         horzLines: { color: "rgba(255,255,255,0.06)" },
@@ -79,9 +96,9 @@ export function CandleChart({ candles, height = 360 }) {
       timeScale: { timeVisible: true, secondsVisible: false },
     });
     const series = chart.addSeries(CandlestickSeries, {
-      upColor: "rgb(var(--bull))", downColor: "rgb(var(--bear))",
-      borderUpColor: "rgb(var(--bull))", borderDownColor: "rgb(var(--bear))",
-      wickUpColor: "rgb(var(--bull))", wickDownColor: "rgb(var(--bear))",
+      upColor: up, downColor: down,
+      borderUpColor: up, borderDownColor: down,
+      wickUpColor: up, wickDownColor: down,
     });
 
     const deltaSeries = chart.addSeries(
@@ -164,13 +181,14 @@ export function CandleChart({ candles, height = 360 }) {
   // erased the day's net buying still reads green.
   useEffect(() => {
     if (!deltaSeriesRef.current) return;
+    const { up, down } = readCandleColors();
     let cumulative = 0;
     const data = (candles || [])
       .map((c) => {
         cumulative += c.delta || 0;
         return {
           time: bucketToTime(c.bucket), value: cumulative,
-          color: cumulative >= 0 ? "rgb(var(--bull))" : "rgb(var(--bear))",
+          color: cumulative >= 0 ? up : down,
         };
       })
       .sort((a, b) => a.time - b.time);
