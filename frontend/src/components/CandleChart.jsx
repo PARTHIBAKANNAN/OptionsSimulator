@@ -5,6 +5,7 @@ import {
   HistogramSeries,
   createSeriesMarkers,
 } from "lightweight-charts";
+import { useTheme } from "../contexts/ThemeContext";
 
 // `bucket` is minutes-since-midnight IST (see DataManager.get_candles_5m_with_delta).
 // lightweight-charts renders UTCTimestamp labels in UTC, not the browser's local timezone, so
@@ -33,9 +34,12 @@ function readCandleColors() {
   const getRgb = (prop, fallback) => {
     const raw = (styles.getPropertyValue(prop) || "").trim();
     if (!raw) return fallback;
-    if (raw.startsWith("#") || raw.startsWith("rgb")) return raw;
-    const formatted = raw.replace(/\s+/g, ", ");
-    return `rgb(${formatted})`;
+    if (raw.startsWith("#")) return raw;
+    const numbers = raw.match(/\d+/g);
+    if (numbers && numbers.length >= 3) {
+      return `rgb(${numbers[0]}, ${numbers[1]}, ${numbers[2]})`;
+    }
+    return fallback;
   };
 
   const up = getRgb("--bull", "rgb(34, 197, 94)");
@@ -47,6 +51,7 @@ function readCandleColors() {
 // mirrors TradeDashBoard's CandleChart.jsx (proven pattern), fed by our own live paper-trading
 // data (nifty_candles_5m / sensex_candles_5m) instead of TradeDashBoard's DB-backed candles.
 export function CandleChart({ candles, height = 360 }) {
+  const { theme } = useTheme() || {};
   const containerRef = useRef(null);
   const chartRef = useRef(null);
   const seriesRef = useRef(null);
@@ -58,6 +63,7 @@ export function CandleChart({ candles, height = 360 }) {
   const prevCandleCountRef = useRef(0);
   const deltaInitializedRef = useRef(false);
   const prevDeltaCountRef = useRef(0);
+  const deltaThemeRef = useRef(theme);
   const [latestDelta, setLatestDelta] = useState(0);
   const [hoveredDelta, setHoveredDelta] = useState(null);
 
@@ -93,7 +99,14 @@ export function CandleChart({ candles, height = 360 }) {
         vertLines: { visible: false },
         horzLines: { color: "rgba(255,255,255,0.06)" },
       },
-      timeScale: { timeVisible: true, secondsVisible: false },
+      timeScale: {
+        timeVisible: true,
+        secondsVisible: false,
+        barSpacing: 8,
+        minBarSpacing: 3,
+        fixLeftEdge: true,
+        rightOffset: 12,
+      },
     });
     const series = chart.addSeries(CandlestickSeries, {
       upColor: up, downColor: down,
@@ -153,6 +166,26 @@ export function CandleChart({ candles, height = 360 }) {
     };
   }, []);
 
+  // Recolor in place when theme changes
+  useEffect(() => {
+    if (!seriesRef.current || !chartRef.current) return;
+    const { up, down } = readCandleColors();
+    const isDark = theme === "dark";
+    seriesRef.current.applyOptions({
+      upColor: up, downColor: down,
+      borderUpColor: up, borderDownColor: down,
+      wickUpColor: up, wickDownColor: down,
+    });
+    chartRef.current.applyOptions({
+      layout: { textColor: isDark ? "rgb(158, 165, 176)" : "rgb(86, 91, 100)" },
+      grid: {
+        horzLines: {
+          color: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)",
+        },
+      },
+    });
+  }, [theme]);
+
   // Candle data -- setData()+fitContent() only on first load; a live update that's just "the
   // last bar changed" or "exactly one new bar appended" uses series.update() instead, which
   // lightweight-charts handles without resetting the user's pan/zoom.
@@ -166,12 +199,24 @@ export function CandleChart({ candles, height = 360 }) {
     const prevLen = prevCandleCountRef.current;
     if (!candlesInitializedRef.current) {
       seriesRef.current.setData(data);
-      chartRef.current?.timeScale().fitContent();
+      chartRef.current?.timeScale().applyOptions({
+        barSpacing: 8,
+        minBarSpacing: 3,
+        fixLeftEdge: true,
+        rightOffset: 12,
+      });
+      chartRef.current?.timeScale().scrollToPosition(0, false);
       candlesInitializedRef.current = true;
     } else if (data.length === prevLen || data.length === prevLen + 1) {
       seriesRef.current.update(data[data.length - 1]);
     } else {
       seriesRef.current.setData(data);
+      chartRef.current?.timeScale().applyOptions({
+        barSpacing: 8,
+        minBarSpacing: 3,
+        fixLeftEdge: true,
+        rightOffset: 12,
+      });
     }
     prevCandleCountRef.current = data.length;
   }, [candles]);
@@ -197,7 +242,9 @@ export function CandleChart({ candles, height = 360 }) {
     if (data.length === 0) return;
 
     const prevLen = prevDeltaCountRef.current;
-    if (!deltaInitializedRef.current) {
+    const themeChanged = deltaThemeRef.current !== theme;
+    deltaThemeRef.current = theme;
+    if (!deltaInitializedRef.current || themeChanged) {
       deltaSeriesRef.current.setData(data);
       deltaInitializedRef.current = true;
     } else if (data.length === prevLen || data.length === prevLen + 1) {
@@ -207,7 +254,7 @@ export function CandleChart({ candles, height = 360 }) {
     }
     prevDeltaCountRef.current = data.length;
     applyDeltaMarkers();
-  }, [candles]);
+  }, [candles, theme]);
 
   const displayDelta = hoveredDelta ?? latestDelta;
   const isHovering = hoveredDelta != null;
