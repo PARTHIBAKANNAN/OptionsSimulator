@@ -183,11 +183,11 @@ def test_strategy_status_list_reports_signal_entered_with_contract_entry_ltp_and
     entry_time = IST.localize(datetime(2026, 8, 4, 10, 0))  # 2026-08-04 is a Tuesday (expiry day)
     engine.paper_trader.place_order(
         symbol="NIFTY24600CE", side="BUY", qty=1, price=200.0,
-        stop_loss=160.0, take_profit=350.0, strategy="MACD_BULLISH", timestamp=entry_time,
+        stop_loss=160.0, take_profit=350.0, strategy="NIFTY_MACD_BULLISH_1M_ATM", timestamp=entry_time,
     )
 
     rows = engine._strategy_status_list(current_prices={"NIFTY24600CE": 250.0})
-    row = next(r for r in rows if r["strategy"] == "MACD_BULLISH")
+    row = next(r for r in rows if r["strategy"] == "NIFTY_MACD_BULLISH_1M_ATM")
 
     assert row["status"] == "SIGNAL_ENTERED"
     assert row["entry"]["contract"] == "NIFTY04Aug202624600CE"
@@ -196,7 +196,7 @@ def test_strategy_status_list_reports_signal_entered_with_contract_entry_ltp_and
     assert row["today_pnl"] == pytest.approx(row["entry"]["trade_pnl"])
 
     # every other strategy is untouched and still waiting
-    others = [r for r in rows if r["strategy"] != "MACD_BULLISH"]
+    others = [r for r in rows if r["strategy"] != "NIFTY_MACD_BULLISH_1M_ATM"]
     assert all(r["status"] == "WAITING" for r in others)
 
 
@@ -209,12 +209,12 @@ def test_strategy_status_list_includes_realized_pnl_from_trades_closed_today():
     entry_time = datetime.now(IST).replace(hour=10, minute=0, second=0, microsecond=0)
     order = engine.paper_trader.place_order(
         symbol="NIFTY24600CE", side="BUY", qty=1, price=200.0,
-        strategy="MACD_BULLISH", timestamp=entry_time,
+        strategy="NIFTY_MACD_BULLISH_1M_ATM", timestamp=entry_time,
     )
     engine.paper_trader.close_position(order.order_id, 230.0, timestamp=entry_time + timedelta(minutes=30))
 
     rows = engine._strategy_status_list(current_prices={})
-    row = next(r for r in rows if r["strategy"] == "MACD_BULLISH")
+    row = next(r for r in rows if r["strategy"] == "NIFTY_MACD_BULLISH_1M_ATM")
 
     assert row["status"] == "WAITING"  # no longer open
     assert row["today_pnl"] == pytest.approx((230.0 - order.entry_price) * engine.paper_trader.lot_size)
@@ -227,13 +227,13 @@ def test_strategy_status_list_surfaces_last_closed_today_when_flat():
     entry_time = datetime.now(IST).replace(hour=10, minute=0, second=0, microsecond=0)
     order = engine.paper_trader.place_order(
         symbol="NIFTY24600CE", side="BUY", qty=1, price=200.0, stop_loss=160.0, take_profit=350.0,
-        strategy="MACD_BULLISH", timestamp=entry_time,
+        strategy="NIFTY_MACD_BULLISH_1M_ATM", timestamp=entry_time,
     )
     engine.paper_trader.close_position(order.order_id, 230.0, timestamp=entry_time + timedelta(minutes=30),
                                         reason="TAKE_PROFIT")
 
     rows = engine._strategy_status_list(current_prices={})
-    row = next(r for r in rows if r["strategy"] == "MACD_BULLISH")
+    row = next(r for r in rows if r["strategy"] == "NIFTY_MACD_BULLISH_1M_ATM")
 
     assert row["entry"] is None
     assert row["last_closed"]["contract"].startswith("NIFTY")
@@ -251,13 +251,13 @@ def test_strategy_status_list_surfaces_last_closed_from_a_prior_day_too():
     stale_entry = datetime.now(IST) - timedelta(days=3)
     order = engine.paper_trader.place_order(
         symbol="NIFTY24600CE", side="BUY", qty=1, price=200.0, stop_loss=160.0, take_profit=350.0,
-        strategy="MACD_BULLISH", timestamp=stale_entry,
+        strategy="NIFTY_MACD_BULLISH_1M_ATM", timestamp=stale_entry,
     )
     engine.paper_trader.close_position(order.order_id, 230.0, timestamp=stale_entry + timedelta(minutes=30),
                                         reason="TAKE_PROFIT")
 
     rows = engine._strategy_status_list(current_prices={})
-    row = next(r for r in rows if r["strategy"] == "MACD_BULLISH")
+    row = next(r for r in rows if r["strategy"] == "NIFTY_MACD_BULLISH_1M_ATM")
 
     assert row["entry"] is None
     assert row["last_closed"]["exit_price"] == 230.0
@@ -269,11 +269,11 @@ def test_strategy_status_list_entry_includes_time_and_sl_tp():
     entry_time = datetime.now(IST)
     engine.paper_trader.place_order(
         symbol="NIFTY24600CE", side="BUY", qty=1, price=200.0, stop_loss=160.0, take_profit=350.0,
-        strategy="MACD_BULLISH", timestamp=entry_time,
+        strategy="NIFTY_MACD_BULLISH_1M_ATM", timestamp=entry_time,
     )
 
     rows = engine._strategy_status_list(current_prices={"NIFTY24600CE": 210.0})
-    row = next(r for r in rows if r["strategy"] == "MACD_BULLISH")
+    row = next(r for r in rows if r["strategy"] == "NIFTY_MACD_BULLISH_1M_ATM")
 
     assert row["entry"]["entry_time"] == entry_time.isoformat()
     assert row["entry"]["stop_loss"] == 160.0
@@ -295,26 +295,26 @@ async def test_restore_state_does_nothing_without_a_configured_db():
 async def test_restore_state_loads_wallet_balance_and_reopens_orphaned_positions():
     engine = _make_engine(data_engine_enabled=True)
     # Simulate what capital_by_strategy would have seeded before the (simulated) restart.
-    engine.paper_trader.wallet_balance["MACD_BULLISH"] = 85000.0
+    engine.paper_trader.wallet_balance["NIFTY_MACD_BULLISH_1M_ATM"] = 85000.0
 
     fake_pool = MagicMock()
     fake_pool.fetch = AsyncMock(side_effect=[
-        [{"strategy": "MACD_BULLISH", "balance": 78000.0}],
+        [{"strategy": "NIFTY_MACD_BULLISH_1M_ATM", "balance": 78000.0}],
         [{
             "order_id": "abc-123", "symbol": "NIFTY24500CE", "side": "BUY", "qty": 1,
             "lot_size": 65, "entry_price": 100.0,
             "entry_time": pytz.utc.localize(datetime(2026, 8, 5, 9, 20)),
-            "stop_loss": 80.0, "take_profit": 150.0, "strategy": "MACD_BULLISH", "entry_charges": 25.0,
+            "stop_loss": 80.0, "take_profit": 150.0, "strategy": "NIFTY_MACD_BULLISH_1M_ATM", "entry_charges": 25.0,
         }],
-        [{"strategy": "MACD_BULLISH", "cnt": 1}],
+        [{"strategy": "NIFTY_MACD_BULLISH_1M_ATM", "cnt": 1}],
     ])
     fake_pool.fetchrow = AsyncMock(return_value={"total": -150.0})
 
     with patch("backend.app.live_engine.db.get_pool", return_value=fake_pool):
         await engine._restore_state()
 
-    assert engine.paper_trader.wallet_balance["MACD_BULLISH"] == 78000.0
-    assert engine.paper_trader._strategy_trades_today["MACD_BULLISH"] == 1
+    assert engine.paper_trader.wallet_balance["NIFTY_MACD_BULLISH_1M_ATM"] == 78000.0
+    assert engine.paper_trader._strategy_trades_today["NIFTY_MACD_BULLISH_1M_ATM"] == 1
     assert engine.paper_trader._realized_pnl_today == -150.0
     positions = engine.paper_trader.get_positions()
     assert len(positions) == 1
@@ -342,14 +342,14 @@ async def test_restore_state_ignores_wallet_rows_for_unseeded_strategies():
 
 @pytest.mark.asyncio
 async def test_restore_state_reconstructs_daily_trade_count_so_the_cap_survives_a_restart():
-    # Regression: 3 restarts in one trading day let MACD_BULLISH place 3 entries despite its
+    # Regression: 3 restarts in one trading day let NIFTY_MACD_BULLISH_1M_ATM place 3 entries despite its
     # 2/day cap, because each fresh in-memory counter had no idea about the previous run's trades.
     engine = _make_engine(data_engine_enabled=True, extra_risk_params={
         "position_sizing": {"qty_per_signal": 1, "lot_size": 65, "max_concurrent_positions": 5,
                              "max_daily_loss": 5000, "max_trades_per_day_per_strategy": 2},
     })
     fake_pool = MagicMock()
-    fake_pool.fetch = AsyncMock(side_effect=[[], [], [{"strategy": "MACD_BULLISH", "cnt": 2}]])
+    fake_pool.fetch = AsyncMock(side_effect=[[], [], [{"strategy": "NIFTY_MACD_BULLISH_1M_ATM", "cnt": 2}]])
     fake_pool.fetchrow = AsyncMock(return_value={"total": -300.0})
 
     with patch("backend.app.live_engine.db.get_pool", return_value=fake_pool):
@@ -357,11 +357,11 @@ async def test_restore_state_reconstructs_daily_trade_count_so_the_cap_survives_
             mock_dt.now.return_value = IST.localize(datetime(2026, 8, 6, 9, 0))
             await engine._restore_state()
 
-    assert engine.paper_trader._strategy_trades_today["MACD_BULLISH"] == 2
+    assert engine.paper_trader._strategy_trades_today["NIFTY_MACD_BULLISH_1M_ATM"] == 2
     assert engine.paper_trader._realized_pnl_today == -300.0
     with pytest.raises(RiskLimitExceeded, match="trades/day limit"):
         engine.paper_trader.place_order("NIFTY24600CE", "BUY", qty=1, price=100.0,
-                                         strategy="MACD_BULLISH", timestamp=datetime(2026, 8, 6, 10, 0))
+                                         strategy="NIFTY_MACD_BULLISH_1M_ATM", timestamp=datetime(2026, 8, 6, 10, 0))
 
 
 @pytest.mark.asyncio
@@ -416,10 +416,10 @@ async def test_restore_state_candle_failure_does_not_affect_wallet_position_rest
     # A separate try/except from the wallet/position restore above -- a candle-history failure
     # must not be mistaken for (or block) the more critical wallet/position restore succeeding.
     engine = _make_engine(data_engine_enabled=True)
-    engine.paper_trader.wallet_balance["MACD_BULLISH"] = 85000.0
+    engine.paper_trader.wallet_balance["NIFTY_MACD_BULLISH_1M_ATM"] = 85000.0
     fake_pool = MagicMock()
     fake_pool.fetch = AsyncMock(side_effect=[
-        [{"strategy": "MACD_BULLISH", "balance": 78000.0}], [], [],  # wallet/positions/trade-count
+        [{"strategy": "NIFTY_MACD_BULLISH_1M_ATM", "balance": 78000.0}], [], [],  # wallet/positions/trade-count
         RuntimeError("candle history query failed"),  # NIFTY candle restore blows up
     ])
     fake_pool.fetchrow = AsyncMock(return_value={"total": 0.0})
@@ -427,7 +427,7 @@ async def test_restore_state_candle_failure_does_not_affect_wallet_position_rest
     with patch("backend.app.live_engine.db.get_pool", return_value=fake_pool):
         await engine._restore_state()  # must not raise
 
-    assert engine.paper_trader.wallet_balance["MACD_BULLISH"] == 78000.0
+    assert engine.paper_trader.wallet_balance["NIFTY_MACD_BULLISH_1M_ATM"] == 78000.0
 
 
 @pytest.mark.asyncio
@@ -527,16 +527,16 @@ async def test_db_execute_writes_in_live_mode():
 @pytest.mark.asyncio
 async def test_save_wallet_db_upserts_current_balance_for_seeded_strategies():
     engine = _make_engine(data_engine_enabled=True)
-    engine.paper_trader.wallet_balance["MACD_BULLISH"] = 12345.67
-    engine.paper_trader.capital_by_strategy["MACD_BULLISH"] = 85000.0
+    engine.paper_trader.wallet_balance["NIFTY_MACD_BULLISH_1M_ATM"] = 12345.67
+    engine.paper_trader.capital_by_strategy["NIFTY_MACD_BULLISH_1M_ATM"] = 85000.0
     engine._db_execute = AsyncMock()
 
-    await engine._save_wallet_db("MACD_BULLISH")
+    await engine._save_wallet_db("NIFTY_MACD_BULLISH_1M_ATM")
 
     engine._db_execute.assert_awaited_once()
     query, strategy, balance, allocated = engine._db_execute.call_args.args
     assert "options_wallets" in query
-    assert (strategy, balance, allocated) == ("MACD_BULLISH", 12345.67, 85000.0)
+    assert (strategy, balance, allocated) == ("NIFTY_MACD_BULLISH_1M_ATM", 12345.67, 85000.0)
 
 
 @pytest.mark.asyncio
