@@ -118,6 +118,7 @@ class LiveTrader:
         self._connected = False
         self._last_login_date = None
         self._historical_seeded_date = None
+        self._last_premarket_intel_date = None
 
     # ---- Tick handlers (called synchronously from the WebSocket thread) --------
 
@@ -184,6 +185,23 @@ class LiveTrader:
         if self.fyers.access_token and self._historical_seeded_date != now.date():
             self._seed_historical_candles()
             self._historical_seeded_date = now.date()
+
+        # Trigger Pre-Market Catalyst AI Intelligence at 08:50 AM IST
+        if past_login_time and self._last_premarket_intel_date != now.date():
+            try:
+                from backend.app.ai_intelligence import generate_live_premarket_intel
+                intel = generate_live_premarket_intel()
+                self._last_premarket_intel_date = now.date()
+                if self.telegram and intel:
+                    summary_msg = (
+                        f"⚡ <b>[OptionsSimulator] Pre-Market Intelligence (08:50 AM)</b>\n\n"
+                        f"📊 <b>Market Bias:</b> {intel.get('market_bias', 'BULLISH').replace('_', ' ')} ({intel.get('sentiment_score', 68)}%)\n"
+                        f"🎯 <b>Expected Open:</b> {intel.get('expected_gap', 'NIFTY')}\n"
+                        f"💡 <i>{intel.get('summary', '')}</i>"
+                    )
+                    self.telegram.send_alert(summary_msg)
+            except Exception as e:
+                self.logger.log_error(f"Pre-market intelligence generation at 08:50 AM failed: {e}")
 
         if market_open and not self._connected and self.fyers.access_token:
             self.fyers.start_websocket(self.on_tick)
