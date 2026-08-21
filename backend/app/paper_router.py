@@ -1,6 +1,7 @@
 """Paper-trading REST endpoints. Live views (positions/pnl/pending signals) read the in-memory
 snapshot the engine publishes; trade history reads Postgres since it must survive a restart."""
 import io
+import json
 from datetime import date as date_cls, datetime
 from pathlib import Path
 
@@ -247,6 +248,19 @@ async def restart_strategy(name: str, request: Request):
 
 
 RESULTS_DIR = Path(__file__).resolve().parent.parent.parent / "data" / "backtest_results"
+
+
+def _sanitize(value):
+    import math
+    if isinstance(value, float):
+        if math.isnan(value) or math.isinf(value):
+            return 0.0
+        return value
+    if isinstance(value, dict):
+        return {k: _sanitize(v) for k, v in value.items()}
+    if isinstance(value, list):
+        return [_sanitize(v) for v in value]
+    return value
 
 
 @router.get("/strategies/{name}/history")
