@@ -13,6 +13,8 @@ function pnlClass(v) {
   return v > 0 ? "text-bull" : v < 0 ? "text-bear" : "text-muted";
 }
 
+import { createPortal } from "react-dom";
+
 function TaxBreakdownModal({ grossPnl, totalCharges, tradesCount, onClose }) {
   // Compute standard Indian regulatory split for total charges
   const estBrokerage = tradesCount * 40.0; // ₹20 entry + ₹20 exit
@@ -22,12 +24,16 @@ function TaxBreakdownModal({ grossPnl, totalCharges, tradesCount, onClose }) {
   const estGst = remaining * 0.25;
   const estStampDuty = remaining * 0.05;
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-md">
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/75 p-4 backdrop-blur-md"
+      onClick={onClose}
+    >
       <motion.div
         initial={{ scale: 0.95, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.95, opacity: 0 }}
+        onClick={(e) => e.stopPropagation()}
         className="w-full max-w-lg rounded-2xl border border-subtle bg-surface shadow-2xl overflow-hidden"
       >
         <div className="flex items-center justify-between border-b border-subtle px-5 py-4 bg-surface2/60">
@@ -83,7 +89,8 @@ function TaxBreakdownModal({ grossPnl, totalCharges, tradesCount, onClose }) {
           </div>
         </div>
       </motion.div>
-    </div>
+    </div>,
+    document.body
   );
 }
 

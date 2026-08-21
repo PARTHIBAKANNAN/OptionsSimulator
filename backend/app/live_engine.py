@@ -88,10 +88,10 @@ class WebLiveEngine(LiveTrader):
             except Exception:
                 pass
         else:
-            nifty_price = self._cached_market_state.get("nifty_price", 24823.15)
-            prev_close = self._cached_market_state.get("nifty_prev_close", 24698.40)
-            change = self._cached_market_state.get("nifty_change", 124.75)
-            change_pct = self._cached_market_state.get("nifty_change_pct", 0.51)
+            nifty_price = self._cached_market_state.get("nifty_price", 24252.00)
+            prev_close = self._cached_market_state.get("nifty_prev_close", 24231.85)
+            change = self._cached_market_state.get("nifty_change", 20.15)
+            change_pct = self._cached_market_state.get("nifty_change_pct", 0.08)
 
         if sensex_price is not None:
             self._cached_market_state["sensex_price"] = sensex_price
@@ -99,10 +99,10 @@ class WebLiveEngine(LiveTrader):
             self._cached_market_state["sensex_change"] = round(sensex_change, 2) if sensex_change is not None else None
             self._cached_market_state["sensex_change_pct"] = round(sensex_change_pct, 2) if sensex_change_pct is not None else None
         else:
-            sensex_price = self._cached_market_state.get("sensex_price", 81382.40)
-            sensex_prev_close = self._cached_market_state.get("sensex_prev_close", 80896.80)
-            sensex_change = self._cached_market_state.get("sensex_change", 485.60)
-            sensex_change_pct = self._cached_market_state.get("sensex_change_pct", 0.60)
+            sensex_price = self._cached_market_state.get("sensex_price", 77540.83)
+            sensex_prev_close = self._cached_market_state.get("sensex_prev_close", 77537.72)
+            sensex_change = self._cached_market_state.get("sensex_change", 3.11)
+            sensex_change_pct = self._cached_market_state.get("sensex_change_pct", 0.00)
 
         nifty_candles_5m = self.data_manager.get_candles_5m_with_delta(today)
         sensex_candles_5m = self.data_managers["SENSEX"].get_candles_5m_with_delta(today)

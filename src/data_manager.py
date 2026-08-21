@@ -320,6 +320,10 @@ class DataManager:
         get_today_candles above. `bucket` is minutes-since-midnight, matching TradeDashBoard's
         own CandleChart.jsx convention (bucketToTime())."""
         todays = self.get_today_candles(today)
+        if not todays and self.candles:
+            latest_day = self.candles[-1].timestamp.date()
+            todays = [c for c in self.candles if c.timestamp.date() == latest_day]
+
         if not todays:
             return []
         df = pd.DataFrame([{
