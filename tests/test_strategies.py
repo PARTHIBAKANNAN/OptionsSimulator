@@ -343,14 +343,17 @@ def test_heikin_ashi_trend_bearish_no_signal_in_the_10am_to_12pm_dead_zone():
 
 
 def test_nifty_live_roster_is_the_curated_four_strategy_set():
-    # Curated after the full backtest comparison + HeikinAshiTrendBearish's 2-year out-of-sample
-    # check -- see docs/ARCHITECTURE.md. Everything else from the original 8 is dropped.
-    names = {s.name for s in create_all_strategies()}
-    assert names == {"ORB_BULLISH", "MACD_BULLISH", "HEIKIN_ASHI_TREND_BEARISH", "MACD_BEARISH"}
+    # Master roster contains all 21 strategies (9 baseline ATM + 12 5M ITM)
+    strategies = create_all_strategies()
+    assert len(strategies) == 21
+    names = {s.name for s in strategies}
+    assert "NIFTY_ORB_BULLISH_1M_ATM" in names
+    assert "NIFTY_SUPPORT_BOUNCE_5M_ITM" in names
+    assert "SENSEX_HEIKIN_ASHI_BEARISH_5M_ITM" in names
 
 
 def test_confidence_score_present_on_all_strategies():
-    assert len(create_all_strategies()) == 4
+    assert len(create_all_strategies()) == 21
     # RSI strategy confidence is fixed at 0.75 by design
     strategy = RSIOversoldBullish()
     signal = strategy.evaluate(base_state(indicators={
