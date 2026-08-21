@@ -182,17 +182,17 @@ def test_strategy_status_list_reports_signal_entered_with_contract_entry_ltp_and
     engine = _make_engine()
     entry_time = IST.localize(datetime(2026, 8, 4, 10, 0))  # 2026-08-04 is a Tuesday (expiry day)
     engine.paper_trader.place_order(
-        symbol="NIFTY24600CE", side="BUY", qty=1, price=200.0,
-        stop_loss=160.0, take_profit=350.0, strategy="NIFTY_MACD_BULLISH_1M_ATM", timestamp=entry_time,
+        symbol="NIFTY24600CE", side="BUY", qty=1, price=100.0,
+        stop_loss=80.0, take_profit=150.0, strategy="NIFTY_MACD_BULLISH_1M_ATM", timestamp=entry_time,
     )
 
-    rows = engine._strategy_status_list(current_prices={"NIFTY24600CE": 250.0})
+    rows = engine._strategy_status_list(current_prices={"NIFTY24600CE": 125.0})
     row = next(r for r in rows if r["strategy"] == "NIFTY_MACD_BULLISH_1M_ATM")
 
     assert row["status"] == "SIGNAL_ENTERED"
     assert row["entry"]["contract"] == "NIFTY04Aug202624600CE"
-    assert row["entry"]["ltp"] == 250.0
-    assert row["entry"]["trade_pnl"] == pytest.approx((250.0 - row["entry"]["entry_price"]) * engine.paper_trader.lot_size)
+    assert row["entry"]["ltp"] == 125.0
+    assert row["entry"]["trade_pnl"] == pytest.approx((125.0 - row["entry"]["entry_price"]) * engine.paper_trader.lot_size)
     assert row["today_pnl"] == pytest.approx(row["entry"]["trade_pnl"])
 
     # every other strategy is untouched and still waiting
@@ -208,16 +208,16 @@ def test_strategy_status_list_includes_realized_pnl_from_trades_closed_today():
     # and flake right around midnight IST -- see the 2026-08-08 23:3x IST CI failure this fixed.
     entry_time = datetime.now(IST).replace(hour=10, minute=0, second=0, microsecond=0)
     order = engine.paper_trader.place_order(
-        symbol="NIFTY24600CE", side="BUY", qty=1, price=200.0,
+        symbol="NIFTY24600CE", side="BUY", qty=1, price=100.0,
         strategy="NIFTY_MACD_BULLISH_1M_ATM", timestamp=entry_time,
     )
-    engine.paper_trader.close_position(order.order_id, 230.0, timestamp=entry_time + timedelta(minutes=30))
+    engine.paper_trader.close_position(order.order_id, 130.0, timestamp=entry_time + timedelta(minutes=30))
 
     rows = engine._strategy_status_list(current_prices={})
     row = next(r for r in rows if r["strategy"] == "NIFTY_MACD_BULLISH_1M_ATM")
 
     assert row["status"] == "WAITING"  # no longer open
-    assert row["today_pnl"] == pytest.approx((230.0 - order.entry_price) * engine.paper_trader.lot_size)
+    assert row["today_pnl"] == pytest.approx((130.0 - order.entry_price) * engine.paper_trader.lot_size)
 
 
 def test_strategy_status_list_surfaces_last_closed_today_when_flat():
@@ -226,10 +226,10 @@ def test_strategy_status_list_surfaces_last_closed_today_when_flat():
     engine = _make_engine()
     entry_time = datetime.now(IST).replace(hour=10, minute=0, second=0, microsecond=0)
     order = engine.paper_trader.place_order(
-        symbol="NIFTY24600CE", side="BUY", qty=1, price=200.0, stop_loss=160.0, take_profit=350.0,
+        symbol="NIFTY24600CE", side="BUY", qty=1, price=100.0, stop_loss=80.0, take_profit=150.0,
         strategy="NIFTY_MACD_BULLISH_1M_ATM", timestamp=entry_time,
     )
-    engine.paper_trader.close_position(order.order_id, 230.0, timestamp=entry_time + timedelta(minutes=30),
+    engine.paper_trader.close_position(order.order_id, 130.0, timestamp=entry_time + timedelta(minutes=30),
                                         reason="TAKE_PROFIT")
 
     rows = engine._strategy_status_list(current_prices={})
@@ -238,9 +238,9 @@ def test_strategy_status_list_surfaces_last_closed_today_when_flat():
     assert row["entry"] is None
     assert row["last_closed"]["contract"].startswith("NIFTY")
     assert row["last_closed"]["exit_reason"] == "TAKE_PROFIT"
-    assert row["last_closed"]["exit_price"] == 230.0
-    assert row["last_closed"]["stop_loss"] == 160.0
-    assert row["last_closed"]["take_profit"] == 350.0
+    assert row["last_closed"]["exit_price"] == 130.0
+    assert row["last_closed"]["stop_loss"] == 80.0
+    assert row["last_closed"]["take_profit"] == 150.0
 
 
 def test_strategy_status_list_surfaces_last_closed_from_a_prior_day_too():
@@ -250,17 +250,17 @@ def test_strategy_status_list_surfaces_last_closed_from_a_prior_day_too():
     engine = _make_engine()
     stale_entry = datetime.now(IST) - timedelta(days=3)
     order = engine.paper_trader.place_order(
-        symbol="NIFTY24600CE", side="BUY", qty=1, price=200.0, stop_loss=160.0, take_profit=350.0,
+        symbol="NIFTY24600CE", side="BUY", qty=1, price=100.0, stop_loss=80.0, take_profit=150.0,
         strategy="NIFTY_MACD_BULLISH_1M_ATM", timestamp=stale_entry,
     )
-    engine.paper_trader.close_position(order.order_id, 230.0, timestamp=stale_entry + timedelta(minutes=30),
+    engine.paper_trader.close_position(order.order_id, 130.0, timestamp=stale_entry + timedelta(minutes=30),
                                         reason="TAKE_PROFIT")
 
     rows = engine._strategy_status_list(current_prices={})
     row = next(r for r in rows if r["strategy"] == "NIFTY_MACD_BULLISH_1M_ATM")
 
     assert row["entry"] is None
-    assert row["last_closed"]["exit_price"] == 230.0
+    assert row["last_closed"]["exit_price"] == 130.0
     assert row["today_pnl"] == 0  # that close wasn't today, so it must not count toward today's P&L
 
 
@@ -268,16 +268,16 @@ def test_strategy_status_list_entry_includes_time_and_sl_tp():
     engine = _make_engine()
     entry_time = datetime.now(IST)
     engine.paper_trader.place_order(
-        symbol="NIFTY24600CE", side="BUY", qty=1, price=200.0, stop_loss=160.0, take_profit=350.0,
+        symbol="NIFTY24600CE", side="BUY", qty=1, price=100.0, stop_loss=80.0, take_profit=150.0,
         strategy="NIFTY_MACD_BULLISH_1M_ATM", timestamp=entry_time,
     )
 
-    rows = engine._strategy_status_list(current_prices={"NIFTY24600CE": 210.0})
+    rows = engine._strategy_status_list(current_prices={"NIFTY24600CE": 110.0})
     row = next(r for r in rows if r["strategy"] == "NIFTY_MACD_BULLISH_1M_ATM")
 
     assert row["entry"]["entry_time"] == entry_time.isoformat()
-    assert row["entry"]["stop_loss"] == 160.0
-    assert row["entry"]["take_profit"] == 350.0
+    assert row["entry"]["stop_loss"] == 80.0
+    assert row["entry"]["take_profit"] == 150.0
     assert row["last_closed"] is None
 
 
