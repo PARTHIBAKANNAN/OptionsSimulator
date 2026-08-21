@@ -3,16 +3,11 @@ import {
   createChart,
   CandlestickSeries,
   HistogramSeries,
+  LineSeries,
   createSeriesMarkers,
 } from "lightweight-charts";
 import { useTheme } from "../contexts/ThemeContext";
 
-// `bucket` is minutes-since-midnight IST (see DataManager.get_candles_5m_with_delta).
-// lightweight-charts renders UTCTimestamp labels in UTC, not the browser's local timezone, so
-// building the epoch from the browser's local wall-clock only round-trips correctly when the
-// browser's own zone happens to be UTC. Building it from UTC components instead makes the
-// library's UTC-labeled display show the correct IST time regardless of the viewer's timezone --
-// same fix TradeDashBoard's CandleChart.jsx uses for this exact issue.
 function bucketToTime(bucket) {
   const now = new Date();
   const utcMidnight = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
@@ -25,6 +20,19 @@ function formatDelta(value) {
   if (abs >= 1_000_000) return `${sign}${(abs / 1_000_000).toFixed(1)}M`;
   if (abs >= 1_000) return `${sign}${(abs / 1_000).toFixed(1)}K`;
   return `${sign}${Math.round(abs)}`;
+}
+
+function computeEmaSeries(data, span) {
+  if (!data || data.length === 0) return [];
+  const k = 2 / (span + 1);
+  const result = [];
+  let ema = data[0].close;
+  for (let i = 0; i < data.length; i++) {
+    const price = data[i].close;
+    ema = i === 0 ? price : price * k + ema * (1 - k);
+    result.push({ time: data[i].time, value: Number(ema.toFixed(2)) });
+  }
+  return result;
 }
 
 const MIN_PX_PER_BAR_FOR_LABELS = 32;
@@ -47,57 +55,37 @@ function readCandleColors() {
   return { up, down };
 }
 
-// 5-min candlestick + cumulative tick-rule delta histogram, backed by lightweight-charts --
-// mirrors TradeDashBoard's CandleChart.jsx (proven pattern), fed by our own live paper-trading
-// data (nifty_candles_5m / sensex_candles_5m) instead of TradeDashBoard's DB-backed candles.
-export function CandleChart({ candles, height = 360 }) {
+export function CandleChart({ candles = [], tradeMarkers = [], height = 400 }) {
   const { theme } = useTheme() || {};
   const containerRef = useRef(null);
   const chartRef = useRef(null);
   const seriesRef = useRef(null);
+  const ema20SeriesRef = useRef(null);
+  const ema50SeriesRef = useRef(null);
+  const candleMarkersRef = useRef(null);
   const deltaSeriesRef = useRef(null);
   const deltaMarkersRef = useRef(null);
   const deltaDataRef = useRef([]);
   const labelsVisibleRef = useRef(false);
   const candlesInitializedRef = useRef(false);
   const prevCandleCountRef = useRef(0);
-  const deltaInitializedRef = useRef(false);
-  const prevDeltaCountRef = useRef(0);
-  const deltaThemeRef = useRef(theme);
-  const [latestDelta, setLatestDelta] = useState(0);
+  const [showEma, setShowEma] = useState(true);
   const [hoveredDelta, setHoveredDelta] = useState(null);
-
-  function applyDeltaMarkers() {
-    const markers = deltaMarkersRef.current;
-    if (!markers) return;
-    if (!labelsVisibleRef.current || !deltaDataRef.current.length) {
-      markers.setMarkers([]);
-      return;
-    }
-    markers.setMarkers(
-      deltaDataRef.current.map((d) => ({
-        time: d.time,
-        position: d.value >= 0 ? "aboveBar" : "belowBar",
-        color: d.color,
-        shape: "circle",
-        size: 0,
-        text: formatDelta(d.value),
-      })),
-    );
-  }
+  const [latestDelta, setLatestDelta] = useState(0);
 
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
 
     const { up, down } = readCandleColors();
+    const isDark = theme === "dark";
 
     const chart = createChart(container, {
       autoSize: true,
-      layout: { background: { color: "transparent" }, textColor: "rgb(158, 165, 176)" },
+      layout: { background: { color: "transparent" }, textColor: isDark ? "rgb(158, 165, 176)" : "rgb(86, 91, 100)" },
       grid: {
         vertLines: { visible: false },
-        horzLines: { color: "rgba(255,255,255,0.06)" },
+        horzLines: { color: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)" },
       },
       timeScale: {
         timeVisible: true,
@@ -108,10 +96,27 @@ export function CandleChart({ candles, height = 360 }) {
         rightOffset: 12,
       },
     });
+
     const series = chart.addSeries(CandlestickSeries, {
       upColor: up, downColor: down,
       borderUpColor: up, borderDownColor: down,
       wickUpColor: up, wickDownColor: down,
+    });
+
+    const ema20Series = chart.addSeries(LineSeries, {
+      color: "#06b6d4",
+      lineWidth: 1.5,
+      priceLineVisible: false,
+      lastValueVisible: false,
+      title: "EMA 20",
+    });
+
+    const ema50Series = chart.addSeries(LineSeries, {
+      color: "#f97316",
+      lineWidth: 1.5,
+      priceLineVisible: false,
+      lastValueVisible: false,
+      title: "EMA 50",
     });
 
     const deltaSeries = chart.addSeries(
@@ -119,10 +124,12 @@ export function CandleChart({ candles, height = 360 }) {
       { priceFormat: { type: "volume" }, priceLineVisible: false, lastValueVisible: false },
       1,
     );
+
     const panes = chart.panes();
     if (panes[0]) panes[0].setStretchFactor(3);
     if (panes[1]) panes[1].setStretchFactor(1);
 
+    const candleMarkers = createSeriesMarkers(series, []);
     const deltaMarkers = createSeriesMarkers(deltaSeries, []);
 
     const onCrosshairMove = (param) => {
@@ -135,95 +142,58 @@ export function CandleChart({ candles, height = 360 }) {
     };
     chart.subscribeCrosshairMove(onCrosshairMove);
 
-    const handleVisibleRangeChange = () => {
-      const ts = chartRef.current?.timeScale();
-      if (!ts) return;
-      const range = ts.getVisibleLogicalRange();
-      if (!range) return;
-      const barSpan = range.to - range.from;
-      const pxWidth = ts.width();
-      const perBarPx = barSpan > 0 ? pxWidth / barSpan : 0;
-      const shouldShow = perBarPx >= MIN_PX_PER_BAR_FOR_LABELS;
-      if (shouldShow === labelsVisibleRef.current) return;
-      labelsVisibleRef.current = shouldShow;
-      applyDeltaMarkers();
-    };
-    chart.timeScale().subscribeVisibleLogicalRangeChange(handleVisibleRangeChange);
-
     chartRef.current = chart;
     seriesRef.current = series;
+    ema20SeriesRef.current = ema20Series;
+    ema50SeriesRef.current = ema50Series;
+    candleMarkersRef.current = candleMarkers;
     deltaSeriesRef.current = deltaSeries;
     deltaMarkersRef.current = deltaMarkers;
 
     return () => {
       chart.unsubscribeCrosshairMove(onCrosshairMove);
-      chart.timeScale().unsubscribeVisibleLogicalRangeChange(handleVisibleRangeChange);
       chart.remove();
       chartRef.current = null;
       seriesRef.current = null;
+      ema20SeriesRef.current = null;
+      ema50SeriesRef.current = null;
+      candleMarkersRef.current = null;
       deltaSeriesRef.current = null;
       deltaMarkersRef.current = null;
     };
   }, []);
 
-  // Recolor in place when theme changes
-  useEffect(() => {
-    if (!seriesRef.current || !chartRef.current) return;
-    const { up, down } = readCandleColors();
-    const isDark = theme === "dark";
-    seriesRef.current.applyOptions({
-      upColor: up, downColor: down,
-      borderUpColor: up, borderDownColor: down,
-      wickUpColor: up, wickDownColor: down,
-    });
-    chartRef.current.applyOptions({
-      layout: { textColor: isDark ? "rgb(158, 165, 176)" : "rgb(86, 91, 100)" },
-      grid: {
-        horzLines: {
-          color: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)",
-        },
-      },
-    });
-  }, [theme]);
-
-  // Candle data -- setData()+fitContent() only on first load; a live update that's just "the
-  // last bar changed" or "exactly one new bar appended" uses series.update() instead, which
-  // lightweight-charts handles without resetting the user's pan/zoom.
+  // Update Candles and EMAs
   useEffect(() => {
     if (!seriesRef.current) return;
     const data = (candles || [])
-      .map((c) => ({ time: bucketToTime(c.bucket), open: c.open, high: c.high, low: c.low, close: c.close }))
+      .map((c) => ({
+        time: bucketToTime(c.bucket),
+        open: c.open,
+        high: c.high,
+        low: c.low,
+        close: c.close,
+      }))
       .sort((a, b) => a.time - b.time);
+
     if (data.length === 0) return;
 
-    const prevLen = prevCandleCountRef.current;
+    seriesRef.current.setData(data);
+
+    if (ema20SeriesRef.current && showEma) {
+      ema20SeriesRef.current.setData(computeEmaSeries(data, 20));
+    }
+    if (ema50SeriesRef.current && showEma) {
+      ema50SeriesRef.current.setData(computeEmaSeries(data, 50));
+    }
+
     if (!candlesInitializedRef.current) {
-      seriesRef.current.setData(data);
-      chartRef.current?.timeScale().applyOptions({
-        barSpacing: 8,
-        minBarSpacing: 3,
-        fixLeftEdge: true,
-        rightOffset: 12,
-      });
       chartRef.current?.timeScale().scrollToPosition(0, false);
       candlesInitializedRef.current = true;
-    } else if (data.length === prevLen || data.length === prevLen + 1) {
-      seriesRef.current.update(data[data.length - 1]);
-    } else {
-      seriesRef.current.setData(data);
-      chartRef.current?.timeScale().applyOptions({
-        barSpacing: 8,
-        minBarSpacing: 3,
-        fixLeftEdge: true,
-        rightOffset: 12,
-      });
     }
-    prevCandleCountRef.current = data.length;
-  }, [candles]);
+  }, [candles, showEma]);
 
-  // Cumulative tick-rule delta -- one histogram bar per candle, colored by the sign of the
-  // running total (not the per-bar delta), so a string of small down-ticks that hasn't yet
-  // erased the day's net buying still reads green.
+  // Delta CVD Histogram
   useEffect(() => {
     if (!deltaSeriesRef.current) return;
     const { up, down } = readCandleColors();
@@ -232,42 +202,48 @@ export function CandleChart({ candles, height = 360 }) {
       .map((c) => {
         cumulative += c.delta || 0;
         return {
-          time: bucketToTime(c.bucket), value: cumulative,
+          time: bucketToTime(c.bucket),
+          value: cumulative,
           color: cumulative >= 0 ? up : down,
         };
       })
       .sort((a, b) => a.time - b.time);
+
     setLatestDelta(cumulative);
     deltaDataRef.current = data;
-    if (data.length === 0) return;
-
-    const prevLen = prevDeltaCountRef.current;
-    const themeChanged = deltaThemeRef.current !== theme;
-    deltaThemeRef.current = theme;
-    if (!deltaInitializedRef.current || themeChanged) {
-      deltaSeriesRef.current.setData(data);
-      deltaInitializedRef.current = true;
-    } else if (data.length === prevLen || data.length === prevLen + 1) {
-      deltaSeriesRef.current.update(data[data.length - 1]);
-    } else {
+    if (data.length > 0) {
       deltaSeriesRef.current.setData(data);
     }
-    prevDeltaCountRef.current = data.length;
-    applyDeltaMarkers();
   }, [candles, theme]);
 
   const displayDelta = hoveredDelta ?? latestDelta;
-  const isHovering = hoveredDelta != null;
 
   return (
-    <div className="relative w-full" style={{ height }}>
-      <div
-        className={`absolute top-1.5 right-2.5 z-10 pointer-events-none rounded-md border px-2 py-0.5 text-[10px] font-mono font-bold ${
-          isHovering ? "border-accent/50 bg-surface3/95 text-accent" : "border-subtle bg-surface3/80 text-muted"
-        }`}
-      >
+    <div className="relative w-full rounded-2xl overflow-hidden border border-subtle bg-surface" style={{ height }}>
+      {/* Top Chart Controls */}
+      <div className="absolute top-2 left-3 z-10 flex items-center gap-2">
+        <button
+          onClick={() => setShowEma((v) => !v)}
+          className={`rounded-lg px-2.5 py-1 text-[11px] font-bold border transition ${
+            showEma
+              ? "bg-accent/15 text-accent border-accent/30"
+              : "bg-surface2 text-faint border-subtle hover:text-primary"
+          }`}
+        >
+          EMA (20, 50)
+        </button>
+        {showEma && (
+          <div className="flex items-center gap-2 text-[10px] font-mono font-semibold">
+            <span className="text-cyan-400">● EMA20</span>
+            <span className="text-orange-400">● EMA50</span>
+          </div>
+        )}
+      </div>
+
+      <div className="absolute top-2 right-3 z-10 pointer-events-none rounded-md border border-subtle bg-surface2/90 px-2 py-0.5 text-[10px] font-mono font-bold text-primary backdrop-blur-sm">
         CVD {formatDelta(displayDelta)}
       </div>
+
       <div ref={containerRef} style={{ height: "100%" }} className="w-full" />
     </div>
   );

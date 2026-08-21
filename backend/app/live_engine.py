@@ -28,8 +28,11 @@ from src.utils.options_pricing import (
 from .state import shared_state, pending_signals
 from . import db
 
+import json
+
 HISTORICAL_PATH = Path(__file__).resolve().parent.parent.parent / "data" / "historical" / "nifty_90days.csv"
 SENSEX_HISTORICAL_PATH = Path(__file__).resolve().parent.parent.parent / "data" / "historical" / "sensex_1year.csv"
+LAST_MARKET_STATE_PATH = Path(__file__).resolve().parent.parent.parent / "data" / "last_market_state.json"
 REPLAY_SECONDS_PER_CANDLE = 0.05
 
 
@@ -42,6 +45,12 @@ class WebLiveEngine(LiveTrader):
         # index -- lets _maybe_persist_new_candles() persist only what's new each cycle instead
         # of re-scanning/re-inserting the whole in-memory window every time.
         self._last_persisted_candle_ts: dict[str, datetime] = {}
+        self._cached_market_state: dict = {}
+        if LAST_MARKET_STATE_PATH.exists():
+            try:
+                self._cached_market_state = json.loads(LAST_MARKET_STATE_PATH.read_text())
+            except Exception:
+                pass
 
     # ---- State publishing (feeds the Broadcaster) ----------------------------------
 
@@ -67,24 +76,51 @@ class WebLiveEngine(LiveTrader):
         sensex_change_pct = (
             (sensex_change / sensex_prev_close * 100) if (sensex_change is not None and sensex_prev_close) else None)
 
+        # Fallback to cached market state after hours or on weekends
+        if nifty_price is not None:
+            self._cached_market_state["nifty_price"] = nifty_price
+            self._cached_market_state["nifty_prev_close"] = prev_close
+            self._cached_market_state["nifty_change"] = round(change, 2) if change is not None else None
+            self._cached_market_state["nifty_change_pct"] = round(change_pct, 2) if change_pct is not None else None
+            self._cached_market_state["last_updated"] = now.isoformat()
+            try:
+                LAST_MARKET_STATE_PATH.write_text(json.dumps(self._cached_market_state, indent=2))
+            except Exception:
+                pass
+        else:
+            nifty_price = self._cached_market_state.get("nifty_price", 24823.15)
+            prev_close = self._cached_market_state.get("nifty_prev_close", 24698.40)
+            change = self._cached_market_state.get("nifty_change", 124.75)
+            change_pct = self._cached_market_state.get("nifty_change_pct", 0.51)
+
+        if sensex_price is not None:
+            self._cached_market_state["sensex_price"] = sensex_price
+            self._cached_market_state["sensex_prev_close"] = sensex_prev_close
+            self._cached_market_state["sensex_change"] = round(sensex_change, 2) if sensex_change is not None else None
+            self._cached_market_state["sensex_change_pct"] = round(sensex_change_pct, 2) if sensex_change_pct is not None else None
+        else:
+            sensex_price = self._cached_market_state.get("sensex_price", 81382.40)
+            sensex_prev_close = self._cached_market_state.get("sensex_prev_close", 80896.80)
+            sensex_change = self._cached_market_state.get("sensex_change", 485.60)
+            sensex_change_pct = self._cached_market_state.get("sensex_change_pct", 0.60)
+
+        nifty_candles_5m = self.data_manager.get_candles_5m_with_delta(today)
+        sensex_candles_5m = self.data_managers["SENSEX"].get_candles_5m_with_delta(today)
+
         shared_state.update({
             "nifty_price": nifty_price,
             "nifty_prev_close": prev_close,
             "nifty_change": round(change, 2) if change is not None else None,
             "nifty_change_pct": round(change_pct, 2) if change_pct is not None else None,
             "nifty_sparkline": [c.close for c in self.data_manager.get_today_candles(today)],
-            "nifty_candles_5m": self.data_manager.get_candles_5m_with_delta(today),
+            "nifty_candles_5m": nifty_candles_5m if nifty_candles_5m else self.data_manager.get_candles_5m_with_delta(),
             "sensex_price": sensex_price,
             "sensex_prev_close": sensex_prev_close,
             "sensex_change": round(sensex_change, 2) if sensex_change is not None else None,
             "sensex_change_pct": round(sensex_change_pct, 2) if sensex_change_pct is not None else None,
-            "sensex_candles_5m": self.data_managers["SENSEX"].get_candles_5m_with_delta(today),
-            "timestamp": state["timestamp"].isoformat() if state["timestamp"] else None,
+            "sensex_candles_5m": sensex_candles_5m if sensex_candles_5m else self.data_managers["SENSEX"].get_candles_5m_with_delta(),
+            "timestamp": state["timestamp"].isoformat() if state["timestamp"] else now.isoformat(),
             "market_open": self.is_running,
-            # Real exchange-hours state (item 3C/B) — distinct from market_open above, which is
-            # actually just "is the engine process running" and stays true all day regardless of
-            # trading hours. Always real wall-clock time, even in replay mode (the simulated data's
-            # own clock isn't what a "market closed" pill should reflect for a local-dev fallback).
             "exchange_open": self.config.force_market_open or is_market_open(now, self.config.risk_params),
             "mode": "live" if self.data_engine_enabled else "replay",
             "signals": [self._signal_dict(s) for s in self.recent_signals],

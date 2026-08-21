@@ -49,3 +49,19 @@ def calculate_charges(order_value: float, side: str, rates: dict = None) -> Char
     return ChargeBreakdown(
         brokerage=round(brokerage, 2), stt=round(stt, 2), exchange_txn=round(exchange_txn, 2),
         sebi_fee=round(sebi_fee, 2), stamp_duty=round(stamp_duty, 2), gst=round(gst, 2))
+
+
+def calculate_trade_roundtrip_charges(buy_value: float, sell_value: float, rates: dict = None) -> dict:
+    """Returns combined itemized regulatory tax breakdown for both entry and exit legs."""
+    buy_chg = calculate_charges(buy_value, "BUY", rates)
+    sell_chg = calculate_charges(sell_value, "SELL", rates)
+
+    return {
+        "brokerage": round(buy_chg.brokerage + sell_chg.brokerage, 2),
+        "stt": round(buy_chg.stt + sell_chg.stt, 2),
+        "exchange_txn": round(buy_chg.exchange_txn + sell_chg.exchange_txn, 2),
+        "gst": round(buy_chg.gst + sell_chg.gst, 2),
+        "stamp_duty": round(buy_chg.stamp_duty + sell_chg.stamp_duty, 2),
+        "sebi_fee": round(buy_chg.sebi_fee + sell_chg.sebi_fee, 2),
+        "total_charges": round(buy_chg.total + sell_chg.total, 2),
+    }

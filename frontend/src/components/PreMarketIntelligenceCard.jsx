@@ -1,0 +1,134 @@
+import { useEffect, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Sparkles, TrendingUp, TrendingDown, ChevronDown, ChevronRight, Globe, Compass, Target } from "lucide-react";
+import { api } from "../hooks/usePaperTradingSync";
+
+export function PreMarketIntelligenceCard() {
+  const [intel, setIntel] = useState(null);
+  const [expanded, setExpanded] = useState(true);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    api("/api/paper/intelligence/premarket")
+      .then((d) => setIntel(d))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading || !intel) return null;
+
+  return (
+    <div className="rounded-2xl border border-subtle bg-surface p-4 shadow-sm backdrop-blur-sm">
+      {/* Header Bar */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2.5">
+          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-purple-500/15 text-purple-400 border border-purple-500/20">
+            <Sparkles className="h-4 w-4" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-primary">Pre-Market Catalyst Intelligence</h3>
+              <span className="rounded-full bg-bull/15 px-2.5 py-0.5 text-[10px] font-extrabold text-bull border border-bull/30">
+                {intel.market_bias?.replace("_", " ")} ({intel.sentiment_score}%)
+              </span>
+            </div>
+            <p className="text-[11px] text-faint mt-0.5">
+              GIFT Nifty, Global Macro &amp; Index Heavyweight Bias (08:45 AM Briefing)
+            </p>
+          </div>
+        </div>
+
+        <button
+          onClick={() => setExpanded((v) => !v)}
+          className="rounded-lg p-1.5 text-faint hover:bg-surface2 hover:text-primary transition"
+        >
+          {expanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+        </button>
+      </div>
+
+      <AnimatePresence initial={false}>
+        {expanded && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="overflow-hidden mt-3.5 space-y-3.5"
+          >
+            {/* Executive Summary & Expected Gap */}
+            <div className="rounded-xl border border-subtle/80 bg-surface2/80 p-3 text-xs text-primary leading-relaxed flex items-start gap-2.5">
+              <Compass className="h-4 w-4 text-accent shrink-0 mt-0.5" />
+              <div>
+                <span className="font-bold text-accent">Expected Open: </span>
+                <span className="font-semibold">{intel.expected_gap}. </span>
+                <span className="text-muted">{intel.summary}</span>
+              </div>
+            </div>
+
+            {/* Macro Ticker Strip */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
+              {intel.macro_metrics?.map((m) => (
+                <div key={m.name} className="rounded-xl border border-subtle bg-surface2/50 p-2.5">
+                  <div className="text-[10px] font-bold text-faint uppercase">{m.name}</div>
+                  <div className="font-mono text-xs font-extrabold text-primary mt-0.5">{m.value}</div>
+                  <div className={`font-mono text-[10px] font-semibold mt-0.5 ${m.status === "bull" ? "text-bull" : "text-bear"}`}>
+                    {m.change}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Bottom Split: Sector Bias & Strategy Focus */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 text-xs">
+              {/* Sector Sentiment */}
+              <div className="rounded-xl border border-subtle bg-surface2/50 p-3 space-y-2">
+                <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-faint">
+                  <Globe className="h-3.5 w-3.5 text-accent" /> Key Sector Sentiment
+                </div>
+                <div className="space-y-1.5">
+                  {intel.sector_biases?.map((s) => (
+                    <div key={s.sector} className="flex items-start justify-between gap-2 py-0.5 border-b border-subtle/40 last:border-0">
+                      <div>
+                        <span className="font-bold text-primary">{s.sector}: </span>
+                        <span className="text-muted text-[11px]">{s.catalyst}</span>
+                      </div>
+                      <span className={`shrink-0 rounded px-1.5 py-0.5 text-[9px] font-bold ${
+                        s.bias === "BULLISH"
+                          ? "bg-bull/15 text-bull"
+                          : s.bias === "NEUTRAL"
+                          ? "bg-surface3 text-muted"
+                          : "bg-bear/15 text-bear"
+                      }`}>
+                        {s.bias}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Recommended Strategy Conviction */}
+              <div className="rounded-xl border border-subtle bg-surface2/50 p-3 space-y-2">
+                <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-faint">
+                  <Target className="h-3.5 w-3.5 text-bull" /> Opening Strategy Focus
+                </div>
+                <div className="space-y-1.5">
+                  {intel.recommended_strategies?.map((strat) => (
+                    <div key={strat.name} className="flex items-start justify-between gap-2 py-0.5 border-b border-subtle/40 last:border-0">
+                      <div>
+                        <div className="font-bold text-primary font-mono text-[11px]">{strat.name}</div>
+                        <div className="text-[10px] text-faint">{strat.reason}</div>
+                      </div>
+                      <span className="shrink-0 rounded bg-bull/15 px-1.5 py-0.5 text-[9px] font-extrabold text-bull">
+                        {strat.conviction}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}

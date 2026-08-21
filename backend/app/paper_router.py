@@ -288,3 +288,11 @@ async def get_paper_strategy_history(name: str):
             "exit_charges": 0.0,
         })
     return _sanitize(trades)
+
+
+@router.get("/intelligence/premarket")
+async def get_premarket_intelligence():
+    """Returns today's pre-market catalyst & opening market bias intelligence."""
+    from .ai_intelligence import get_cached_premarket_intel
+    return _sanitize(get_cached_premarket_intel())
+
