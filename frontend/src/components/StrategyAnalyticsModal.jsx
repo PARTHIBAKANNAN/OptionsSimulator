@@ -262,9 +262,20 @@ export function StrategyAnalyticsModal({ strategy, mode = "live", onClose }) {
     if (mode === "backtest") {
       fetchBacktestStrategyHistory(strategy)
         .then((trades) => {
-          setBacktestTrades(Array.isArray(trades) ? trades : []);
+          if (Array.isArray(trades) && trades.length > 0) {
+            setBacktestTrades(trades);
+          } else {
+            // Fallback to paper orders endpoint if history empty
+            return fetchStrategyOrders(strategy).then((d) => {
+              setBacktestTrades(d?.closed_trades ?? []);
+            });
+          }
         })
-        .catch(() => setBacktestTrades([]))
+        .catch(() => {
+          fetchStrategyOrders(strategy)
+            .then((d) => setBacktestTrades(d?.closed_trades ?? []))
+            .catch(() => setBacktestTrades([]));
+        })
         .finally(() => setLoading(false));
     } else {
       fetchStrategyOrders(strategy)
