@@ -2,6 +2,7 @@
 snapshot the engine publishes; trade history reads Postgres since it must survive a restart."""
 import io
 from datetime import date as date_cls, datetime
+from pathlib import Path
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
 
