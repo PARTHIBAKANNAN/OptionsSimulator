@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles, TrendingUp, TrendingDown, ChevronDown, ChevronRight, Globe, Compass, Target } from "lucide-react";
+import { Sparkles, TrendingUp, TrendingDown, ChevronDown, ChevronRight, Globe, Compass, Target, RotateCw, Bot } from "lucide-react";
 import { api } from "../hooks/usePaperTradingSync";
 
 export function PreMarketIntelligenceCard() {
   const [intel, setIntel] = useState(null);
   const [expanded, setExpanded] = useState(true);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     api("/api/paper/intelligence/premarket")
@@ -15,7 +16,21 @@ export function PreMarketIntelligenceCard() {
       .finally(() => setLoading(false));
   }, []);
 
+  async function handleRefreshAI() {
+    setRefreshing(true);
+    try {
+      const res = await api("/api/paper/intelligence/premarket/refresh", { method: "POST" });
+      if (res) setIntel(res);
+    } catch (e) {
+      console.error("AI Refresh error:", e);
+    } finally {
+      setRefreshing(false);
+    }
+  }
+
   if (loading || !intel) return null;
+
+  const isGeminiLive = intel.source?.includes("Gemini");
 
   return (
     <div className="rounded-2xl border border-subtle bg-surface p-4 shadow-sm backdrop-blur-sm">
@@ -31,19 +46,37 @@ export function PreMarketIntelligenceCard() {
               <span className="rounded-full bg-bull/15 px-2.5 py-0.5 text-[10px] font-extrabold text-bull border border-bull/30">
                 {intel.market_bias?.replace("_", " ")} ({intel.sentiment_score}%)
               </span>
+              <span className={`hidden sm:inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                isGeminiLive ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30" : "bg-surface3 text-faint border border-subtle"
+              }`}>
+                <Bot className="h-3 w-3" />
+                {intel.source || "Gemini 3.6 Flash"}
+              </span>
             </div>
             <p className="text-[11px] text-faint mt-0.5">
-              GIFT Nifty, Global Macro &amp; Index Heavyweight Bias (08:45 AM Briefing)
+              GIFT Nifty, Global Macro &amp; Index Heavyweight Bias (08:50 AM Briefing)
             </p>
           </div>
         </div>
 
-        <button
-          onClick={() => setExpanded((v) => !v)}
-          className="rounded-lg p-1.5 text-faint hover:bg-surface2 hover:text-primary transition"
-        >
-          {expanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-        </button>
+        <div className="flex items-center gap-1.5">
+          <button
+            onClick={handleRefreshAI}
+            disabled={refreshing}
+            title="Refresh live AI analysis"
+            className="flex items-center gap-1 rounded-lg border border-subtle bg-surface2 px-2.5 py-1 text-xs font-semibold text-muted hover:bg-surface3 hover:text-primary transition disabled:opacity-50"
+          >
+            <RotateCw className={`h-3.5 w-3.5 text-accent ${refreshing ? "animate-spin" : ""}`} />
+            <span className="hidden sm:inline">{refreshing ? "Analyzing…" : "Refresh AI"}</span>
+          </button>
+
+          <button
+            onClick={() => setExpanded((v) => !v)}
+            className="rounded-lg p-1.5 text-faint hover:bg-surface2 hover:text-primary transition"
+          >
+            {expanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+          </button>
+        </div>
       </div>
 
       <AnimatePresence initial={false}>

@@ -296,3 +296,17 @@ async def get_premarket_intelligence():
     from .ai_intelligence import get_cached_premarket_intel
     return _sanitize(get_cached_premarket_intel())
 
+
+@router.post("/intelligence/premarket/refresh")
+async def refresh_premarket_intelligence():
+    """Forces an on-demand live call to Gemini 3.6 Flash and returns fresh market intelligence."""
+    from .ai_intelligence import generate_live_premarket_intel, INTEL_CACHE_PATH
+    import json
+    intel = generate_live_premarket_intel()
+    try:
+        INTEL_CACHE_PATH.parent.mkdir(parents=True, exist_ok=True)
+        INTEL_CACHE_PATH.write_text(json.dumps(intel, indent=2))
+    except Exception:
+        pass
+    return _sanitize(intel)
+
