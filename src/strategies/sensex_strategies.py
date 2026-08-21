@@ -20,47 +20,43 @@ SENSEX_STRIKE_STEP = 100
 
 
 class SensexMACDBullish(MACDBullish):
-    def __init__(self):
-        super().__init__(name="SENSEX_MACD_BULLISH", strike_step=SENSEX_STRIKE_STEP, underlying="SENSEX")
+    def __init__(self, name: str = "SENSEX_MACD_BULLISH"):
+        super().__init__(name=name, strike_step=SENSEX_STRIKE_STEP, underlying="SENSEX")
 
 
 class SensexMACDBearish(MACDBearish):
-    def __init__(self):
-        super().__init__(name="SENSEX_MACD_BEARISH", strike_step=SENSEX_STRIKE_STEP, underlying="SENSEX")
+    def __init__(self, name: str = "SENSEX_MACD_BEARISH"):
+        super().__init__(name=name, strike_step=SENSEX_STRIKE_STEP, underlying="SENSEX")
 
 
 class SensexORBBullish(ORBBullish):
-    def __init__(self):
-        super().__init__(name="SENSEX_ORB_BULLISH", strike_step=SENSEX_STRIKE_STEP, underlying="SENSEX")
+    def __init__(self, name: str = "SENSEX_ORB_BULLISH"):
+        super().__init__(name=name, strike_step=SENSEX_STRIKE_STEP, underlying="SENSEX")
 
 
 class SensexORBBearish(ORBBearish):
-    def __init__(self):
-        super().__init__(name="SENSEX_ORB_BEARISH", strike_step=SENSEX_STRIKE_STEP, underlying="SENSEX")
+    def __init__(self, name: str = "SENSEX_ORB_BEARISH"):
+        super().__init__(name=name, strike_step=SENSEX_STRIKE_STEP, underlying="SENSEX")
 
 
 class SensexSupportBounceBullish(SupportBounceBullish):
-    def __init__(self):
-        super().__init__(name="SENSEX_SUPPORT_BOUNCE_BULLISH", strike_step=SENSEX_STRIKE_STEP, underlying="SENSEX")
+    def __init__(self, name: str = "SENSEX_SUPPORT_BOUNCE_BULLISH"):
+        super().__init__(name=name, strike_step=SENSEX_STRIKE_STEP, underlying="SENSEX")
 
 
 class SensexResistanceRejectionBearish(ResistanceRejectionBearish):
-    def __init__(self):
-        super().__init__(name="SENSEX_RESISTANCE_REJECTION_BEARISH", strike_step=SENSEX_STRIKE_STEP,
-                          underlying="SENSEX")
+    def __init__(self, name: str = "SENSEX_RESISTANCE_REJECTION_BEARISH"):
+        super().__init__(name=name, strike_step=SENSEX_STRIKE_STEP, underlying="SENSEX")
 
 
 class SensexHeikinAshiTrendBullish(HeikinAshiTrendBullish):
-    def __init__(self):
-        super().__init__(name="SENSEX_HEIKIN_ASHI_TREND_BULLISH", strike_step=SENSEX_STRIKE_STEP,
-                          underlying="SENSEX")
+    def __init__(self, name: str = "SENSEX_HEIKIN_ASHI_TREND_BULLISH"):
+        super().__init__(name=name, strike_step=SENSEX_STRIKE_STEP, underlying="SENSEX")
 
 
 class SensexHeikinAshiTrendBearish(HeikinAshiTrendBearish):
-    def __init__(self):
-        # Unfiltered -- the Mon/Tue + 10-12 exclusion is NIFTY-specific tuning, not assumed here.
-        super().__init__(name="SENSEX_HEIKIN_ASHI_TREND_BEARISH", strike_step=SENSEX_STRIKE_STEP,
-                          underlying="SENSEX", apply_day_time_filter=False)
+    def __init__(self, name: str = "SENSEX_HEIKIN_ASHI_TREND_BEARISH"):
+        super().__init__(name=name, strike_step=SENSEX_STRIKE_STEP, underlying="SENSEX", apply_day_time_filter=False)
 
 
 def create_all_sensex_strategies() -> list:

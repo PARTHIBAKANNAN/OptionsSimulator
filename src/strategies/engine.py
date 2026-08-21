@@ -8,21 +8,67 @@ from src.strategies.orb_bullish import ORBBullish
 from src.strategies.macd_bearish import MACDBearish
 
 
+from src.strategies.nifty_5m_strategies import (
+    NiftySupportBounce5MITM,
+    NiftyHeikinAshiBullish5MITM,
+    NiftyORBBullish5MITM,
+    NiftyResistanceRejection5MITM,
+    NiftyHeikinAshiBearish5MITM,
+    NiftyORBBearish5MITM,
+)
+from src.strategies.sensex_5m_strategies import (
+    SensexSupportBounce5MITM,
+    SensexHeikinAshiBullish5MITM,
+    SensexORBBullish5MITM,
+    SensexResistanceRejection5MITM,
+    SensexHeikinAshiBearish5MITM,
+    SensexORBBearish5MITM,
+)
+from src.strategies.sensex_strategies import (
+    SensexMACDBullish,
+    SensexSupportBounceBullish,
+    SensexHeikinAshiTrendBearish,
+    SensexMACDBearish,
+    SensexORBBearish,
+)
+
+
 def create_all_strategies() -> list[BaseStrategy]:
-    # Curated live roster, replacing the original 8-strategy NIFTY set after a full backtest
-    # comparison across all of them plus a 2-year out-of-sample check on the two newer additions
-    # (ORB_BULLISH already had a strike-step fix validated; HeikinAshiTrendBearish's profit factor
-    # held up across both halves of its 2-year window). MACD_BULLISH/MACD_BEARISH were already the
-    # strongest performers in the original comparison. SupportBounceBullish, RSIOverboughtBearish,
-    # ResistanceRejectionBearish, ORBBearish, and RSIOversoldBullish (no genuine out-of-sample edge)
-    # are dropped from the live roster -- see docs/ARCHITECTURE.md. HeikinAshiTrendBullish has not
-    # been validated the same way as its bearish counterpart and stays excluded.
+    """Returns the full master roster of 21 active strategies:
+    - 9 Standard 1-Minute ATM Baseline Strategies (4 NIFTY + 5 SENSEX)
+    - 12 High-Conviction 5-Minute ITM Strategies (6 NIFTY + 6 SENSEX)
+    """
     return [
-        ORBBullish(),
-        MACDBullish(),
-        HeikinAshiTrendBearish(),
-        MACDBearish(),
+        # --- 9 Existing 1-Minute ATM Baseline Strategies ---
+        ORBBullish(name="NIFTY_ORB_BULLISH_1M_ATM"),
+        MACDBullish(name="NIFTY_MACD_BULLISH_1M_ATM"),
+        HeikinAshiTrendBearish(name="NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM"),
+        MACDBearish(name="NIFTY_MACD_BEARISH_1M_ATM"),
+        SensexMACDBullish(name="SENSEX_MACD_BULLISH_1M_ATM"),
+        SensexSupportBounceBullish(name="SENSEX_SUPPORT_BOUNCE_1M_ATM"),
+        SensexHeikinAshiTrendBearish(name="SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM"),
+        SensexMACDBearish(name="SENSEX_MACD_BEARISH_1M_ATM"),
+        SensexORBBearish(name="SENSEX_ORB_BEARISH_1M_ATM"),
+
+        # --- 12 New 5-Minute ITM Suite (6 NIFTY + 6 SENSEX) ---
+        NiftySupportBounce5MITM(),
+        NiftyHeikinAshiBullish5MITM(),
+        NiftyORBBullish5MITM(),
+        NiftyResistanceRejection5MITM(),
+        NiftyHeikinAshiBearish5MITM(),
+        NiftyORBBearish5MITM(),
+
+        SensexSupportBounce5MITM(),
+        SensexHeikinAshiBullish5MITM(),
+        SensexORBBullish5MITM(),
+        SensexResistanceRejection5MITM(),
+        SensexHeikinAshiBearish5MITM(),
+        SensexORBBearish5MITM(),
     ]
+
+
+def create_live_strategies() -> list[BaseStrategy]:
+    return create_all_strategies()
 
 
 class StrategyEngine:

@@ -269,8 +269,23 @@ class DataManager:
                         "low": float(ha["ha_low"].iloc[-1]), "close": float(ha["ha_close"].iloc[-1]),
                         "prev_open": float(ha["ha_open"].iloc[-2]), "prev_close": float(ha["ha_close"].iloc[-2]),
                     }
-            elif rule == "5min" and len(resampled) >= 20:
+            elif rule == "5min" and len(resampled) >= 15:
                 out["volume_ratio_5m"] = float(ind.volume_ratio(resampled["Volume"]).iloc[-1])
+                out["ema_20_5m"] = float(ind.ema(resampled["Close"], 20).iloc[-1])
+                ema50_period = min(50, len(resampled))
+                out["ema_50_5m"] = float(ind.ema(resampled["Close"], ema50_period).iloc[-1])
+                macd_df_5m = ind.macd(resampled["Close"])
+                out["macd_histogram_5m"] = float(macd_df_5m["histogram"].iloc[-1])
+                out["macd_histogram_5m_prev"] = (
+                    float(macd_df_5m["histogram"].iloc[-2]) if len(macd_df_5m) >= 2 else out["macd_histogram_5m"]
+                )
+                if len(resampled) >= 2:
+                    ha_5m = ind.heikin_ashi(resampled)
+                    out["heikin_ashi_5m"] = {
+                        "open": float(ha_5m["ha_open"].iloc[-1]), "high": float(ha_5m["ha_high"].iloc[-1]),
+                        "low": float(ha_5m["ha_low"].iloc[-1]), "close": float(ha_5m["ha_close"].iloc[-1]),
+                        "prev_open": float(ha_5m["ha_open"].iloc[-2]), "prev_close": float(ha_5m["ha_close"].iloc[-2]),
+                    }
 
         # Raw 1-min volume stats are cheap (last 20 candles) and update every tick, unlike the
         # resampled indicators above.
