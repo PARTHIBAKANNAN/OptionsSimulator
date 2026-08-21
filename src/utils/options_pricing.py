@@ -117,12 +117,24 @@ def next_weekly_expiry_date(from_date: datetime, index: str = "NIFTY") -> date:
     return from_date.date()
 
 
-def format_display_symbol(symbol: str, expiry: date) -> str:
-    """'NIFTY24600CE' + 2026-08-11 -> 'NIFTY11Aug202624600CE'. Display-only: the bare
-    strike+type symbol is ambiguous about which week's contract it is, but this is never used as
-    a lookup key — order.symbol / option-chain quote keys are untouched everywhere else."""
+def format_display_symbol(symbol: str, expiry: date = None) -> str:
+    """'NIFTY24600CE' + 2026-08-11 -> 'NIFTY11Aug202624600CE'."""
     strike, option_type = parse_option_symbol(symbol)
     if strike is None:
         return symbol
     prefix = "SENSEX" if symbol.startswith("SENSEX") else "NIFTY"
+    if expiry is None:
+        expiry = next_weekly_expiry_date(datetime.now(), index=prefix)
     return f"{prefix}{expiry.day:02d}{expiry.strftime('%b')}{expiry.year}{int(strike)}{option_type}"
+
+
+def format_readable_contract(symbol: str, expiry: date = None, timestamp: datetime = None) -> str:
+    """'NIFTY24600CE' -> 'NIFTY 28-AUG-2025 24600 CE'."""
+    strike, option_type = parse_option_symbol(symbol)
+    if strike is None:
+        return symbol
+    prefix = "SENSEX" if symbol.startswith("SENSEX") else "NIFTY"
+    if expiry is None:
+        ts = timestamp or datetime.now()
+        expiry = next_weekly_expiry_date(ts, index=prefix)
+    return f"{prefix} {expiry.day:02d}-{expiry.strftime('%b').upper()}-{expiry.year} {int(strike)} {option_type}"

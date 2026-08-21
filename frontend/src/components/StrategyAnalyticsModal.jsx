@@ -115,7 +115,7 @@ function MetricCard({ label, value, subValue, valueClass = "" }) {
   );
 }
 
-function EquityCurveChart({ points }) {
+export function EquityCurveChart({ points }) {
   if (!points || points.length < 2) {
     return <div className="flex h-48 items-center justify-center text-xs text-faint">Not enough trade points for equity curve</div>;
   }

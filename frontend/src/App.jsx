@@ -6,6 +6,7 @@ import { TopNavbar } from "./components/TopNavbar";
 import { LiveDashboardScreen } from "./screens/LiveDashboardScreen";
 import { BacktestReportScreen } from "./screens/BacktestReportScreen";
 import { PnlSummaryScreen } from "./screens/PnlSummaryScreen";
+import { StrategyLabScreen } from "./screens/StrategyLabScreen";
 import { useMarketStream } from "./hooks/useMarketStream";
 import { api } from "./hooks/usePaperTradingSync";
 import { supabase } from "./lib/supabaseClient";
@@ -14,6 +15,7 @@ const TABS = [
   { key: "live", label: "Live", Component: LiveDashboardScreen },
   { key: "pnl", label: "P&L Summary", Component: PnlSummaryScreen },
   { key: "backtest", label: "Backtest", Component: BacktestReportScreen },
+  { key: "lab", label: "Strategy Lab", Component: StrategyLabScreen },
 ];
 
 function Dashboard({ user, onLogout }) {

@@ -302,17 +302,28 @@ class PaperTrader:
             trailing_stop_price = None
             if self.trailing_stop_enabled:
                 order.peak_price = max(order.peak_price, price)
-                if not order.trailing_active and order.peak_price >= order.entry_price * (
+                gain_pts = order.peak_price - order.entry_price
+                dynamic_price = order.peak_price * (1 - self.trailing_stop_pct / 100)
+
+                # Realistic Stepped Trailing Stop-Loss (20-35 pt steps)
+                if gain_pts >= 50.0:
+                    order.trailing_active = True
+                    stepped_price = order.entry_price + 30.0
+                    trailing_stop_price = max(stepped_price, dynamic_price)
+                elif gain_pts >= 35.0:
+                    order.trailing_active = True
+                    stepped_price = order.entry_price + 15.0
+                    trailing_stop_price = max(stepped_price, dynamic_price)
+                elif gain_pts >= 20.0:
+                    order.trailing_active = True
+                    stepped_price = order.entry_price
+                    trailing_stop_price = max(stepped_price, dynamic_price)
+                elif not order.trailing_active and order.peak_price >= order.entry_price * (
                         1 + self.trailing_activation_pct / 100):
                     order.trailing_active = True
-                if order.trailing_active:
-                    # Clamped to never go below entry: with trailing_stop_pct wider than the
-                    # activation cushion (e.g. 15% trail on a 10% activation), the raw trail price
-                    # right after arming can sit BELOW entry — a "trailing stop" that locks in a
-                    # loss defeats its whole purpose. A 90-day backtest showed exactly this: several
-                    # strategies' TRAILING_STOP exits were net losers. See docs/ARCHITECTURE.md.
-                    trailing_stop_price = max(
-                        order.peak_price * (1 - self.trailing_stop_pct / 100), order.entry_price)
+
+                if order.trailing_active and trailing_stop_price is None:
+                    trailing_stop_price = max(dynamic_price, order.entry_price)
 
             reason = None
             fill_price = price
