@@ -1,13 +1,13 @@
 import { useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { ChevronDown, Search, LayoutGrid, List } from "lucide-react";
+import { ChevronDown, ChevronRight, Search, LayoutGrid, List, RotateCcw } from "lucide-react";
 import { Badge } from "./ui/Badge";
 import { StrategyAnalyticsModal } from "./StrategyAnalyticsModal";
-import { approveSignal, closePosition, rejectSignal } from "../hooks/usePaperTradingSync";
+import { approveSignal, closePosition, rejectSignal, restartStrategy } from "../hooks/usePaperTradingSync";
 
 function fmtRupee(v) {
   if (v == null) return "—";
-  return `Rs.${v.toLocaleString("en-IN", { maximumFractionDigits: 2 })}`;
+  return `₹ ${Number(v).toLocaleString("en-IN", { maximumFractionDigits: 2 })}`;
 }
 
 function fmtTime(iso) {
@@ -29,16 +29,16 @@ function pctReturn(entryPrice, otherPrice) {
 function StatusBeacon({ entered }) {
   if (entered) {
     return (
-      <span className="relative flex h-3 w-3 items-center justify-center">
+      <span className="relative flex h-2.5 w-2.5 items-center justify-center">
         <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-bull opacity-75 duration-1000" />
-        <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-bull shadow-[0_0_8px_rgba(34,197,94,0.8)]" />
+        <span className="relative inline-flex h-2 w-2 rounded-full bg-bull shadow-[0_0_8px_rgba(34,197,94,0.8)]" />
       </span>
     );
   }
   return (
-    <span className="relative flex h-3 w-3 items-center justify-center">
+    <span className="relative flex h-2.5 w-2.5 items-center justify-center">
       <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-warn opacity-50 duration-1500" />
-      <span className="relative inline-flex h-2 w-2 rounded-full bg-warn shadow-[0_0_6px_rgba(234,179,8,0.6)]" />
+      <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-warn shadow-[0_0_6px_rgba(234,179,8,0.6)]" />
     </span>
   );
 }
@@ -49,55 +49,50 @@ function parseStrategyMeta(name) {
   const isITM = name.includes("_ITM");
   const isCE = name.includes("_BULLISH") || name.includes("_SUPPORT_BOUNCE");
 
-  const cleanName = name
-    .replace(/^NIFTY_|^SENSEX_/, "")
-    .replace(/_1M_ATM|_5M_ITM|_1M|_5M/, "")
-    .replace(/_/g, " ");
-
   return {
     index: isSensex ? "SENSEX" : "NIFTY",
     tf: is5M ? "5M" : "1M",
     mode: isITM ? "ITM" : "ATM",
     dir: isCE ? "CE" : "PE",
-    cleanName,
   };
 }
 
-function InstrumentPanel({ contract, qty, entryTime, entryPrice, ltp, pnl, stopLoss, takeProfit, exitTime }) {
+// QuantMan exact instrument panel box
+function QuantManInstrumentBox({ contract, qty, entryTime, entryPrice, ltp, pnl, stopLoss, takeProfit, exitTime }) {
   const pct = pctReturn(entryPrice, ltp);
   const closed = Boolean(exitTime);
   return (
-    <div className="rounded-lg border border-subtle bg-surface2/90 p-3.5 backdrop-blur-sm">
-      <div className="flex flex-wrap items-start justify-between gap-3">
+    <div className="rounded-xl border border-subtle/80 bg-surface2/90 p-3.5 backdrop-blur-sm shadow-inner">
+      <div className="flex items-start justify-between gap-3">
         <div>
-          <div className="font-mono text-sm font-semibold tracking-wide text-primary">{contract}</div>
-          {qty != null && <div className="text-xs text-faint">Qty: {qty}</div>}
-          <div className="mt-2 flex items-center gap-3 text-xs">
-            <div className="flex items-center gap-1.5 rounded bg-surface3 px-2 py-1">
-              <Badge variant="accent">BUY</Badge>
-              <span className="font-mono tabular-nums font-semibold">{fmtRupee(entryPrice)}</span>
-            </div>
-            <div className="flex items-center gap-1.5 rounded bg-surface3 px-2 py-1">
-              <Badge variant={closed ? "bear" : "neutral"}>{closed ? "SELL" : "LTP"}</Badge>
-              <span className="font-mono tabular-nums font-semibold">{fmtRupee(ltp)}</span>
-            </div>
-          </div>
+          <div className="font-mono text-sm font-bold tracking-wide text-primary">{contract}</div>
+          <div className="text-xs text-faint mt-0.5">Qty : {qty ?? 65}</div>
         </div>
         <div className="text-right">
           {pct != null && (
-            <div className={`font-mono text-xs font-semibold ${pnlClass(pct)}`}>
-              {pct >= 0 ? "+" : ""}{pct.toFixed(2)}%
+            <div className={`font-mono text-xs font-bold ${pnlClass(pct)}`}>
+              {pct >= 0 ? "" : ""}{pct.toFixed(1)}%
             </div>
           )}
-          <div className={`font-mono text-lg font-bold tabular-nums ${pnlClass(pnl)}`}>
-            {pnl != null && pnl >= 0 ? "+" : ""}{fmtRupee(pnl)}
+          <div className={`font-mono text-base font-bold tabular-nums ${pnlClass(pnl)}`}>
+            {pnl != null && pnl > 0 ? "" : ""}{fmtRupee(pnl)}
           </div>
-          <div className="mt-1 text-[11px] text-faint">{closed ? fmtTime(exitTime) : fmtTime(entryTime)}</div>
         </div>
       </div>
-      <div className="mt-3 flex items-center justify-between border-t border-subtle pt-2 text-xs text-faint">
-        <div>SL: <span className="font-mono font-medium text-bear">{fmtRupee(stopLoss)}</span></div>
-        <div>TP: <span className="font-mono font-medium text-bull">{fmtRupee(takeProfit)}</span></div>
+
+      <div className="mt-3 flex items-center justify-between border-t border-subtle/60 pt-2.5 text-xs">
+        <div className="flex items-center gap-2">
+          <span className="text-faint">Entry</span>
+          <span className="rounded bg-accent/20 px-1.5 py-0.5 text-[10px] font-bold text-accent">BUY</span>
+          <span className="font-mono font-semibold text-primary">{fmtRupee(entryPrice)}</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-faint">{closed ? "Exit" : "LTP"}</span>
+          <span className={`rounded px-1.5 py-0.5 text-[10px] font-bold ${closed ? "bg-bear/20 text-bear" : "bg-surface3 text-muted"}`}>
+            {closed ? "SELL" : "LTP"}
+          </span>
+          <span className="font-mono font-semibold text-primary">{fmtRupee(ltp)}</span>
+        </div>
       </div>
     </div>
   );
@@ -143,10 +138,13 @@ function PendingSignalBanner({ signal }) {
   );
 }
 
-function StrategyCard({ row, pendingSignal, viewMode }) {
-  const [expanded, setExpanded] = useState(false);
+// Strategy Card matching QuantMan UI Screenshot exactly
+function StrategyCard({ row, pendingSignal }) {
+  const [expanded, setExpanded] = useState(true);
   const [squaringOff, setSquaringOff] = useState(false);
+  const [restarting, setRestarting] = useState(false);
   const [showAnalytics, setShowAnalytics] = useState(false);
+
   const entered = row.status === "SIGNAL_ENTERED";
   const hasDetails = Boolean(row.entry || row.last_closed);
   const meta = parseStrategyMeta(row.strategy);
@@ -164,110 +162,128 @@ function StrategyCard({ row, pendingSignal, viewMode }) {
     }
   }
 
+  async function handleRestart() {
+    setRestarting(true);
+    try {
+      await restartStrategy(row.strategy);
+      window.alert(`${row.strategy} restarted for today's session.`);
+    } catch (e) {
+      window.alert(e.message || "Restart failed");
+    } finally {
+      setRestarting(false);
+    }
+  }
+
   return (
-    <div className={`relative overflow-hidden rounded-xl border border-subtle bg-surface transition-all duration-200 hover:border-border-strong ${entered ? "ring-1 ring-bull/40 bg-surface/95" : ""}`}>
-      {/* Top Header Row */}
-      <div className="p-4">
-        <div className="flex items-start justify-between gap-3">
+    <div className={`relative overflow-hidden rounded-2xl border border-subtle bg-surface p-4 transition-all duration-200 hover:border-border-strong ${entered ? "ring-1 ring-bull/40 shadow-lg" : "shadow-sm"}`}>
+      {/* 1. Header Row (Chevron + Strategy Name + Badges) */}
+      <div className="flex items-start justify-between gap-2">
+        <div className="flex items-start gap-2.5">
+          {hasDetails && (
+            <button
+              onClick={() => setExpanded((e) => !e)}
+              className="mt-0.5 text-faint hover:text-primary transition"
+              title="Toggle Details"
+            >
+              {expanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+            </button>
+          )}
           <div>
-            <div className="flex flex-wrap items-center gap-1.5">
-              <span className={`text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded ${meta.index === "NIFTY" ? "bg-cyan-500/15 text-cyan-400 border border-cyan-500/20" : "bg-purple-500/15 text-purple-400 border border-purple-500/20"}`}>
-                {meta.index}
-              </span>
-              <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-surface3 text-faint">
-                {meta.tf}
-              </span>
-              <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${meta.mode === "ITM" ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/20" : "bg-blue-500/15 text-blue-400 border border-blue-500/20"}`}>
-                {meta.mode}
-              </span>
-              <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${meta.dir === "CE" ? "bg-bull/15 text-bull" : "bg-bear/15 text-bear"}`}>
-                {meta.dir}
-              </span>
-            </div>
-            <h4 className="mt-1.5 font-semibold text-sm tracking-wide text-primary line-clamp-1" title={row.strategy}>
+            <h4 className="font-bold text-sm tracking-wide text-primary line-clamp-1" title={row.strategy}>
               {row.strategy}
             </h4>
-          </div>
-
-          <div className="text-right">
-            <div className="text-[10px] font-medium uppercase tracking-wider text-faint">Today P&amp;L</div>
-            <div className={`font-mono text-base font-bold tabular-nums ${pnlClass(row.today_pnl)}`}>
-              {row.today_pnl > 0 ? "+" : ""}{fmtRupee(row.today_pnl)}
+            <div className="mt-1 flex flex-wrap items-center gap-2 text-xs">
+              <span className="text-faint">Order type :</span>
+              <span className="rounded bg-cyan-500/20 px-2 py-0.5 text-[11px] font-bold text-cyan-400 border border-cyan-500/30">
+                Paper
+              </span>
+              <div className="flex items-center gap-1.5 ml-1">
+                <StatusBeacon entered={entered} />
+                <span className={`text-xs font-semibold ${entered ? "text-bull" : "text-amber-400"}`}>
+                  {entered ? "Signal Entered" : "Waiting for Next Entry Signal"}
+                </span>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Status indicator bar */}
-        <div className="mt-3 flex items-center justify-between rounded-lg bg-surface2/70 px-3 py-2 border border-subtle/60">
-          <div className="flex items-center gap-2">
-            <StatusBeacon entered={entered} />
-            <span className={`text-xs font-medium ${entered ? "text-bull font-semibold" : "text-warn"}`}>
-              {entered ? "Signal Entered • Live Position" : "Waiting for Entry Signal"}
-            </span>
-          </div>
+        {/* Index & TF Badges */}
+        <div className="flex items-center gap-1">
+          <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${meta.index === "NIFTY" ? "bg-cyan-500/15 text-cyan-400" : "bg-purple-500/15 text-purple-400"}`}>
+            {meta.index}
+          </span>
+          <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-surface3 text-faint">
+            {meta.tf}
+          </span>
+        </div>
+      </div>
 
-          <div className="flex items-center gap-1.5">
-            {entered && (
-              <button
-                onClick={handleSquareOff}
-                disabled={squaringOff}
-                className="rounded border border-bear/40 bg-bear/10 px-2 py-1 text-xs font-medium text-bear transition hover:bg-bear/20 disabled:opacity-50"
-              >
-                {squaringOff ? "Closing…" : "Square Off"}
-              </button>
-            )}
-            {hasDetails && (
-              <button
-                onClick={() => setExpanded((e) => !e)}
-                className="flex items-center gap-1 rounded bg-surface3 px-2 py-1 text-xs font-medium text-muted transition hover:bg-surface4 hover:text-primary"
-              >
-                Details
-                <motion.span animate={{ rotate: expanded ? 180 : 0 }} transition={{ duration: 0.15 }}>
-                  <ChevronDown className="h-3.5 w-3.5" />
-                </motion.span>
-              </button>
-            )}
-            <button
-              onClick={() => setShowAnalytics(true)}
-              className="rounded bg-accent px-2.5 py-1 text-xs font-medium text-white shadow-sm transition hover:bg-accent/90"
-            >
-              Show Strategy
-            </button>
-          </div>
+      {/* 2. Large P&L Amount & Inline Square Off Button */}
+      <div className="mt-3 flex items-center justify-between">
+        <div className={`font-mono text-2xl font-extrabold tabular-nums tracking-tight ${pnlClass(row.today_pnl)}`}>
+          {row.today_pnl < 0 ? `- ₹ ${Math.abs(row.today_pnl).toLocaleString("en-IN", { maximumFractionDigits: 2 })}` : fmtRupee(row.today_pnl)}
         </div>
 
-        {pendingSignal && <PendingSignalBanner signal={pendingSignal} />}
+        {entered && (
+          <button
+            onClick={handleSquareOff}
+            disabled={squaringOff}
+            className="rounded-full border border-bear px-3.5 py-1 text-xs font-bold text-bear transition hover:bg-bear hover:text-white disabled:opacity-50"
+          >
+            {squaringOff ? "Closing…" : "Square off"}
+          </button>
+        )}
+      </div>
 
-        {/* Expandable Order Details Panel */}
-        <AnimatePresence initial={false}>
-          {expanded && (row.entry || row.last_closed) && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: "auto", opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="overflow-hidden"
-            >
-              <div className="mt-3">
-                {row.entry ? (
-                  <InstrumentPanel
-                    contract={row.entry.contract} qty={row.entry.qty} entryTime={row.entry.entry_time}
-                    entryPrice={row.entry.entry_price} ltp={row.entry.ltp} pnl={row.entry.trade_pnl}
-                    stopLoss={row.entry.stop_loss} takeProfit={row.entry.take_profit}
-                  />
-                ) : (
-                  <InstrumentPanel
-                    contract={row.last_closed.contract} qty={row.last_closed.qty}
-                    entryTime={row.last_closed.entry_time} entryPrice={row.last_closed.entry_price}
-                    ltp={row.last_closed.exit_price} pnl={row.last_closed.pnl}
-                    stopLoss={row.last_closed.stop_loss} takeProfit={row.last_closed.take_profit}
-                    exitTime={row.last_closed.exit_time}
-                  />
-                )}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+      {/* 3. Collapsible / Visible Instrument Box */}
+      <AnimatePresence initial={false}>
+        {expanded && hasDetails && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="overflow-hidden mt-3"
+          >
+            {row.entry ? (
+              <QuantManInstrumentBox
+                contract={row.entry.contract} qty={row.entry.qty} entryTime={row.entry.entry_time}
+                entryPrice={row.entry.entry_price} ltp={row.entry.ltp} pnl={row.entry.trade_pnl}
+                stopLoss={row.entry.stop_loss} takeProfit={row.entry.take_profit}
+              />
+            ) : (
+              <QuantManInstrumentBox
+                contract={row.last_closed.contract} qty={row.last_closed.qty}
+                entryTime={row.last_closed.entry_time} entryPrice={row.last_closed.entry_price}
+                ltp={row.last_closed.exit_price} pnl={row.last_closed.pnl}
+                stopLoss={row.last_closed.stop_loss} takeProfit={row.last_closed.take_profit}
+                exitTime={row.last_closed.exit_time}
+              />
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {pendingSignal && <PendingSignalBanner signal={pendingSignal} />}
+
+      {/* 4. Action Buttons Footer */}
+      <div className="mt-4 flex items-center justify-between border-t border-subtle/50 pt-3">
+        <button
+          onClick={handleRestart}
+          disabled={restarting}
+          title="Restart strategy for today's session"
+          className="flex items-center gap-1.5 rounded-lg border border-subtle bg-surface2 px-2.5 py-1.5 text-xs font-semibold text-muted transition hover:bg-surface3 hover:text-primary disabled:opacity-50"
+        >
+          <RotateCcw className={`h-3.5 w-3.5 ${restarting ? "animate-spin" : ""}`} />
+          <span>Restart</span>
+        </button>
+
+        <button
+          onClick={() => setShowAnalytics(true)}
+          className="rounded-xl bg-accent px-4 py-1.5 text-xs font-bold text-white shadow-md transition hover:bg-accent/90"
+        >
+          Show Strategy
+        </button>
       </div>
 
       {showAnalytics && <StrategyAnalyticsModal strategy={row.strategy} mode="live" onClose={() => setShowAnalytics(false)} />}
@@ -314,54 +330,54 @@ export function StrategyStatusList({ strategies = [], pendingSignals = [] }) {
   return (
     <div className="space-y-4">
       {/* Header Controls & Filter Bar */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between rounded-xl border border-subtle bg-surface p-3.5 sm:p-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between rounded-2xl border border-subtle bg-surface p-3.5 sm:p-4 shadow-sm">
         <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
           <button
             onClick={() => setFilterTab("all")}
-            className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${filterTab === "all" ? "bg-accent text-white shadow-sm" : "bg-surface2 text-muted hover:bg-surface3 hover:text-primary"}`}
+            className={`rounded-xl px-3 py-1.5 text-xs font-bold transition ${filterTab === "all" ? "bg-accent text-white shadow-sm" : "bg-surface2 text-muted hover:bg-surface3 hover:text-primary"}`}
           >
             All ({strategies.length})
           </button>
           <button
             onClick={() => setFilterTab("nifty")}
-            className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${filterTab === "nifty" ? "bg-accent text-white shadow-sm" : "bg-surface2 text-muted hover:bg-surface3 hover:text-primary"}`}
+            className={`rounded-xl px-3 py-1.5 text-xs font-bold transition ${filterTab === "nifty" ? "bg-accent text-white shadow-sm" : "bg-surface2 text-muted hover:bg-surface3 hover:text-primary"}`}
           >
             NIFTY ({niftyCount})
           </button>
           <button
             onClick={() => setFilterTab("sensex")}
-            className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${filterTab === "sensex" ? "bg-accent text-white shadow-sm" : "bg-surface2 text-muted hover:bg-surface3 hover:text-primary"}`}
+            className={`rounded-xl px-3 py-1.5 text-xs font-bold transition ${filterTab === "sensex" ? "bg-accent text-white shadow-sm" : "bg-surface2 text-muted hover:bg-surface3 hover:text-primary"}`}
           >
             SENSEX ({sensexCount})
           </button>
           <button
             onClick={() => setFilterTab("5m")}
-            className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${filterTab === "5m" ? "bg-accent text-white shadow-sm" : "bg-surface2 text-muted hover:bg-surface3 hover:text-primary"}`}
+            className={`rounded-xl px-3 py-1.5 text-xs font-bold transition ${filterTab === "5m" ? "bg-accent text-white shadow-sm" : "bg-surface2 text-muted hover:bg-surface3 hover:text-primary"}`}
           >
             5M ITM ({fiveMCount})
           </button>
           <button
             onClick={() => setFilterTab("1m")}
-            className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${filterTab === "1m" ? "bg-accent text-white shadow-sm" : "bg-surface2 text-muted hover:bg-surface3 hover:text-primary"}`}
+            className={`rounded-xl px-3 py-1.5 text-xs font-bold transition ${filterTab === "1m" ? "bg-accent text-white shadow-sm" : "bg-surface2 text-muted hover:bg-surface3 hover:text-primary"}`}
           >
             1M ATM ({oneMCount})
           </button>
           <button
             onClick={() => setFilterTab("ce")}
-            className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${filterTab === "ce" ? "bg-bull text-white shadow-sm" : "bg-surface2 text-muted hover:bg-surface3 hover:text-primary"}`}
+            className={`rounded-xl px-3 py-1.5 text-xs font-bold transition ${filterTab === "ce" ? "bg-bull text-white shadow-sm" : "bg-surface2 text-muted hover:bg-surface3 hover:text-primary"}`}
           >
             Bullish (CE)
           </button>
           <button
             onClick={() => setFilterTab("pe")}
-            className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${filterTab === "pe" ? "bg-bear text-white shadow-sm" : "bg-surface2 text-muted hover:bg-surface3 hover:text-primary"}`}
+            className={`rounded-xl px-3 py-1.5 text-xs font-bold transition ${filterTab === "pe" ? "bg-bear text-white shadow-sm" : "bg-surface2 text-muted hover:bg-surface3 hover:text-primary"}`}
           >
             Bearish (PE)
           </button>
           {activeCount > 0 && (
             <button
               onClick={() => setFilterTab("active")}
-              className={`rounded-lg px-3 py-1.5 text-xs font-semibold flex items-center gap-1.5 transition ${filterTab === "active" ? "bg-bull text-white" : "bg-bull/15 text-bull border border-bull/30"}`}
+              className={`rounded-xl px-3 py-1.5 text-xs font-bold flex items-center gap-1.5 transition ${filterTab === "active" ? "bg-bull text-white" : "bg-bull/15 text-bull border border-bull/30"}`}
             >
               <StatusBeacon entered={true} />
               In Trade ({activeCount})
@@ -378,20 +394,20 @@ export function StrategyStatusList({ strategies = [], pendingSignals = [] }) {
               placeholder="Search strategies…"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full rounded-lg border border-subtle bg-surface2 py-1.5 pl-8 pr-3 text-xs text-primary placeholder-faint focus:border-accent focus:outline-none"
+              className="w-full rounded-xl border border-subtle bg-surface2 py-1.5 pl-8 pr-3 text-xs text-primary placeholder-faint focus:border-accent focus:outline-none"
             />
           </div>
-          <div className="flex items-center rounded-lg border border-subtle bg-surface2 p-0.5">
+          <div className="flex items-center rounded-xl border border-subtle bg-surface2 p-0.5">
             <button
               onClick={() => setViewMode("grid")}
-              className={`rounded p-1.5 text-xs transition ${viewMode === "grid" ? "bg-surface text-primary shadow-sm" : "text-faint hover:text-primary"}`}
+              className={`rounded-lg p-1.5 text-xs transition ${viewMode === "grid" ? "bg-surface text-primary shadow-sm" : "text-faint hover:text-primary"}`}
               title="Grid View"
             >
               <LayoutGrid className="h-3.5 w-3.5" />
             </button>
             <button
               onClick={() => setViewMode("list")}
-              className={`rounded p-1.5 text-xs transition ${viewMode === "list" ? "bg-surface text-primary shadow-sm" : "text-faint hover:text-primary"}`}
+              className={`rounded-lg p-1.5 text-xs transition ${viewMode === "list" ? "bg-surface text-primary shadow-sm" : "text-faint hover:text-primary"}`}
               title="List View"
             >
               <List className="h-3.5 w-3.5" />
@@ -402,28 +418,16 @@ export function StrategyStatusList({ strategies = [], pendingSignals = [] }) {
 
       {/* Strategies List / Grid */}
       {filteredStrategies.length === 0 ? (
-        <div className="rounded-xl border border-subtle bg-surface py-12 text-center text-faint">
+        <div className="rounded-2xl border border-subtle bg-surface py-12 text-center text-faint">
           No strategies match the selected filter.
         </div>
-      ) : viewMode === "grid" ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-          {filteredStrategies.map((row) => (
-            <StrategyCard
-              key={row.strategy}
-              row={row}
-              pendingSignal={pendingSignals.find((s) => s.strategy === row.strategy)}
-              viewMode={viewMode}
-            />
-          ))}
-        </div>
       ) : (
-        <div className="space-y-2">
+        <div className={viewMode === "grid" ? "grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-4" : "space-y-3"}>
           {filteredStrategies.map((row) => (
             <StrategyCard
               key={row.strategy}
               row={row}
               pendingSignal={pendingSignals.find((s) => s.strategy === row.strategy)}
-              viewMode={viewMode}
             />
           ))}
         </div>

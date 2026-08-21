@@ -224,3 +224,23 @@ async def reject_signal(signal_id: str, request: Request):
     if not engine.approve_signal(signal_id, "reject"):
         raise HTTPException(status_code=404, detail="Signal already resolved or not found")
     return {"status": "rejected"}
+
+
+@router.post("/strategies/{name}/restart")
+async def restart_strategy(name: str, request: Request):
+    """Restarts a strategy for today's session, clearing its intraday throttles and signal latch."""
+    engine = _get_engine(request)
+    matched_strat = None
+    for index, strat_engine in getattr(engine, "strategy_engines", {}).items():
+        for s in strat_engine.strategies:
+            if s.name == name:
+                matched_strat = s
+                break
+    if matched_strat is None:
+        raise HTTPException(status_code=404, detail=f"Strategy {name} not found")
+
+    matched_strat.last_signal_time = None
+    if hasattr(matched_strat, "_last_signal_bar"):
+        matched_strat._last_signal_bar = None
+
+    return {"status": "restarted", "strategy": name}

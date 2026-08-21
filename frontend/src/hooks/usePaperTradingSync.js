@@ -25,6 +25,10 @@ export async function closeAllPositions() {
   return api("/api/paper/positions/close-all", { method: "POST" });
 }
 
+export async function restartStrategy(name) {
+  return api(`/api/paper/strategies/${encodeURIComponent(name)}/restart`, { method: "POST" });
+}
+
 export async function fetchBacktestReport() {
   return api("/api/backtest/report");
 }
