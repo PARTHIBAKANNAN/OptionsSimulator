@@ -29,8 +29,8 @@ function Dashboard({ user, onLogout }) {
         tabs={TABS} activeTab={activeTab} onSelect={setActiveTab}
         user={user} theme={theme} onToggleTheme={toggle} onLogout={onLogout}
       />
-      <main className="bg-surface2 p-3 sm:p-6">
-        <div className="mx-auto max-w-6xl">
+      <main className="bg-surface2 p-2 sm:p-4 lg:p-6 min-h-[calc(100vh-64px)]">
+        <div className="mx-auto max-w-[1720px] w-full">
           <AnimatePresence mode="wait">
             <motion.div
               key={activeTab}

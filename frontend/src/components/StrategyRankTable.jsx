@@ -1,7 +1,8 @@
 import { Fragment, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, BarChart2 } from "lucide-react";
 import { Badge } from "./ui/Badge";
+import { StrategyAnalyticsModal } from "./StrategyAnalyticsModal";
 
 function fmtRupee(v) {
   if (v == null) return "—";
@@ -10,9 +11,9 @@ function fmtRupee(v) {
 
 function MiniEquityCurve({ days }) {
   if (!days || days.length < 2) {
-    return <div className="flex h-32 items-center justify-center text-xs text-faint">Not enough days for a curve</div>;
+    return <div className="flex h-28 items-center justify-center text-xs text-faint">Not enough days for a curve</div>;
   }
-  const width = 800, height = 130, pad = 8;
+  const width = 800, height = 110, pad = 8;
   const values = days.map((d) => d.cumulative_pnl);
   const min = Math.min(0, ...values), max = Math.max(0, ...values);
   const range = max - min || 1;
@@ -23,7 +24,7 @@ function MiniEquityCurve({ days }) {
   const areaPath = `M ${pad},${height - pad} L ${linePath} L ${pad + (values.length - 1) * xStep},${height - pad} Z`;
 
   return (
-    <svg viewBox={`0 0 ${width} ${height}`} className="h-32 w-full" preserveAspectRatio="none">
+    <svg viewBox={`0 0 ${width} ${height}`} className="h-28 w-full" preserveAspectRatio="none">
       <defs>
         <linearGradient id="rankEquityFill" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor={positive ? "#22c55e" : "#ef4444"} stopOpacity="0.35" />
@@ -45,93 +46,124 @@ function CapitalTile({ label, value, valueClass = "" }) {
   );
 }
 
-export function StrategyRankTable({ title, rows, topN = 3, dailyBreakdown = {}, capitalRequirements = {} }) {
+export function StrategyRankTable({ title, rows, dailyBreakdown = {}, capitalRequirements = {} }) {
   const [expanded, setExpanded] = useState(null);
-  const ranked = [...rows].sort((a, b) => (b.profit_factor - a.profit_factor) || (b.win_rate - a.win_rate));
+  const [activeModalStrategy, setActiveModalStrategy] = useState(null);
+  const ranked = [...rows].sort((a, b) => (b.profit_factor - a.profit_factor) || (b.total_pnl - a.total_pnl));
 
   return (
     <div>
       {title && <div className="mb-2 text-sm font-medium text-muted">{title}</div>}
-      <div className="overflow-x-auto">
-      <table className="w-full min-w-[640px] text-sm">
-        <thead>
-          <tr className="text-left text-faint">
-            <th className="pb-1 font-normal">#</th>
-            <th className="pb-1 font-normal">Strategy</th>
-            <th className="pb-1 font-normal">Trades</th>
-            <th className="pb-1 font-normal">Win%</th>
-            <th className="pb-1 font-normal">PF</th>
-            <th className="pb-1 font-normal">P&amp;L</th>
-            <th className="pb-1 font-normal">DD%</th>
-            <th className="pb-1 font-normal">Status</th>
-            <th className="pb-1 font-normal"></th>
-          </tr>
-        </thead>
-        <tbody>
-          {ranked.map((r, i) => {
-            const isOpen = expanded === r.strategy;
-            const hasDetails = Boolean(dailyBreakdown[r.strategy] || capitalRequirements[r.strategy]);
-            return (
-              <Fragment key={r.strategy}>
-                <tr className="border-t border-subtle">
-                  <td className="py-1.5">{i + 1}</td>
-                  <td className="py-1.5 font-medium">{r.strategy}</td>
-                  <td className="py-1.5">{r.total_trades}</td>
-                  <td className="py-1.5">{r.win_rate}%</td>
-                  <td className="py-1.5">{r.profit_factor}</td>
-                  <td className={`py-1.5 ${r.total_pnl >= 0 ? "text-bull" : "text-bear"}`}>
-                    {fmtRupee(r.total_pnl)}
-                  </td>
-                  <td className="py-1.5">{r.max_drawdown_pct}%</td>
-                  <td className="py-1.5">
-                    {i < topN && r.total_trades > 0 ? <Badge variant="accent">DEPLOY</Badge> : <span className="text-faint">—</span>}
-                  </td>
-                  <td className="py-1.5 text-right">
-                    {hasDetails && (
-                      <button
-                        onClick={() => setExpanded(isOpen ? null : r.strategy)}
-                        className="flex items-center gap-1 rounded px-2 py-1 text-xs font-medium text-muted hover:bg-surface3 hover:text-primary"
-                      >
-                        Details
-                        <motion.span animate={{ rotate: isOpen ? 180 : 0 }} transition={{ duration: 0.15 }}>
-                          <ChevronDown className="h-3.5 w-3.5" />
-                        </motion.span>
-                      </button>
-                    )}
-                  </td>
-                </tr>
-                <tr>
-                  <td colSpan={9} className="p-0">
-                    <AnimatePresence initial={false}>
-                      {isOpen && hasDetails && (
-                        <motion.div
-                          initial={{ height: 0, opacity: 0 }}
-                          animate={{ height: "auto", opacity: 1 }}
-                          exit={{ height: 0, opacity: 0 }}
-                          transition={{ duration: 0.2 }}
-                          className="overflow-hidden"
+      <div className="overflow-x-auto rounded-xl border border-subtle bg-surface">
+        <table className="w-full min-w-[720px] text-xs">
+          <thead>
+            <tr className="bg-surface2/60 text-left text-faint text-[11px]">
+              <th className="py-2.5 px-3 font-semibold uppercase">#</th>
+              <th className="py-2.5 px-3 font-semibold uppercase">Strategy</th>
+              <th className="py-2.5 px-3 font-semibold uppercase">TF</th>
+              <th className="py-2.5 px-3 font-semibold uppercase">Strike</th>
+              <th className="py-2.5 px-3 font-semibold uppercase">Trades</th>
+              <th className="py-2.5 px-3 font-semibold uppercase">Win%</th>
+              <th className="py-2.5 px-3 font-semibold uppercase">PF</th>
+              <th className="py-2.5 px-3 font-semibold uppercase">Total P&amp;L</th>
+              <th className="py-2.5 px-3 font-semibold uppercase">Max DD%</th>
+              <th className="py-2.5 px-3 font-semibold uppercase text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-subtle font-mono">
+            {ranked.map((r, i) => {
+              const isOpen = expanded === r.strategy;
+              const hasDetails = Boolean(dailyBreakdown[r.strategy] || capitalRequirements[r.strategy]);
+              const is5M = r.strategy.includes("_5M_");
+              const isITM = r.strategy.includes("_ITM");
+
+              return (
+                <Fragment key={r.strategy}>
+                  <tr className="hover:bg-surface2/40 transition">
+                    <td className="py-2.5 px-3 text-faint">{i + 1}</td>
+                    <td className="py-2.5 px-3 font-sans font-medium text-primary">
+                      <div className="flex items-center gap-1.5">
+                        <span>{r.strategy}</span>
+                        <span className="rounded bg-bull/15 px-1 py-0.2 text-[9px] font-bold text-bull">
+                          ACTIVE
+                        </span>
+                      </div>
+                    </td>
+                    <td className="py-2.5 px-3">
+                      <span className={`px-1.5 py-0.5 rounded text-[10px] font-semibold ${is5M ? "bg-amber-500/15 text-amber-400" : "bg-surface3 text-faint"}`}>
+                        {is5M ? "5M" : "1M"}
+                      </span>
+                    </td>
+                    <td className="py-2.5 px-3">
+                      <span className={`px-1.5 py-0.5 rounded text-[10px] font-semibold ${isITM ? "bg-emerald-500/15 text-emerald-400" : "bg-blue-500/15 text-blue-400"}`}>
+                        {isITM ? "ITM" : "ATM"}
+                      </span>
+                    </td>
+                    <td className="py-2.5 px-3">{r.total_trades}</td>
+                    <td className="py-2.5 px-3 text-bull font-bold">{r.win_rate}%</td>
+                    <td className="py-2.5 px-3 font-semibold">{r.profit_factor >= 900 ? "inf" : r.profit_factor}</td>
+                    <td className={`py-2.5 px-3 font-bold tabular-nums ${r.total_pnl >= 0 ? "text-bull" : "text-bear"}`}>
+                      {r.total_pnl >= 0 ? "+" : ""}{fmtRupee(r.total_pnl)}
+                    </td>
+                    <td className="py-2.5 px-3 text-faint">{r.max_drawdown_pct}%</td>
+                    <td className="py-2.5 px-3 text-right">
+                      <div className="flex items-center justify-end gap-1.5">
+                        <button
+                          onClick={() => setActiveModalStrategy(r.strategy)}
+                          className="flex items-center gap-1 rounded bg-accent px-2 py-1 text-[11px] font-sans font-medium text-white hover:bg-accent/90 transition shadow-sm"
                         >
-                          <div className="mb-3 rounded-lg border border-subtle bg-surface2 p-3">
-                            {capitalRequirements[r.strategy] && (
-                              <div className="mb-3 grid grid-cols-3 gap-2">
-                                <CapitalTile label="Avg Trade Risk" value={fmtRupee(capitalRequirements[r.strategy].avg_trade_risk)} />
-                                <CapitalTile label="Max Historical Drawdown" value={fmtRupee(capitalRequirements[r.strategy].max_historical_drawdown)} valueClass="text-bear" />
-                                <CapitalTile label="Recommended Capital" value={fmtRupee(capitalRequirements[r.strategy].recommended_capital)} valueClass="text-accent" />
-                              </div>
-                            )}
-                            {dailyBreakdown[r.strategy] && <MiniEquityCurve days={dailyBreakdown[r.strategy]} />}
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </td>
-                </tr>
-              </Fragment>
-            );
-          })}
-        </tbody>
-      </table>
+                          <BarChart2 className="h-3 w-3" /> Analytics
+                        </button>
+                        {hasDetails && (
+                          <button
+                            onClick={() => setExpanded(isOpen ? null : r.strategy)}
+                            className="flex items-center gap-0.5 rounded bg-surface3 px-2 py-1 text-[11px] font-sans font-medium text-muted hover:bg-surface4 hover:text-primary transition"
+                          >
+                            Details
+                            <motion.span animate={{ rotate: isOpen ? 180 : 0 }} transition={{ duration: 0.15 }}>
+                              <ChevronDown className="h-3 w-3" />
+                            </motion.span>
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td colSpan={10} className="p-0">
+                      <AnimatePresence initial={false}>
+                        {isOpen && hasDetails && (
+                          <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: "auto", opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.2 }}
+                            className="overflow-hidden"
+                          >
+                            <div className="p-3 bg-surface2/80 border-b border-subtle">
+                              {capitalRequirements[r.strategy] && (
+                                <div className="mb-3 grid grid-cols-3 gap-2">
+                                  <CapitalTile label="Trade Margin + Buffer" value={fmtRupee(capitalRequirements[r.strategy].avg_trade_risk)} />
+                                  <CapitalTile label="Max Historical Drawdown" value={fmtRupee(capitalRequirements[r.strategy].max_historical_drawdown)} valueClass="text-bear" />
+                                  <CapitalTile label="Recommended Capital" value={fmtRupee(capitalRequirements[r.strategy].recommended_capital)} valueClass="text-accent" />
+                                </div>
+                              )}
+                              {dailyBreakdown[r.strategy] && <MiniEquityCurve days={dailyBreakdown[r.strategy]} />}
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </td>
+                  </tr>
+                </Fragment>
+              );
+            })}
+          </tbody>
+        </table>
       </div>
+
+      {activeModalStrategy && (
+        <StrategyAnalyticsModal strategy={activeModalStrategy} onClose={() => setActiveModalStrategy(null)} />
+      )}
     </div>
   );
 }
