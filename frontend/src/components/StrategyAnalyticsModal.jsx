@@ -1,10 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { X, Download, TrendingUp, Calendar, ArrowUpRight, ArrowDownRight, Layers, BarChart3, Filter } from "lucide-react";
-import { Badge } from "./ui/Badge";
-import { fetchStrategyOrders } from "../hooks/usePaperTradingSync";
+import { motion } from "framer-motion";
+import { X, Download, TrendingUp, Wallet, ShieldCheck, Zap } from "lucide-react";
+import { fetchStrategyOrders, fetchBacktestStrategyHistory } from "../hooks/usePaperTradingSync";
 
-const DOW_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 const PAGE_SIZES = [10, 25, 50];
 
@@ -44,7 +42,7 @@ function computeDetailedStats(trades) {
   const byInstrument = {};
   const byDow = { 1: { hit: 0, miss: 0, profit: 0, loss: 0 }, 2: { hit: 0, miss: 0, profit: 0, loss: 0 }, 3: { hit: 0, miss: 0, profit: 0, loss: 0 }, 4: { hit: 0, miss: 0, profit: 0, loss: 0 }, 5: { hit: 0, miss: 0, profit: 0, loss: 0 } };
   const byYear = {};
-  const monthlyHeatmap = {}; // { '2025': { 1: 1500, 2: -200... } }
+  const monthlyHeatmap = {};
 
   let wins = 0, losses = 0;
   let grossWin = 0, grossLoss = 0;
@@ -119,7 +117,7 @@ function MetricCard({ label, value, subValue, valueClass = "" }) {
 
 function EquityCurveChart({ points }) {
   if (!points || points.length < 2) {
-    return <div className="flex h-48 items-center justify-center text-xs text-faint">Not enough closed trades yet</div>;
+    return <div className="flex h-48 items-center justify-center text-xs text-faint">Not enough trade points for equity curve</div>;
   }
   const width = 1000, height = 220, pad = 12;
   const values = points.map((p) => p.cumulative);
@@ -136,7 +134,7 @@ function EquityCurveChart({ points }) {
   return (
     <div className="relative overflow-hidden rounded-xl border border-subtle bg-surface2/60 p-4">
       <div className="mb-2 flex items-center justify-between">
-        <span className="text-xs font-semibold uppercase tracking-wider text-faint">Run Summary &middot; Cumulative Equity Curve</span>
+        <span className="text-xs font-semibold uppercase tracking-wider text-faint">Cumulative Equity Curve</span>
         <span className={`font-mono text-sm font-bold ${pnlClass(last)}`}>{last >= 0 ? "+" : ""}{fmtRupee(last)}</span>
       </div>
       <svg viewBox={`0 0 ${width} ${height}`} className="h-48 w-full" preserveAspectRatio="none">
@@ -146,7 +144,6 @@ function EquityCurveChart({ points }) {
             <stop offset="100%" stopColor={positive ? "#22c55e" : "#ef4444"} stopOpacity="0.0" />
           </linearGradient>
         </defs>
-        {/* Zero baseline */}
         <line x1={pad} y1={zeroY} x2={width - pad} y2={zeroY} stroke="#ef4444" strokeWidth="1" strokeDasharray="3,3" opacity="0.6" />
         <path d={areaPath} fill="url(#eqGradient)" />
         <path d={`M ${linePath}`} fill="none" stroke={positive ? "#22c55e" : "#ef4444"} strokeWidth="2.5" />
@@ -163,7 +160,6 @@ function DualBarRow({ label, hit, miss, profit, loss }) {
   return (
     <div className="grid grid-cols-12 items-center gap-2 text-xs py-1.5 border-b border-subtle/50 last:border-0">
       <div className="col-span-2 font-medium text-primary text-xs">{label}</div>
-      {/* Hit / Miss Ratio Bar */}
       <div className="col-span-5 flex items-center gap-2">
         <div className="flex h-3.5 flex-1 overflow-hidden rounded bg-surface3">
           {hit > 0 && <div className="bg-teal-500 transition-all duration-300" style={{ width: `${hitPct}%` }} title={`Hit: ${hit}`} />}
@@ -173,7 +169,6 @@ function DualBarRow({ label, hit, miss, profit, loss }) {
           <span className="text-teal-400 font-semibold">{hit}</span> / <span className="text-amber-400 font-semibold">{miss}</span>
         </div>
       </div>
-      {/* Profit / Loss Amount */}
       <div className="col-span-5 flex items-center justify-end gap-2 text-right">
         <span className="font-mono text-xs font-semibold text-bull tabular-nums">+{fmtRupee(Math.round(profit || 0))}</span>
         <span className="font-mono text-xs font-semibold text-bear tabular-nums">-{fmtRupee(Math.abs(Math.round(loss || 0)))}</span>
@@ -208,7 +203,6 @@ function MultiYearCalendarHeatmap({ monthlyHeatmap = {} }) {
                   {MONTH_LABELS.map((_, i) => {
                     const val = months[i + 1];
                     const isProfit = val > 0;
-                    const isLoss = val < 0;
                     return (
                       <td key={i} className="py-1 px-0.5 text-center">
                         <div
@@ -256,21 +250,33 @@ function exportCsv(strategy, trades) {
   URL.revokeObjectURL(url);
 }
 
-export function StrategyAnalyticsModal({ strategy, onClose }) {
-  const [data, setData] = useState(null);
+export function StrategyAnalyticsModal({ strategy, mode = "live", onClose }) {
+  const [liveData, setLiveData] = useState(null);
+  const [backtestTrades, setBacktestTrades] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(10);
 
   useEffect(() => {
     setLoading(true);
-    fetchStrategyOrders(strategy)
-      .then(setData)
-      .catch(() => setData({ closed_trades: [] }))
-      .finally(() => setLoading(false));
-  }, [strategy]);
+    if (mode === "backtest") {
+      fetchBacktestStrategyHistory(strategy)
+        .then((trades) => {
+          setBacktestTrades(Array.isArray(trades) ? trades : []);
+        })
+        .catch(() => setBacktestTrades([]))
+        .finally(() => setLoading(false));
+    } else {
+      fetchStrategyOrders(strategy)
+        .then((d) => {
+          setLiveData(d);
+        })
+        .catch(() => setLiveData({ closed_trades: [] }))
+        .finally(() => setLoading(false));
+    }
+  }, [strategy, mode]);
 
-  const trades = data?.closed_trades ?? [];
+  const trades = mode === "backtest" ? backtestTrades : (liveData?.closed_trades ?? []);
   const stats = useMemo(() => computeDetailedStats(trades), [trades]);
 
   const chrono = useMemo(() => [...trades].sort((a, b) => new Date(a.exit_time) - new Date(b.exit_time)), [trades]);
@@ -303,14 +309,13 @@ export function StrategyAnalyticsModal({ strategy, onClose }) {
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="font-bold text-lg text-primary">{strategy}</h3>
-                <span className="rounded-full bg-bull/15 px-2.5 py-0.5 text-xs font-semibold text-bull border border-bull/20">
-                  Completed
-                </span>
-                <span className="rounded-full bg-surface3 px-2.5 py-0.5 text-xs font-medium text-faint">
-                  Historic 1-Yr
+                <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${mode === "backtest" ? "bg-purple-500/15 text-purple-400 border border-purple-500/20" : "bg-cyan-500/15 text-cyan-400 border border-cyan-500/20"}`}>
+                  {mode === "backtest" ? "1-Year Backtest Analytics" : "Live Session Monitor"}
                 </span>
               </div>
-              <p className="text-xs text-faint mt-0.5">QuantMan Analytics &amp; Backtest Performance Breakdown</p>
+              <p className="text-xs text-faint mt-0.5">
+                {mode === "backtest" ? "Comprehensive QuantMan Historical Backtest Breakdown" : "Real-Time Paper Trading & Live Wallet State"}
+              </p>
             </div>
           </div>
           <button
@@ -325,9 +330,49 @@ export function StrategyAnalyticsModal({ strategy, onClose }) {
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
           {loading ? (
             <div className="py-20 text-center text-sm text-faint animate-pulse">Loading Strategy Analytics…</div>
+          ) : mode === "live" && trades.length === 0 ? (
+            <div className="space-y-6">
+              {/* Live Wallet & Status Cards */}
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                <div className="rounded-xl border border-subtle bg-surface2/80 p-4">
+                  <div className="flex items-center gap-2 text-xs text-faint font-semibold uppercase">
+                    <Wallet className="h-4 w-4 text-accent" /> Strategy Allocated Capital
+                  </div>
+                  <div className="mt-2 font-mono text-xl font-bold text-primary">
+                    {fmtRupee(liveData?.wallet?.allocated_capital ?? 85000)}
+                  </div>
+                </div>
+                <div className="rounded-xl border border-subtle bg-surface2/80 p-4">
+                  <div className="flex items-center gap-2 text-xs text-faint font-semibold uppercase">
+                    <ShieldCheck className="h-4 w-4 text-bull" /> Available Balance
+                  </div>
+                  <div className="mt-2 font-mono text-xl font-bold text-bull">
+                    {fmtRupee(liveData?.wallet?.balance ?? 85000)}
+                  </div>
+                </div>
+                <div className="rounded-xl border border-subtle bg-surface2/80 p-4">
+                  <div className="flex items-center gap-2 text-xs text-faint font-semibold uppercase">
+                    <Zap className="h-4 w-4 text-warn" /> Today Realized P&amp;L
+                  </div>
+                  <div className="mt-2 font-mono text-xl font-bold text-faint">
+                    {fmtRupee(liveData?.wallet?.pnl_in_wallet ?? 0)}
+                  </div>
+                </div>
+              </div>
+
+              <div className="rounded-xl border border-subtle bg-surface2/40 py-12 text-center">
+                <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-surface3 text-faint">
+                  <TrendingUp className="h-6 w-6" />
+                </div>
+                <h4 className="font-semibold text-sm text-primary">No Live Trades Executed Today</h4>
+                <p className="text-xs text-faint mt-1 max-w-md mx-auto">
+                  The live trading engine is running and actively monitoring real-time index candles for this strategy. Orders will appear here as soon as entry conditions trigger.
+                </p>
+              </div>
+            </div>
           ) : (
             <>
-              {/* Top 12 QuantMan KPI Tiles */}
+              {/* QuantMan 12 Top KPI Tiles */}
               <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4 lg:grid-cols-6">
                 <MetricCard label="Total Profit" value={fmtRupee(stats.netPnl)} valueClass={pnlClass(stats.netPnl)} />
                 <MetricCard label="Win Rate" value={`${stats.winRate.toFixed(1)}%`} valueClass="text-bull" />
@@ -346,9 +391,8 @@ export function StrategyAnalyticsModal({ strategy, onClose }) {
               {/* Equity Curve Chart */}
               <EquityCurveChart points={stats.equityCurve} />
 
-              {/* Transaction Analytics Breakdown (Hit/Miss & Day/Year stats) */}
+              {/* Transaction Analytics Breakdown */}
               <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-                {/* Left: Instruments & Trade Type */}
                 <div className="rounded-xl border border-subtle bg-surface2/60 p-4 space-y-4">
                   <div>
                     <div className="mb-2 text-xs font-semibold uppercase tracking-wider text-faint">Instruments Breakdown</div>
@@ -366,7 +410,6 @@ export function StrategyAnalyticsModal({ strategy, onClose }) {
                   </div>
                 </div>
 
-                {/* Right: Yearly Breakdown & Multi-Year Calendar Grid */}
                 <div className="space-y-4">
                   <div className="rounded-xl border border-subtle bg-surface2/60 p-4">
                     <div className="mb-2 text-xs font-semibold uppercase tracking-wider text-faint">Yearly Summary</div>
@@ -442,7 +485,6 @@ export function StrategyAnalyticsModal({ strategy, onClose }) {
                   </table>
                 </div>
 
-                {/* Pagination footer */}
                 <div className="mt-3 flex items-center justify-between text-xs text-faint">
                   <div>Page {page + 1} of {pageCount} ({rowsDesc.length} total orders)</div>
                   <div className="flex gap-2">

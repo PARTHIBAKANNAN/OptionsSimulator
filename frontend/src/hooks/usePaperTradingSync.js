@@ -41,6 +41,10 @@ export async function fetchStrategyOrders(name) {
   return api(`/api/paper/strategies/${encodeURIComponent(name)}/orders`);
 }
 
+export async function fetchBacktestStrategyHistory(name) {
+  return api(`/api/backtest/strategies/${encodeURIComponent(name)}/history`);
+}
+
 export async function fetchPnlReport(params) {
   const qs = new URLSearchParams(params).toString();
   return api(`/api/paper/pnl/report?${qs}`);

@@ -29,8 +29,7 @@ from src.config import Config
 from src.data_manager import DataManager
 from src.fyers.api_client import FyersAPIClient
 from src.simulator.paper_trader import PaperTrader, RiskLimitExceeded
-from src.strategies.engine import StrategyEngine
-from src.strategies.sensex_strategies import create_live_sensex_strategies
+from src.strategies.engine import StrategyEngine, create_nifty_strategies, create_sensex_strategies
 from src.alerts.telegram_alerts import TelegramAlertsManager
 from src.persistence.state_manager import StateManager
 from src.utils.logger import get_logger
@@ -43,10 +42,6 @@ EXCHANGE_TO_INDEX = {"NSE": "NIFTY", "BSE": "SENSEX"}
 INDEX_TO_EXCHANGE = {index: exchange for exchange, index in EXCHANGE_TO_INDEX.items()}
 LOT_SIZE_BY_INDEX = {"NIFTY": 65, "SENSEX": 20}
 IST = ZoneInfo("Asia/Kolkata")
-# Fyers tokens are valid for the calendar day only. TradeDashBoard's own proven scheduler
-# refreshes at 08:45 IST before market open; ours does the same at 08:50 IST — see
-# LiveTrader.start(). This entire mechanism lives inside OUR process/event loop only (no shared
-# scheduler, no shared Fyers app/credentials with TradeDashBoard — see docs/ARCHITECTURE.md).
 DAILY_LOGIN_TIME = dtime(8, 50)
 CAPITAL_REQUIREMENTS_PATH = (
     Path(__file__).resolve().parent.parent / "data" / "backtest_results" / "capital_requirements.json"
@@ -70,8 +65,8 @@ class LiveTrader:
         self.data_managers = {"NIFTY": DataManager(), "SENSEX": DataManager(underlying="SENSEX")}
         self.data_manager = self.data_managers["NIFTY"]  # back-compat alias for NIFTY-only callers/tests
         self.strategy_engines = {
-            "NIFTY": StrategyEngine(logger=self.logger),  # defaults to create_all_strategies()
-            "SENSEX": StrategyEngine(strategies=create_live_sensex_strategies(), logger=self.logger),
+            "NIFTY": StrategyEngine(strategies=create_nifty_strategies(), logger=self.logger),
+            "SENSEX": StrategyEngine(strategies=create_sensex_strategies(), logger=self.logger),
         }
         self.strategy_engine = self.strategy_engines["NIFTY"]  # back-compat alias
         sizing = config.risk_params.get("position_sizing", {})

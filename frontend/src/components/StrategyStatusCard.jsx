@@ -270,7 +270,7 @@ function StrategyCard({ row, pendingSignal, viewMode }) {
         </AnimatePresence>
       </div>
 
-      {showAnalytics && <StrategyAnalyticsModal strategy={row.strategy} onClose={() => setShowAnalytics(false)} />}
+      {showAnalytics && <StrategyAnalyticsModal strategy={row.strategy} mode="live" onClose={() => setShowAnalytics(false)} />}
     </div>
   );
 }

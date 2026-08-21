@@ -33,31 +33,30 @@ from src.strategies.sensex_strategies import (
 )
 
 
-def create_all_strategies() -> list[BaseStrategy]:
-    """Returns the full master roster of 21 active strategies:
-    - 9 Standard 1-Minute ATM Baseline Strategies (4 NIFTY + 5 SENSEX)
-    - 12 High-Conviction 5-Minute ITM Strategies (6 NIFTY + 6 SENSEX)
-    """
+def create_nifty_strategies() -> list[BaseStrategy]:
+    """Returns the 10 active NIFTY strategies (4 1M ATM + 6 5M ITM)."""
     return [
-        # --- 9 Existing 1-Minute ATM Baseline Strategies ---
         ORBBullish(name="NIFTY_ORB_BULLISH_1M_ATM"),
         MACDBullish(name="NIFTY_MACD_BULLISH_1M_ATM"),
         HeikinAshiTrendBearish(name="NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM"),
         MACDBearish(name="NIFTY_MACD_BEARISH_1M_ATM"),
-        SensexMACDBullish(name="SENSEX_MACD_BULLISH_1M_ATM"),
-        SensexSupportBounceBullish(name="SENSEX_SUPPORT_BOUNCE_1M_ATM"),
-        SensexHeikinAshiTrendBearish(name="SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM"),
-        SensexMACDBearish(name="SENSEX_MACD_BEARISH_1M_ATM"),
-        SensexORBBearish(name="SENSEX_ORB_BEARISH_1M_ATM"),
-
-        # --- 12 New 5-Minute ITM Suite (6 NIFTY + 6 SENSEX) ---
         NiftySupportBounce5MITM(),
         NiftyHeikinAshiBullish5MITM(),
         NiftyORBBullish5MITM(),
         NiftyResistanceRejection5MITM(),
         NiftyHeikinAshiBearish5MITM(),
         NiftyORBBearish5MITM(),
+    ]
 
+
+def create_sensex_strategies() -> list[BaseStrategy]:
+    """Returns the 11 active SENSEX strategies (5 1M ATM + 6 5M ITM)."""
+    return [
+        SensexMACDBullish(name="SENSEX_MACD_BULLISH_1M_ATM"),
+        SensexSupportBounceBullish(name="SENSEX_SUPPORT_BOUNCE_1M_ATM"),
+        SensexHeikinAshiTrendBearish(name="SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM"),
+        SensexMACDBearish(name="SENSEX_MACD_BEARISH_1M_ATM"),
+        SensexORBBearish(name="SENSEX_ORB_BEARISH_1M_ATM"),
         SensexSupportBounce5MITM(),
         SensexHeikinAshiBullish5MITM(),
         SensexORBBullish5MITM(),
@@ -65,6 +64,11 @@ def create_all_strategies() -> list[BaseStrategy]:
         SensexHeikinAshiBearish5MITM(),
         SensexORBBearish5MITM(),
     ]
+
+
+def create_all_strategies() -> list[BaseStrategy]:
+    """Returns the full master roster of 21 active strategies (10 NIFTY + 11 SENSEX)."""
+    return create_nifty_strategies() + create_sensex_strategies()
 
 
 def create_live_strategies() -> list[BaseStrategy]:

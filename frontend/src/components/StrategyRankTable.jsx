@@ -162,7 +162,7 @@ export function StrategyRankTable({ title, rows, dailyBreakdown = {}, capitalReq
       </div>
 
       {activeModalStrategy && (
-        <StrategyAnalyticsModal strategy={activeModalStrategy} onClose={() => setActiveModalStrategy(null)} />
+        <StrategyAnalyticsModal strategy={activeModalStrategy} mode="backtest" onClose={() => setActiveModalStrategy(null)} />
       )}
     </div>
   );
