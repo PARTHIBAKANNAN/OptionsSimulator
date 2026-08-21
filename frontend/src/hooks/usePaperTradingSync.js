@@ -46,7 +46,11 @@ export async function fetchStrategyOrders(name) {
 }
 
 export async function fetchBacktestStrategyHistory(name) {
-  return api(`/api/backtest/strategies/${encodeURIComponent(name)}/history`);
+  try {
+    return await api(`/api/backtest/strategies/${encodeURIComponent(name)}/history`);
+  } catch {
+    return await api(`/api/paper/strategies/${encodeURIComponent(name)}/history`);
+  }
 }
 
 export async function fetchPnlReport(params) {

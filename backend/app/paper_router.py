@@ -244,3 +244,33 @@ async def restart_strategy(name: str, request: Request):
         matched_strat._last_signal_bar = None
 
     return {"status": "restarted", "strategy": name}
+
+
+RESULTS_DIR = Path(__file__).resolve().parent.parent.parent / "data" / "backtest_results"
+
+
+@router.get("/strategies/{name}/history")
+async def get_paper_strategy_history(name: str):
+    """Returns backtest history for strategy from data/backtest_results/."""
+    history_file = RESULTS_DIR / f"{name}_history.json"
+    if not history_file.exists():
+        raise HTTPException(status_code=404, detail=f"No backtest history found for {name}")
+    raw_trades = json.loads(history_file.read_text())
+    trades = []
+    for idx, t in enumerate(raw_trades, 1):
+        trades.append({
+            "order_id": f"BT-{idx:04d}",
+            "symbol": t.get("symbol", name),
+            "contract": t.get("symbol", name),
+            "qty": 1,
+            "entry_price": t.get("entry_price", 0.0),
+            "entry_time": t.get("entry_time"),
+            "exit_price": t.get("exit_price", 0.0),
+            "exit_time": t.get("exit_time"),
+            "exit_reason": t.get("exit_reason", "EXIT"),
+            "realized_pnl": t.get("realized_pnl", 0.0),
+            "net_pnl": t.get("realized_pnl", 0.0),
+            "entry_charges": 0.0,
+            "exit_charges": 0.0,
+        })
+    return _sanitize(trades)
