@@ -6,6 +6,7 @@ import {
   Layers, CheckCircle2, Award, DollarSign, Calculator, Eye,
   Bot, Clock, HelpCircle, ArrowUpRight, ArrowDownRight, Globe
 } from "lucide-react";
+import { API_BASE } from "../lib/apiBase";
 
 const STRATEGY_HIGHLIGHTS = [
   { name: "NIFTY Opening Range Breakout (5M ITM)", index: "NIFTY 50", tf: "5M", mode: "ITM", dir: "CE / PE", desc: "Captures morning opening momentum following the 09:15–09:30 range resolution with 1H 50-EMA trend alignment." },
@@ -31,7 +32,7 @@ export function LandingScreen({ onLoginClick }) {
   const [marketData, setMarketData] = useState(null);
 
   useEffect(() => {
-    fetch("/api/public/market-summary")
+    fetch(`${API_BASE}/api/public/market-summary`)
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => {
         if (d) setMarketData(d);
@@ -78,10 +79,12 @@ export function LandingScreen({ onLoginClick }) {
     return true;
   });
 
+  const heroBgUrl = `${import.meta.env.BASE_URL}assets/quant_hero_bg.jpg`;
+
   return (
-    <div className="min-h-screen bg-bgDark text-primary selection:bg-accent selection:text-white font-sans overflow-x-hidden">
+    <div className="min-h-screen bg-surface2 text-primary selection:bg-accent selection:text-white font-sans overflow-x-hidden">
       {/* Top Navbar */}
-      <header className="sticky top-0 z-50 border-b border-subtle/80 bg-bgDark/90 backdrop-blur-2xl px-4 sm:px-8 py-3.5">
+      <header className="sticky top-0 z-50 border-b border-subtle/80 bg-surface/90 backdrop-blur-2xl px-4 sm:px-8 py-3.5">
         <div className="mx-auto flex max-w-7xl items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-tr from-accent to-indigo-500 text-white font-black text-lg shadow-lg shadow-accent/25">
@@ -109,7 +112,7 @@ export function LandingScreen({ onLoginClick }) {
 
             <button
               onClick={onLoginClick}
-              className="flex items-center gap-1.5 rounded-xl bg-accent px-4 py-2 text-xs font-black text-white hover:brightness-110 shadow-lg shadow-accent/25 transition"
+              className="flex items-center gap-1.5 rounded-xl bg-accent px-4 py-2 text-xs font-black text-white hover:brightness-110 shadow-lg shadow-accent/25 transition cursor-pointer"
             >
               <Lock className="h-3.5 w-3.5" />
               <span>Launch Terminal</span>
@@ -123,9 +126,9 @@ export function LandingScreen({ onLoginClick }) {
         {/* Background Image with Dark Vignette Overlay */}
         <div
           className="absolute inset-0 bg-cover bg-center opacity-25 mix-blend-luminosity pointer-events-none"
-          style={{ backgroundImage: "url('/assets/quant_hero_bg.jpg')" }}
+          style={{ backgroundImage: `url('${heroBgUrl}')` }}
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-bgDark/40 via-bgDark/80 to-bgDark pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-b from-surface2/40 via-surface2/80 to-surface2 pointer-events-none" />
 
         <div className="mx-auto max-w-5xl text-center space-y-6 relative z-10">
           <motion.div
@@ -166,14 +169,14 @@ export function LandingScreen({ onLoginClick }) {
           >
             <button
               onClick={onLoginClick}
-              className="flex items-center gap-2 rounded-2xl bg-accent px-6 py-3.5 text-sm font-black text-white hover:brightness-110 shadow-xl shadow-accent/30 transition transform hover:-translate-y-0.5"
+              className="flex items-center gap-2 rounded-2xl bg-accent px-6 py-3.5 text-sm font-black text-white hover:brightness-110 shadow-xl shadow-accent/30 transition transform hover:-translate-y-0.5 cursor-pointer"
             >
               <span>Launch Operator Terminal</span>
               <ArrowRight className="h-4 w-4" />
             </button>
             <a
               href="#strategies"
-              className="flex items-center gap-2 rounded-2xl border border-subtle bg-surface2/80 px-5 py-3.5 text-sm font-bold text-gray-300 hover:bg-surface3 hover:text-white backdrop-blur-sm transition"
+              className="flex items-center gap-2 rounded-2xl border border-subtle bg-surface2/80 px-5 py-3.5 text-sm font-bold text-gray-300 hover:bg-surface3 hover:text-white backdrop-blur-sm transition cursor-pointer"
             >
               <Eye className="h-4 w-4 text-cyan-400" />
               <span>Explore 21 Strategies</span>
@@ -239,7 +242,7 @@ export function LandingScreen({ onLoginClick }) {
             </div>
             <h3 className="text-base font-bold text-white">Multi-Tier Stepped TSL</h3>
             <p className="text-xs text-gray-400 leading-relaxed font-sans">
-              Automated ratchet stops: $+20\text{ pt}$ locks break-even, $+40\text{ pt}$ locks $+20\text{ pt}$, and $+60\text{ pt}$ locks $+40\text{ pt}$ profit without emotional interference.
+              Automated ratchet stops: +20 pt locks break-even, +40 pt locks +20 pt, and +60 pt locks +40 pt profit without emotional interference.
             </p>
           </div>
 
@@ -286,7 +289,7 @@ export function LandingScreen({ onLoginClick }) {
       </section>
 
       {/* Interactive Stepped TSL Simulator Widget */}
-      <section className="py-16 px-4 sm:px-8 border-t border-subtle/60 bg-surface2/20 relative">
+      <section className="py-16 px-4 sm:px-8 border-t border-subtle/60 bg-surface/40 relative">
         <div className="mx-auto max-w-5xl space-y-6">
           <div className="text-center space-y-2">
             <div className="inline-flex items-center gap-1.5 rounded-full bg-purple-500/10 px-3 py-1 text-xs font-bold text-purple-400 border border-purple-500/20">
@@ -404,7 +407,7 @@ export function LandingScreen({ onLoginClick }) {
       </section>
 
       {/* Interactive Indian Regulatory Tax & Charges Calculator */}
-      <section className="py-16 px-4 sm:px-8 border-t border-subtle/60 bg-surface2/20">
+      <section className="py-16 px-4 sm:px-8 border-t border-subtle/60 bg-surface/40">
         <div className="mx-auto max-w-5xl space-y-6">
           <div className="text-center space-y-2">
             <div className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-bold text-emerald-400 border border-emerald-500/20">
@@ -518,7 +521,7 @@ export function LandingScreen({ onLoginClick }) {
                 Request Operator Access
               </a>
               <span>•</span>
-              <button onClick={onLoginClick} className="font-bold text-primary hover:underline">
+              <button onClick={onLoginClick} className="font-bold text-primary hover:underline cursor-pointer">
                 Operator Sign In
               </button>
             </div>
