@@ -137,12 +137,12 @@ async def get_public_market_summary():
             if market_file.exists():
                 cached = json.loads(market_file.read_text(encoding="utf-8"))
                 return {
-                    "nifty_price": cached.get("nifty_price", 24823.15),
-                    "nifty_change": cached.get("nifty_change", 142.50),
-                    "nifty_change_pct": cached.get("nifty_change_pct", 0.58),
-                    "sensex_price": cached.get("sensex_price", 81388.40),
-                    "sensex_change": cached.get("sensex_change", 450.20),
-                    "sensex_change_pct": cached.get("sensex_change_pct", 0.56),
+                    "nifty_price": cached.get("nifty_price", 24252.00),
+                    "nifty_change": cached.get("nifty_change", 20.15),
+                    "nifty_change_pct": cached.get("nifty_change_pct", 0.08),
+                    "sensex_price": cached.get("sensex_price", 77540.83),
+                    "sensex_change": cached.get("sensex_change", 3.11),
+                    "sensex_change_pct": cached.get("sensex_change_pct", 0.00),
                     "market_open": current_state.get("market_open", False),
                     "strategies_count": 21,
                 }
@@ -150,12 +150,12 @@ async def get_public_market_summary():
             pass
 
     return {
-        "nifty_price": nifty or 24823.15,
-        "nifty_change": current_state.get("nifty_change") or 142.50,
-        "nifty_change_pct": current_state.get("nifty_change_pct") or 0.58,
-        "sensex_price": sensex or 81388.40,
-        "sensex_change": current_state.get("sensex_change") or 450.20,
-        "sensex_change_pct": current_state.get("sensex_change_pct") or 0.56,
+        "nifty_price": nifty or 24252.00,
+        "nifty_change": current_state.get("nifty_change") or 20.15,
+        "nifty_change_pct": current_state.get("nifty_change_pct") or 0.08,
+        "sensex_price": sensex or 77540.83,
+        "sensex_change": current_state.get("sensex_change") or 3.11,
+        "sensex_change_pct": current_state.get("sensex_change_pct") or 0.00,
         "market_open": current_state.get("market_open", False),
         "strategies_count": 21,
     }

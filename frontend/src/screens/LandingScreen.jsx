@@ -311,11 +311,11 @@ export function LandingScreen({ onLoginClick }) {
                 <div className="text-left">
                   <span className="text-[10px] font-bold uppercase text-cyan-400 tracking-wider font-mono">NSE NIFTY 50 (Lot 65)</span>
                   <div className="font-mono text-lg font-black text-white tabular-nums">
-                    {fmtNum(marketData?.nifty_price || 24823.15)}
+                    {fmtNum(marketData?.nifty_price || 24252.00)}
                   </div>
                 </div>
                 <span className="rounded-full bg-bull/15 px-2.5 py-1 text-[11px] font-bold text-bull border border-bull/30 font-mono">
-                  +{fmtNum(marketData?.nifty_change || 142.50)} (+{Number(marketData?.nifty_change_pct || 0.58).toFixed(2)}%)
+                  +{fmtNum(marketData?.nifty_change || 20.15)} (+{Number(marketData?.nifty_change_pct || 0.08).toFixed(2)}%)
                 </span>
               </div>
 
@@ -324,11 +324,11 @@ export function LandingScreen({ onLoginClick }) {
                 <div className="text-left">
                   <span className="text-[10px] font-bold uppercase text-purple-400 tracking-wider font-mono">BSE SENSEX (Lot 20)</span>
                   <div className="font-mono text-lg font-black text-white tabular-nums">
-                    {fmtNum(marketData?.sensex_price || 81388.40)}
+                    {fmtNum(marketData?.sensex_price || 77540.83)}
                   </div>
                 </div>
                 <span className="rounded-full bg-bull/15 px-2.5 py-1 text-[11px] font-bold text-bull border border-bull/30 font-mono">
-                  +{fmtNum(marketData?.sensex_change || 450.20)} (+{Number(marketData?.sensex_change_pct || 0.56).toFixed(2)}%)
+                  +{fmtNum(marketData?.sensex_change || 3.11)} (+{Number(marketData?.sensex_change_pct || 0.00).toFixed(2)}%)
                 </span>
               </div>
             </div>
