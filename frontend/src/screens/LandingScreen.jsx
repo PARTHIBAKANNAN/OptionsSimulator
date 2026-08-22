@@ -5,7 +5,7 @@ import {
   BarChart3, ChevronRight, Lock, Mail, ArrowRight,
   Layers, CheckCircle2, Award, DollarSign, Calculator, Eye,
   Bot, Clock, HelpCircle, ArrowUpRight, ArrowDownRight, Globe,
-  Sliders, Play, X, ExternalLink, RefreshCw, Terminal
+  Sliders, Play, X, ExternalLink, RefreshCw, Terminal, Target
 } from "lucide-react";
 import { NukeBoxLogo } from "../components/NukeBoxLogo";
 import { API_BASE } from "../lib/apiBase";
