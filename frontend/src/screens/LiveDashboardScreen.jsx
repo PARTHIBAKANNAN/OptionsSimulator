@@ -5,6 +5,7 @@ import { MarketHeader } from "../components/MarketHeader";
 import { ExposureMeter } from "../components/ExposureMeter";
 import { IntradayEquityCurve } from "../components/IntradayEquityCurve";
 import { PreMarketIntelligenceCard } from "../components/PreMarketIntelligenceCard";
+import { PostMarketJournalCard } from "../components/PostMarketJournalCard";
 
 export function LiveDashboardScreen() {
   const state = useMarketState();
@@ -16,8 +17,11 @@ export function LiveDashboardScreen() {
     <div className="space-y-4">
       <MarketHeader state={state} />
       
-      {/* 08:45 AM Pre-Market Catalyst & Sentiment Card */}
+      {/* 08:50 AM Pre-Market Catalyst & Sentiment Card */}
       <PreMarketIntelligenceCard />
+
+      {/* 15:35 IST Post-Market AI Trade Journal & Performance Review */}
+      <PostMarketJournalCard />
 
       {/* Live Telemetry Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">

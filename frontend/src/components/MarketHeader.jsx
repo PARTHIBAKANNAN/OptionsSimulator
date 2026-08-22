@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { TrendingUp, TrendingDown, Clock, ShieldCheck, BarChart2, AlertCircle } from "lucide-react";
+import { TrendingUp, TrendingDown, Clock, ShieldCheck, BarChart2, AlertCircle, Volume2, VolumeX } from "lucide-react";
 import { Badge } from "./ui/Badge";
 import { ChartModal } from "./ChartModal";
 import { closeAllPositions } from "../hooks/usePaperTradingSync";
+import { soundEngine } from "../utils/audioAlerts";
 
 function fmtRupee(v) {
   if (v == null) return "—";
@@ -53,6 +54,7 @@ function IndexCard({ label, price, prevClose, change, changePct, exchangeOpen, o
 export function MarketHeader({ state }) {
   const [chartFor, setChartFor] = useState(null);
   const [squaringOff, setSquaringOff] = useState(false);
+  const [soundMuted, setSoundMuted] = useState(soundEngine.isMuted());
   const {
     nifty_price, nifty_prev_close, nifty_change, nifty_change_pct, nifty_candles_5m,
     sensex_price, sensex_prev_close, sensex_change, sensex_change_pct, sensex_candles_5m,
@@ -114,6 +116,20 @@ export function MarketHeader({ state }) {
               </span>
             )}
 
+            {/* Audio Alert Toggle Button */}
+            <button
+              onClick={() => setSoundMuted(soundEngine.toggleMute())}
+              title={soundMuted ? "Sound alerts muted. Click to enable audio FX" : "Sound alerts active. Click to mute"}
+              className={`flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold transition border ${
+                soundMuted
+                  ? "border-subtle bg-surface2 text-faint hover:text-primary"
+                  : "border-accent/40 bg-accent/15 text-accent shadow-sm"
+              }`}
+            >
+              {soundMuted ? <VolumeX className="h-3.5 w-3.5" /> : <Volume2 className="h-3.5 w-3.5" />}
+              <span>{soundMuted ? "Muted" : "Sound On"}</span>
+            </button>
+
             <button
               onClick={handleSquareOffAll}
               disabled={squaringOff}
@@ -136,6 +152,11 @@ export function MarketHeader({ state }) {
           price={chartFor === "NIFTY" ? nifty_price : sensex_price}
           change={chartFor === "NIFTY" ? nifty_change : sensex_change}
           changePct={chartFor === "NIFTY" ? nifty_change_pct : sensex_change_pct}
+          secondaryLabel={chartFor === "NIFTY" ? "SENSEX" : "NIFTY 50"}
+          secondaryCandles={chartFor === "NIFTY" ? sensex_candles_5m : nifty_candles_5m}
+          secondaryPrice={chartFor === "NIFTY" ? sensex_price : nifty_price}
+          secondaryChange={chartFor === "NIFTY" ? sensex_change : nifty_change}
+          secondaryChangePct={chartFor === "NIFTY" ? sensex_change_pct : nifty_change_pct}
           onClose={() => setChartFor(null)}
         />
       )}

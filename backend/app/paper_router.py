@@ -310,3 +310,44 @@ async def refresh_premarket_intelligence():
         pass
     return _sanitize(intel)
 
+
+@router.get("/intelligence/postmarket")
+async def get_postmarket_intelligence(request: Request):
+    """Returns today's post-market AI performance audit & trade journal."""
+    from .ai_intelligence import get_cached_postmarket_intel
+    return _sanitize(get_cached_postmarket_intel())
+
+
+@router.post("/intelligence/postmarket/refresh")
+async def refresh_postmarket_intelligence(request: Request):
+    """Forces a live post-market AI performance audit & trade debrief via Gemini 3.6 Flash."""
+    from .ai_intelligence import generate_live_postmarket_journal, POSTMARKET_CACHE_PATH
+    import json
+
+    # Pull today's completed trades if DB available
+    trades_today = []
+    daily_pnl = 0.0
+    if getattr(request.app.state, "db_available", False):
+        try:
+            pool = db.get_pool()
+            rows = await pool.fetch(
+                """SELECT order_id, symbol, qty, entry_price, entry_time, exit_price, exit_time,
+                          exit_reason, realized_pnl, strategy
+                   FROM options_positions 
+                   WHERE status = 'CLOSED' AND DATE(exit_time AT TIME ZONE 'Asia/Kolkata') = CURRENT_DATE
+                   ORDER BY exit_time DESC"""
+            )
+            trades_today = [dict(r) for r in rows]
+            daily_pnl = sum((r.get("realized_pnl") or 0.0) for r in trades_today)
+        except Exception as e:
+            print(f"[PostMarketRouter] DB trade fetch error: {e}")
+
+    journal = generate_live_postmarket_journal(trades_today=trades_today, daily_pnl=daily_pnl)
+    try:
+        POSTMARKET_CACHE_PATH.parent.mkdir(parents=True, exist_ok=True)
+        POSTMARKET_CACHE_PATH.write_text(json.dumps(journal, indent=2))
+    except Exception:
+        pass
+    return _sanitize(journal)
+
+

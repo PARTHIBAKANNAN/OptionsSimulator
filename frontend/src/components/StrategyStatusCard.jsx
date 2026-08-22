@@ -57,6 +57,90 @@ function parseStrategyMeta(name) {
   };
 }
 
+// Stepped TSL Animated Progress Gauge
+function SteppedTslProgressGauge({ entryPrice, ltp, stopLoss, takeProfit, closed }) {
+  if (entryPrice == null || ltp == null) return null;
+  const deltaPts = ltp - entryPrice;
+  const isProfit = deltaPts >= 0;
+
+  // Compute active milestone state
+  let currentStep = 0;
+  let stepLabel = "Initial Hard SL (-20%)";
+  let lockedPoints = 0;
+  let nextMilestonePts = 20;
+
+  if (deltaPts >= 80) {
+    currentStep = 4;
+    lockedPoints = deltaPts - 20;
+    stepLabel = `Step 4: Dynamic Trailing (+${lockedPoints.toFixed(0)} pts)`;
+    nextMilestonePts = takeProfit ? takeProfit - entryPrice : 150;
+  } else if (deltaPts >= 60) {
+    currentStep = 3;
+    lockedPoints = 40;
+    stepLabel = "Step 3: +40 pts Locked";
+    nextMilestonePts = 80;
+  } else if (deltaPts >= 40) {
+    currentStep = 2;
+    lockedPoints = 20;
+    stepLabel = "Step 2: +20 pts Locked";
+    nextMilestonePts = 60;
+  } else if (deltaPts >= 20) {
+    currentStep = 1;
+    lockedPoints = 0;
+    stepLabel = "Step 1: Cost Locked (Break-Even)";
+    nextMilestonePts = 40;
+  }
+
+  const ptsToNext = Math.max(0, nextMilestonePts - deltaPts);
+  const progressPct = Math.min(100, Math.max(5, (Math.max(0, deltaPts) / 100) * 100));
+
+  return (
+    <div className="mt-3 rounded-xl border border-subtle/80 bg-surface/80 p-2.5 font-mono text-xs">
+      <div className="flex items-center justify-between text-[11px] mb-1.5">
+        <div className="flex items-center gap-1.5">
+          <span className="font-bold text-gray-400 font-sans">Stepped TSL:</span>
+          <span className={`font-bold ${currentStep > 0 ? "text-emerald-400" : "text-amber-400"}`}>
+            {closed ? "Position Closed" : stepLabel}
+          </span>
+        </div>
+        <div className="font-bold text-accent">
+          {deltaPts >= 0 ? `+${deltaPts.toFixed(1)}` : deltaPts.toFixed(1)} pts
+        </div>
+      </div>
+
+      {/* Progress Track */}
+      <div className="relative h-2 w-full rounded-full bg-surface3/80 overflow-hidden">
+        <div
+          className={`h-full rounded-full transition-all duration-300 ${
+            currentStep >= 3
+              ? "bg-gradient-to-r from-emerald-500 via-cyan-500 to-indigo-500 shadow-[0_0_8px_rgba(59,130,246,0.6)]"
+              : currentStep >= 1
+              ? "bg-gradient-to-r from-emerald-500 to-cyan-500"
+              : isProfit
+              ? "bg-emerald-500"
+              : "bg-rose-500"
+          }`}
+          style={{ width: `${progressPct}%` }}
+        />
+      </div>
+
+      {/* Milestone Points */}
+      <div className="mt-2 flex items-center justify-between text-[10px] text-gray-400">
+        <span className={currentStep >= 1 ? "text-emerald-400 font-bold" : ""}>+20pt (Cost)</span>
+        <span className={currentStep >= 2 ? "text-emerald-400 font-bold" : ""}>+40pt (+20)</span>
+        <span className={currentStep >= 3 ? "text-cyan-400 font-bold" : ""}>+60pt (+40)</span>
+        <span className={currentStep >= 4 ? "text-indigo-400 font-bold" : ""}>+80pt+ (Trail)</span>
+      </div>
+
+      {!closed && ptsToNext > 0 && (
+        <div className="mt-1.5 text-[10px] text-faint font-sans text-right">
+          <span className="text-accent font-semibold">{ptsToNext.toFixed(1)} pts</span> to next profit lock
+        </div>
+      )}
+    </div>
+  );
+}
+
 // QuantMan exact instrument panel box
 function QuantManInstrumentBox({ contract, qty, entryTime, entryPrice, ltp, pnl, stopLoss, takeProfit, exitTime }) {
   const pct = pctReturn(entryPrice, ltp);
@@ -94,6 +178,15 @@ function QuantManInstrumentBox({ contract, qty, entryTime, entryPrice, ltp, pnl,
           <span className="font-mono font-semibold text-primary">{fmtRupee(ltp)}</span>
         </div>
       </div>
+
+      {/* Stepped TSL Animated Progress Gauge */}
+      <SteppedTslProgressGauge
+        entryPrice={entryPrice}
+        ltp={ltp}
+        stopLoss={stopLoss}
+        takeProfit={takeProfit}
+        closed={closed}
+      />
     </div>
   );
 }
