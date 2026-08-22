@@ -1,15 +1,15 @@
 {
-  "nifty_price": 24120,
-  "nifty_prev_close": 24000,
-  "nifty_change": 120,
-  "nifty_change_pct": 0.5,
-  "nifty_high": 24340.5,
-  "nifty_low": 24210.2,
-  "sensex_price": 77540.83,
-  "sensex_prev_close": 77537.72,
-  "sensex_change": 3.11,
-  "sensex_change_pct": 0.0,
-  "sensex_high": 77790.1,
-  "sensex_low": 77450.3,
-  "last_updated": "2026-08-05T09:20:00+05:30"
+  "nifty_price": 24823.15,
+  "nifty_prev_close": 24680.65,
+  "nifty_change": 142.50,
+  "nifty_change_pct": 0.58,
+  "nifty_high": 24855.00,
+  "nifty_low": 24675.30,
+  "sensex_price": 81388.40,
+  "sensex_prev_close": 80938.20,
+  "sensex_change": 450.20,
+  "sensex_change_pct": 0.56,
+  "sensex_high": 81490.50,
+  "sensex_low": 80890.10,
+  "last_updated": "2026-08-22T15:30:00+05:30"
 }

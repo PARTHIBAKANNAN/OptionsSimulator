@@ -10,30 +10,30 @@ import {
 import { NukeBoxLogo } from "../components/NukeBoxLogo";
 import { API_BASE } from "../lib/apiBase";
 
-// 21 Proprietary Algorithmic Strategies (Formulas masked for IP protection)
+// 21 Proprietary Algorithmic Strategies (Clean institutional descriptions with masked math)
 const FLEET_21_STRATEGIES = [
-  { id: "NIFTY_ORB_BULLISH_5M_ITM", name: "NIFTY Opening Range Momentum CE", index: "NIFTY 50", tf: "5M", mode: "ITM", targetDelta: "0.62", dir: "CE", desc: "Captures morning opening expansion following initial price discovery with macro trend filter alignment." },
-  { id: "NIFTY_ORB_BEARISH_5M_ITM", name: "NIFTY Opening Range Breakdown PE", index: "NIFTY 50", tf: "5M", mode: "ITM", targetDelta: "0.62", dir: "PE", desc: "Executes directional downside breakdowns on expanding negative order flow velocity." },
-  { id: "NIFTY_EMA_BOUNCE_5M_ITM", name: "NIFTY Dynamic Support Pullback CE", index: "NIFTY 50", tf: "5M", mode: "ITM", targetDelta: "0.60", dir: "CE", desc: "Enters high-probability trend continuation pullbacks testing institutional dynamic support levels." },
-  { id: "NIFTY_EMA_REJECTION_5M_ITM", name: "NIFTY Dynamic Resistance Rejection PE", index: "NIFTY 50", tf: "5M", mode: "ITM", targetDelta: "0.60", dir: "PE", desc: "Capitalizes on overhead resistance rejections aligned with higher-timeframe bearish momentum." },
-  { id: "NIFTY_HEIKIN_ASHI_BULLISH_5M_ITM", name: "NIFTY Directional Trend Pulse CE", index: "NIFTY 50", tf: "5M", mode: "ITM", targetDelta: "0.64", dir: "CE", desc: "Smoothed noise-filtered trend-following model capturing multi-candle directional thrusts." },
-  { id: "NIFTY_HEIKIN_ASHI_BEARISH_5M_ITM", name: "NIFTY Directional Trend Pulse PE", index: "NIFTY 50", tf: "5M", mode: "ITM", targetDelta: "0.64", dir: "PE", desc: "Rides sustained downward momentum pulses with zero-shadow candle confirmation." },
-  { id: "NIFTY_STOCHASTIC_BOUNCE_5M_ITM", name: "NIFTY Oversold Exhaustion Reversal CE", index: "NIFTY 50", tf: "5M", mode: "ITM", targetDelta: "0.58", dir: "CE", desc: "Exploits short-term oversold exhaustion bounces within primary uptrend regimes." },
-  { id: "NIFTY_STOCHASTIC_REJECTION_5M_ITM", name: "NIFTY Overbought Exhaustion Reversal PE", index: "NIFTY 50", tf: "5M", mode: "ITM", targetDelta: "0.58", dir: "PE", desc: "Captures rapid mean-reversion rejections from extended overbought supply zones." },
-  { id: "NIFTY_1M_SCALP_CE", name: "NIFTY High-Velocity Micro Scalp CE", index: "NIFTY 50", tf: "1M", mode: "ATM", targetDelta: "0.50", dir: "CE", desc: "Sub-minute momentum scalping engine exploiting instantaneous tick liquidity bursts." },
-  { id: "NIFTY_1M_SCALP_PE", name: "NIFTY High-Velocity Micro Scalp PE", index: "NIFTY 50", tf: "1M", mode: "ATM", targetDelta: "0.50", dir: "PE", desc: "High-frequency downside scalps executed within strict risk and time constraints." },
+  { id: "NIFTY_ORB_BULLISH_5M_ITM", name: "NIFTY Opening Range Momentum CE", index: "NIFTY 50", tf: "5M", mode: "High-Conviction ITM", dir: "CE", profile: "Opening Breakout Alpha", desc: "Captures morning opening expansion following initial price discovery with macro trend filter alignment." },
+  { id: "NIFTY_ORB_BEARISH_5M_ITM", name: "NIFTY Opening Range Breakdown PE", index: "NIFTY 50", tf: "5M", mode: "High-Conviction ITM", dir: "PE", profile: "Opening Breakdown Alpha", desc: "Executes directional downside breakdowns on expanding negative order flow velocity." },
+  { id: "NIFTY_EMA_BOUNCE_5M_ITM", name: "NIFTY Dynamic Support Pullback CE", index: "NIFTY 50", tf: "5M", mode: "High-Conviction ITM", dir: "CE", profile: "Trend Continuation", desc: "Enters high-probability trend continuation pullbacks testing institutional dynamic support levels." },
+  { id: "NIFTY_EMA_REJECTION_5M_ITM", name: "NIFTY Dynamic Resistance Rejection PE", index: "NIFTY 50", tf: "5M", mode: "High-Conviction ITM", dir: "PE", profile: "Trend Continuation", desc: "Capitalizes on overhead resistance rejections aligned with higher-timeframe bearish momentum." },
+  { id: "NIFTY_HEIKIN_ASHI_BULLISH_5M_ITM", name: "NIFTY Directional Trend Pulse CE", index: "NIFTY 50", tf: "5M", mode: "High-Conviction ITM", dir: "CE", profile: "Smoothed Trend Riding", desc: "Smoothed noise-filtered trend-following model capturing multi-candle directional thrusts." },
+  { id: "NIFTY_HEIKIN_ASHI_BEARISH_5M_ITM", name: "NIFTY Directional Trend Pulse PE", index: "NIFTY 50", tf: "5M", mode: "High-Conviction ITM", dir: "PE", profile: "Smoothed Trend Riding", desc: "Rides sustained downward momentum pulses with zero-shadow candle confirmation." },
+  { id: "NIFTY_STOCHASTIC_BOUNCE_5M_ITM", name: "NIFTY Oversold Exhaustion Reversal CE", index: "NIFTY 50", tf: "5M", mode: "High-Conviction ITM", dir: "CE", profile: "Mean-Reversion Sweep", desc: "Exploits short-term oversold exhaustion bounces within primary uptrend regimes." },
+  { id: "NIFTY_STOCHASTIC_REJECTION_5M_ITM", name: "NIFTY Overbought Exhaustion Reversal PE", index: "NIFTY 50", tf: "5M", mode: "High-Conviction ITM", dir: "PE", profile: "Mean-Reversion Sweep", desc: "Captures rapid mean-reversion rejections from extended overbought supply zones." },
+  { id: "NIFTY_1M_SCALP_CE", name: "NIFTY High-Velocity Micro Scalp CE", index: "NIFTY 50", tf: "1M", mode: "High-Frequency ATM", dir: "CE", profile: "Sub-Minute Momentum", desc: "Sub-minute momentum scalping engine exploiting instantaneous tick liquidity bursts." },
+  { id: "NIFTY_1M_SCALP_PE", name: "NIFTY High-Velocity Micro Scalp PE", index: "NIFTY 50", tf: "1M", mode: "High-Frequency ATM", dir: "PE", profile: "Sub-Minute Momentum", desc: "High-frequency downside scalps executed within strict risk and time constraints." },
 
-  { id: "SENSEX_ORB_BULLISH_5M_ITM", name: "SENSEX Index Breakout Expansion CE", index: "SENSEX", tf: "5M", mode: "ITM", targetDelta: "0.62", dir: "CE", desc: "High-velocity breakout model calibrated for BSE SENSEX 100-point strike spacing." },
-  { id: "SENSEX_ORB_BEARISH_5M_ITM", name: "SENSEX Index Breakdown Expansion PE", index: "SENSEX", tf: "5M", mode: "ITM", targetDelta: "0.62", dir: "PE", desc: "Captures rapid morning panic breakdowns on 30-share heavyweight index components." },
-  { id: "SENSEX_EMA_BOUNCE_5M_ITM", name: "SENSEX Structural Support Pullback CE", index: "SENSEX", tf: "5M", mode: "ITM", targetDelta: "0.60", dir: "CE", desc: "Systematic pullback entries at structural moving average confluence zones." },
-  { id: "SENSEX_EMA_REJECTION_5M_ITM", name: "SENSEX Structural Resistance Rejection PE", index: "SENSEX", tf: "5M", mode: "ITM", targetDelta: "0.60", dir: "PE", desc: "Downside rejection execution testing downward-sloping institutional resistance." },
-  { id: "SENSEX_HEIKIN_ASHI_BULLISH_5M_ITM", name: "SENSEX Smoothed Trend Flow CE", index: "SENSEX", tf: "5M", mode: "ITM", targetDelta: "0.64", dir: "CE", desc: "Filters erratic intraday wicks to lock onto institutional multi-bar trend runs." },
-  { id: "SENSEX_HEIKIN_ASHI_BEARISH_5M_ITM", name: "SENSEX Smoothed Trend Flow PE", index: "SENSEX", tf: "5M", mode: "ITM", targetDelta: "0.64", dir: "PE", desc: "Bearish trend extension model with automated stepped trailing profit locks." },
-  { id: "SENSEX_STOCHASTIC_BOUNCE_5M_ITM", name: "SENSEX Liquidity Sweep Reversal CE", index: "SENSEX", tf: "5M", mode: "ITM", targetDelta: "0.58", dir: "CE", desc: "Trades sharp liquidity sweep reversals from extreme oversold conditions." },
-  { id: "SENSEX_STOCHASTIC_REJECTION_5M_ITM", name: "SENSEX Liquidity Sweep Rejection PE", index: "SENSEX", tf: "5M", mode: "ITM", targetDelta: "0.58", dir: "PE", desc: "Reversal model executing on false breakouts at session resistance." },
-  { id: "SENSEX_1M_SCALP_CE", name: "SENSEX High-Frequency Micro Scalp CE", index: "SENSEX", tf: "1M", mode: "ATM", targetDelta: "0.50", dir: "CE", desc: "Rapid ATM scalp capture on explosive 1-minute volume surges." },
-  { id: "SENSEX_1M_SCALP_PE", name: "SENSEX High-Frequency Micro Scalp PE", index: "SENSEX", tf: "1M", mode: "ATM", targetDelta: "0.50", dir: "PE", desc: "Fast-reacting ATM PE scalp with deterministic stop loss guardrails." },
-  { id: "SENSEX_ATM_VOLATILITY_EXPANSION", name: "SENSEX Volatility Surge Model", index: "SENSEX", tf: "1M", mode: "ATM", targetDelta: "0.52", dir: "CE / PE", desc: "Captures sudden expansion in implied volatility around macroeconomic events." }
+  { id: "SENSEX_ORB_BULLISH_5M_ITM", name: "SENSEX Index Breakout Expansion CE", index: "SENSEX", tf: "5M", mode: "High-Conviction ITM", dir: "CE", profile: "Opening Breakout Alpha", desc: "High-velocity breakout model calibrated for BSE SENSEX 100-point strike spacing." },
+  { id: "SENSEX_ORB_BEARISH_5M_ITM", name: "SENSEX Index Breakdown Expansion PE", index: "SENSEX", tf: "5M", mode: "High-Conviction ITM", dir: "PE", profile: "Opening Breakdown Alpha", desc: "Captures rapid morning panic breakdowns on 30-share heavyweight index components." },
+  { id: "SENSEX_EMA_BOUNCE_5M_ITM", name: "SENSEX Structural Support Pullback CE", index: "SENSEX", tf: "5M", mode: "High-Conviction ITM", dir: "CE", profile: "Trend Continuation", desc: "Systematic pullback entries at structural moving average confluence zones." },
+  { id: "SENSEX_EMA_REJECTION_5M_ITM", name: "SENSEX Structural Resistance Rejection PE", index: "SENSEX", tf: "5M", mode: "High-Conviction ITM", dir: "PE", profile: "Trend Continuation", desc: "Downside rejection execution testing downward-sloping institutional resistance." },
+  { id: "SENSEX_HEIKIN_ASHI_BULLISH_5M_ITM", name: "SENSEX Smoothed Trend Flow CE", index: "SENSEX", tf: "5M", mode: "High-Conviction ITM", dir: "CE", profile: "Smoothed Trend Riding", desc: "Filters erratic intraday wicks to lock onto institutional multi-bar trend runs." },
+  { id: "SENSEX_HEIKIN_ASHI_BEARISH_5M_ITM", name: "SENSEX Smoothed Trend Flow PE", index: "SENSEX", tf: "5M", mode: "High-Conviction ITM", dir: "PE", profile: "Smoothed Trend Riding", desc: "Bearish trend extension model with automated stepped trailing profit locks." },
+  { id: "SENSEX_STOCHASTIC_BOUNCE_5M_ITM", name: "SENSEX Liquidity Sweep Reversal CE", index: "SENSEX", tf: "5M", mode: "High-Conviction ITM", dir: "CE", profile: "Mean-Reversion Sweep", desc: "Trades sharp liquidity sweep reversals from extreme oversold conditions." },
+  { id: "SENSEX_STOCHASTIC_REJECTION_5M_ITM", name: "SENSEX Liquidity Sweep Rejection PE", index: "SENSEX", tf: "5M", mode: "High-Conviction ITM", dir: "PE", profile: "Mean-Reversion Sweep", desc: "Reversal model executing on false breakouts at session resistance." },
+  { id: "SENSEX_1M_SCALP_CE", name: "SENSEX High-Frequency Micro Scalp CE", index: "SENSEX", tf: "1M", mode: "High-Frequency ATM", dir: "CE", profile: "Sub-Minute Momentum", desc: "Rapid ATM scalp capture on explosive 1-minute volume surges." },
+  { id: "SENSEX_1M_SCALP_PE", name: "SENSEX High-Frequency Micro Scalp PE", index: "SENSEX", tf: "1M", mode: "High-Frequency ATM", dir: "PE", profile: "Sub-Minute Momentum", desc: "Fast-reacting ATM PE scalp with deterministic stop loss guardrails." },
+  { id: "SENSEX_ATM_VOLATILITY_EXPANSION", name: "SENSEX Volatility Surge Model", index: "SENSEX", tf: "1M", mode: "High-Frequency ATM", dir: "CE / PE", profile: "Volatility Expansion", desc: "Captures sudden expansion in implied volatility around macroeconomic events." }
 ];
 
 // Interactive Market Regimes Simulation Scenarios
@@ -44,11 +44,11 @@ const MARKET_REGIMES = [
     subtitle: "High Conviction Opening Momentum",
     tag: "Volatile Expansion",
     color: "from-cyan-500/20 to-blue-500/10 border-cyan-500/30 text-cyan-400",
-    strikeDelta: "Δ ≈ 0.65 ITM (+1 Strike)",
-    activeModels: "5M High-Conviction ORB",
-    riskStatus: "Initial -20% Stop Loss Active",
+    strikeDelta: "Dynamic Delta Targeting (Deep ITM Alpha)",
+    activeModels: "5M High-Conviction Opening Breakouts",
+    riskStatus: "Initial Stop Loss Protection Active",
     aiBriefing: "08:50 AM Pre-Market Catalyst detected positive GIFT Nifty delta (+85 pts) with banking sector accumulation.",
-    expectedPoints: "+35 to +50 pts Target",
+    expectedPoints: "High-Velocity Directional Alpha",
   },
   {
     id: "midday_chop",
@@ -56,23 +56,23 @@ const MARKET_REGIMES = [
     subtitle: "Sideways Liquidity Protection",
     tag: "Theta Shield Active",
     color: "from-amber-500/20 to-yellow-500/10 border-amber-500/30 text-amber-400",
-    strikeDelta: "Δ ≈ 0.50 ATM (Cooldown)",
-    activeModels: "Exhaustion & 1M Scalps",
-    riskStatus: "120-Min Max Hold Limit Enforced",
+    strikeDelta: "Dynamic ATM Micro-Scalping",
+    activeModels: "Exhaustion Reversals & 1M Scalps",
+    riskStatus: "120-Minute Holding Limit Enforced",
     aiBriefing: "Market volume contracted below 30-day median; false breakout suppression filter active.",
-    expectedPoints: "+15 to +25 pts Scalp",
+    expectedPoints: "Controlled Micro Scalps",
   },
   {
     id: "trend_ramp",
     title: "13:30–15:15 Afternoon Trend",
-    subtitle: "Stepped TSL Profit Lock Ramp",
+    subtitle: "Stepped Profit Ratchet Ramp",
     tag: "Multi-Tier Ratchet",
     color: "from-emerald-500/20 to-teal-500/10 border-emerald-500/30 text-emerald-400",
-    strikeDelta: "Δ ≈ 0.62 ITM (Trend Pulse)",
-    activeModels: "5M Dynamic Trend & Heikin-Ashi",
-    riskStatus: "+40 pt Gain → +20 pt Profit Locked",
+    strikeDelta: "Delta-Optimized Trend Tracking",
+    activeModels: "5M Dynamic Trend & Smoothed Flow",
+    riskStatus: "Multi-Tier Profit Lock Ratchet Active",
     aiBriefing: "Heavy institutional buying across Nifty 50 constituents driving continuation into session highs.",
-    expectedPoints: "+50 to +75 pts Trend",
+    expectedPoints: "Extended Multi-Bar Trend Expansion",
   },
   {
     id: "expiry_dynamics",
@@ -80,11 +80,11 @@ const MARKET_REGIMES = [
     subtitle: "Tuesday (NIFTY) / Thursday (SENSEX)",
     tag: "Gamma Acceleration",
     color: "from-purple-500/20 to-pink-500/10 border-purple-500/30 text-purple-400",
-    strikeDelta: "DTE < 0.25 (Delta Decay Compensated)",
+    strikeDelta: "Expiry Time-Decay Calibration",
     activeModels: "Dynamic Strike Offset Engine",
-    riskStatus: "₹5,000 Hard Loss Breaker Primed",
+    riskStatus: "Hard Loss Circuit Breaker Primed",
     aiBriefing: "15:35 IST AI Post-Market Journal evaluates execution discipline and statutory slippage.",
-    expectedPoints: "+30 to +60 pts Fast Alpha",
+    expectedPoints: "Sub-Second Systematic Execution",
   }
 ];
 
@@ -92,17 +92,17 @@ const MARKET_REGIMES = [
 const ARCH_PILLARS = [
   {
     title: "Delta-Optimized Strike Engine",
-    badge: "Greeks Calculus",
-    short: "Calculates Black-Scholes Greeks dynamically, targeting contracts with Delta ≈ 0.60–0.65 for rapid point velocity.",
-    details: "Unlike basic ATM simulators, NUKEBOX evaluates real-time Black-Scholes Greeks (Delta, Gamma, Theta, Vega) across all active strikes. It systematically targets Delta ≈ 0.60 to ensure optimal point velocity while hedging against time-decay acceleration.",
+    badge: "Greeks Modeling",
+    short: "Calculates Black-Scholes Greeks dynamically, targeting high-velocity contracts for rapid point acceleration.",
+    details: "Unlike basic ATM simulators, NUKEBOX evaluates real-time Black-Scholes Greeks (Delta, Gamma, Theta, Vega) across all active strikes. It systematically targets Delta-optimized contracts to ensure rapid point velocity while hedging against time-decay acceleration.",
     icon: Cpu,
     color: "text-cyan-400 bg-cyan-500/10 border-cyan-500/20"
   },
   {
     title: "Multi-Tier Stepped TSL",
     badge: "Profit Protection",
-    short: "Automated ratchet stops: +20 pt locks break-even, +40 pt locks +20 pt, and +60 pt locks +40 pt profit without emotional drag.",
-    details: "NUKEBOX replaces emotional discretionary trailing with a multi-stage deterministic ratchet. At +20 pts gain, Stop Loss is locked to entry (₹0 risk). At +40 pts gain, +20 pts is locked in. At +60 pts gain, +40 pts is guaranteed.",
+    short: "Automated ratchet stops locking in profit milestones without discretionary interference.",
+    details: "NUKEBOX replaces emotional discretionary trailing with a multi-stage deterministic ratchet. As option points expand, the Stop Loss is systematically raised at progressive profit milestones to guarantee capital protection.",
     icon: ShieldCheck,
     color: "text-purple-400 bg-purple-500/10 border-purple-500/20"
   },
@@ -115,10 +115,10 @@ const ARCH_PILLARS = [
     color: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20"
   },
   {
-    title: "₹5,000 Hard Loss Circuit Breaker",
-    badge: "Risk Killswitch",
-    short: "Strict intraday capital protection halts trading automatically if total daily drawdown hits the ₹5,000 risk threshold.",
-    details: "Capital preservation is paramount. If the cumulative realized or unrealized drawdown reaches ₹5,000 in a single trading session, the risk engine immediately halts all strategy signal generation for the day.",
+    title: "Hard Loss Circuit Breaker",
+    badge: "Capital Preservation",
+    short: "Strict intraday capital protection halts trading automatically if total daily drawdown reaches the risk limit.",
+    details: "Capital preservation is paramount. If the cumulative realized or unrealized drawdown reaches the configured daily risk threshold in a single trading session, the risk engine immediately halts all strategy signal generation for the day.",
     icon: Zap,
     color: "text-rose-400 bg-rose-500/10 border-rose-500/20"
   },
@@ -155,13 +155,20 @@ export function LandingScreen({ onLoginClick }) {
   const [lotQty, setLotQty] = useState(65);
   const [marketData, setMarketData] = useState(null);
 
+  // Fetch and auto-refresh live market summary
   useEffect(() => {
-    fetch(`${API_BASE}/api/public/market-summary`)
-      .then((r) => (r.ok ? r.json() : null))
-      .then((d) => {
-        if (d) setMarketData(d);
-      })
-      .catch(() => {});
+    function loadMarketData() {
+      fetch(`${API_BASE}/api/public/market-summary`)
+        .then((r) => (r.ok ? r.json() : null))
+        .then((d) => {
+          if (d) setMarketData(d);
+        })
+        .catch(() => {});
+    }
+
+    loadMarketData();
+    const timer = setInterval(loadMarketData, 8000);
+    return () => clearInterval(timer);
   }, []);
 
   // Indian Regulatory Tax Schedule Math
@@ -214,7 +221,7 @@ export function LandingScreen({ onLoginClick }) {
         </div>
       </header>
 
-      {/* Hero Section with Cinematic Workstation Backdrop */}
+      {/* Hero Section with Workstation Backdrop */}
       <section className="relative overflow-hidden pt-16 pb-20 px-4 sm:px-8 border-b border-subtle/40">
         <div
           className="absolute inset-0 bg-cover bg-center opacity-25 mix-blend-luminosity pointer-events-none"
@@ -229,7 +236,7 @@ export function LandingScreen({ onLoginClick }) {
             className="inline-flex items-center gap-2 rounded-full border border-accent/30 bg-accent/10 px-4 py-1.5 text-xs font-bold text-accent shadow-sm backdrop-blur-md"
           >
             <Sparkles className="h-3.5 w-3.5" />
-            <span>Autonomous Options Quantitative Derivatives &amp; Risk Platform</span>
+            <span>Autonomous Quantitative Options Execution &amp; Risk Modeling Sandbox</span>
           </motion.div>
 
           <motion.h1
@@ -240,7 +247,7 @@ export function LandingScreen({ onLoginClick }) {
           >
             Precision Algorithmic Options <br />
             <span className="bg-gradient-to-r from-cyan-400 via-indigo-400 to-purple-400 bg-clip-text text-transparent">
-              Engineered by PARTHIBAKANNAN S
+              Autonomous Quantitative Derivatives Engine
             </span>
           </motion.h1>
 
@@ -250,7 +257,7 @@ export function LandingScreen({ onLoginClick }) {
             transition={{ delay: 0.2 }}
             className="mx-auto max-w-2xl text-sm sm:text-base text-gray-300 leading-relaxed font-sans"
           >
-            NUKEBOX is an institutional quantitative derivatives sandbox built for NSE NIFTY 50 and BSE SENSEX options. Featuring 21 autonomous execution models, dynamic Greeks Delta strike selection (Delta ≈ 0.60), multi-tier stepped profit locks, and dual AI market debriefs.
+            NUKEBOX is an institutional quantitative derivatives sandbox built for NSE NIFTY 50 and BSE SENSEX options. Engineered with 21 autonomous execution models, dynamic Greeks Delta strike selection, multi-tier stepped profit locks, and dual AI market debriefs.
           </motion.p>
 
           <motion.div
@@ -275,7 +282,7 @@ export function LandingScreen({ onLoginClick }) {
             </a>
           </motion.div>
 
-          {/* Calibrated Live Ticker Strip */}
+          {/* Auto-Updating Live Ticker Strip */}
           <div className="pt-8 max-w-3xl mx-auto">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 rounded-2xl border border-subtle bg-surface/80 backdrop-blur-xl shadow-md">
               {/* NIFTY Ticker */}
@@ -362,33 +369,33 @@ export function LandingScreen({ onLoginClick }) {
               <div className="flex items-center gap-2 rounded-2xl bg-surface/90 px-4 py-2 border border-subtle shadow-sm">
                 <Target className="h-4 w-4 text-emerald-400" />
                 <div className="text-left">
-                  <span className="text-[9px] uppercase font-bold text-faint block">Target Velocity</span>
+                  <span className="text-[9px] uppercase font-bold text-faint block">Performance Objective</span>
                   <span className="text-xs font-mono font-black text-emerald-400">{activeRegime.expectedPoints}</span>
                 </div>
               </div>
             </div>
 
-            {/* 4 Telemetry Metrics */}
+            {/* 3 Telemetry Metrics */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="rounded-2xl bg-surface/90 border border-subtle p-4 space-y-1">
                 <span className="text-[10px] uppercase font-bold text-faint flex items-center gap-1.5">
                   <Cpu className="h-3.5 w-3.5 text-accent" /> Strike Selection Math
                 </span>
-                <div className="text-sm font-mono font-bold text-white">{activeRegime.strikeDelta}</div>
+                <div className="text-sm font-bold text-white">{activeRegime.strikeDelta}</div>
               </div>
 
               <div className="rounded-2xl bg-surface/90 border border-subtle p-4 space-y-1">
                 <span className="text-[10px] uppercase font-bold text-faint flex items-center gap-1.5">
                   <Layers className="h-3.5 w-3.5 text-purple-400" /> Active Strategy Models
                 </span>
-                <div className="text-sm font-mono font-bold text-white">{activeRegime.activeModels}</div>
+                <div className="text-sm font-bold text-white">{activeRegime.activeModels}</div>
               </div>
 
               <div className="rounded-2xl bg-surface/90 border border-subtle p-4 space-y-1">
                 <span className="text-[10px] uppercase font-bold text-faint flex items-center gap-1.5">
                   <ShieldCheck className="h-3.5 w-3.5 text-emerald-400" /> Risk Guardrail Protocol
                 </span>
-                <div className="text-sm font-mono font-bold text-emerald-400">{activeRegime.riskStatus}</div>
+                <div className="text-sm font-bold text-emerald-400">{activeRegime.riskStatus}</div>
               </div>
             </div>
 
@@ -440,7 +447,7 @@ export function LandingScreen({ onLoginClick }) {
         </div>
       </section>
 
-      {/* 21-Strategy Fleet Overview (All Models Displayed with Categories) */}
+      {/* 21-Strategy Fleet Overview (All Models Displayed with Clean Categories) */}
       <section id="strategies" className="py-16 px-4 sm:px-8 max-w-7xl mx-auto space-y-8">
         <div className="text-center space-y-2">
           <div className="inline-flex items-center gap-1.5 rounded-full bg-accent/10 px-3.5 py-1 text-xs font-bold text-accent border border-accent/20">
@@ -500,8 +507,8 @@ export function LandingScreen({ onLoginClick }) {
                 <h3 className="text-sm font-bold text-white tracking-tight">{s.name}</h3>
                 <p className="text-xs text-gray-400 leading-relaxed font-sans">{s.desc}</p>
                 <div className="pt-2 border-t border-subtle/60 flex items-center justify-between text-[10px] font-mono text-faint">
-                  <span>Target Velocity: <strong className="text-emerald-400">Δ ≈ {s.targetDelta}</strong></span>
-                  <span>Risk: <strong className="text-rose-400">20% SL</strong></span>
+                  <span>Strategy Profile: <strong className="text-cyan-400">{s.profile}</strong></span>
+                  <span>Execution: <strong className="text-emerald-400">Automated</strong></span>
                 </div>
               </div>
             );
@@ -624,7 +631,7 @@ export function LandingScreen({ onLoginClick }) {
             >
               <button
                 onClick={() => setSelectedPillar(null)}
-                className="absolute top-5 right-5 rounded-full p-2 text-faint hover:bg-surface2 hover:text-primary transition"
+                className="absolute top-5 right-5 rounded-full p-2 text-faint hover:bg-surface2 hover:text-primary transition cursor-pointer"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -646,7 +653,7 @@ export function LandingScreen({ onLoginClick }) {
               <div className="pt-4 border-t border-subtle flex justify-end">
                 <button
                   onClick={() => setSelectedPillar(null)}
-                  className="rounded-xl bg-surface2 px-4 py-2 text-xs font-bold text-white hover:bg-surface3 transition"
+                  className="rounded-xl bg-surface2 px-4 py-2 text-xs font-bold text-white hover:bg-surface3 transition cursor-pointer"
                 >
                   Close Specification
                 </button>
