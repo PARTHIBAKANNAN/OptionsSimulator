@@ -1,8 +1,9 @@
 import { Fragment, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { ChevronDown, BarChart2 } from "lucide-react";
+import { ChevronDown, BarChart2, BookOpen } from "lucide-react";
 import { Badge } from "./ui/Badge";
 import { StrategyAnalyticsModal } from "./StrategyAnalyticsModal";
+import { StrategyDetailModal } from "./StrategyDetailModal";
 
 function fmtRupee(v) {
   if (v == null) return "—";
@@ -49,6 +50,7 @@ function CapitalTile({ label, value, valueClass = "" }) {
 export function StrategyRankTable({ title, rows, dailyBreakdown = {}, capitalRequirements = {} }) {
   const [expanded, setExpanded] = useState(null);
   const [activeModalStrategy, setActiveModalStrategy] = useState(null);
+  const [activeSpecStrategy, setActiveSpecStrategy] = useState(null);
   const ranked = [...rows].sort((a, b) => (b.profit_factor - a.profit_factor) || (b.total_pnl - a.total_pnl));
 
   return (
@@ -109,6 +111,13 @@ export function StrategyRankTable({ title, rows, dailyBreakdown = {}, capitalReq
                     <td className="py-2.5 px-3 text-right">
                       <div className="flex items-center justify-end gap-1.5">
                         <button
+                          onClick={() => setActiveSpecStrategy(r.strategy)}
+                          title="View Quantitative Strategy Formulas & Specifications"
+                          className="flex items-center gap-1 rounded bg-indigo-500/15 text-indigo-400 border border-indigo-500/30 px-2 py-1 text-[11px] font-sans font-bold hover:bg-indigo-500 hover:text-white transition shadow-sm"
+                        >
+                          <BookOpen className="h-3 w-3" /> Specs
+                        </button>
+                        <button
                           onClick={() => setActiveModalStrategy(r.strategy)}
                           className="flex items-center gap-1 rounded bg-accent px-2 py-1 text-[11px] font-sans font-medium text-white hover:bg-accent/90 transition shadow-sm"
                         >
@@ -163,6 +172,10 @@ export function StrategyRankTable({ title, rows, dailyBreakdown = {}, capitalReq
 
       {activeModalStrategy && (
         <StrategyAnalyticsModal strategy={activeModalStrategy} mode="backtest" onClose={() => setActiveModalStrategy(null)} />
+      )}
+
+      {activeSpecStrategy && (
+        <StrategyDetailModal strategy={activeSpecStrategy} onClose={() => setActiveSpecStrategy(null)} />
       )}
     </div>
   );

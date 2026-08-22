@@ -7,6 +7,7 @@ import { LiveDashboardScreen } from "./screens/LiveDashboardScreen";
 import { BacktestReportScreen } from "./screens/BacktestReportScreen";
 import { PnlSummaryScreen } from "./screens/PnlSummaryScreen";
 import { StrategyLabScreen } from "./screens/StrategyLabScreen";
+import { LandingScreen } from "./screens/LandingScreen";
 import { useMarketStream } from "./hooks/useMarketStream";
 import { api } from "./hooks/usePaperTradingSync";
 import { supabase } from "./lib/supabaseClient";
@@ -52,6 +53,7 @@ function Dashboard({ user, onLogout }) {
 
 function AppInner() {
   const [user, setUser] = useState(undefined); // undefined = checking session, null = anonymous
+  const [showLoginModal, setShowLoginModal] = useState(false);
 
   useEffect(() => {
     api("/api/auth/me").then(setUser).catch(() => setUser(null));
@@ -64,11 +66,26 @@ function AppInner() {
   }
 
   if (user === undefined) {
-    return <div className="flex min-h-screen items-center justify-center text-faint">Loading…</div>;
+    return <div className="flex min-h-screen items-center justify-center text-faint">Loading OptionsSimulator…</div>;
   }
+
   if (user === null) {
-    return <Login onLoggedIn={setUser} />;
+    return (
+      <>
+        <LandingScreen onLoginClick={() => setShowLoginModal(true)} />
+        {showLoginModal && (
+          <Login
+            onLoggedIn={(u) => {
+              setUser(u);
+              setShowLoginModal(false);
+            }}
+            onClose={() => setShowLoginModal(false)}
+          />
+        )}
+      </>
+    );
   }
+
   return <Dashboard user={user} onLogout={handleLogout} />;
 }
 
@@ -79,3 +96,4 @@ export default function App() {
     </ThemeProvider>
   );
 }
+

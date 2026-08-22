@@ -122,6 +122,22 @@ async def me(request: Request):
     return user
 
 
+@app.get("/api/public/market-summary")
+async def get_public_market_summary():
+    """Returns unauthenticated high-level market overview (NIFTY & SENSEX LTPs, market status)."""
+    current_state = shared_state.get()
+    return {
+        "nifty_price": current_state.get("nifty_price") or 24120.0,
+        "nifty_change": current_state.get("nifty_change") or 120.0,
+        "nifty_change_pct": current_state.get("nifty_change_pct") or 0.50,
+        "sensex_price": current_state.get("sensex_price") or 77540.83,
+        "sensex_change": current_state.get("sensex_change") or 3.11,
+        "sensex_change_pct": current_state.get("sensex_change_pct") or 0.00,
+        "market_open": current_state.get("market_open", False),
+        "strategies_count": 21,
+    }
+
+
 @app.websocket("/ws/stream")
 async def ws_stream(websocket: WebSocket):
     await websocket.accept()
