@@ -3,13 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>OptionsSimulator — End-to-End System Architecture</title>
+  <title>OptionsSimulator — Master Technical Architecture</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <!-- Tailwind Play CDN for styling -->
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,600;0,800;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Mermaid.js for interactive architecture diagrams -->
   <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
   <script>
     tailwind.config = {
@@ -21,15 +19,15 @@
             mono: ['"JetBrains Mono"', 'monospace'],
           },
           colors: {
-            bgDark: '#0b0f19',
-            surface: '#111827',
-            surface2: '#1f293d',
-            surface3: '#28354d',
+            bgDark: '#080c14',
+            surface: '#0f172a',
+            surface2: '#1e293b',
+            surface3: '#334155',
             accent: '#3b82f6',
             accentGlow: '#60a5fa',
             bull: '#10b981',
             bear: '#ef4444',
-            subtle: '#374151',
+            subtle: '#334155',
           }
         }
       }
@@ -38,124 +36,131 @@
       startOnLoad: true,
       theme: 'dark',
       themeVariables: {
-        primaryColor: '#1f293d',
-        primaryTextColor: '#f3f4f6',
+        primaryColor: '#1e293b',
+        primaryTextColor: '#f8fafc',
         primaryBorderColor: '#3b82f6',
         lineColor: '#60a5fa',
-        secondaryColor: '#111827',
-        tertiaryColor: '#0b0f19'
+        secondaryColor: '#0f172a',
+        tertiaryColor: '#080c14'
       }
     });
   </script>
   <style>
     body {
-      background-color: #0b0f19;
-      color: #f3f4f6;
+      background-color: #080c14;
+      color: #f8fafc;
       font-family: 'Plus Jakarta Sans', sans-serif;
     }
     .glass-card {
-      background: rgba(17, 24, 39, 0.75);
-      backdrop-filter: blur(12px);
-      border: 1px solid rgba(55, 65, 81, 0.6);
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(51, 65, 85, 0.6);
     }
     .tab-btn.active {
-      background: rgba(59, 130, 246, 0.15);
+      background: rgba(59, 130, 246, 0.18);
       color: #60a5fa;
-      border-color: rgba(59, 130, 246, 0.4);
+      border-color: rgba(59, 130, 246, 0.5);
+      box-shadow: 0 0 15px rgba(59, 130, 246, 0.2);
     }
     .mermaid svg {
       max-width: 100% !important;
       height: auto !important;
     }
+    pre code {
+      font-family: 'JetBrains Mono', monospace;
+    }
   </style>
 </head>
 <body class="min-h-screen antialiased selection:bg-accent selection:text-white">
 
-  <!-- Top Navigation Header -->
-  <header class="sticky top-0 z-50 border-b border-subtle/80 bg-bgDark/80 backdrop-blur-xl px-6 py-4">
+  <!-- Header Bar -->
+  <header class="sticky top-0 z-50 border-b border-subtle/80 bg-bgDark/85 backdrop-blur-xl px-6 py-4">
     <div class="max-w-7xl mx-auto flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-accent/20 border border-accent/40 text-accent font-black text-xl">
+      <div class="flex items-center gap-3.5">
+        <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white font-black text-xl shadow-lg shadow-blue-500/25 border border-blue-400/30">
           OS
         </div>
         <div>
-          <h1 class="text-base font-extrabold text-white tracking-tight flex items-center gap-2">
-            OptionsSimulator
-            <span class="rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-[10px] font-bold text-emerald-400 border border-emerald-500/30">
-              v2.5 Production Architecture
+          <div class="flex items-center gap-2">
+            <h1 class="text-base font-extrabold text-white tracking-tight">OptionsSimulator</h1>
+            <span class="rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-[10px] font-extrabold text-emerald-400 border border-emerald-500/30 font-mono">
+              v2.5 Institutional
             </span>
-          </h1>
-          <p class="text-xs text-gray-400">High-Frequency Quant Options Simulation & AI Intelligence Platform</p>
+          </div>
+          <p class="text-xs text-gray-400 font-medium">NSE NIFTY 50 &amp; BSE SENSEX Quantitative Derivatives Architecture</p>
         </div>
       </div>
       <div class="flex items-center gap-3">
-        <span class="hidden md:inline-flex items-center gap-1.5 rounded-lg bg-surface2 px-3 py-1.5 font-mono text-xs text-gray-300 border border-subtle">
+        <span class="hidden md:inline-flex items-center gap-2 rounded-xl bg-surface2 px-3.5 py-1.5 font-mono text-xs text-gray-300 border border-subtle">
           <span class="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
-          NSE NIFTY 50 & BSE SENSEX
+          21 Strategies Live
         </span>
-        <a href="#topology" class="rounded-lg bg-accent px-4 py-1.5 text-xs font-bold text-white hover:bg-accentGlow transition shadow-lg shadow-accent/20">
-          Architecture Blueprint
+        <a href="#topology" class="rounded-xl bg-accent px-4 py-2 text-xs font-bold text-white hover:bg-accentGlow transition shadow-lg shadow-accent/25">
+          System Blueprint
         </a>
       </div>
     </div>
   </header>
 
-  <!-- Hero KPI Ribbon -->
+  <!-- Hero Metric Tiles -->
   <section class="max-w-7xl mx-auto px-6 pt-8 pb-4">
-    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-      <div class="glass-card rounded-2xl p-4">
-        <div class="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Trading Strategies</div>
-        <div class="font-mono text-xl font-extrabold text-white mt-1">21 Active</div>
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5">
+      <div class="glass-card rounded-2xl p-4 border border-subtle/60">
+        <div class="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider">Strategy Fleet</div>
+        <div class="font-mono text-xl font-extrabold text-white mt-1">21 Models</div>
         <div class="text-[10px] text-emerald-400 font-semibold mt-0.5">10 NIFTY • 11 SENSEX</div>
       </div>
-      <div class="glass-card rounded-2xl p-4">
-        <div class="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Execution Latency</div>
-        <div class="font-mono text-xl font-extrabold text-white mt-1">&lt; 5 ms</div>
-        <div class="text-[10px] text-cyan-400 font-semibold mt-0.5">Sub-Second WebSocket</div>
+      <div class="glass-card rounded-2xl p-4 border border-subtle/60">
+        <div class="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider">Tick Delta Math</div>
+        <div class="font-mono text-xl font-extrabold text-white mt-1">Sub-Second</div>
+        <div class="text-[10px] text-cyan-400 font-semibold mt-0.5">Signed CVD Delta</div>
       </div>
-      <div class="glass-card rounded-2xl p-4">
-        <div class="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Risk Protection</div>
+      <div class="glass-card rounded-2xl p-4 border border-subtle/60">
+        <div class="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider">Profit Protection</div>
         <div class="font-mono text-xl font-extrabold text-white mt-1">Stepped TSL</div>
         <div class="text-[10px] text-indigo-400 font-semibold mt-0.5">+20 / +40 / +60 pt Lock</div>
       </div>
-      <div class="glass-card rounded-2xl p-4">
-        <div class="text-[11px] font-bold text-gray-400 uppercase tracking-wider">AI Pre-Market Engine</div>
+      <div class="glass-card rounded-2xl p-4 border border-subtle/60">
+        <div class="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider">AI Catalyst Engine</div>
         <div class="font-mono text-xl font-extrabold text-white mt-1">Gemini 3.6</div>
-        <div class="text-[10px] text-purple-400 font-semibold mt-0.5">08:50 AM Daily Briefing</div>
+        <div class="text-[10px] text-purple-400 font-semibold mt-0.5">08:50 AM Multi-News</div>
       </div>
-      <div class="glass-card rounded-2xl p-4">
-        <div class="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Regulatory Tax Model</div>
+      <div class="glass-card rounded-2xl p-4 border border-subtle/60">
+        <div class="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider">Regulatory Tax Model</div>
         <div class="font-mono text-xl font-extrabold text-white mt-1">₹20 / order</div>
         <div class="text-[10px] text-amber-400 font-semibold mt-0.5">STT • GST • Exchange Fee</div>
       </div>
-      <div class="glass-card rounded-2xl p-4">
-        <div class="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Test Coverage</div>
+      <div class="glass-card rounded-2xl p-4 border border-subtle/60">
+        <div class="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider">Automated Tests</div>
         <div class="font-mono text-xl font-extrabold text-white mt-1">273 / 273</div>
-        <div class="text-[10px] text-emerald-400 font-semibold mt-0.5">100% Automated Pass</div>
+        <div class="text-[10px] text-emerald-400 font-semibold mt-0.5">100% Passing Suite</div>
       </div>
     </div>
   </section>
 
-  <!-- Navigation Tab Bar -->
+  <!-- Interactive Navigation Bar -->
   <div class="max-w-7xl mx-auto px-6 py-4">
     <div class="flex items-center gap-2 overflow-x-auto pb-2 border-b border-subtle">
       <button onclick="switchTab('topology')" id="tab-btn-topology" class="tab-btn active flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-bold text-gray-400 border border-transparent transition">
-        <span>📐</span> End-to-End Topology
+        <span>📐</span> 1. System Topology
       </button>
       <button onclick="switchTab('lifecycle')" id="tab-btn-lifecycle" class="tab-btn flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-bold text-gray-400 border border-transparent transition">
-        <span>⚡</span> Trade Lifecycle (08:50 - Exit)
+        <span>⚡</span> 2. Trade Lifecycle (08:50 - Exit)
+      </button>
+      <button onclick="switchTab('microstructure')" id="tab-btn-microstructure" class="tab-btn flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-bold text-gray-400 border border-transparent transition">
+        <span>📊</span> 3. Microstructure &amp; CVD
       </button>
       <button onclick="switchTab('strategies')" id="tab-btn-strategies" class="tab-btn flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-bold text-gray-400 border border-transparent transition">
-        <span>🎯</span> 21 Strategy Matrix
+        <span>🎯</span> 4. 21 Strategy Catalog
       </button>
       <button onclick="switchTab('ai')" id="tab-btn-ai" class="tab-btn flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-bold text-gray-400 border border-transparent transition">
-        <span>🤖</span> Global News & AI Pipeline
+        <span>🤖</span> 5. Global News &amp; AI Engine
       </button>
-      <button onclick="switchTab('tax')" id="tab-btn-tax" class="tab-btn flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-bold text-gray-400 border border-transparent transition">
-        <span>🧾</span> Risk & Statutory Charges
+      <button onclick="switchTab('risk')" id="tab-btn-risk" class="tab-btn flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-bold text-gray-400 border border-transparent transition">
+        <span>🛡️</span> 6. Stepped TSL &amp; Taxes
       </button>
       <button onclick="switchTab('deploy')" id="tab-btn-deploy" class="tab-btn flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-bold text-gray-400 border border-transparent transition">
-        <span>🚀</span> VM & CI/CD Pipeline
+        <span>🚀</span> 7. VM &amp; CI/CD Topology
       </button>
     </div>
   </div>
@@ -165,57 +170,60 @@
 
     <!-- 1. TOPOLOGY TAB -->
     <section id="tab-topology" class="tab-content block space-y-6">
-      <div class="glass-card rounded-2xl p-6">
+      <div class="glass-card rounded-3xl p-6 md:p-8">
         <h2 class="text-lg font-bold text-white mb-2 flex items-center gap-2">
-          <span>📐</span> Complete Architectural Flow & Component Topology
+          <span>📐</span> Complete End-to-End System Blueprint
         </h2>
         <p class="text-xs text-gray-400 mb-6 leading-relaxed">
-          The platform operates on a decoupled asynchronous architecture: sub-second market data is ingested via Fyers WebSocket feeds, evaluated through 21 quantitative strategy models, executed inside a zero-risk simulated sandbox with stepped TSL risk controls, and broadcast to the React frontend over delta-diffing WebSockets.
+          High-level interaction model showing low-latency WebSocket market ingestion, dual-index strategy evaluation, in-memory execution sandbox, and delta-diffing WebSocket broadcasting to the React client.
         </p>
 
-        <div class="mermaid rounded-xl bg-surface2/60 p-4 border border-subtle flex justify-center">
-graph TD
-    subgraph Feeds ["Market & Data Feeds"]
-        FyersWS["Fyers API v3 WebSocket<br/>(NIFTY, SENSEX, Option Strikes)"]
-        MacroFeeds["Live Macro Quote Engine<br/>(Nasdaq, Brent, GIFT Nifty, DXY, VIX)"]
-        NewsRSS["Multi-Newspaper RSS Ingestion<br/>(Reuters, ET, Mint, SEBI)"]
+        <div class="mermaid rounded-2xl bg-surface2/60 p-6 border border-subtle flex justify-center mb-8">
+flowchart TD
+    subgraph Market_Feeds ["1. Live Ingestion Feeds"]
+        F1["Fyers API v3 WebSocket<br/>(NSE:NIFTY50-INDEX, BSE:SENSEX-INDEX, Strikes)"]
+        F2["Global Macro Live Feeds (<200ms)<br/>(Nasdaq, Brent Crude, GIFT Nifty, DXY, VIX)"]
+        F3["Multi-Region Newspaper RSS Feeds<br/>(Reuters, Economic Times, LiveMint, SEBI)"]
     end
 
-    subgraph CoreEngine ["Python Quant Trading Engine (src/)"]
-        TOTP["08:50 AM TOTP Silent Auth<br/>(FyersAPIClient)"]
+    subgraph Core_Engine ["2. Python Quant Trading Engine (src/)"]
+        Auth["Fyers Daily TOTP Auth<br/>(08:50 AM IST Silent Login)"]
         DM_N["DataManager (NIFTY 50)<br/>Ticks • CVD Delta • 5M Bars"]
         DM_S["DataManager (SENSEX)<br/>Ticks • CVD Delta • 5M Bars"]
-        SE["StrategyEngine (21 Strategies)<br/>NIFTY (10) • SENSEX (11)"]
+        SE["StrategyEngine (21 Quant Strategies)<br/>NIFTY (10) • SENSEX (11)"]
         PT["PaperTrader Execution Sandbox<br/>Stepped TSL • Sizing • ₹5K Loss Breaker"]
-        TaxCalc["Indian Regulatory Charges Engine<br/>₹20 Brokerage • STT • GST • Stamp Duty"]
-        AI["Pre-Market AI Catalyst Engine<br/>Gemini 3.6 Flash Synthesis"]
+        TaxEng["Indian Regulatory Charges Engine<br/>₹20 Brokerage • STT • GST • Stamp Duty"]
+        AI_Intel["Pre-Market AI Catalyst Engine<br/>Gemini 3.6 Flash Synthesis"]
     end
 
-    subgraph Persistence ["Persistence & Database"]
-        Supabase[("PostgreSQL (Supabase)<br/>options_positions • options_trades")]
+    subgraph Persistence ["3. Persistence & State Layer"]
+        PG[("PostgreSQL Database (Supabase)<br/>options_positions • options_trades")]
         StateJSON[("Local Persistent JSON<br/>last_market_state.json • premarket_intel.json")]
     end
 
-    subgraph WebLayer ["Web Backend & Streaming (backend/)"]
+    subgraph Web_Layer ["4. FastAPI Web Backend (backend/)"]
         FastAPI["FastAPI App (Async Uvicorn)"]
-        WS_Broadcaster["WebSocket State Broadcaster<br/>(/api/ws/market - 100ms Delta Diffing)"]
-        REST["REST Routers (/api/paper, /api/backtest)"]
+        WS_Server["WebSocket State Broadcaster<br/>(/api/ws/market - 100ms Delta Diffing)"]
+        REST_API["REST Routers (/api/paper, /api/backtest)"]
     end
 
-    subgraph Presentation ["Client UI & Alerting"]
-        ReactApp["React 19 Glassmorphic Dashboard<br/>Live Trades • Candle Charts • Strategy Lab"]
+    subgraph Clients ["5. Frontend & Alerting Layer"]
+        ReactUI["React 19 + Vite Dashboard<br/>Live Trades • Candle Charts • Strategy Lab"]
         TG["Telegram Alerts Bot<br/>Morning Briefs & Trade Alerts"]
     end
 
-    FyersWS --> TOTP --> DM_N & DM_S
-    DM_N & DM_S --> SE --> PT --> TaxCalc --> Supabase
+    F1 --> Auth --> DM_N & DM_S
+    DM_N & DM_S --> SE
+    SE --> PT
+    PT --> TaxEng
+    PT --> PG
     DM_N & DM_S --> StateJSON
-    MacroFeeds & NewsRSS --> AI --> TG & StateJSON
+    F2 & F3 --> AI_Intel --> TG & StateJSON
 
     PT & DM_N & DM_S --> FastAPI
-    FastAPI --> WS_Broadcaster & REST
-    WS_Broadcaster --> ReactApp
-    REST --> ReactApp
+    FastAPI --> WS_Server & REST_API
+    WS_Server --> ReactUI
+    REST_API --> ReactUI
     PT --> TG
         </div>
       </div>
@@ -223,275 +231,313 @@ graph TD
 
     <!-- 2. TRADE LIFECYCLE TAB -->
     <section id="tab-lifecycle" class="tab-content hidden space-y-6">
-      <div class="glass-card rounded-2xl p-6">
+      <div class="glass-card rounded-3xl p-6 md:p-8">
         <h2 class="text-lg font-bold text-white mb-2 flex items-center gap-2">
-          <span>⚡</span> End-to-End Trade Lifecycle: From Login to Exit
+          <span>⚡</span> End-to-End Trade Lifecycle (08:50 AM Login to Exit)
         </h2>
         <p class="text-xs text-gray-400 mb-6">
-          Detailed breakdown of every autonomous phase executed by the engine each trading day.
+          Detailed phase-by-phase execution of the quantitative engine during each trading day.
         </p>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <!-- Step 1 -->
-          <div class="rounded-xl border border-subtle bg-surface2/50 p-4 space-y-2">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="rounded-2xl border border-subtle bg-surface2/40 p-5 space-y-2">
             <div class="flex items-center gap-2">
-              <span class="flex h-6 w-6 items-center justify-center rounded-lg bg-accent/20 text-accent font-bold text-xs">1</span>
-              <h3 class="font-bold text-sm text-white">08:50 AM — Automated Daily TOTP Login</h3>
+              <span class="flex h-7 w-7 items-center justify-center rounded-xl bg-accent/20 text-accent font-bold text-xs">1</span>
+              <h3 class="font-bold text-sm text-white">08:50 AM Silent Login</h3>
             </div>
             <p class="text-xs text-gray-300 leading-relaxed">
-              `LiveTrader.ensure_connection_state()` triggers `pyotp` silent login. It requests a fresh daily Fyers OAuth2 token, saves the session, and seeds 10 days of historical 1-minute OHLCV candles to warm up indicators before market open.
+              Automated TOTP authentication generates a fresh OAuth2 bearer token, requests 10-day historical 1-minute OHLCV candles, and warms up EMA, MACD, and RSI indicator buffers before the opening bell.
             </p>
           </div>
 
-          <!-- Step 2 -->
-          <div class="rounded-xl border border-subtle bg-surface2/50 p-4 space-y-2">
+          <div class="rounded-2xl border border-subtle bg-surface2/40 p-5 space-y-2">
             <div class="flex items-center gap-2">
-              <span class="flex h-6 w-6 items-center justify-center rounded-lg bg-purple-500/20 text-purple-400 font-bold text-xs">2</span>
-              <h3 class="font-bold text-sm text-white">08:50 AM — Pre-Market AI Catalyst Briefing</h3>
+              <span class="flex h-7 w-7 items-center justify-center rounded-xl bg-purple-500/20 text-purple-400 font-bold text-xs">2</span>
+              <h3 class="font-bold text-sm text-white">08:50 AM AI Catalyst Briefing</h3>
             </div>
             <p class="text-xs text-gray-300 leading-relaxed">
-              Concurrently fetches live quotes for Nasdaq (26,180.46), Brent Crude ($93.87), GIFT Nifty (24,329.00), VIX (11.20) and scrapes multi-newspaper RSS feeds. Feeds real context into Gemini 3.6 Flash and dispatches a morning briefing to Telegram.
+              Aggregates live Nasdaq (26,180.46), Brent Crude ($93.87), GIFT Nifty (24,329.00) and breaking newspaper headlines into Gemini 3.6 Flash. Dispatches a morning intelligence brief to Telegram.
             </p>
           </div>
 
-          <!-- Step 3 -->
-          <div class="rounded-xl border border-subtle bg-surface2/50 p-4 space-y-2">
+          <div class="rounded-2xl border border-subtle bg-surface2/40 p-5 space-y-2">
             <div class="flex items-center gap-2">
-              <span class="flex h-6 w-6 items-center justify-center rounded-lg bg-emerald-500/20 text-emerald-400 font-bold text-xs">3</span>
-              <h3 class="font-bold text-sm text-white">09:15 AM — Live Market Tick Streaming</h3>
+              <span class="flex h-7 w-7 items-center justify-center rounded-xl bg-emerald-500/20 text-emerald-400 font-bold text-xs">3</span>
+              <h3 class="font-bold text-sm text-white">09:15 AM Market Open</h3>
             </div>
             <p class="text-xs text-gray-300 leading-relaxed">
-              Subscribes to binary WebSocket feed. `DataManager` processes ticks, computes tick-level Cumulative Volume Delta (CVD), builds 1M and 5M candles, and calculates EMA 20/50, MACD, RSI, and Volatility Regime ratios in real-time.
+              Fyers WebSocket streams sub-second ticks. `DataManager` computes signed Cumulative Volume Delta (CVD), constructs 1M/5M candles, and streams live prices to browser clients via WebSockets.
             </p>
           </div>
 
-          <!-- Step 4 -->
-          <div class="rounded-xl border border-subtle bg-surface2/50 p-4 space-y-2">
+          <div class="rounded-2xl border border-subtle bg-surface2/40 p-5 space-y-2">
             <div class="flex items-center gap-2">
-              <span class="flex h-6 w-6 items-center justify-center rounded-lg bg-amber-500/20 text-amber-400 font-bold text-xs">4</span>
-              <h3 class="font-bold text-sm text-white">09:25+ AM — Strategy Signal Generation</h3>
+              <span class="flex h-7 w-7 items-center justify-center rounded-xl bg-amber-500/20 text-amber-400 font-bold text-xs">4</span>
+              <h3 class="font-bold text-sm text-white">09:25+ AM Signal Trigger</h3>
             </div>
             <p class="text-xs text-gray-300 leading-relaxed">
-              Scans all 21 strategies. Upon trigger, dynamically resolves the exact In-The-Money (ITM) option strike symbol (e.g. `NSE:NIFTY2681124200CE`), verifies cooldown limits, and submits the order to `PaperTrader`.
+              StrategyEngine evaluates all 21 strategies. When breakout/bounce rules trigger, it dynamically resolves the exact In-The-Money (ITM) strike (e.g. 24,200 CE) and enforces cooldown timers.
             </p>
           </div>
 
-          <!-- Step 5 -->
-          <div class="rounded-xl border border-subtle bg-surface2/50 p-4 space-y-2">
+          <div class="rounded-2xl border border-subtle bg-surface2/40 p-5 space-y-2">
             <div class="flex items-center gap-2">
-              <span class="flex h-6 w-6 items-center justify-center rounded-lg bg-cyan-500/20 text-cyan-400 font-bold text-xs">5</span>
-              <h3 class="font-bold text-sm text-white">Execution &amp; Pre-Trade Risk Checks</h3>
+              <span class="flex h-7 w-7 items-center justify-center rounded-xl bg-cyan-500/20 text-cyan-400 font-bold text-xs">5</span>
+              <h3 class="font-bold text-sm text-white">Sub-5ms Execution</h3>
             </div>
             <p class="text-xs text-gray-300 leading-relaxed">
-              `PaperTrader` validates the ₹5,000 max daily loss limit, 5-position concurrency limit, and drawdown circuit breaker before filling the trade at live ask/bid with realistic slippage. Order persisted to Supabase PostgreSQL.
+              `PaperTrader` verifies pre-trade circuit breakers (₹5,000 max daily loss, 5-position concurrency limit) and fills the order at live bid/ask with realistic slippage modeling.
             </p>
           </div>
 
-          <!-- Step 6 -->
-          <div class="rounded-xl border border-subtle bg-surface2/50 p-4 space-y-2">
+          <div class="rounded-2xl border border-subtle bg-surface2/40 p-5 space-y-2">
             <div class="flex items-center gap-2">
-              <span class="flex h-6 w-6 items-center justify-center rounded-lg bg-rose-500/20 text-rose-400 font-bold text-xs">6</span>
-              <h3 class="font-bold text-sm text-white">Stepped Trailing Stop Loss &amp; Tax Deductions</h3>
+              <span class="flex h-7 w-7 items-center justify-center rounded-xl bg-rose-500/20 text-rose-400 font-bold text-xs">6</span>
+              <h3 class="font-bold text-sm text-white">Stepped TSL &amp; Tax Deductions</h3>
             </div>
             <p class="text-xs text-gray-300 leading-relaxed">
-              Dynamically ratchets stop loss as profit expands (+20pt, +40pt, +60pt locks). On exit, computes flat ₹20 brokerage, STT (0.10%), GST (18%), exchange turnover fees, and logs itemized tax split to database.
+              Dynamically locks profit (+20, +40, +60 pt steps). On trade close, computes itemized flat ₹20 brokerage, STT (0.10%), GST (18%), exchange turnover fees, and records Net P&L.
             </p>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- 3. STRATEGY MATRIX TAB -->
-    <section id="tab-strategies" class="tab-content hidden space-y-6">
-      <div class="glass-card rounded-2xl p-6">
+    <!-- 3. MICROSTRUCTURE & CVD TAB -->
+    <section id="tab-microstructure" class="tab-content hidden space-y-6">
+      <div class="glass-card rounded-3xl p-6 md:p-8">
         <h2 class="text-lg font-bold text-white mb-2 flex items-center gap-2">
-          <span>🎯</span> Algorithmic Strategy Matrix (21 Strategies)
+          <span>📊</span> Market Microstructure &amp; Cumulative Volume Delta (CVD)
         </h2>
         <p class="text-xs text-gray-400 mb-6">
-          Categorized breakdown of all 10 NIFTY 50 and 11 SENSEX quantitative trading strategies.
+          Mathematical formulation of tick-level signed volume delta and indicator calculation algorithms.
+        </p>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="rounded-2xl border border-subtle bg-surface2/40 p-5 space-y-3 font-mono text-xs">
+            <h4 class="font-bold text-sm text-accent font-sans">Tick-Level Signed Volume Delta (CVD)</h4>
+            <p class="text-gray-300 font-sans leading-relaxed">
+              Each price tick calculates directional volume contribution by comparing the current tick price $P_t$ against the previous tick price $P_{t-1}$:
+            </p>
+            <div class="rounded-xl bg-surface p-3 border border-subtle text-emerald-400">
+              ΔV_t = +Vol_t  if P_t > P_{t-1}<br/>
+              ΔV_t = -Vol_t  if P_t < P_{t-1}<br/>
+              ΔV_t = 0.0     if P_t == P_{t-1}
+            </div>
+            <p class="text-gray-400 font-sans text-[11px]">
+              CVD is accumulated across each 5-minute bar to measure institutional order flow dominance and confirm breakout validity.
+            </p>
+          </div>
+
+          <div class="rounded-2xl border border-subtle bg-surface2/40 p-5 space-y-3 font-mono text-xs">
+            <h4 class="font-bold text-sm text-purple-400 font-sans">Volatility Regime Ratio Formulation</h4>
+            <p class="text-gray-300 font-sans leading-relaxed">
+              Computes normalized volatility regime by comparing current 1-hour Average True Range (ATR) against its 20-period baseline average:
+            </p>
+            <div class="rounded-xl bg-surface p-3 border border-subtle text-indigo-400">
+              Vol_Ratio = ATR_14(1H) / SMA_20(ATR_14(1H))
+            </div>
+            <p class="text-gray-400 font-sans text-[11px]">
+              • Ratio &gt; 1.20: High Volatility (Wide Swings)<br/>
+              • 0.80 &le; Ratio &le; 1.20: Normal Trend Continuation<br/>
+              • Ratio &lt; 0.80: Compression / Scalping Regime
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. 21 STRATEGY CATALOG TAB -->
+    <section id="tab-strategies" class="tab-content hidden space-y-6">
+      <div class="glass-card rounded-3xl p-6 md:p-8">
+        <h2 class="text-lg font-bold text-white mb-2 flex items-center gap-2">
+          <span>🎯</span> Algorithmic Strategy Fleet (21 Quantitative Models)
+        </h2>
+        <p class="text-xs text-gray-400 mb-6">
+          Exhaustive catalog of all 10 NIFTY 50 and 11 SENSEX strategies with exact execution triggers.
         </p>
 
         <div class="overflow-x-auto">
           <table class="w-full text-left text-xs">
             <thead class="bg-surface2 text-gray-300 font-bold uppercase text-[10px] tracking-wider border-b border-subtle">
               <tr>
-                <th class="p-3">Index</th>
-                <th class="p-3">Strategy Name</th>
-                <th class="p-3">Timeframe</th>
-                <th class="p-3">Strike Selection</th>
-                <th class="p-3">Technical Trigger</th>
-                <th class="p-3">Exit / Trailing Stop</th>
+                <th class="p-3.5">Index</th>
+                <th class="p-3.5">Strategy Identifier</th>
+                <th class="p-3.5">Timeframe</th>
+                <th class="p-3.5">Strike Selection</th>
+                <th class="p-3.5">Technical Trigger Condition</th>
+                <th class="p-3.5">Exit / Trailing Stop</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-subtle/50 font-mono text-gray-300">
               <tr class="hover:bg-surface2/40">
-                <td class="p-3 font-bold text-accent">NIFTY</td>
-                <td class="p-3 font-bold text-white">NIFTY_ORB_BULLISH_5M_ITM</td>
-                <td class="p-3">5 Min</td>
-                <td class="p-3 text-emerald-400">ITM (+1 Strike)</td>
-                <td class="p-3 font-sans">09:25 AM Breakout above 5M Opening Range High</td>
-                <td class="p-3 text-cyan-400 font-sans">Stepped TSL (20pt) / SL 20%</td>
+                <td class="p-3.5 font-bold text-accent">NIFTY</td>
+                <td class="p-3.5 font-bold text-white">NIFTY_ORB_BULLISH_5M_ITM</td>
+                <td class="p-3.5">5 Min</td>
+                <td class="p-3.5 text-emerald-400">ITM (+1 Strike)</td>
+                <td class="p-3.5 font-sans">09:25 AM Breakout above 5M Opening Range High</td>
+                <td class="p-3.5 text-cyan-400 font-sans">Stepped TSL (20pt) / SL 20%</td>
               </tr>
               <tr class="hover:bg-surface2/40">
-                <td class="p-3 font-bold text-accent">NIFTY</td>
-                <td class="p-3 font-bold text-white">NIFTY_ORB_BEARISH_5M_ITM</td>
-                <td class="p-3">5 Min</td>
-                <td class="p-3 text-rose-400">ITM (-1 Strike)</td>
-                <td class="p-3 font-sans">09:25 AM Breakdown below 5M Opening Range Low</td>
-                <td class="p-3 text-cyan-400 font-sans">Stepped TSL (20pt) / SL 20%</td>
+                <td class="p-3.5 font-bold text-accent">NIFTY</td>
+                <td class="p-3.5 font-bold text-white">NIFTY_ORB_BEARISH_5M_ITM</td>
+                <td class="p-3.5">5 Min</td>
+                <td class="p-3.5 text-rose-400">ITM (-1 Strike)</td>
+                <td class="p-3.5 font-sans">09:25 AM Breakdown below 5M Opening Range Low</td>
+                <td class="p-3.5 text-cyan-400 font-sans">Stepped TSL (20pt) / SL 20%</td>
               </tr>
               <tr class="hover:bg-surface2/40">
-                <td class="p-3 font-bold text-accent">NIFTY</td>
-                <td class="p-3 font-bold text-white">NIFTY_EMA_BOUNCE_5M_ITM</td>
-                <td class="p-3">5 Min</td>
-                <td class="p-3 text-emerald-400">ITM (+1 Strike)</td>
-                <td class="p-3 font-sans">Bullish bounce touching 20-EMA with +CVD delta</td>
-                <td class="p-3 text-cyan-400 font-sans">Stepped TSL (20pt) / SL 20%</td>
+                <td class="p-3.5 font-bold text-accent">NIFTY</td>
+                <td class="p-3.5 font-bold text-white">NIFTY_EMA_BOUNCE_5M_ITM</td>
+                <td class="p-3.5">5 Min</td>
+                <td class="p-3.5 text-emerald-400">ITM (+1 Strike)</td>
+                <td class="p-3.5 font-sans">Bullish bounce touching 20-EMA with +CVD delta</td>
+                <td class="p-3.5 text-cyan-400 font-sans">Stepped TSL (20pt) / SL 20%</td>
               </tr>
               <tr class="hover:bg-surface2/40">
-                <td class="p-3 font-bold text-accent">NIFTY</td>
-                <td class="p-3 font-bold text-white">NIFTY_EMA_REJECTION_5M_ITM</td>
-                <td class="p-3">5 Min</td>
-                <td class="p-3 text-rose-400">ITM (-1 Strike)</td>
-                <td class="p-3 font-sans">Bearish rejection at 20-EMA with -CVD delta</td>
-                <td class="p-3 text-cyan-400 font-sans">Stepped TSL (20pt) / SL 20%</td>
+                <td class="p-3.5 font-bold text-accent">NIFTY</td>
+                <td class="p-3.5 font-bold text-white">NIFTY_EMA_REJECTION_5M_ITM</td>
+                <td class="p-3.5">5 Min</td>
+                <td class="p-3.5 text-rose-400">ITM (-1 Strike)</td>
+                <td class="p-3.5 font-sans">Bearish rejection at 20-EMA with -CVD delta</td>
+                <td class="p-3.5 text-cyan-400 font-sans">Stepped TSL (20pt) / SL 20%</td>
               </tr>
               <tr class="hover:bg-surface2/40">
-                <td class="p-3 font-bold text-accent">NIFTY</td>
-                <td class="p-3 font-bold text-white">NIFTY_SUPPORT_BOUNCE_5M_ITM</td>
-                <td class="p-3">5 Min</td>
-                <td class="p-3 text-emerald-400">ITM (+1 Strike)</td>
-                <td class="p-3 font-sans">Support pivot bounce with positive RSI hook</td>
-                <td class="p-3 text-cyan-400 font-sans">Stepped TSL (20pt) / SL 20%</td>
+                <td class="p-3.5 font-bold text-accent">NIFTY</td>
+                <td class="p-3.5 font-bold text-white">NIFTY_SUPPORT_BOUNCE_5M_ITM</td>
+                <td class="p-3.5">5 Min</td>
+                <td class="p-3.5 text-emerald-400">ITM (+1 Strike)</td>
+                <td class="p-3.5 font-sans">Support pivot bounce with positive RSI hook</td>
+                <td class="p-3.5 text-cyan-400 font-sans">Stepped TSL (20pt) / SL 20%</td>
               </tr>
               <tr class="hover:bg-surface2/40">
-                <td class="p-3 font-bold text-accent">NIFTY</td>
-                <td class="p-3 font-bold text-white">NIFTY_RESISTANCE_REJECTION_5M_ITM</td>
-                <td class="p-3">5 Min</td>
-                <td class="p-3 text-rose-400">ITM (-1 Strike)</td>
-                <td class="p-3 font-sans">Resistance pivot rejection with negative RSI hook</td>
-                <td class="p-3 text-cyan-400 font-sans">Stepped TSL (20pt) / SL 20%</td>
+                <td class="p-3.5 font-bold text-accent">NIFTY</td>
+                <td class="p-3.5 font-bold text-white">NIFTY_RESISTANCE_REJECTION_5M_ITM</td>
+                <td class="p-3.5">5 Min</td>
+                <td class="p-3.5 text-rose-400">ITM (-1 Strike)</td>
+                <td class="p-3.5 font-sans">Resistance pivot rejection with negative RSI hook</td>
+                <td class="p-3.5 text-cyan-400 font-sans">Stepped TSL (20pt) / SL 20%</td>
               </tr>
               <tr class="hover:bg-surface2/40">
-                <td class="p-3 font-bold text-accent">NIFTY</td>
-                <td class="p-3 font-bold text-white">NIFTY_MACD_BULLISH_15M_ITM</td>
-                <td class="p-3">15 Min</td>
-                <td class="p-3 text-emerald-400">ITM (+1 Strike)</td>
-                <td class="p-3 font-sans">15M MACD histogram flips positive above zero line</td>
-                <td class="p-3 text-cyan-400 font-sans">Stepped TSL (30pt) / SL 25%</td>
+                <td class="p-3.5 font-bold text-accent">NIFTY</td>
+                <td class="p-3.5 font-bold text-white">NIFTY_MACD_BULLISH_15M_ITM</td>
+                <td class="p-3.5">15 Min</td>
+                <td class="p-3.5 text-emerald-400">ITM (+1 Strike)</td>
+                <td class="p-3.5 font-sans">15M MACD histogram flips positive above zero line</td>
+                <td class="p-3.5 text-cyan-400 font-sans">Stepped TSL (30pt) / SL 25%</td>
               </tr>
               <tr class="hover:bg-surface2/40">
-                <td class="p-3 font-bold text-accent">NIFTY</td>
-                <td class="p-3 font-bold text-white">NIFTY_MACD_BEARISH_15M_ITM</td>
-                <td class="p-3">15 Min</td>
-                <td class="p-3 text-rose-400">ITM (-1 Strike)</td>
-                <td class="p-3 font-sans">15M MACD histogram flips negative below zero line</td>
-                <td class="p-3 text-cyan-400 font-sans">Stepped TSL (30pt) / SL 25%</td>
+                <td class="p-3.5 font-bold text-accent">NIFTY</td>
+                <td class="p-3.5 font-bold text-white">NIFTY_MACD_BEARISH_15M_ITM</td>
+                <td class="p-3.5">15 Min</td>
+                <td class="p-3.5 text-rose-400">ITM (-1 Strike)</td>
+                <td class="p-3.5 font-sans">15M MACD histogram flips negative below zero line</td>
+                <td class="p-3.5 text-cyan-400 font-sans">Stepped TSL (30pt) / SL 25%</td>
               </tr>
               <tr class="hover:bg-surface2/40">
-                <td class="p-3 font-bold text-accent">NIFTY</td>
-                <td class="p-3 font-bold text-white">NIFTY_HEIKIN_ASHI_BULLISH_5M_ITM</td>
-                <td class="p-3">5 Min</td>
-                <td class="p-3 text-emerald-400">ITM (+1 Strike)</td>
-                <td class="p-3 font-sans">2 consecutive flat-bottom green Heikin-Ashi candles</td>
-                <td class="p-3 text-cyan-400 font-sans">Stepped TSL (20pt) / SL 20%</td>
+                <td class="p-3.5 font-bold text-accent">NIFTY</td>
+                <td class="p-3.5 font-bold text-white">NIFTY_HEIKIN_ASHI_BULLISH_5M_ITM</td>
+                <td class="p-3.5">5 Min</td>
+                <td class="p-3.5 text-emerald-400">ITM (+1 Strike)</td>
+                <td class="p-3.5 font-sans">2 consecutive flat-bottom green Heikin-Ashi candles</td>
+                <td class="p-3.5 text-cyan-400 font-sans">Stepped TSL (20pt) / SL 20%</td>
               </tr>
               <tr class="hover:bg-surface2/40">
-                <td class="p-3 font-bold text-accent">NIFTY</td>
-                <td class="p-3 font-bold text-white">NIFTY_MACD_BULLISH_1M_ATM</td>
-                <td class="p-3">1 Min</td>
-                <td class="p-3 text-amber-400">ATM Strike</td>
-                <td class="p-3 font-sans">High-speed 1M MACD momentum scalp crossover</td>
-                <td class="p-3 text-cyan-400 font-sans">Quick Scalp / SL 15%</td>
+                <td class="p-3.5 font-bold text-accent">NIFTY</td>
+                <td class="p-3.5 font-bold text-white">NIFTY_MACD_BULLISH_1M_ATM</td>
+                <td class="p-3.5">1 Min</td>
+                <td class="p-3.5 text-amber-400">ATM Strike</td>
+                <td class="p-3.5 font-sans">High-speed 1M MACD momentum scalp crossover</td>
+                <td class="p-3.5 text-cyan-400 font-sans">Quick Scalp / SL 15%</td>
               </tr>
               <!-- SENSEX ROWS -->
               <tr class="hover:bg-surface2/40">
-                <td class="p-3 font-bold text-purple-400">SENSEX</td>
-                <td class="p-3 font-bold text-white">SENSEX_ORB_BULLISH_5M_ITM</td>
-                <td class="p-3">5 Min</td>
-                <td class="p-3 text-emerald-400">ITM (+1 Strike)</td>
-                <td class="p-3 font-sans">09:25 AM Breakout above 5M Opening Range High</td>
-                <td class="p-3 text-cyan-400 font-sans">Stepped TSL (30pt) / SL 20%</td>
+                <td class="p-3.5 font-bold text-purple-400">SENSEX</td>
+                <td class="p-3.5 font-bold text-white">SENSEX_ORB_BULLISH_5M_ITM</td>
+                <td class="p-3.5">5 Min</td>
+                <td class="p-3.5 text-emerald-400">ITM (+1 Strike)</td>
+                <td class="p-3.5 font-sans">09:25 AM Breakout above 5M Opening Range High</td>
+                <td class="p-3.5 text-cyan-400 font-sans">Stepped TSL (30pt) / SL 20%</td>
               </tr>
               <tr class="hover:bg-surface2/40">
-                <td class="p-3 font-bold text-purple-400">SENSEX</td>
-                <td class="p-3 font-bold text-white">SENSEX_ORB_BEARISH_5M_ITM</td>
-                <td class="p-3">5 Min</td>
-                <td class="p-3 text-rose-400">ITM (-1 Strike)</td>
-                <td class="p-3 font-sans">09:25 AM Breakdown below 5M Opening Range Low</td>
-                <td class="p-3 text-cyan-400 font-sans">Stepped TSL (30pt) / SL 20%</td>
+                <td class="p-3.5 font-bold text-purple-400">SENSEX</td>
+                <td class="p-3.5 font-bold text-white">SENSEX_ORB_BEARISH_5M_ITM</td>
+                <td class="p-3.5">5 Min</td>
+                <td class="p-3.5 text-rose-400">ITM (-1 Strike)</td>
+                <td class="p-3.5 font-sans">09:25 AM Breakdown below 5M Opening Range Low</td>
+                <td class="p-3.5 text-cyan-400 font-sans">Stepped TSL (30pt) / SL 20%</td>
               </tr>
               <tr class="hover:bg-surface2/40">
-                <td class="p-3 font-bold text-purple-400">SENSEX</td>
-                <td class="p-3 font-bold text-white">SENSEX_EMA_BOUNCE_5M_ITM</td>
-                <td class="p-3">5 Min</td>
-                <td class="p-3 text-emerald-400">ITM (+1 Strike)</td>
-                <td class="p-3 font-sans">SENSEX bounce off 20-EMA with expanding volume</td>
-                <td class="p-3 text-cyan-400 font-sans">Stepped TSL (30pt) / SL 20%</td>
+                <td class="p-3.5 font-bold text-purple-400">SENSEX</td>
+                <td class="p-3.5 font-bold text-white">SENSEX_EMA_BOUNCE_5M_ITM</td>
+                <td class="p-3.5">5 Min</td>
+                <td class="p-3.5 text-emerald-400">ITM (+1 Strike)</td>
+                <td class="p-3.5 font-sans">SENSEX bounce off 20-EMA with expanding volume</td>
+                <td class="p-3.5 text-cyan-400 font-sans">Stepped TSL (30pt) / SL 20%</td>
               </tr>
               <tr class="hover:bg-surface2/40">
-                <td class="p-3 font-bold text-purple-400">SENSEX</td>
-                <td class="p-3 font-bold text-white">SENSEX_EMA_REJECTION_5M_ITM</td>
-                <td class="p-3">5 Min</td>
-                <td class="p-3 text-rose-400">ITM (-1 Strike)</td>
-                <td class="p-3 font-sans">SENSEX rejection at 20-EMA with negative delta</td>
-                <td class="p-3 text-cyan-400 font-sans">Stepped TSL (30pt) / SL 20%</td>
+                <td class="p-3.5 font-bold text-purple-400">SENSEX</td>
+                <td class="p-3.5 font-bold text-white">SENSEX_EMA_REJECTION_5M_ITM</td>
+                <td class="p-3.5">5 Min</td>
+                <td class="p-3.5 text-rose-400">ITM (-1 Strike)</td>
+                <td class="p-3.5 font-sans">SENSEX rejection at 20-EMA with negative delta</td>
+                <td class="p-3.5 text-cyan-400 font-sans">Stepped TSL (30pt) / SL 20%</td>
               </tr>
               <tr class="hover:bg-surface2/40">
-                <td class="p-3 font-bold text-purple-400">SENSEX</td>
-                <td class="p-3 font-bold text-white">SENSEX_SUPPORT_BOUNCE_5M_ITM</td>
-                <td class="p-3">5 Min</td>
-                <td class="p-3 text-emerald-400">ITM (+1 Strike)</td>
-                <td class="p-3 font-sans">Reversal bounce off major support pivot levels</td>
-                <td class="p-3 text-cyan-400 font-sans">Stepped TSL (30pt) / SL 20%</td>
+                <td class="p-3.5 font-bold text-purple-400">SENSEX</td>
+                <td class="p-3.5 font-bold text-white">SENSEX_SUPPORT_BOUNCE_5M_ITM</td>
+                <td class="p-3.5">5 Min</td>
+                <td class="p-3.5 text-emerald-400">ITM (+1 Strike)</td>
+                <td class="p-3.5 font-sans">Reversal bounce off major support pivot levels</td>
+                <td class="p-3.5 text-cyan-400 font-sans">Stepped TSL (30pt) / SL 20%</td>
               </tr>
               <tr class="hover:bg-surface2/40">
-                <td class="p-3 font-bold text-purple-400">SENSEX</td>
-                <td class="p-3 font-bold text-white">SENSEX_RESISTANCE_REJECTION_5M_ITM</td>
-                <td class="p-3">5 Min</td>
-                <td class="p-3 text-rose-400">ITM (-1 Strike)</td>
-                <td class="p-3 font-sans">Downward reversal rejection off resistance level</td>
-                <td class="p-3 text-cyan-400 font-sans">Stepped TSL (30pt) / SL 20%</td>
+                <td class="p-3.5 font-bold text-purple-400">SENSEX</td>
+                <td class="p-3.5 font-bold text-white">SENSEX_RESISTANCE_REJECTION_5M_ITM</td>
+                <td class="p-3.5">5 Min</td>
+                <td class="p-3.5 text-rose-400">ITM (-1 Strike)</td>
+                <td class="p-3.5 font-sans">Downward reversal rejection off resistance level</td>
+                <td class="p-3.5 text-cyan-400 font-sans">Stepped TSL (30pt) / SL 20%</td>
               </tr>
               <tr class="hover:bg-surface2/40">
-                <td class="p-3 font-bold text-purple-400">SENSEX</td>
-                <td class="p-3 font-bold text-white">SENSEX_STOCH_OVERSOLD_5M_ITM</td>
-                <td class="p-3">5 Min</td>
-                <td class="p-3 text-emerald-400">ITM (+1 Strike)</td>
-                <td class="p-3 font-sans">Stochastic %K crosses %D below 20 oversold level</td>
-                <td class="p-3 text-cyan-400 font-sans">Stepped TSL (30pt) / SL 20%</td>
+                <td class="p-3.5 font-bold text-purple-400">SENSEX</td>
+                <td class="p-3.5 font-bold text-white">SENSEX_STOCH_OVERSOLD_5M_ITM</td>
+                <td class="p-3.5">5 Min</td>
+                <td class="p-3.5 text-emerald-400">ITM (+1 Strike)</td>
+                <td class="p-3.5 font-sans">Stochastic %K crosses %D below 20 oversold level</td>
+                <td class="p-3.5 text-cyan-400 font-sans">Stepped TSL (30pt) / SL 20%</td>
               </tr>
               <tr class="hover:bg-surface2/40">
-                <td class="p-3 font-bold text-purple-400">SENSEX</td>
-                <td class="p-3 font-bold text-white">SENSEX_STOCH_OVERBOUGHT_5M_ITM</td>
-                <td class="p-3">5 Min</td>
-                <td class="p-3 text-rose-400">ITM (-1 Strike)</td>
-                <td class="p-3 font-sans">Stochastic %K crosses %D above 80 overbought level</td>
-                <td class="p-3 text-cyan-400 font-sans">Stepped TSL (30pt) / SL 20%</td>
+                <td class="p-3.5 font-bold text-purple-400">SENSEX</td>
+                <td class="p-3.5 font-bold text-white">SENSEX_STOCH_OVERBOUGHT_5M_ITM</td>
+                <td class="p-3.5">5 Min</td>
+                <td class="p-3.5 text-rose-400">ITM (-1 Strike)</td>
+                <td class="p-3.5 font-sans">Stochastic %K crosses %D above 80 overbought level</td>
+                <td class="p-3.5 text-cyan-400 font-sans">Stepped TSL (30pt) / SL 20%</td>
               </tr>
               <tr class="hover:bg-surface2/40">
-                <td class="p-3 font-bold text-purple-400">SENSEX</td>
-                <td class="p-3 font-bold text-white">SENSEX_HEIKIN_ASHI_BULLISH_5M_ITM</td>
-                <td class="p-3">5 Min</td>
-                <td class="p-3 text-emerald-400">ITM (+1 Strike)</td>
-                <td class="p-3 font-sans">2 consecutive flat-bottom green Heikin-Ashi candles</td>
-                <td class="p-3 text-cyan-400 font-sans">Stepped TSL (30pt) / SL 20%</td>
+                <td class="p-3.5 font-bold text-purple-400">SENSEX</td>
+                <td class="p-3.5 font-bold text-white">SENSEX_HEIKIN_ASHI_BULLISH_5M_ITM</td>
+                <td class="p-3.5">5 Min</td>
+                <td class="p-3.5 text-emerald-400">ITM (+1 Strike)</td>
+                <td class="p-3.5 font-sans">2 consecutive flat-bottom green Heikin-Ashi candles</td>
+                <td class="p-3.5 text-cyan-400 font-sans">Stepped TSL (30pt) / SL 20%</td>
               </tr>
               <tr class="hover:bg-surface2/40">
-                <td class="p-3 font-bold text-purple-400">SENSEX</td>
-                <td class="p-3 font-bold text-white">SENSEX_MACD_BULLISH_1M_ATM</td>
-                <td class="p-3">1 Min</td>
-                <td class="p-3 text-amber-400">ATM Strike</td>
-                <td class="p-3 font-sans">High-speed 1M momentum scalp crossover</td>
-                <td class="p-3 text-cyan-400 font-sans">Quick Scalp / SL 15%</td>
+                <td class="p-3.5 font-bold text-purple-400">SENSEX</td>
+                <td class="p-3.5 font-bold text-white">SENSEX_MACD_BULLISH_1M_ATM</td>
+                <td class="p-3.5">1 Min</td>
+                <td class="p-3.5 text-amber-400">ATM Strike</td>
+                <td class="p-3.5 font-sans">High-speed 1M momentum scalp crossover</td>
+                <td class="p-3.5 text-cyan-400 font-sans">Quick Scalp / SL 15%</td>
               </tr>
               <tr class="hover:bg-surface2/40">
-                <td class="p-3 font-bold text-purple-400">SENSEX</td>
-                <td class="p-3 font-bold text-white">SENSEX_MACD_BEARISH_1M_ATM</td>
-                <td class="p-3">1 Min</td>
-                <td class="p-3 text-rose-400">ATM Strike</td>
-                <td class="p-3 font-sans">High-speed 1M momentum breakdown scalp</td>
-                <td class="p-3 text-cyan-400 font-sans">Quick Scalp / SL 15%</td>
+                <td class="p-3.5 font-bold text-purple-400">SENSEX</td>
+                <td class="p-3.5 font-bold text-white">SENSEX_MACD_BEARISH_1M_ATM</td>
+                <td class="p-3.5">1 Min</td>
+                <td class="p-3.5 text-rose-400">ATM Strike</td>
+                <td class="p-3.5 font-sans">High-speed 1M momentum breakdown scalp</td>
+                <td class="p-3.5 text-cyan-400 font-sans">Quick Scalp / SL 15%</td>
               </tr>
             </tbody>
           </table>
@@ -499,39 +545,38 @@ graph TD
       </div>
     </section>
 
-    <!-- 4. AI & GLOBAL NEWS PIPELINE TAB -->
+    <!-- 5. AI & GLOBAL NEWS TAB -->
     <section id="tab-ai" class="tab-content hidden space-y-6">
-      <div class="glass-card rounded-2xl p-6">
+      <div class="glass-card rounded-3xl p-6 md:p-8">
         <h2 class="text-lg font-bold text-white mb-2 flex items-center gap-2">
-          <span>🤖</span> Pre-Market Catalyst &amp; Global News Ingestion Pipeline
+          <span>🤖</span> Global Multi-Newspaper Ingestion &amp; Gemini Synthesis
         </h2>
         <p class="text-xs text-gray-400 mb-6">
-          How real-time financial market quotes and multi-region newspaper RSS feeds are synthesized via Google Gemini 3.6 Flash.
+          Architecture of the zero-dependency live quote engine, parallel newspaper aggregator, and Gemini 3.6 Flash structured synthesis.
         </p>
 
-        <div class="mermaid rounded-xl bg-surface2/60 p-4 border border-subtle flex justify-center mb-6">
+        <div class="mermaid rounded-2xl bg-surface2/60 p-6 border border-subtle flex justify-center mb-6">
 flowchart LR
     subgraph Live_Quotes ["Live Financial Feeds (<200ms)"]
-        NQ["Nasdaq Composite: 26,180.46 (+0.43%)"]
-        CL["Brent Crude: $93.87 / bbl (+0.28%)"]
+        NQ["Nasdaq: 26,180.46 (+0.43%)"]
+        CL["Brent Crude: $93.87 / bbl"]
         GIFT["GIFT Nifty: 24,329.00 (+0.13%)"]
-        DXY["US Dollar Index (DXY): 98.84"]
-        VIX["India VIX: 11.20 (Low Volatility)"]
+        DXY["DXY: 98.84 | VIX: 11.20"]
     end
 
     subgraph Multi_News ["Multi-Region RSS Feeds"]
-        US_News["US Tech & Macro (Reuters / Google News)"]
-        ET_News["The Economic Times Markets"]
-        SEBI_News["SEBI Circulars & Corporate Filings"]
+        US_News["US Tech (Reuters / Google US)"]
+        ET_News["Economic Times Markets RSS"]
+        SEBI_News["SEBI Circulars & Filings"]
         Mint_News["LiveMint Corporate & Banking"]
     end
 
     subgraph Aggregator ["Fast Parallel Aggregator Engine"]
-        Pool["ThreadPoolExecutor (4 Workers, <2s)"]
+        Pool["ThreadPoolExecutor (4 Workers, <2.0s)"]
         MathGap["Exact Gap Math: 24,329 - 24,252 = +77 pts"]
     end
 
-    subgraph LLM_Reasoning ["Gemini 3.6 Flash (Structured Output)"]
+    subgraph LLM_Reasoning ["Gemini 3.6 Flash"]
         Gemini["Sector Catalyst Synthesis<br/>IT • Banking • Auto • Metals<br/>Strategy Conviction Ranking"]
     end
 
@@ -545,36 +590,20 @@ flowchart LR
     Pool -->|"Verified Live Market Context"| Gemini
     Gemini --> Card & TG_Alert
         </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div class="rounded-xl border border-subtle bg-surface2/40 p-4">
-            <h4 class="font-bold text-sm text-emerald-400 mb-2">1. Zero-Hallucination Exact Market Math</h4>
-            <p class="text-xs text-gray-300 leading-relaxed">
-              Unlike raw LLM queries that hallucinate outdated training data, our engine retrieves verified live quotes directly from exchange APIs. Expected opening gaps are mathematically calculated against previous session closing bells.
-            </p>
-          </div>
-          <div class="rounded-xl border border-subtle bg-surface2/40 p-4">
-            <h4 class="font-bold text-sm text-purple-400 mb-2">2. Multi-Newspaper Event Context</h4>
-            <p class="text-xs text-gray-300 leading-relaxed">
-              Scrapes real breaking news across geopolitics, US tech earnings, SEBI regulatory changes, and corporate earnings (TCS, HDFC, Reliance) to give Gemini up-to-the-minute sector reasoning.
-            </p>
-          </div>
-        </div>
       </div>
     </section>
 
-    <!-- 5. RISK & TAX CHARGES TAB -->
-    <section id="tab-tax" class="tab-content hidden space-y-6">
-      <div class="glass-card rounded-2xl p-6">
+    <!-- 6. STEPPED TSL & TAXES TAB -->
+    <section id="tab-risk" class="tab-content hidden space-y-6">
+      <div class="glass-card rounded-3xl p-6 md:p-8">
         <h2 class="text-lg font-bold text-white mb-2 flex items-center gap-2">
-          <span>🧾</span> Risk Management &amp; Indian Statutory Charges Engine
+          <span>🛡️</span> Stepped Trailing Stop Loss &amp; Regulatory Tax Math
         </h2>
         <p class="text-xs text-gray-400 mb-6">
-          Institutional pre-trade risk guardrails, stepped trailing stop loss mechanics, and realistic Indian regulatory tax breakdowns.
+          Dynamic stepped ratchet profit locking algorithm and Indian regulatory tax formulas.
         </p>
 
-        <!-- Stepped Trailing Stop Diagram -->
-        <div class="mermaid rounded-xl bg-surface2/60 p-4 border border-subtle flex justify-center mb-6">
+        <div class="mermaid rounded-2xl bg-surface2/60 p-6 border border-subtle flex justify-center mb-8">
 flowchart TD
     TradeOpen["Trade Filled at Entry Price"] --> Step0["Initial Hard Stop Loss: -20%"]
     Step0 -->|"Profit reaches +20 points"| Step1["Step 1: Move Stop Loss to Cost (Entry Price)"]
@@ -584,63 +613,63 @@ flowchart TD
     Step4 -->|"Take Profit (+150 pts) OR Time Exit (120 min)"| Exit["Execute Trade Close"]
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div class="rounded-xl border border-subtle bg-surface2/40 p-4 space-y-2">
-            <h4 class="font-bold text-sm text-white flex items-center gap-2">
-              <span class="h-2 w-2 rounded-full bg-accent"></span> Indian Regulatory Tax Model
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 font-mono text-xs">
+          <div class="rounded-2xl border border-subtle bg-surface2/40 p-5 space-y-2">
+            <h4 class="font-bold text-sm text-white font-sans flex items-center gap-2">
+              <span class="h-2 w-2 rounded-full bg-accent"></span> Indian Statutory Tax Calculations
             </h4>
-            <div class="space-y-1 text-xs text-gray-300">
+            <div class="space-y-1 text-gray-300">
               <div class="flex justify-between py-1 border-b border-subtle/40">
-                <span>Flat Brokerage</span>
-                <span class="font-mono font-bold text-white">₹20 per executed order (₹40 round-trip)</span>
+                <span>Brokerage</span>
+                <span class="font-bold text-white">₹20 per executed leg (₹40 round-trip)</span>
               </div>
               <div class="flex justify-between py-1 border-b border-subtle/40">
-                <span>Securities Transaction Tax (STT)</span>
-                <span class="font-mono font-bold text-white">0.10% on Sell Premium Turnover</span>
+                <span>STT (Securities Tax)</span>
+                <span class="font-bold text-white">0.10% on Sell Premium Turnover</span>
               </div>
               <div class="flex justify-between py-1 border-b border-subtle/40">
                 <span>Exchange Turnover Fee</span>
-                <span class="font-mono font-bold text-white">NSE: 0.03503% | BSE: 0.0325%</span>
+                <span class="font-bold text-white">NSE: 0.03503% | BSE: 0.0325%</span>
               </div>
               <div class="flex justify-between py-1 border-b border-subtle/40">
-                <span>Goods &amp; Services Tax (GST)</span>
-                <span class="font-mono font-bold text-white">18% on (Brokerage + Exchange Fees)</span>
+                <span>GST (Goods &amp; Services)</span>
+                <span class="font-bold text-white">18% on (Brokerage + Exchange Fees)</span>
               </div>
               <div class="flex justify-between py-1 border-b border-subtle/40">
                 <span>Stamp Duty</span>
-                <span class="font-mono font-bold text-white">0.003% on Buy Turnover</span>
+                <span class="font-bold text-white">0.003% on Buy Turnover</span>
               </div>
               <div class="flex justify-between py-1">
                 <span>SEBI Turnover Charges</span>
-                <span class="font-mono font-bold text-white">₹10 per Crore Turnover</span>
+                <span class="font-bold text-white">₹10 per Crore Turnover</span>
               </div>
             </div>
           </div>
 
-          <div class="rounded-xl border border-subtle bg-surface2/40 p-4 space-y-2">
-            <h4 class="font-bold text-sm text-white flex items-center gap-2">
+          <div class="rounded-2xl border border-subtle bg-surface2/40 p-5 space-y-2">
+            <h4 class="font-bold text-sm text-white font-sans flex items-center gap-2">
               <span class="h-2 w-2 rounded-full bg-rose-400"></span> Pre-Trade Circuit Breakers
             </h4>
-            <div class="space-y-1 text-xs text-gray-300">
+            <div class="space-y-1 text-gray-300">
               <div class="flex justify-between py-1 border-b border-subtle/40">
-                <span>Max Daily Loss Limit</span>
-                <span class="font-mono font-bold text-rose-400">₹5,000 (Halts trading for session)</span>
+                <span>Daily Max Loss Breaker</span>
+                <span class="font-bold text-rose-400">₹5,000 Hard Stop</span>
               </div>
               <div class="flex justify-between py-1 border-b border-subtle/40">
                 <span>Max Concurrent Positions</span>
-                <span class="font-mono font-bold text-white">5 Active Trades Max</span>
+                <span class="font-bold text-white">5 Active Trades Maximum</span>
               </div>
               <div class="flex justify-between py-1 border-b border-subtle/40">
                 <span>Consecutive Loss Cooldown</span>
-                <span class="font-mono font-bold text-white">2 Losses $\rightarrow$ 1-Day Strategy Cooldown</span>
+                <span class="font-bold text-white">2 Losses $\rightarrow$ 1-Day Cooldown</span>
               </div>
               <div class="flex justify-between py-1 border-b border-subtle/40">
-                <span>Time-Decay Exit Limit</span>
-                <span class="font-mono font-bold text-white">120 Minutes Max Holding Period</span>
+                <span>Time Decay Exit Limit</span>
+                <span class="font-bold text-white">120 Minutes Max Holding</span>
               </div>
               <div class="flex justify-between py-1">
-                <span>Intraday Square-off Time</span>
-                <span class="font-mono font-bold text-amber-400">15:20 IST Automatic Market Exit</span>
+                <span>Auto Square-off Time</span>
+                <span class="font-bold text-amber-400">15:20 IST Market Close</span>
               </div>
             </div>
           </div>
@@ -648,17 +677,17 @@ flowchart TD
       </div>
     </section>
 
-    <!-- 6. DEPLOYMENT & CI/CD TAB -->
+    <!-- 7. VM & CI/CD TOPOLOGY TAB -->
     <section id="tab-deploy" class="tab-content hidden space-y-6">
-      <div class="glass-card rounded-2xl p-6">
+      <div class="glass-card rounded-3xl p-6 md:p-8">
         <h2 class="text-lg font-bold text-white mb-2 flex items-center gap-2">
           <span>🚀</span> VM Production Topology &amp; GitHub Actions CI/CD
         </h2>
         <p class="text-xs text-gray-400 mb-6">
-          Automated continuous integration and deployment pipeline deploying to Ubuntu Linux VM.
+          Continuous integration, validation, and deployment pipeline hosted on Ubuntu Linux VM.
         </p>
 
-        <div class="mermaid rounded-xl bg-surface2/60 p-4 border border-subtle flex justify-center mb-6">
+        <div class="mermaid rounded-2xl bg-surface2/60 p-6 border border-subtle flex justify-center mb-6">
 flowchart LR
     Dev["Developer Push<br/>(git push origin main)"] --> GHA["GitHub Actions Runner<br/>(.github/workflows/deploy.yml)"]
 
@@ -682,25 +711,13 @@ flowchart LR
 
     GHA --> Test & Build & Imports --> SSH --> Pull --> Deps --> NPM_Build --> Restart --> Nginx
         </div>
-
-        <div class="rounded-xl border border-subtle bg-surface2/40 p-4">
-          <h4 class="font-bold text-sm text-white mb-2">Production VM Configuration</h4>
-          <ul class="space-y-1.5 text-xs text-gray-300 font-mono">
-            <li>• <strong>Internal Backend Port:</strong> http://127.0.0.1:8001</li>
-            <li>• <strong>Service Manager:</strong> systemd (<code>optionssimulator-backend.service</code>)</li>
-            <li>• <strong>Reverse Proxy:</strong> Nginx with HTTP/2 and WebSocket upgrade support</li>
-            <li>• <strong>Co-Located Apps:</strong> TradeDashboard (Port 8000) &amp; OptionsSimulator (Port 8001)</li>
-            <li>• <strong>Secrets Management:</strong> Isolated <code>.env</code> file protected by GitHub Push Protection</li>
-          </ul>
-        </div>
       </div>
     </section>
 
   </main>
 
-  <!-- Footer -->
-  <footer class="border-t border-subtle/80 bg-bgDark/90 px-6 py-6 text-center text-xs text-gray-500">
-    OptionsSimulator Production Architecture Documentation • Built for NSE NIFTY 50 &amp; BSE SENSEX Quantitative Derivatives
+  <footer class="border-t border-subtle/80 bg-bgDark/90 px-6 py-8 text-center text-xs text-gray-500">
+    OptionsSimulator Exhaustive Technical Architecture Manual • NSE NIFTY 50 &amp; BSE SENSEX Quantitative Derivatives
   </footer>
 
   <script>
