@@ -12,8 +12,12 @@ OptionsSimulator is an institutional-grade, asynchronous quantitative trading an
 1. **Zero Real-Order Risk:** The platform deliberately avoids routing real capital orders to broker endpoints. Every signal, execution, and P&L calculation is modeled in a deterministic paper-trading sandbox (`PaperTrader`).
 2. **Microstructure Fidelity:** Ingests live binary tick feeds via Fyers WebSocket API v3, reconstructs 1-minute and 5-minute OHLCV candles, computes tick-level Cumulative Volume Delta (CVD), and monitors full Option Chains in real time.
 3. **Dual-Index Support:** Simultaneously evaluates separate data feeds, strike intervals, lot sizes, and strategy engines for **NSE NIFTY 50** and **BSE SENSEX**.
-4. **Stepped Trailing Stop Loss (TSL):** Protects intraday profits with dynamic stepped ratchet intervals (+20, +40, +60 pt dynamic profit lock).
-5. **08:50 AM Pre-Market Catalyst AI:** Synthesizes live global financial market quotes (Nasdaq, Brent Crude, GIFT Nifty, DXY, India VIX) and multi-region newspaper RSS feeds into Google Gemini 3.6 Flash for opening sector sentiment and strategy conviction briefings.
+4. **Delta-Optimized Strike Selector ($\Delta \approx 0.60$):** Dynamically evaluates Option Greeks to target optimal $\Delta \approx 0.60 - 0.65$ contracts for rapid profit accumulation.
+5. **Stepped Trailing Stop Loss (TSL):** Protects intraday profits with dynamic stepped ratchet intervals (+20, +40, +60 pt dynamic profit lock) and live animated progress gauges.
+6. **Dual AI Intelligence Engines:** 
+   - **08:50 AM Pre-Market Catalyst AI:** Synthesizes live global financial quotes and multi-region newspaper RSS feeds into Google Gemini 3.6 Flash for morning opening sector bias briefings.
+   - **15:35 IST Post-Market Trade Journal:** Autonomously audits today's closed paper trades, win rate, and discipline score, generating an executive debrief to Telegram and the dashboard.
+7. **Web Audio Alert Synthesizer:** Real-time synthesized harmonic audio alerts for order entries, TSL locks, and target exits with header mute controls.
 
 ### 1.2 Indian Index Derivatives Specifications
 | Parameter | NSE NIFTY 50 (`NSE:NIFTY50-INDEX`) | BSE SENSEX (`BSE:SENSEX-INDEX`) |
@@ -24,6 +28,7 @@ OptionsSimulator is an institutional-grade, asynchronous quantitative trading an
 | **Primary Expiry Day** | Thursday (Weekly / Monthly) | Friday (Weekly / Monthly) |
 | **Trading Hours** | 09:15:00 to 15:30:00 IST (Mon–Fri) | 09:15:00 to 15:30:00 IST (Mon–Fri) |
 | **Pre-Market AI Trigger** | 08:50:00 IST Daily | 08:50:00 IST Daily |
+| **Post-Market AI Audit** | 15:35:00 IST Daily | 15:35:00 IST Daily |
 | **Intraday Auto Square-Off**| 15:20:00 IST Daily | 15:20:00 IST Daily |
 
 ---
@@ -46,6 +51,7 @@ OptionsSimulator/
 ├── data/                                 # Persistent storage & market cache
 │   ├── last_market_state.json            # Persistent closing LTPs for weekend/after-hours UI
 │   ├── premarket_intel.json              # Cached 08:50 AM Gemini pre-market briefing
+│   ├── postmarket_intel.json             # Cached 15:35 IST Gemini post-market audit journal
 │   ├── historical/                       # 1-year historical OHLCV CSV data for backtesting
 │   └── backtest_results/                 # JSON performance reports & capital requirements
 │
@@ -80,7 +86,7 @@ OptionsSimulator/
 │   └── utils/                            # Mathematical & Financial Utilities
 │       ├── indicators.py                 # RSI, MACD, EMA, Bollinger, Stochastic, ATR (Numpy/Pandas)
 │       ├── charges.py                    # Real-time Indian statutory tax & charge calculator
-│       ├── options_pricing.py            # Black-Scholes delta estimate & strike parser
+│       ├── options_pricing.py            # Black-Scholes Greeks (Delta 0.60), pricing, strike parsing
 │       └── logger.py                     # High-speed categorized file and console loggers
 │
 ├── backend/                              # FastAPI Asynchronous Web Server
@@ -97,7 +103,7 @@ OptionsSimulator/
 │   │   ├── security.py                   # Dependency injection security guards
 │   │   ├── paper_router.py               # REST API: `/api/paper/*` (trades, positions, intelligence)
 │   │   ├── backtest_router.py            # REST API: `/api/backtest/*` (reports, equity curves)
-│   │   └── ai_intelligence.py            # Multi-newspaper RSS aggregator + Gemini 3.6 Flash engine
+│   │   └── ai_intelligence.py            # Multi-news aggregator + Pre-Market & Post-Market AI
 │   └── migrations/
 │       └── 001_options_positions.sql     # PostgreSQL database table definitions
 │
@@ -109,25 +115,29 @@ OptionsSimulator/
 │   │   ├── App.jsx                       # Master router & layout container
 │   │   ├── index.css                     # Design system CSS tokens & glassmorphic utilities
 │   │   ├── store/
-│   │   │   ├── marketStore.js            # External store for streaming WebSocket ticks & prices
+│   │   │   ├── marketStore.js            # External store for streaming ticks, audio alerts, & prices
 │   │   │   └── tradingStore.js           # External store for active positions & paper trade logs
 │   │   ├── hooks/
 │   │   │   ├── useMarketStream.js        # WebSocket client with exponential backoff & auto-reconnect
 │   │   │   └── usePaperTradingSync.js    # REST data fetching & manual order action dispatchers
+│   │   ├── utils/
+│   │   │   └── audioAlerts.js            # Web Audio API sound synthesizer engine
 │   │   ├── components/
-│   │   │   ├── MarketHeader.jsx          # Live/Weekend market status, LTPs, and chart openers
+│   │   │   ├── MarketHeader.jsx          # Live market status, sound toggle, & Chart opener
 │   │   │   ├── CandleChart.jsx           # TradingView-grade chart with EMA 20/50 overlays & CVD delta
-│   │   │   ├── ChartModal.jsx            # Portal-mounted full-screen candlestick chart modal
+│   │   │   ├── ChartModal.jsx            # Portal-mounted Split Dual-Chart modal
 │   │   │   ├── PnlSummaryCard.jsx        # Hero KPI card with 5 tiles and itemized Tax Split popup
 │   │   │   ├── PreMarketIntelligenceCard.jsx # 08:50 AM Gemini catalyst card with Refresh AI button
-│   │   │   ├── ActivePositionsCard.jsx   # Live position cards with real-time Stepped TSL badges
+│   │   │   ├── PostMarketJournalCard.jsx # 15:35 IST Gemini post-market performance review card
+│   │   │   ├── StrategyStatusCard.jsx    # Strategy status cards with Stepped TSL Progress Gauge
+│   │   │   ├── ExposureMeter.jsx         # CE vs PE exposure telemetry meter
+│   │   │   ├── IntradayEquityCurve.jsx   # Real-time intraday P&L equity trajectory
 │   │   │   └── StrategyAnalyticsModal.jsx # Deep-dive equity curve & win rate modal
 │   │   └── screens/
 │   │       ├── LiveDashboardScreen.jsx   # Real-time intraday trading dashboard
 │   │       ├── BacktestReportScreen.jsx  # 21-strategy backtest performance analysis
 │   │       ├── StrategyLabScreen.jsx     # Interactive custom parameter backtesting playground
 │   │       └── TradeHistoryScreen.jsx    # Complete searchable trade log with tax breakdowns
-│
 ├── deploy/                               # Automated Production Deployment Scripts
 │   ├── deploy.sh                         # VM bash deploy script (pip, npm build, systemd restart)
 │   └── optionssimulator-backend.service  # Systemd service unit definition

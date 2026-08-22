@@ -633,15 +633,16 @@
       <div class="glass-card rounded-3xl p-6 md:p-8">
         <h2 class="text-lg font-bold text-white mb-2 flex items-center gap-2">
           <i data-lucide="bot" class="w-5 h-5 text-purple-400"></i>
-          <span>Global Multi-Newspaper Ingestion &amp; Gemini 3.6 Flash Architecture</span>
+          <span>Dual AI Pipeline: Pre-Market Catalyst (08:50 AM) &amp; Post-Market Journal (15:35 IST)</span>
         </h2>
-        <p class="text-xs text-gray-400 mb-6">How live market quotes and breaking news from international and domestic newspapers are synthesized every morning at 08:50 AM IST.</p>
+        <p class="text-xs text-gray-400 mb-6">Autonomous daily intelligence workflows powered by Google Gemini 3.6 Flash and live financial market data.</p>
 
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Pre-Market Row -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           <div class="rounded-2xl border border-subtle bg-surface2/40 p-5 space-y-4">
             <h4 class="font-bold text-sm text-white flex items-center gap-2">
               <i data-lucide="newspaper" class="w-4 h-4 text-accent"></i>
-              <span>Multi-Region Parallel Newspaper Feeds</span>
+              <span>1. 08:50 AM Multi-Region Newspaper Ingestion</span>
             </h4>
             <div class="space-y-2 text-xs text-gray-300">
               <div class="rounded-xl bg-surface p-3 border border-subtle">
@@ -669,28 +670,69 @@
           <div class="rounded-2xl border border-subtle bg-surface2/40 p-5 space-y-4 font-mono text-xs">
             <h4 class="font-bold text-sm text-white font-sans flex items-center gap-2">
               <i data-lucide="sparkles" class="w-4 h-4 text-purple-400"></i>
-              <span>Gemini 3.6 Flash Structured Output Schema</span>
+              <span>08:50 AM Pre-Market Catalyst Schema</span>
             </h4>
             <pre class="rounded-xl bg-surface p-4 border border-subtle text-gray-300 overflow-x-auto text-[11px] leading-relaxed">
 {
   "market_bias": "MODERATELY_BULLISH",
   "sentiment_score": 68,
   "expected_gap": "+77 pts on NIFTY (Gap Up)",
-  "summary": "GIFT Nifty at 24,329.0 signals a positive opening above 24,300 tracking Nasdaq (+0.43%) and stable Brent Crude at $93.87. Favour buying ITM CE on 5M pullbacks.",
+  "summary": "GIFT Nifty at 24,329.0 signals positive opening above 24,300 tracking Nasdaq (+0.43%) and stable crude.",
   "macro_metrics": [
-    {"name": "GIFT NIFTY", "value": "24,329.00", "change": "+31.50 (+0.13%)", "status": "bull"},
-    {"name": "NASDAQ", "value": "26,180.46", "change": "+113.29 (+0.43%)", "status": "bull"},
-    {"name": "BRENT CRUDE", "value": "$93.87", "change": "+0.26 (+0.28%)", "status": "bear"},
-    {"name": "US DOLLAR (DXY)", "value": "98.84", "change": "+0.09 (+0.10%)", "status": "bear"},
-    {"name": "INDIA VIX", "value": "11.20", "change": "+0.37 (+3.42%)", "status": "bull"}
-  ],
-  "sector_biases": [
-    {"sector": "IT & Tech", "bias": "BULLISH", "catalyst": "Overnight US tech earnings momentum"},
-    {"sector": "Banking & Fin", "bias": "NEUTRAL", "catalyst": "HDFC Bank & ICICI consolidating near 20-EMA"}
+    {"name": "GIFT NIFTY", "value": "24,329.00", "status": "bull"},
+    {"name": "NASDAQ", "value": "26,180.46", "status": "bull"},
+    {"name": "BRENT CRUDE", "value": "$93.87", "status": "bear"}
   ]
 }</pre>
           </div>
         </div>
+
+        <!-- Post-Market Row -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div class="rounded-2xl border border-indigo-500/30 bg-indigo-950/20 p-5 space-y-3">
+            <h4 class="font-bold text-sm text-white flex items-center gap-2">
+              <i data-lucide="award" class="w-4 h-4 text-indigo-400"></i>
+              <span>2. 15:35 IST Automated Post-Market Trade Journal</span>
+            </h4>
+            <p class="text-xs text-gray-300 leading-relaxed font-sans">
+              Runs after market close. Gathers all executed paper trades, profit factors, win rates, and exit triggers. Gemini 3.6 Flash acts as an institutional quant auditor, assigning an objective session grade and execution critique.
+            </p>
+            <div class="grid grid-cols-2 gap-2 text-xs font-mono pt-2">
+              <div class="p-2 rounded-lg bg-surface border border-subtle">
+                <span class="text-gray-400 text-[10px] uppercase block">Session Grade</span>
+                <span class="text-emerald-400 font-bold text-base">A+ / A / B / C</span>
+              </div>
+              <div class="p-2 rounded-lg bg-surface border border-subtle">
+                <span class="text-gray-400 text-[10px] uppercase block">Discipline Score</span>
+                <span class="text-cyan-400 font-bold text-base">0 - 100 Scale</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="rounded-2xl border border-subtle bg-surface2/40 p-5 space-y-4 font-mono text-xs">
+            <h4 class="font-bold text-sm text-white font-sans flex items-center gap-2">
+              <i data-lucide="file-text" class="w-4 h-4 text-emerald-400"></i>
+              <span>15:35 IST Post-Market Journal Schema</span>
+            </h4>
+            <pre class="rounded-xl bg-surface p-4 border border-subtle text-gray-300 overflow-x-auto text-[11px] leading-relaxed">
+{
+  "session_grade": "A",
+  "discipline_score": 92,
+  "executive_summary": "Completed session with 75% win rate. Stepped TSL locked in profits cleanly at +20pt and +40pt.",
+  "key_strengths": [
+    "Clean 5M ORB breakout execution on NIFTY",
+    "Stepped TSL locked break-even on Trade #1"
+  ],
+  "areas_for_improvement": [
+    "Avoid 1M ATM scalping entries during midday compression"
+  ],
+  "tomorrow_watchlist": [
+    "Watch 24,350 resistance level on NIFTY 50"
+  ]
+}</pre>
+          </div>
+        </div>
+
       </div>
     </section>
 
