@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Lock, Mail, ArrowRight, ShieldCheck } from "lucide-react";
+import { NukeBoxLogo } from "./NukeBoxLogo";
 import { supabase } from "../lib/supabaseClient";
 import { api } from "../hooks/usePaperTradingSync";
 
@@ -41,21 +42,21 @@ export function Login({ onLoggedIn, onClose }) {
       {onClose && (
         <button
           onClick={onClose}
-          className="absolute top-5 right-5 rounded-full p-2 text-faint hover:bg-surface2 hover:text-primary transition"
+          className="absolute top-5 right-5 rounded-full p-2 text-faint hover:bg-surface2 hover:text-primary transition cursor-pointer"
         >
           <X className="h-4 w-4" />
         </button>
       )}
 
       {/* Header */}
-      <div className="mb-6 space-y-2">
-        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-tr from-accent to-indigo-500 text-white shadow-lg shadow-accent/25">
-          <ShieldCheck className="h-6 w-6" />
+      <div className="mb-6 space-y-3">
+        <NukeBoxLogo size="lg" />
+        <div>
+          <h2 className="text-xl font-black text-primary tracking-tight">Operator Authentication</h2>
+          <p className="text-xs text-faint mt-0.5">
+            Authorized quantitative credentials required to access the execution terminal.
+          </p>
         </div>
-        <h2 className="text-xl font-black text-primary tracking-tight">Quant Terminal Login</h2>
-        <p className="text-xs text-faint">
-          Authorized quantitative credentials required to access the execution terminal.
-        </p>
       </div>
 
       {error && (
@@ -73,10 +74,10 @@ export function Login({ onLoggedIn, onClose }) {
             <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-faint" />
             <input
               type="email"
-              placeholder="quant@optionssimulator.internal"
+              placeholder="operator@nukebox.internal"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-xl border border-subtle bg-surface2 pl-10 pr-4 py-2.5 text-xs text-primary placeholder:text-faint focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
+              className="w-full rounded-xl border border-subtle bg-surface2 pl-10 pr-4 py-2.5 text-xs text-primary placeholder:text-faint focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent font-mono"
               required
             />
           </div>
@@ -93,7 +94,7 @@ export function Login({ onLoggedIn, onClose }) {
               placeholder="••••••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-xl border border-subtle bg-surface2 pl-10 pr-4 py-2.5 text-xs text-primary placeholder:text-faint focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
+              className="w-full rounded-xl border border-subtle bg-surface2 pl-10 pr-4 py-2.5 text-xs text-primary placeholder:text-faint focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent font-mono"
               required
             />
           </div>
@@ -102,19 +103,19 @@ export function Login({ onLoggedIn, onClose }) {
         <button
           type="submit"
           disabled={loading}
-          className="flex w-full items-center justify-center gap-2 rounded-xl bg-accent px-4 py-3 text-xs font-black text-white hover:brightness-110 shadow-lg shadow-accent/25 transition disabled:opacity-50"
+          className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-accent to-indigo-600 px-4 py-3 text-xs font-black text-white hover:brightness-110 shadow-lg shadow-accent/25 transition disabled:opacity-50 cursor-pointer"
         >
-          <span>{loading ? "Authenticating Session…" : "Launch Terminal"}</span>
+          <span>{loading ? "Authenticating Session…" : "Launch NUKEBOX Terminal"}</span>
           <ArrowRight className="h-3.5 w-3.5" />
         </button>
 
         <div className="pt-2 text-center text-[11px] text-faint">
           <span>Need access? </span>
           <a
-            href="mailto:access@optionssimulator.internal?subject=Access%20Request%20for%20OptionsSimulator%20Quant%20Terminal"
+            href="mailto:parthisivaram45@gmail.com?subject=Access%20Request%20for%20NUKEBOX%20Quant%20Terminal"
             className="font-bold text-accent hover:underline"
           >
-            Contact Administrator
+            Contact PARTHIBAKANNAN S
           </a>
         </div>
       </form>

@@ -4,19 +4,140 @@ import {
   ShieldCheck, Zap, Activity, Cpu, Sparkles, TrendingUp,
   BarChart3, ChevronRight, Lock, Mail, ArrowRight,
   Layers, CheckCircle2, Award, DollarSign, Calculator, Eye,
-  Bot, Clock, HelpCircle, ArrowUpRight, ArrowDownRight, Globe
+  Bot, Clock, HelpCircle, ArrowUpRight, ArrowDownRight, Globe,
+  Sliders, Play, X, ExternalLink, RefreshCw, Terminal
 } from "lucide-react";
+import { NukeBoxLogo } from "../components/NukeBoxLogo";
 import { API_BASE } from "../lib/apiBase";
 
-const STRATEGY_HIGHLIGHTS = [
-  { name: "NIFTY Opening Range Breakout (5M ITM)", index: "NIFTY 50", tf: "5M", mode: "ITM", dir: "CE / PE", desc: "Captures morning opening momentum following the 09:15–09:30 range resolution with 1H 50-EMA trend alignment." },
-  { name: "NIFTY 20-EMA Dynamic Bounce & Rejection", index: "NIFTY 50", tf: "5M", mode: "ITM", dir: "CE / PE", desc: "Trend-continuation pullbacks testing institutional exponential moving average supports on 5M timeframe." },
-  { name: "NIFTY Heikin-Ashi Trend Continuation", index: "NIFTY 50", tf: "5M", mode: "ITM", dir: "CE / PE", desc: "Filtered smoothed trend riding with zero-wick directional momentum confirmation." },
-  { name: "SENSEX Opening Range Breakout (5M ITM)", index: "SENSEX", tf: "5M", mode: "ITM", dir: "CE / PE", desc: "High-velocity breakout trading on BSE SENSEX 100-pt strike intervals." },
-  { name: "SENSEX 20-EMA Bounce & Rejection", index: "SENSEX", tf: "5M", mode: "ITM", dir: "CE / PE", desc: "Systematic reversal and pullback entries aligned with 50-EMA macro trend." },
-  { name: "SENSEX Stochastic Reversal Suite", index: "SENSEX", tf: "5M", mode: "ITM", dir: "CE / PE", desc: "Exhaustion bounce and rejection setups from oversold (20) and overbought (80) zones." },
-  { name: "NIFTY 1M Momentum Scalper", index: "NIFTY 50", tf: "1M", mode: "ATM", dir: "CE / PE", desc: "Sub-minute momentum scalps capturing quick explosive volatility expansions." },
-  { name: "SENSEX 1M Momentum Scalper", index: "SENSEX", tf: "1M", mode: "ATM", dir: "CE / PE", desc: "High-frequency ATM scalps executed within strict risk and time constraints." },
+// 21 Proprietary Algorithmic Strategies (Formulas masked for IP protection)
+const FLEET_21_STRATEGIES = [
+  { id: "NIFTY_ORB_BULLISH_5M_ITM", name: "NIFTY Opening Range Momentum CE", index: "NIFTY 50", tf: "5M", mode: "ITM", targetDelta: "0.62", dir: "CE", desc: "Captures morning opening expansion following initial price discovery with macro trend filter alignment." },
+  { id: "NIFTY_ORB_BEARISH_5M_ITM", name: "NIFTY Opening Range Breakdown PE", index: "NIFTY 50", tf: "5M", mode: "ITM", targetDelta: "0.62", dir: "PE", desc: "Executes directional downside breakdowns on expanding negative order flow velocity." },
+  { id: "NIFTY_EMA_BOUNCE_5M_ITM", name: "NIFTY Dynamic Support Pullback CE", index: "NIFTY 50", tf: "5M", mode: "ITM", targetDelta: "0.60", dir: "CE", desc: "Enters high-probability trend continuation pullbacks testing institutional dynamic support levels." },
+  { id: "NIFTY_EMA_REJECTION_5M_ITM", name: "NIFTY Dynamic Resistance Rejection PE", index: "NIFTY 50", tf: "5M", mode: "ITM", targetDelta: "0.60", dir: "PE", desc: "Capitalizes on overhead resistance rejections aligned with higher-timeframe bearish momentum." },
+  { id: "NIFTY_HEIKIN_ASHI_BULLISH_5M_ITM", name: "NIFTY Directional Trend Pulse CE", index: "NIFTY 50", tf: "5M", mode: "ITM", targetDelta: "0.64", dir: "CE", desc: "Smoothed noise-filtered trend-following model capturing multi-candle directional thrusts." },
+  { id: "NIFTY_HEIKIN_ASHI_BEARISH_5M_ITM", name: "NIFTY Directional Trend Pulse PE", index: "NIFTY 50", tf: "5M", mode: "ITM", targetDelta: "0.64", dir: "PE", desc: "Rides sustained downward momentum pulses with zero-shadow candle confirmation." },
+  { id: "NIFTY_STOCHASTIC_BOUNCE_5M_ITM", name: "NIFTY Oversold Exhaustion Reversal CE", index: "NIFTY 50", tf: "5M", mode: "ITM", targetDelta: "0.58", dir: "CE", desc: "Exploits short-term oversold exhaustion bounces within primary uptrend regimes." },
+  { id: "NIFTY_STOCHASTIC_REJECTION_5M_ITM", name: "NIFTY Overbought Exhaustion Reversal PE", index: "NIFTY 50", tf: "5M", mode: "ITM", targetDelta: "0.58", dir: "PE", desc: "Captures rapid mean-reversion rejections from extended overbought supply zones." },
+  { id: "NIFTY_1M_SCALP_CE", name: "NIFTY High-Velocity Micro Scalp CE", index: "NIFTY 50", tf: "1M", mode: "ATM", targetDelta: "0.50", dir: "CE", desc: "Sub-minute momentum scalping engine exploiting instantaneous tick liquidity bursts." },
+  { id: "NIFTY_1M_SCALP_PE", name: "NIFTY High-Velocity Micro Scalp PE", index: "NIFTY 50", tf: "1M", mode: "ATM", targetDelta: "0.50", dir: "PE", desc: "High-frequency downside scalps executed within strict risk and time constraints." },
+
+  { id: "SENSEX_ORB_BULLISH_5M_ITM", name: "SENSEX Index Breakout Expansion CE", index: "SENSEX", tf: "5M", mode: "ITM", targetDelta: "0.62", dir: "CE", desc: "High-velocity breakout model calibrated for BSE SENSEX 100-point strike spacing." },
+  { id: "SENSEX_ORB_BEARISH_5M_ITM", name: "SENSEX Index Breakdown Expansion PE", index: "SENSEX", tf: "5M", mode: "ITM", targetDelta: "0.62", dir: "PE", desc: "Captures rapid morning panic breakdowns on 30-share heavyweight index components." },
+  { id: "SENSEX_EMA_BOUNCE_5M_ITM", name: "SENSEX Structural Support Pullback CE", index: "SENSEX", tf: "5M", mode: "ITM", targetDelta: "0.60", dir: "CE", desc: "Systematic pullback entries at structural moving average confluence zones." },
+  { id: "SENSEX_EMA_REJECTION_5M_ITM", name: "SENSEX Structural Resistance Rejection PE", index: "SENSEX", tf: "5M", mode: "ITM", targetDelta: "0.60", dir: "PE", desc: "Downside rejection execution testing downward-sloping institutional resistance." },
+  { id: "SENSEX_HEIKIN_ASHI_BULLISH_5M_ITM", name: "SENSEX Smoothed Trend Flow CE", index: "SENSEX", tf: "5M", mode: "ITM", targetDelta: "0.64", dir: "CE", desc: "Filters erratic intraday wicks to lock onto institutional multi-bar trend runs." },
+  { id: "SENSEX_HEIKIN_ASHI_BEARISH_5M_ITM", name: "SENSEX Smoothed Trend Flow PE", index: "SENSEX", tf: "5M", mode: "ITM", targetDelta: "0.64", dir: "PE", desc: "Bearish trend extension model with automated stepped trailing profit locks." },
+  { id: "SENSEX_STOCHASTIC_BOUNCE_5M_ITM", name: "SENSEX Liquidity Sweep Reversal CE", index: "SENSEX", tf: "5M", mode: "ITM", targetDelta: "0.58", dir: "CE", desc: "Trades sharp liquidity sweep reversals from extreme oversold conditions." },
+  { id: "SENSEX_STOCHASTIC_REJECTION_5M_ITM", name: "SENSEX Liquidity Sweep Rejection PE", index: "SENSEX", tf: "5M", mode: "ITM", targetDelta: "0.58", dir: "PE", desc: "Reversal model executing on false breakouts at session resistance." },
+  { id: "SENSEX_1M_SCALP_CE", name: "SENSEX High-Frequency Micro Scalp CE", index: "SENSEX", tf: "1M", mode: "ATM", targetDelta: "0.50", dir: "CE", desc: "Rapid ATM scalp capture on explosive 1-minute volume surges." },
+  { id: "SENSEX_1M_SCALP_PE", name: "SENSEX High-Frequency Micro Scalp PE", index: "SENSEX", tf: "1M", mode: "ATM", targetDelta: "0.50", dir: "PE", desc: "Fast-reacting ATM PE scalp with deterministic stop loss guardrails." },
+  { id: "SENSEX_ATM_VOLATILITY_EXPANSION", name: "SENSEX Volatility Surge Model", index: "SENSEX", tf: "1M", mode: "ATM", targetDelta: "0.52", dir: "CE / PE", desc: "Captures sudden expansion in implied volatility around macroeconomic events." }
+];
+
+// Interactive Market Regimes Simulation Scenarios
+const MARKET_REGIMES = [
+  {
+    id: "morning_surge",
+    title: "09:15–10:00 Morning Surge",
+    subtitle: "High Conviction Opening Momentum",
+    tag: "Volatile Expansion",
+    color: "from-cyan-500/20 to-blue-500/10 border-cyan-500/30 text-cyan-400",
+    strikeDelta: "Δ ≈ 0.65 ITM (+1 Strike)",
+    activeModels: "5M High-Conviction ORB",
+    riskStatus: "Initial -20% Stop Loss Active",
+    aiBriefing: "08:50 AM Pre-Market Catalyst detected positive GIFT Nifty delta (+85 pts) with banking sector accumulation.",
+    expectedPoints: "+35 to +50 pts Target",
+  },
+  {
+    id: "midday_chop",
+    title: "11:30–13:30 Midday Range",
+    subtitle: "Sideways Liquidity Protection",
+    tag: "Theta Shield Active",
+    color: "from-amber-500/20 to-yellow-500/10 border-amber-500/30 text-amber-400",
+    strikeDelta: "Δ ≈ 0.50 ATM (Cooldown)",
+    activeModels: "Exhaustion & 1M Scalps",
+    riskStatus: "120-Min Max Hold Limit Enforced",
+    aiBriefing: "Market volume contracted below 30-day median; false breakout suppression filter active.",
+    expectedPoints: "+15 to +25 pts Scalp",
+  },
+  {
+    id: "trend_ramp",
+    title: "13:30–15:15 Afternoon Trend",
+    subtitle: "Stepped TSL Profit Lock Ramp",
+    tag: "Multi-Tier Ratchet",
+    color: "from-emerald-500/20 to-teal-500/10 border-emerald-500/30 text-emerald-400",
+    strikeDelta: "Δ ≈ 0.62 ITM (Trend Pulse)",
+    activeModels: "5M Dynamic Trend & Heikin-Ashi",
+    riskStatus: "+40 pt Gain → +20 pt Profit Locked",
+    aiBriefing: "Heavy institutional buying across Nifty 50 constituents driving continuation into session highs.",
+    expectedPoints: "+50 to +75 pts Trend",
+  },
+  {
+    id: "expiry_dynamics",
+    title: "Weekly Expiry Session",
+    subtitle: "Tuesday (NIFTY) / Thursday (SENSEX)",
+    tag: "Gamma Acceleration",
+    color: "from-purple-500/20 to-pink-500/10 border-purple-500/30 text-purple-400",
+    strikeDelta: "DTE < 0.25 (Delta Decay Compensated)",
+    activeModels: "Dynamic Strike Offset Engine",
+    riskStatus: "₹5,000 Hard Loss Breaker Primed",
+    aiBriefing: "15:35 IST AI Post-Market Journal evaluates execution discipline and statutory slippage.",
+    expectedPoints: "+30 to +60 pts Fast Alpha",
+  }
+];
+
+// 6 Core Architectural Pillars for Deep-Dive Modals
+const ARCH_PILLARS = [
+  {
+    title: "Delta-Optimized Strike Engine",
+    badge: "Greeks Calculus",
+    short: "Calculates Black-Scholes Greeks dynamically, targeting contracts with Delta ≈ 0.60–0.65 for rapid point velocity.",
+    details: "Unlike basic ATM simulators, NUKEBOX evaluates real-time Black-Scholes Greeks (Delta, Gamma, Theta, Vega) across all active strikes. It systematically targets Delta ≈ 0.60 to ensure optimal point velocity while hedging against time-decay acceleration.",
+    icon: Cpu,
+    color: "text-cyan-400 bg-cyan-500/10 border-cyan-500/20"
+  },
+  {
+    title: "Multi-Tier Stepped TSL",
+    badge: "Profit Protection",
+    short: "Automated ratchet stops: +20 pt locks break-even, +40 pt locks +20 pt, and +60 pt locks +40 pt profit without emotional drag.",
+    details: "NUKEBOX replaces emotional discretionary trailing with a multi-stage deterministic ratchet. At +20 pts gain, Stop Loss is locked to entry (₹0 risk). At +40 pts gain, +20 pts is locked in. At +60 pts gain, +40 pts is guaranteed.",
+    icon: ShieldCheck,
+    color: "text-purple-400 bg-purple-500/10 border-purple-500/20"
+  },
+  {
+    title: "Dual AI Market Intelligence",
+    badge: "Autonomous Agents",
+    short: "08:50 AM Pre-Market Catalyst briefing from global news + 15:35 IST automated post-market trade debrief and discipline scoring.",
+    details: "Features two dedicated AI models: (1) 08:50 AM Pre-Market Catalyst Agent synthesizing GIFT Nifty, global cues, and institutional bias; (2) 15:35 IST Post-Market Trade Journal analyzing win-rates, execution discipline, and session performance grade.",
+    icon: Bot,
+    color: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20"
+  },
+  {
+    title: "₹5,000 Hard Loss Circuit Breaker",
+    badge: "Risk Killswitch",
+    short: "Strict intraday capital protection halts trading automatically if total daily drawdown hits the ₹5,000 risk threshold.",
+    details: "Capital preservation is paramount. If the cumulative realized or unrealized drawdown reaches ₹5,000 in a single trading session, the risk engine immediately halts all strategy signal generation for the day.",
+    icon: Zap,
+    color: "text-rose-400 bg-rose-500/10 border-rose-500/20"
+  },
+  {
+    title: "120-Minute Theta Decay Shield",
+    badge: "Time Exit",
+    short: "Eliminates midday sideways theta decay by automatically squaring off stagnant positions that exceed maximum intraday duration.",
+    details: "Options are decaying assets. If an active position remains in a narrow consolidation band for 120 minutes without hitting target or stop loss, NUKEBOX initiates an automatic time exit to protect accumulated premium.",
+    icon: Clock,
+    color: "text-amber-400 bg-amber-500/10 border-amber-500/20"
+  },
+  {
+    title: "Signed Cumulative Volume Delta",
+    badge: "Order Flow",
+    short: "Tick-by-tick order flow analysis tracks institutional buyer vs seller aggression at key support and resistance levels.",
+    details: "Integrates real-time tick volume delta to confirm whether large participants are aggressively lifting asks or hitting bids, filtering out deceptive low-volume wick breakouts.",
+    icon: Activity,
+    color: "text-indigo-400 bg-indigo-500/10 border-indigo-500/20"
+  }
 ];
 
 function fmtNum(v) {
@@ -25,7 +146,10 @@ function fmtNum(v) {
 
 export function LandingScreen({ onLoginClick }) {
   const [activeFilter, setActiveFilter] = useState("ALL");
-  const [sliderPts, setSliderPts] = useState(45);
+  const [activeRegime, setActiveRegime] = useState(MARKET_REGIMES[0]);
+  const [selectedPillar, setSelectedPillar] = useState(null);
+  
+  // Tax Calculator States
   const [entryPrice, setEntryPrice] = useState(200);
   const [exitPrice, setExitPrice] = useState(245);
   const [lotQty, setLotQty] = useState(65);
@@ -40,25 +164,7 @@ export function LandingScreen({ onLoginClick }) {
       .catch(() => {});
   }, []);
 
-  // Stepped TSL Simulation Math
-  let tslStatus = "Initial Stop Loss (-20%) Active";
-  let tslColor = "text-faint";
-  let lockedProfit = "₹0 Guaranteed";
-  if (sliderPts >= 60) {
-    tslStatus = "Step 3 Locked (+40 pt Profit)";
-    tslColor = "text-purple-400";
-    lockedProfit = "+40 pts (+₹2,600 / Lot)";
-  } else if (sliderPts >= 40) {
-    tslStatus = "Step 2 Locked (+20 pt Profit)";
-    tslColor = "text-emerald-400";
-    lockedProfit = "+20 pts (+₹1,300 / Lot)";
-  } else if (sliderPts >= 20) {
-    tslStatus = "Step 1 Locked (Break-Even)";
-    tslColor = "text-cyan-400";
-    lockedProfit = "₹0 Risk (Break-Even)";
-  }
-
-  // Tax Calculator Math (Indian Regulatory Schedule)
+  // Indian Regulatory Tax Schedule Math
   const turnoverBuy = entryPrice * lotQty;
   const turnoverSell = exitPrice * lotQty;
   const grossPnl = (exitPrice - entryPrice) * lotQty;
@@ -71,7 +177,7 @@ export function LandingScreen({ onLoginClick }) {
   const totalCharges = brokerage + stt + excTurnover + gst + sebiFee + stampDuty;
   const netPnl = grossPnl - totalCharges;
 
-  const filteredStrats = STRATEGY_HIGHLIGHTS.filter((s) => {
+  const filteredStrats = FLEET_21_STRATEGIES.filter((s) => {
     if (activeFilter === "NIFTY") return s.index.includes("NIFTY");
     if (activeFilter === "SENSEX") return s.index.includes("SENSEX");
     if (activeFilter === "5M") return s.tf === "5M";
@@ -84,27 +190,14 @@ export function LandingScreen({ onLoginClick }) {
   return (
     <div className="min-h-screen bg-surface2 text-primary selection:bg-accent selection:text-white font-sans overflow-x-hidden">
       {/* Top Navbar */}
-      <header className="sticky top-0 z-50 border-b border-subtle/80 bg-surface/90 backdrop-blur-2xl px-4 sm:px-8 py-3.5">
+      <header className="sticky top-0 z-50 border-b border-subtle/80 bg-surface/95 backdrop-blur-2xl px-4 sm:px-8 py-3.5 shadow-sm">
         <div className="mx-auto flex max-w-7xl items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-tr from-accent to-indigo-500 text-white font-black text-lg shadow-lg shadow-accent/25">
-              OS
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="font-extrabold text-sm tracking-tight text-white">OptionsSimulator</span>
-                <span className="rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-[9px] font-extrabold text-emerald-400 border border-emerald-500/30 font-mono">
-                  v2.5 Institutional
-                </span>
-              </div>
-              <p className="text-[10px] text-faint font-medium">Quantitative Derivatives Execution Platform</p>
-            </div>
-          </div>
+          <NukeBoxLogo size="md" />
 
           <div className="flex items-center gap-3">
             <a
-              href="mailto:parthiban.kannan@optionssimulator.internal?subject=Access%20Request%20for%20OptionsSimulator%20Quant%20Terminal"
-              className="hidden sm:flex items-center gap-1.5 rounded-xl border border-subtle bg-surface2 px-3.5 py-2 text-xs font-bold text-muted hover:bg-surface3 hover:text-white transition"
+              href="mailto:parthisivaram45@gmail.com?subject=Access%20Request%20for%20NUKEBOX%20Quant%20Terminal"
+              className="hidden sm:flex items-center gap-1.5 rounded-xl border border-subtle bg-surface2 px-4 py-2 text-xs font-bold text-muted hover:bg-surface3 hover:text-white transition shadow-sm"
             >
               <Mail className="h-3.5 w-3.5 text-accent" />
               <span>Request Access</span>
@@ -112,23 +205,22 @@ export function LandingScreen({ onLoginClick }) {
 
             <button
               onClick={onLoginClick}
-              className="flex items-center gap-1.5 rounded-xl bg-accent px-4 py-2 text-xs font-black text-white hover:brightness-110 shadow-lg shadow-accent/25 transition cursor-pointer"
+              className="flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-accent to-indigo-600 px-4 py-2 text-xs font-black text-white hover:brightness-110 shadow-lg shadow-accent/25 transition cursor-pointer"
             >
               <Lock className="h-3.5 w-3.5" />
-              <span>Launch Terminal</span>
+              <span>Operator Sign In</span>
             </button>
           </div>
         </div>
       </header>
 
-      {/* Hero Section with Cinematic Background */}
+      {/* Hero Section with Cinematic Workstation Backdrop */}
       <section className="relative overflow-hidden pt-16 pb-20 px-4 sm:px-8 border-b border-subtle/40">
-        {/* Background Image with Dark Vignette Overlay */}
         <div
           className="absolute inset-0 bg-cover bg-center opacity-25 mix-blend-luminosity pointer-events-none"
           style={{ backgroundImage: `url('${heroBgUrl}')` }}
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-surface2/40 via-surface2/80 to-surface2 pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-b from-surface2/40 via-surface2/85 to-surface2 pointer-events-none" />
 
         <div className="mx-auto max-w-5xl text-center space-y-6 relative z-10">
           <motion.div
@@ -137,7 +229,7 @@ export function LandingScreen({ onLoginClick }) {
             className="inline-flex items-center gap-2 rounded-full border border-accent/30 bg-accent/10 px-4 py-1.5 text-xs font-bold text-accent shadow-sm backdrop-blur-md"
           >
             <Sparkles className="h-3.5 w-3.5" />
-            <span>Institutional Options Derivatives Execution &amp; Risk Modeling Sandbox</span>
+            <span>Autonomous Options Quantitative Derivatives &amp; Risk Platform</span>
           </motion.div>
 
           <motion.h1
@@ -146,9 +238,9 @@ export function LandingScreen({ onLoginClick }) {
             transition={{ delay: 0.1 }}
             className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight text-white leading-tight"
           >
-            Autonomous Index Options <br />
-            <span className="bg-gradient-to-r from-cyan-400 via-accent to-purple-400 bg-clip-text text-transparent">
-              Precision Quantitative Terminal
+            Precision Algorithmic Options <br />
+            <span className="bg-gradient-to-r from-cyan-400 via-indigo-400 to-purple-400 bg-clip-text text-transparent">
+              Engineered by PARTHIBAKANNAN S
             </span>
           </motion.h1>
 
@@ -158,7 +250,7 @@ export function LandingScreen({ onLoginClick }) {
             transition={{ delay: 0.2 }}
             className="mx-auto max-w-2xl text-sm sm:text-base text-gray-300 leading-relaxed font-sans"
           >
-            A high-performance algorithmic execution engine for NSE NIFTY 50 and BSE SENSEX derivatives. Engineered with 21 multi-timeframe models, dynamic Delta strike targeting (Delta ≈ 0.60), multi-tier stepped profit locks, and AI market briefings.
+            NUKEBOX is an institutional quantitative derivatives sandbox built for NSE NIFTY 50 and BSE SENSEX options. Featuring 21 autonomous execution models, dynamic Greeks Delta strike selection (Delta ≈ 0.60), multi-tier stepped profit locks, and dual AI market debriefs.
           </motion.p>
 
           <motion.div
@@ -169,7 +261,7 @@ export function LandingScreen({ onLoginClick }) {
           >
             <button
               onClick={onLoginClick}
-              className="flex items-center gap-2 rounded-2xl bg-accent px-6 py-3.5 text-sm font-black text-white hover:brightness-110 shadow-xl shadow-accent/30 transition transform hover:-translate-y-0.5 cursor-pointer"
+              className="flex items-center gap-2 rounded-2xl bg-gradient-to-r from-accent to-indigo-600 px-6 py-3.5 text-sm font-black text-white hover:brightness-110 shadow-xl shadow-accent/30 transition transform hover:-translate-y-0.5 cursor-pointer"
             >
               <span>Launch Operator Terminal</span>
               <ArrowRight className="h-4 w-4" />
@@ -179,36 +271,36 @@ export function LandingScreen({ onLoginClick }) {
               className="flex items-center gap-2 rounded-2xl border border-subtle bg-surface2/80 px-5 py-3.5 text-sm font-bold text-gray-300 hover:bg-surface3 hover:text-white backdrop-blur-sm transition cursor-pointer"
             >
               <Eye className="h-4 w-4 text-cyan-400" />
-              <span>Explore 21 Strategies</span>
+              <span>Explore 21 Strategy Models</span>
             </a>
           </motion.div>
 
-          {/* Real-Time Live Ticker Strip */}
+          {/* Calibrated Live Ticker Strip */}
           <div className="pt-8 max-w-3xl mx-auto">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 rounded-2xl border border-subtle bg-surface/80 backdrop-blur-xl">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 rounded-2xl border border-subtle bg-surface/80 backdrop-blur-xl shadow-md">
               {/* NIFTY Ticker */}
-              <div className="flex items-center justify-between px-4 py-2 rounded-xl bg-surface2/60 border border-subtle">
+              <div className="flex items-center justify-between px-4 py-2.5 rounded-xl bg-surface2/60 border border-subtle">
                 <div className="text-left">
-                  <span className="text-[10px] font-bold uppercase text-cyan-400 tracking-wider">NSE NIFTY 50 (Lot 65)</span>
+                  <span className="text-[10px] font-bold uppercase text-cyan-400 tracking-wider font-mono">NSE NIFTY 50 (Lot 65)</span>
                   <div className="font-mono text-lg font-black text-white tabular-nums">
-                    {fmtNum(marketData?.nifty_price || 24120.0)}
+                    {fmtNum(marketData?.nifty_price || 24823.15)}
                   </div>
                 </div>
                 <span className="rounded-full bg-bull/15 px-2.5 py-1 text-[11px] font-bold text-bull border border-bull/30 font-mono">
-                  +{fmtNum(marketData?.nifty_change || 120.0)} (+{Number(marketData?.nifty_change_pct || 0.50).toFixed(2)}%)
+                  +{fmtNum(marketData?.nifty_change || 142.50)} (+{Number(marketData?.nifty_change_pct || 0.58).toFixed(2)}%)
                 </span>
               </div>
 
               {/* SENSEX Ticker */}
-              <div className="flex items-center justify-between px-4 py-2 rounded-xl bg-surface2/60 border border-subtle">
+              <div className="flex items-center justify-between px-4 py-2.5 rounded-xl bg-surface2/60 border border-subtle">
                 <div className="text-left">
-                  <span className="text-[10px] font-bold uppercase text-purple-400 tracking-wider">BSE SENSEX (Lot 20)</span>
+                  <span className="text-[10px] font-bold uppercase text-purple-400 tracking-wider font-mono">BSE SENSEX (Lot 20)</span>
                   <div className="font-mono text-lg font-black text-white tabular-nums">
-                    {fmtNum(marketData?.sensex_price || 77540.83)}
+                    {fmtNum(marketData?.sensex_price || 81388.40)}
                   </div>
                 </div>
                 <span className="rounded-full bg-bull/15 px-2.5 py-1 text-[11px] font-bold text-bull border border-bull/30 font-mono">
-                  +{fmtNum(marketData?.sensex_change || 3.11)} (+{Number(marketData?.sensex_change_pct || 0.00).toFixed(2)}%)
+                  +{fmtNum(marketData?.sensex_change || 450.20)} (+{Number(marketData?.sensex_change_pct || 0.56).toFixed(2)}%)
                 </span>
               </div>
             </div>
@@ -216,193 +308,204 @@ export function LandingScreen({ onLoginClick }) {
         </div>
       </section>
 
-      {/* 6 Key Architectural Pillars */}
+      {/* Interactive Market Regime & AI Engine Sandbox */}
+      <section className="py-16 px-4 sm:px-8 border-t border-subtle/60 bg-surface/40 relative">
+        <div className="mx-auto max-w-6xl space-y-8">
+          <div className="text-center space-y-2">
+            <div className="inline-flex items-center gap-1.5 rounded-full bg-indigo-500/10 px-3.5 py-1 text-xs font-bold text-indigo-400 border border-indigo-500/20">
+              <Sliders className="h-3.5 w-3.5" />
+              <span>Interactive Execution Sandbox</span>
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight">Adaptive Market Regimes Simulation</h2>
+            <p className="text-xs sm:text-sm text-gray-400 max-w-xl mx-auto font-sans">
+              Select an intraday market scenario below to observe how NUKEBOX dynamically adjusts strike selection, enforces risk guardrails, and deploys AI debriefs.
+            </p>
+          </div>
+
+          {/* Scenario Selection Tabs */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            {MARKET_REGIMES.map((regime) => {
+              const isSelected = activeRegime.id === regime.id;
+              return (
+                <button
+                  key={regime.id}
+                  onClick={() => setActiveRegime(regime)}
+                  className={`p-4 rounded-2xl border text-left transition-all cursor-pointer ${
+                    isSelected
+                      ? "bg-surface border-accent shadow-lg shadow-accent/20 ring-1 ring-accent"
+                      : "bg-surface2/60 border-subtle hover:bg-surface2 hover:border-border-strong"
+                  }`}
+                >
+                  <span className="text-[10px] font-mono font-bold uppercase text-accent">{regime.tag}</span>
+                  <div className="text-sm font-bold text-white mt-1">{regime.title}</div>
+                  <div className="text-xs text-gray-400 mt-0.5 line-clamp-1">{regime.subtitle}</div>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Active Regime Telemetry Display */}
+          <motion.div
+            key={activeRegime.id}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.2 }}
+            className={`rounded-3xl border bg-gradient-to-br ${activeRegime.color} p-6 sm:p-8 backdrop-blur-xl space-y-6 shadow-2xl`}
+          >
+            <div className="flex flex-wrap items-center justify-between gap-4 border-b border-subtle/80 pb-4">
+              <div>
+                <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-gray-400">Active Scenario</span>
+                <h3 className="text-xl sm:text-2xl font-black text-white">{activeRegime.title}</h3>
+                <p className="text-xs text-gray-300 mt-0.5">{activeRegime.subtitle}</p>
+              </div>
+
+              <div className="flex items-center gap-2 rounded-2xl bg-surface/90 px-4 py-2 border border-subtle shadow-sm">
+                <Target className="h-4 w-4 text-emerald-400" />
+                <div className="text-left">
+                  <span className="text-[9px] uppercase font-bold text-faint block">Target Velocity</span>
+                  <span className="text-xs font-mono font-black text-emerald-400">{activeRegime.expectedPoints}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* 4 Telemetry Metrics */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="rounded-2xl bg-surface/90 border border-subtle p-4 space-y-1">
+                <span className="text-[10px] uppercase font-bold text-faint flex items-center gap-1.5">
+                  <Cpu className="h-3.5 w-3.5 text-accent" /> Strike Selection Math
+                </span>
+                <div className="text-sm font-mono font-bold text-white">{activeRegime.strikeDelta}</div>
+              </div>
+
+              <div className="rounded-2xl bg-surface/90 border border-subtle p-4 space-y-1">
+                <span className="text-[10px] uppercase font-bold text-faint flex items-center gap-1.5">
+                  <Layers className="h-3.5 w-3.5 text-purple-400" /> Active Strategy Models
+                </span>
+                <div className="text-sm font-mono font-bold text-white">{activeRegime.activeModels}</div>
+              </div>
+
+              <div className="rounded-2xl bg-surface/90 border border-subtle p-4 space-y-1">
+                <span className="text-[10px] uppercase font-bold text-faint flex items-center gap-1.5">
+                  <ShieldCheck className="h-3.5 w-3.5 text-emerald-400" /> Risk Guardrail Protocol
+                </span>
+                <div className="text-sm font-mono font-bold text-emerald-400">{activeRegime.riskStatus}</div>
+              </div>
+            </div>
+
+            {/* AI Intelligence Stream */}
+            <div className="rounded-2xl bg-surface/90 border border-subtle p-4 space-y-1.5">
+              <div className="flex items-center gap-2">
+                <Bot className="h-4 w-4 text-indigo-400" />
+                <span className="text-xs font-bold text-white">NUKEBOX AI Intelligence Feed</span>
+              </div>
+              <p className="text-xs text-gray-300 font-sans leading-relaxed">
+                "{activeRegime.aiBriefing}"
+              </p>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* 6 Key Architectural Pillars with On-Demand Modal Triggers */}
       <section className="py-16 px-4 sm:px-8 max-w-7xl mx-auto space-y-6">
         <div className="text-center space-y-2 mb-10">
           <h2 className="text-2xl sm:text-3xl font-black text-white">Engineered for Quantitative Excellence</h2>
           <p className="text-xs sm:text-sm text-gray-400 max-w-xl mx-auto">
-            Combining mathematical precision, high-speed tick processing, and institutional risk guardrails.
+            Explore the institutional foundations powering NUKEBOX's high-speed execution sandbox. Click any card to inspect architecture.
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          <div className="rounded-3xl border border-subtle bg-surface/80 p-6 space-y-3 hover:border-accent/40 transition backdrop-blur-md">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-cyan-500/15 text-cyan-400 border border-cyan-500/20">
-              <Cpu className="h-5 w-5" />
-            </div>
-            <h3 className="text-base font-bold text-white">Delta-Optimized Strike Engine</h3>
-            <p className="text-xs text-gray-400 leading-relaxed font-sans">
-              Calculates Black-Scholes Greeks (Delta, Gamma, Theta, Vega) dynamically, targeting contracts with Delta ≈ 0.60 - 0.65 for rapid point velocity.
-            </p>
-          </div>
-
-          <div className="rounded-3xl border border-subtle bg-surface/80 p-6 space-y-3 hover:border-accent/40 transition backdrop-blur-md">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-purple-500/15 text-purple-400 border border-purple-500/20">
-              <ShieldCheck className="h-5 w-5" />
-            </div>
-            <h3 className="text-base font-bold text-white">Multi-Tier Stepped TSL</h3>
-            <p className="text-xs text-gray-400 leading-relaxed font-sans">
-              Automated ratchet stops: +20 pt locks break-even, +40 pt locks +20 pt, and +60 pt locks +40 pt profit without emotional interference.
-            </p>
-          </div>
-
-          <div className="rounded-3xl border border-subtle bg-surface/80 p-6 space-y-3 hover:border-accent/40 transition backdrop-blur-md">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-500/15 text-emerald-400 border border-emerald-500/20">
-              <Bot className="h-5 w-5" />
-            </div>
-            <h3 className="text-base font-bold text-white">Dual AI Market Intelligence</h3>
-            <p className="text-xs text-gray-400 leading-relaxed font-sans">
-              08:50 AM Pre-Market Catalyst synthesis across global financial news + 15:35 IST automated post-market trade debrief and discipline auditing.
-            </p>
-          </div>
-
-          <div className="rounded-3xl border border-subtle bg-surface/80 p-6 space-y-3 hover:border-accent/40 transition backdrop-blur-md">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-rose-500/15 text-rose-400 border border-rose-500/20">
-              <Zap className="h-5 w-5" />
-            </div>
-            <h3 className="text-base font-bold text-white">₹5,000 Hard Loss Circuit Breaker</h3>
-            <p className="text-xs text-gray-400 leading-relaxed font-sans">
-              Strict intraday capital protection halts trading automatically if total daily realized or unrealized drawdown hits the configured threshold.
-            </p>
-          </div>
-
-          <div className="rounded-3xl border border-subtle bg-surface/80 p-6 space-y-3 hover:border-accent/40 transition backdrop-blur-md">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-amber-500/15 text-amber-400 border border-amber-500/20">
-              <Clock className="h-5 w-5" />
-            </div>
-            <h3 className="text-base font-bold text-white">120-Minute Holding Limit</h3>
-            <p className="text-xs text-gray-400 leading-relaxed font-sans">
-              Eliminates midday sideways theta decay by automatically squaring off stagnant positions that exceed maximum intraday duration.
-            </p>
-          </div>
-
-          <div className="rounded-3xl border border-subtle bg-surface/80 p-6 space-y-3 hover:border-accent/40 transition backdrop-blur-md">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-indigo-500/15 text-indigo-400 border border-indigo-500/20">
-              <Activity className="h-5 w-5" />
-            </div>
-            <h3 className="text-base font-bold text-white">Signed Cumulative Volume Delta</h3>
-            <p className="text-xs text-gray-400 leading-relaxed font-sans">
-              Tick-by-tick order flow analysis tracks institutional buyer vs seller aggression at key support and resistance pivot levels.
-            </p>
-          </div>
+          {ARCH_PILLARS.map((p, idx) => {
+            const Icon = p.icon;
+            return (
+              <div
+                key={idx}
+                onClick={() => setSelectedPillar(p)}
+                className="rounded-3xl border border-subtle bg-surface/80 p-6 space-y-3 hover:border-accent/40 transition backdrop-blur-md cursor-pointer group shadow-sm hover:shadow-lg"
+              >
+                <div className="flex items-center justify-between">
+                  <div className={`flex h-11 w-11 items-center justify-center rounded-2xl border ${p.color}`}>
+                    <Icon className="h-5 w-5" />
+                  </div>
+                  <span className="text-[10px] font-mono font-bold uppercase text-faint group-hover:text-accent transition">
+                    Learn More →
+                  </span>
+                </div>
+                <h3 className="text-base font-bold text-white group-hover:text-accent transition">{p.title}</h3>
+                <p className="text-xs text-gray-400 leading-relaxed font-sans">{p.short}</p>
+              </div>
+            );
+          })}
         </div>
       </section>
 
-      {/* Interactive Stepped TSL Simulator Widget */}
-      <section className="py-16 px-4 sm:px-8 border-t border-subtle/60 bg-surface/40 relative">
-        <div className="mx-auto max-w-5xl space-y-6">
-          <div className="text-center space-y-2">
-            <div className="inline-flex items-center gap-1.5 rounded-full bg-purple-500/10 px-3 py-1 text-xs font-bold text-purple-400 border border-purple-500/20">
-              <ShieldCheck className="h-3.5 w-3.5" />
-              <span>Interactive Profit Protection Demo</span>
-            </div>
-            <h2 className="text-2xl sm:text-3xl font-black text-white">Stepped Trailing Stop Loss (TSL) Simulator</h2>
-            <p className="text-xs sm:text-sm text-gray-400 max-w-xl mx-auto">
-              Drag the slider below to simulate live option point gains and observe how our multi-tier ratchet locks in guaranteed profit steps.
-            </p>
-          </div>
-
-          <div className="rounded-3xl border border-subtle bg-surface/90 p-6 sm:p-8 backdrop-blur-xl space-y-6">
-            <div className="flex flex-wrap items-center justify-between gap-4">
-              <div>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-faint">Simulated Points Gained</span>
-                <div className="font-mono text-3xl sm:text-4xl font-black text-emerald-400">+{sliderPts} Points</div>
-              </div>
-
-              <div className="text-right">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-faint">Guaranteed Protection</span>
-                <div className={`font-mono text-lg sm:text-xl font-bold ${tslColor}`}>{lockedProfit}</div>
-                <div className="text-[11px] text-faint mt-0.5">{tslStatus}</div>
-              </div>
-            </div>
-
-            {/* Slider */}
-            <input
-              type="range"
-              min="0"
-              max="100"
-              step="1"
-              value={sliderPts}
-              onChange={(e) => setSliderPts(Number(e.target.value))}
-              className="w-full h-2.5 bg-surface3 rounded-lg appearance-none cursor-pointer accent-accent"
-            />
-
-            {/* Visual Milestones */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs font-mono">
-              <div className={`p-3 rounded-2xl border ${sliderPts >= 0 ? "bg-surface2 border-subtle text-gray-300" : "bg-surface3/30 border-subtle/30 text-faint"}`}>
-                <div className="text-[10px] uppercase font-bold text-faint">0 to +19 pts</div>
-                <div className="font-bold text-white mt-1">Initial Entry</div>
-                <div className="text-[10px] text-rose-400 mt-0.5">-20% Stop Loss</div>
-              </div>
-
-              <div className={`p-3 rounded-2xl border ${sliderPts >= 20 ? "bg-cyan-950/20 border-cyan-500/40 text-cyan-400" : "bg-surface3/30 border-subtle/30 text-faint"}`}>
-                <div className="text-[10px] uppercase font-bold text-faint">+20 pt Milestone</div>
-                <div className="font-bold text-white mt-1">Step 1 Lock</div>
-                <div className="text-[10px] text-cyan-400 mt-0.5">SL = Entry (₹0 Risk)</div>
-              </div>
-
-              <div className={`p-3 rounded-2xl border ${sliderPts >= 40 ? "bg-emerald-950/20 border-emerald-500/40 text-emerald-400" : "bg-surface3/30 border-subtle/30 text-faint"}`}>
-                <div className="text-[10px] uppercase font-bold text-faint">+40 pt Milestone</div>
-                <div className="font-bold text-white mt-1">Step 2 Lock</div>
-                <div className="text-[10px] text-emerald-400 mt-0.5">SL = +20 pt Profit</div>
-              </div>
-
-              <div className={`p-3 rounded-2xl border ${sliderPts >= 60 ? "bg-purple-950/20 border-purple-500/40 text-purple-400" : "bg-surface3/30 border-subtle/30 text-faint"}`}>
-                <div className="text-[10px] uppercase font-bold text-faint">+60 pt Milestone</div>
-                <div className="font-bold text-white mt-1">Step 3 Lock</div>
-                <div className="text-[10px] text-purple-400 mt-0.5">SL = +40 pt Profit</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 21-Strategy Fleet Overview */}
+      {/* 21-Strategy Fleet Overview (All Models Displayed with Categories) */}
       <section id="strategies" className="py-16 px-4 sm:px-8 max-w-7xl mx-auto space-y-8">
         <div className="text-center space-y-2">
-          <div className="inline-flex items-center gap-1.5 rounded-full bg-accent/10 px-3 py-1 text-xs font-bold text-accent border border-accent/20">
+          <div className="inline-flex items-center gap-1.5 rounded-full bg-accent/10 px-3.5 py-1 text-xs font-bold text-accent border border-accent/20">
             <Layers className="h-3.5 w-3.5" />
             <span>Quantitative Model Fleet</span>
           </div>
-          <h2 className="text-2xl sm:text-3xl font-black text-white">21 Algorithmic Strategies</h2>
+          <h2 className="text-2xl sm:text-3xl font-black text-white">21 Autonomous Quantitative Strategies</h2>
           <p className="text-xs sm:text-sm text-gray-400 max-w-xl mx-auto">
             Systematic, non-discretionary execution models engineered specifically for Indian equity index derivatives microstructure.
           </p>
 
           {/* Filter Chips */}
           <div className="flex flex-wrap items-center justify-center gap-2 pt-4">
-            {["ALL", "NIFTY", "SENSEX", "5M", "1M"].map((f) => (
+            {[
+              { key: "ALL", label: "All 21 Strategies" },
+              { key: "NIFTY", label: "NIFTY 50 (10)" },
+              { key: "SENSEX", label: "BSE SENSEX (11)" },
+              { key: "5M", label: "5M High-Conviction (12)" },
+              { key: "1M", label: "1M Micro-Scalps (9)" }
+            ].map((f) => (
               <button
-                key={f}
-                onClick={() => setActiveFilter(f)}
-                className={`rounded-xl px-4 py-1.5 text-xs font-bold transition border ${
-                  activeFilter === f
+                key={f.key}
+                onClick={() => setActiveFilter(f.key)}
+                className={`rounded-xl px-4 py-2 text-xs font-bold transition border cursor-pointer ${
+                  activeFilter === f.key
                     ? "bg-accent text-white border-accent shadow-md shadow-accent/25"
                     : "bg-surface2 text-gray-400 border-subtle hover:text-white"
                 }`}
               >
-                {f === "ALL" ? "All Strategies" : f}
+                {f.label}
               </button>
             ))}
           </div>
         </div>
 
         {/* Strategy Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {filteredStrats.map((s, idx) => (
-            <div key={idx} className="rounded-2xl border border-subtle bg-surface/80 p-5 space-y-3 hover:border-accent/40 transition">
-              <div className="flex items-center justify-between">
-                <span className={`px-2 py-0.5 rounded-full text-[10px] font-black border ${
-                  s.index.includes("NIFTY") ? "bg-cyan-500/15 text-cyan-400 border-cyan-500/30" : "bg-purple-500/15 text-purple-400 border-purple-500/30"
-                }`}>
-                  {s.index}
-                </span>
-                <span className="text-[10px] font-mono font-bold text-faint">{s.tf} • {s.mode}</span>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {filteredStrats.map((s) => {
+            const isCE = s.dir.includes("CE");
+            return (
+              <div key={s.id} className="rounded-2xl border border-subtle bg-surface/80 p-5 space-y-3 hover:border-accent/40 transition shadow-sm">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5">
+                    <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black border ${
+                      s.index.includes("NIFTY") ? "bg-cyan-500/15 text-cyan-400 border-cyan-500/30" : "bg-purple-500/15 text-purple-400 border-purple-500/30"
+                    }`}>
+                      {s.index}
+                    </span>
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                      isCE ? "bg-emerald-500/15 text-emerald-400" : "bg-rose-500/15 text-rose-400"
+                    }`}>
+                      {s.dir}
+                    </span>
+                  </div>
+                  <span className="text-[10px] font-mono font-bold text-faint">{s.tf} • {s.mode}</span>
+                </div>
+                <h3 className="text-sm font-bold text-white tracking-tight">{s.name}</h3>
+                <p className="text-xs text-gray-400 leading-relaxed font-sans">{s.desc}</p>
+                <div className="pt-2 border-t border-subtle/60 flex items-center justify-between text-[10px] font-mono text-faint">
+                  <span>Target Velocity: <strong className="text-emerald-400">Δ ≈ {s.targetDelta}</strong></span>
+                  <span>Risk: <strong className="text-rose-400">20% SL</strong></span>
+                </div>
               </div>
-              <h3 className="text-sm font-bold text-white tracking-tight">{s.name}</h3>
-              <p className="text-xs text-gray-400 leading-relaxed font-sans">{s.desc}</p>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </section>
 
@@ -416,11 +519,11 @@ export function LandingScreen({ onLoginClick }) {
             </div>
             <h2 className="text-2xl sm:text-3xl font-black text-white">Indian Regulatory Tax Calculator</h2>
             <p className="text-xs sm:text-sm text-gray-400 max-w-xl mx-auto">
-              Our simulator accurately calculates statutory taxes in real time so your paper P&amp;L reflects actual take-home returns.
+              NUKEBOX models exact statutory charges in real-time so your paper P&amp;L reflects true take-home performance.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 rounded-3xl border border-subtle bg-surface/90 p-6 sm:p-8 backdrop-blur-xl">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 rounded-3xl border border-subtle bg-surface/90 p-6 sm:p-8 backdrop-blur-xl shadow-xl">
             {/* Inputs */}
             <div className="space-y-4 font-sans text-xs">
               <h3 className="font-bold text-sm text-white">Trade Inputs</h3>
@@ -453,7 +556,7 @@ export function LandingScreen({ onLoginClick }) {
               </div>
             </div>
 
-            {/* Breakdown */}
+            {/* Itemized Split */}
             <div className="space-y-2 text-xs font-mono border-y lg:border-y-0 lg:border-x border-subtle py-4 lg:py-0 lg:px-6">
               <h3 className="font-bold text-sm text-white font-sans mb-3">Itemized Regulatory Split</h3>
               <div className="flex justify-between text-gray-300">
@@ -505,20 +608,66 @@ export function LandingScreen({ onLoginClick }) {
         </div>
       </section>
 
-      {/* Footer & Compliance Disclaimer */}
-      <footer className="border-t border-subtle bg-surface py-10 px-4 sm:px-8 text-xs text-faint">
+      {/* Pillar Deep-Dive Modal */}
+      <AnimatePresence>
+        {selectedPillar && (
+          <div
+            onClick={() => setSelectedPillar(null)}
+            className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/80 p-4 backdrop-blur-md"
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              onClick={(e) => e.stopPropagation()}
+              className="relative w-full max-w-lg rounded-3xl border border-subtle bg-surface p-6 sm:p-8 shadow-2xl space-y-4"
+            >
+              <button
+                onClick={() => setSelectedPillar(null)}
+                className="absolute top-5 right-5 rounded-full p-2 text-faint hover:bg-surface2 hover:text-primary transition"
+              >
+                <X className="h-4 w-4" />
+              </button>
+
+              <div className="flex items-center gap-2.5">
+                <div className={`flex h-10 w-10 items-center justify-center rounded-2xl border ${selectedPillar.color}`}>
+                  <selectedPillar.icon className="h-5 w-5" />
+                </div>
+                <div>
+                  <span className="text-[10px] font-mono uppercase font-bold text-accent">{selectedPillar.badge}</span>
+                  <h3 className="text-lg font-black text-white">{selectedPillar.title}</h3>
+                </div>
+              </div>
+
+              <p className="text-xs text-gray-300 leading-relaxed font-sans pt-2">
+                {selectedPillar.details}
+              </p>
+
+              <div className="pt-4 border-t border-subtle flex justify-end">
+                <button
+                  onClick={() => setSelectedPillar(null)}
+                  className="rounded-xl bg-surface2 px-4 py-2 text-xs font-bold text-white hover:bg-surface3 transition"
+                >
+                  Close Specification
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Footer & Master Owner Details */}
+      <footer className="border-t border-subtle bg-surface py-12 px-4 sm:px-8 text-xs text-faint">
         <div className="mx-auto max-w-7xl space-y-6">
           <div className="flex flex-wrap items-center justify-between gap-4">
-            <div className="flex items-center gap-2">
-              <ShieldCheck className="h-4 w-4 text-accent" />
-              <span className="font-bold text-primary">OptionsSimulator Technologies</span>
-            </div>
-            <div className="flex items-center gap-4">
+            <NukeBoxLogo size="sm" />
+            <div className="flex items-center gap-4 font-medium">
               <a
-                href="mailto:parthiban.kannan@optionssimulator.internal?subject=Access%20Request%20for%20OptionsSimulator%20Quant%20Terminal"
-                className="font-bold text-accent hover:underline"
+                href="mailto:parthisivaram45@gmail.com?subject=Access%20Request%20for%20NUKEBOX%20Quant%20Terminal"
+                className="font-bold text-accent hover:underline flex items-center gap-1"
               >
-                Request Operator Access
+                <Mail className="h-3.5 w-3.5" />
+                <span>Contact Master Quant (PARTHIBAKANNAN S)</span>
               </a>
               <span>•</span>
               <button onClick={onLoginClick} className="font-bold text-primary hover:underline cursor-pointer">
@@ -527,13 +676,13 @@ export function LandingScreen({ onLoginClick }) {
             </div>
           </div>
 
-          <p className="text-[11px] leading-relaxed text-gray-400">
-            <strong>Regulatory &amp; Compliance Notice:</strong> OptionsSimulator is an advanced simulated quantitative paper-trading and derivatives research platform. All orders, executions, and P&amp;L calculations are strictly modeled within a deterministic sandbox with zero real-capital routing. Designed for quantitative strategy validation, risk management modeling, and execution research under Indian regulatory parameters.
+          <p className="text-[11px] leading-relaxed text-gray-400 font-sans">
+            <strong>Regulatory &amp; Compliance Notice:</strong> NUKEBOX is a proprietary simulated quantitative paper-trading and derivatives research platform developed and owned by <strong>PARTHIBAKANNAN S</strong>. All orders, executions, and P&amp;L calculations are strictly modeled within a deterministic sandbox with zero real-capital routing. Designed for quantitative strategy validation, risk management modeling, and execution research under Indian regulatory parameters.
           </p>
 
-          <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-subtle/50 text-[10px]">
-            <span>© 2026 OptionsSimulator Technologies. All Rights Reserved.</span>
-            <span>NSE NIFTY 50 (Lot 65) • BSE SENSEX (Lot 20)</span>
+          <div className="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-subtle/50 text-[10px] font-mono">
+            <span>© 2026 NUKEBOX by PARTHIBAKANNAN S. All Rights Reserved.</span>
+            <span>Master Email: parthisivaram45@gmail.com • NSE NIFTY (Lot 65) • BSE SENSEX (Lot 20)</span>
           </div>
         </div>
       </footer>

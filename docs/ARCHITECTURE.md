@@ -25,7 +25,7 @@ OptionsSimulator is an institutional-grade, asynchronous quantitative trading an
 | **Index Exchange** | National Stock Exchange of India (NSE) | Bombay Stock Exchange (BSE) |
 | **Lot Size** | 65 Units | 20 Units |
 | **Strike Step Interval** | ₹50 (e.g., 24,200, 24,250, 24,300) | ₹100 (e.g., 77,400, 77,500, 77,600) |
-| **Primary Expiry Day** | Thursday (Weekly / Monthly) | Friday (Weekly / Monthly) |
+| **Primary Expiry Day** | **Tuesday** (SEBI rule effective Sept 2025) | **Thursday** (SEBI rule effective Sept 2025) |
 | **Trading Hours** | 09:15:00 to 15:30:00 IST (Mon–Fri) | 09:15:00 to 15:30:00 IST (Mon–Fri) |
 | **Pre-Market AI Trigger** | 08:50:00 IST Daily | 08:50:00 IST Daily |
 | **Post-Market AI Audit** | 15:35:00 IST Daily | 15:35:00 IST Daily |
