@@ -9,7 +9,7 @@ import {
   Search, Copy, Check, Info, FileText
 } from "lucide-react";
 import { NukeBoxLogo } from "../components/NukeBoxLogo";
-import { API_BASE } from "../lib/apiBase";
+import { API_BASE, WS_BASE } from "../lib/apiBase";
 
 // 21 Proprietary Algorithmic Strategies (Strictly high-level qualitative descriptions with zero math/logic leaks)
 const FLEET_21_STRATEGIES = [
@@ -160,20 +160,58 @@ export function LandingScreen({ onLoginClick }) {
   const [lotQty, setLotQty] = useState(65);
   const [marketData, setMarketData] = useState(null);
 
-  // Fetch and auto-refresh live market summary
+  // Real-time Live Market WebSocket Stream + Polling Fallback
   useEffect(() => {
-    function loadMarketData() {
+    let ws = null;
+    let fallbackTimer = null;
+    let isMounted = true;
+
+    function fetchPolling() {
       fetch(`${API_BASE}/api/public/market-summary`)
         .then((r) => (r.ok ? r.json() : null))
         .then((d) => {
-          if (d) setMarketData(d);
+          if (d && isMounted) setMarketData(d);
         })
         .catch(() => {});
     }
 
-    loadMarketData();
-    const timer = setInterval(loadMarketData, 8000);
-    return () => clearInterval(timer);
+    fetchPolling();
+
+    if (typeof window !== "undefined" && WS_BASE) {
+      try {
+        const wsUrl = `${WS_BASE}/ws/public-ticker`;
+        ws = new WebSocket(wsUrl);
+
+        ws.onmessage = (event) => {
+          try {
+            const d = JSON.parse(event.data);
+            if (d && isMounted) setMarketData(d);
+          } catch (e) {}
+        };
+
+        ws.onerror = () => {
+          if (!fallbackTimer) {
+            fallbackTimer = setInterval(fetchPolling, 1500);
+          }
+        };
+
+        ws.onclose = () => {
+          if (!fallbackTimer) {
+            fallbackTimer = setInterval(fetchPolling, 1500);
+          }
+        };
+      } catch (err) {
+        fallbackTimer = setInterval(fetchPolling, 1500);
+      }
+    } else {
+      fallbackTimer = setInterval(fetchPolling, 1500);
+    }
+
+    return () => {
+      isMounted = false;
+      if (ws) ws.close();
+      if (fallbackTimer) clearInterval(fallbackTimer);
+    };
   }, []);
 
   // Indian Regulatory Tax Schedule Math
@@ -309,27 +347,47 @@ export function LandingScreen({ onLoginClick }) {
               {/* NIFTY Ticker */}
               <div className="flex items-center justify-between px-4 py-2.5 rounded-xl bg-surface2/60 border border-subtle">
                 <div className="text-left">
-                  <span className="text-[10px] font-bold uppercase text-cyan-400 tracking-wider font-mono">NSE NIFTY 50 (Lot 65)</span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[10px] font-bold uppercase text-cyan-400 tracking-wider font-mono">NSE NIFTY 50 (Lot 65)</span>
+                    <span className="h-1.5 w-1.5 rounded-full bg-cyan-400 animate-ping" />
+                  </div>
                   <div className="font-mono text-lg font-black text-white tabular-nums">
                     {fmtNum(marketData?.nifty_price || 24252.00)}
                   </div>
                 </div>
-                <span className="rounded-full bg-bull/15 px-2.5 py-1 text-[11px] font-bold text-bull border border-bull/30 font-mono">
-                  +{fmtNum(marketData?.nifty_change || 20.15)} (+{Number(marketData?.nifty_change_pct || 0.08).toFixed(2)}%)
-                </span>
+                <div className="flex items-center gap-1">
+                  <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-bold font-mono border ${
+                    (marketData?.nifty_change ?? 20.15) >= 0
+                      ? "bg-bull/15 text-bull border-bull/30"
+                      : "bg-bear/15 text-bear border-bear/30"
+                  }`}>
+                    {(marketData?.nifty_change ?? 20.15) >= 0 ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
+                    {(marketData?.nifty_change ?? 20.15) >= 0 ? "+" : ""}{fmtNum(marketData?.nifty_change || 20.15)} ({(marketData?.nifty_change ?? 20.15) >= 0 ? "+" : ""}{Number(marketData?.nifty_change_pct || 0.08).toFixed(2)}%)
+                  </span>
+                </div>
               </div>
 
               {/* SENSEX Ticker */}
               <div className="flex items-center justify-between px-4 py-2.5 rounded-xl bg-surface2/60 border border-subtle">
                 <div className="text-left">
-                  <span className="text-[10px] font-bold uppercase text-purple-400 tracking-wider font-mono">BSE SENSEX (Lot 20)</span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[10px] font-bold uppercase text-purple-400 tracking-wider font-mono">BSE SENSEX (Lot 20)</span>
+                    <span className="h-1.5 w-1.5 rounded-full bg-purple-400 animate-ping" />
+                  </div>
                   <div className="font-mono text-lg font-black text-white tabular-nums">
                     {fmtNum(marketData?.sensex_price || 77540.83)}
                   </div>
                 </div>
-                <span className="rounded-full bg-bull/15 px-2.5 py-1 text-[11px] font-bold text-bull border border-bull/30 font-mono">
-                  +{fmtNum(marketData?.sensex_change || 3.11)} (+{Number(marketData?.sensex_change_pct || 0.00).toFixed(2)}%)
-                </span>
+                <div className="flex items-center gap-1">
+                  <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-bold font-mono border ${
+                    (marketData?.sensex_change ?? 3.11) >= 0
+                      ? "bg-bull/15 text-bull border-bull/30"
+                      : "bg-bear/15 text-bear border-bear/30"
+                  }`}>
+                    {(marketData?.sensex_change ?? 3.11) >= 0 ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
+                    {(marketData?.sensex_change ?? 3.11) >= 0 ? "+" : ""}{fmtNum(marketData?.sensex_change || 3.11)} ({(marketData?.sensex_change ?? 3.11) >= 0 ? "+" : ""}{Number(marketData?.sensex_change_pct || 0.00).toFixed(2)}%)
+                  </span>
+                </div>
               </div>
             </div>
 

@@ -161,6 +161,57 @@ async def get_public_market_summary():
     }
 
 
+@app.websocket("/ws/public-ticker")
+async def ws_public_ticker(websocket: WebSocket):
+    """Public lightweight WebSocket broadcasting real-time spot index ticks (500ms). Zero sensitive math/signals."""
+    await websocket.accept()
+    import json
+    from pathlib import Path
+
+    def get_public_data():
+        current_state = shared_state.get()
+        nifty = current_state.get("nifty_price")
+        sensex = current_state.get("sensex_price")
+        if not nifty or not sensex:
+            try:
+                market_file = Path("data/last_market_state.json")
+                if market_file.exists():
+                    cached = json.loads(market_file.read_text(encoding="utf-8"))
+                    return {
+                        "nifty_price": cached.get("nifty_price", 24252.00),
+                        "nifty_change": cached.get("nifty_change", 20.15),
+                        "nifty_change_pct": cached.get("nifty_change_pct", 0.08),
+                        "sensex_price": cached.get("sensex_price", 77540.83),
+                        "sensex_change": cached.get("sensex_change", 3.11),
+                        "sensex_change_pct": cached.get("sensex_change_pct", 0.00),
+                        "market_open": current_state.get("market_open", False),
+                    }
+            except Exception:
+                pass
+        return {
+            "nifty_price": nifty or 24252.00,
+            "nifty_change": current_state.get("nifty_change") or 20.15,
+            "nifty_change_pct": current_state.get("nifty_change_pct") or 0.08,
+            "sensex_price": sensex or 77540.83,
+            "sensex_change": current_state.get("sensex_change") or 3.11,
+            "sensex_change_pct": current_state.get("sensex_change_pct") or 0.00,
+            "market_open": current_state.get("market_open", False),
+        }
+
+    try:
+        last_sent = None
+        while websocket.application_state == WebSocketState.CONNECTED:
+            data = get_public_data()
+            if data != last_sent:
+                await websocket.send_text(json.dumps(data))
+                last_sent = data
+            await asyncio.sleep(0.5)
+    except (WebSocketDisconnect, RuntimeError, asyncio.CancelledError):
+        pass
+    except Exception as e:
+        logger.log_error(f"ws_public_ticker error: {e}")
+
+
 @app.websocket("/ws/stream")
 async def ws_stream(websocket: WebSocket):
     await websocket.accept()
