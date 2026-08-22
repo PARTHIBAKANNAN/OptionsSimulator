@@ -147,16 +147,15 @@ export function MarketHeader({ state }) {
 
       {chartFor && (
         <ChartModal
-          label={chartFor === "NIFTY" ? "NIFTY 50" : "SENSEX"}
-          candles={chartFor === "NIFTY" ? nifty_candles_5m : sensex_candles_5m}
-          price={chartFor === "NIFTY" ? nifty_price : sensex_price}
-          change={chartFor === "NIFTY" ? nifty_change : sensex_change}
-          changePct={chartFor === "NIFTY" ? nifty_change_pct : sensex_change_pct}
-          secondaryLabel={chartFor === "NIFTY" ? "SENSEX" : "NIFTY 50"}
-          secondaryCandles={chartFor === "NIFTY" ? sensex_candles_5m : nifty_candles_5m}
-          secondaryPrice={chartFor === "NIFTY" ? sensex_price : nifty_price}
-          secondaryChange={chartFor === "NIFTY" ? sensex_change : nifty_change}
-          secondaryChangePct={chartFor === "NIFTY" ? sensex_change_pct : nifty_change_pct}
+          initialIndex={chartFor}
+          niftyCandles={nifty_candles_5m}
+          niftyPrice={nifty_price}
+          niftyChange={nifty_change}
+          niftyChangePct={nifty_change_pct}
+          sensexCandles={sensex_candles_5m}
+          sensexPrice={sensex_price}
+          sensexChange={sensex_change}
+          sensexChangePct={sensex_change_pct}
           onClose={() => setChartFor(null)}
         />
       )}

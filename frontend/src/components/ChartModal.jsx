@@ -9,29 +9,26 @@ function fmtNum(v) {
 }
 
 export function ChartModal({
-  label,
-  candles,
-  price,
-  change,
-  changePct,
-  secondaryLabel,
-  secondaryCandles,
-  secondaryPrice,
-  secondaryChange,
-  secondaryChangePct,
+  initialIndex = "NIFTY",
+  niftyCandles = [],
+  niftyPrice,
+  niftyChange,
+  niftyChangePct,
+  sensexCandles = [],
+  sensexPrice,
+  sensexChange,
+  sensexChangePct,
   onClose,
 }) {
   const [dualView, setDualView] = useState(false);
-  const [activeTab, setActiveTab] = useState(label?.includes("SENSEX") ? "SENSEX" : "NIFTY");
+  const [activeTab, setActiveTab] = useState(initialIndex?.includes("SENSEX") ? "SENSEX" : "NIFTY");
 
   const isNiftyActive = activeTab === "NIFTY";
-  const primaryCandles = isNiftyActive ? candles : secondaryCandles;
-  const primaryPrice = isNiftyActive ? price : secondaryPrice;
-  const primaryChange = isNiftyActive ? change : secondaryChange;
-  const primaryChangePct = isNiftyActive ? changePct : secondaryChangePct;
-  const positive = (primaryChange ?? 0) >= 0;
-
-  const secPositive = (secondaryChange ?? 0) >= 0;
+  const currentCandles = isNiftyActive ? niftyCandles : sensexCandles;
+  const currentPrice = isNiftyActive ? niftyPrice : sensexPrice;
+  const currentChange = isNiftyActive ? niftyChange : sensexChange;
+  const currentChangePct = isNiftyActive ? niftyChangePct : sensexChangePct;
+  const positive = (currentChange ?? 0) >= 0;
 
   return createPortal(
     <AnimatePresence>
@@ -58,7 +55,7 @@ export function ChartModal({
               <div className="flex items-center gap-1 rounded-xl bg-surface2 p-1 border border-subtle">
                 <button
                   onClick={() => setActiveTab("NIFTY")}
-                  className={`rounded-lg px-3 py-1 text-xs font-bold transition ${
+                  className={`rounded-lg px-3.5 py-1 text-xs font-bold transition ${
                     isNiftyActive ? "bg-accent text-white shadow-sm" : "text-faint hover:text-primary"
                   }`}
                 >
@@ -66,7 +63,7 @@ export function ChartModal({
                 </button>
                 <button
                   onClick={() => setActiveTab("SENSEX")}
-                  className={`rounded-lg px-3 py-1 text-xs font-bold transition ${
+                  className={`rounded-lg px-3.5 py-1 text-xs font-bold transition ${
                     !isNiftyActive ? "bg-purple-600 text-white shadow-sm" : "text-faint hover:text-primary"
                   }`}
                 >
@@ -74,14 +71,15 @@ export function ChartModal({
                 </button>
               </div>
 
+              {/* Exact Price for Active Tab */}
               <div className="flex items-baseline gap-2">
                 <span className="font-mono text-xl sm:text-2xl font-black text-primary tabular-nums">
-                  {fmtNum(primaryPrice)}
+                  {fmtNum(currentPrice)}
                 </span>
-                {primaryChange != null && (
+                {currentChange != null && (
                   <span className={`font-mono text-xs font-bold tabular-nums flex items-center gap-0.5 ${positive ? "text-bull" : "text-bear"}`}>
                     {positive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-                    {positive ? "+" : ""}{fmtNum(primaryChange)} ({positive ? "+" : ""}{Number(primaryChangePct).toFixed(2)}%)
+                    {positive ? "+" : ""}{fmtNum(currentChange)} ({positive ? "+" : ""}{Number(currentChangePct).toFixed(2)}%)
                   </span>
                 )}
               </div>
@@ -124,10 +122,10 @@ export function ChartModal({
                 <div className="flex flex-col h-full rounded-2xl border border-subtle/80 bg-surface2/30 p-2 overflow-hidden">
                   <div className="flex items-center justify-between px-2 py-1 mb-1">
                     <span className="font-bold text-xs text-cyan-400">NIFTY 50 (5M)</span>
-                    <span className="font-mono text-xs font-bold text-primary">{fmtNum(price)}</span>
+                    <span className="font-mono text-xs font-bold text-primary">{fmtNum(niftyPrice)}</span>
                   </div>
                   <div className="flex-1 min-h-0">
-                    <CandleChart candles={candles} height="100%" />
+                    <CandleChart candles={niftyCandles} height="100%" />
                   </div>
                 </div>
 
@@ -135,17 +133,17 @@ export function ChartModal({
                 <div className="flex flex-col h-full rounded-2xl border border-subtle/80 bg-surface2/30 p-2 overflow-hidden">
                   <div className="flex items-center justify-between px-2 py-1 mb-1">
                     <span className="font-bold text-xs text-purple-400">SENSEX (5M)</span>
-                    <span className="font-mono text-xs font-bold text-primary">{fmtNum(secondaryPrice)}</span>
+                    <span className="font-mono text-xs font-bold text-primary">{fmtNum(sensexPrice)}</span>
                   </div>
                   <div className="flex-1 min-h-0">
-                    <CandleChart candles={secondaryCandles} height="100%" />
+                    <CandleChart candles={sensexCandles} height="100%" />
                   </div>
                 </div>
               </div>
             ) : (
               <div className="h-full">
-                {primaryCandles && primaryCandles.length > 0 ? (
-                  <CandleChart candles={primaryCandles} height="100%" />
+                {currentCandles && currentCandles.length > 0 ? (
+                  <CandleChart candles={currentCandles} height="100%" />
                 ) : (
                   <div className="flex h-full flex-col items-center justify-center text-faint gap-2">
                     <span>No candle data available for this session</span>
