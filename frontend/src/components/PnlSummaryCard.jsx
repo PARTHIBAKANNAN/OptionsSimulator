@@ -16,12 +16,12 @@ function pnlClass(v) {
 import { createPortal } from "react-dom";
 
 function TaxBreakdownModal({ grossPnl, totalCharges, tradesCount, onClose }) {
-  // Proportional itemized regulatory split matching actual F&O trading schedule
   const tc = Number(totalCharges) || 0;
-  const estBrokerage = Math.round(tc * 0.40 * 100) / 100;
-  const estStt = Math.round(tc * 0.30 * 100) / 100;
-  const estExchange = Math.round(tc * 0.12 * 100) / 100;
-  const estGst = Math.round(tc * 0.13 * 100) / 100;
+  const estBrokerage = tradesCount * 40.0;
+  const remaining = Math.max(0, tc - estBrokerage);
+  const estStt = Math.round(remaining * 0.52 * 100) / 100;
+  const estExchange = Math.round(remaining * 0.35 * 100) / 100;
+  const estGst = Math.round(remaining * 0.11 * 100) / 100;
   const estStampDuty = Math.round((tc - (estBrokerage + estStt + estExchange + estGst)) * 100) / 100;
 
   return createPortal(

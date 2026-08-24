@@ -39,7 +39,8 @@ def calculate_charges(order_value: float, side: str, rates: dict = None) -> Char
     r = {**DEFAULT_RATES, **(rates or {})}
     order_value = abs(order_value)
 
-    brokerage = min(r["brokerage_flat"], r["brokerage_pct"] / 100 * order_value)
+    # Options trading brokerage in India is flat Rs.20 per executed order leg (entry/exit)
+    brokerage = r["brokerage_flat"]
     exchange_txn = r["exchange_txn_pct"] / 100 * order_value
     sebi_fee = r["sebi_fee_pct"] / 100 * order_value
     stt = r["stt_sell_pct"] / 100 * order_value if side == "SELL" else 0.0
