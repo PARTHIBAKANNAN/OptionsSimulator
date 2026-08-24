@@ -17,7 +17,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from src.trader import IST, LiveTrader, is_market_open
+from src.trader import IST, LiveTrader, LOT_SIZE_BY_INDEX, is_market_open
 from src.data_manager import Candle
 from src.simulator.paper_trader import Order, RiskLimitExceeded
 from src.utils.options_pricing import (
@@ -505,11 +505,12 @@ class WebLiveEngine(LiveTrader):
 
         stop_loss = max(signal.entry_price * (1 - self.stop_loss_pct / 100), 0.05)
         take_profit = signal.entry_price + self.take_profit_pts
+        lot_size = LOT_SIZE_BY_INDEX.get(signal.underlying, self.paper_trader.lot_size)
         try:
             order = self.paper_trader.place_order(
                 symbol=signal.strike, side="BUY", qty=self.qty_per_signal, price=signal.entry_price,
                 stop_loss=stop_loss, take_profit=take_profit, strategy=signal.strategy,
-                timestamp=signal.timestamp,
+                timestamp=signal.timestamp, lot_size=lot_size,
             )
         except RiskLimitExceeded as e:
             self.logger.log_error(f"Signal rejected by risk limits: {e}", {"strategy": signal.strategy})

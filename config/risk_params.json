@@ -2,8 +2,8 @@
   "position_sizing": {
     "qty_per_signal": 1,
     "lot_size": 65,
-    "max_concurrent_positions": 5,
-    "max_daily_loss": 5000,
+    "max_concurrent_positions": null,
+    "max_daily_loss": null,
     "max_trades_per_day_per_strategy": 2
   },
   "exit_rules": {

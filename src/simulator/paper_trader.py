@@ -65,7 +65,7 @@ class PaperTrader:
                  max_drawdown_pct_of_capital: float = None, drawdown_cooldown_days: int = 3,
                  drawdown_breaker_grace_trades: int = 3,
                  capital_by_strategy: dict = None, charges_rates: dict = None,
-                 enable_wallets: bool = False, logger=None):
+                 enable_wallets: bool = False, post_loss_cooldown_mins: int = 0, logger=None):
         self.initial_capital = initial_capital
         self.slippage_pct = slippage_pct
         self.lot_size = lot_size
@@ -101,16 +101,10 @@ class PaperTrader:
         self.drawdown_breaker_grace_trades = drawdown_breaker_grace_trades
         self.capital_by_strategy = capital_by_strategy or {}
         self.charges_rates = charges_rates
+        self.post_loss_cooldown_mins = post_loss_cooldown_mins
         self.logger = logger
+        self._strategy_last_exit: dict[str, dict] = {}
 
-        # Each strategy with an allocated capital gets a real, compounding wallet: paper orders
-        # debit it on entry and credit back on exit (net of charges), so a strategy that keeps
-        # winning gets more headroom and one that keeps losing runs dry and gets blocked from new
-        # entries — see docs/ARCHITECTURE.md. Opt-in via enable_wallets (only LiveTrader turns
-        # this on): BacktestEngine already passes capital_by_strategy for the drawdown breaker's
-        # allocated_capital lookup, and defaulting wallets on too would silently change historical
-        # backtest trade counts/P&L (a strategy could now get wallet-blocked mid-backtest) with no
-        # one having asked for that.
         self.wallet_balance: dict[str, float] = dict(self.capital_by_strategy) if enable_wallets else {}
 
         self.orders: dict[str, Order] = {}
@@ -129,6 +123,7 @@ class PaperTrader:
             self._current_day = day
             self._realized_pnl_today = 0.0
             self._strategy_trades_today = {}
+            self._strategy_last_exit = {}
 
     def restore_daily_counts(self, day: date, trades_today: dict[str, int],
                               realized_pnl_today: float = 0.0) -> None:
@@ -144,8 +139,8 @@ class PaperTrader:
         self._strategy_trades_today = dict(trades_today)
         self._realized_pnl_today = realized_pnl_today
 
-    def _open_positions(self) -> list[Order]:
-        return [o for o in self.orders.values() if o.status == "OPEN"]
+    def has_open_position(self, strategy: str) -> bool:
+        return any(o.strategy == strategy for o in self.get_positions())
 
     def place_order(self, symbol: str, side: str, qty: int, price: float,
                      stop_loss: float = None, take_profit: float = None,
@@ -158,10 +153,12 @@ class PaperTrader:
         # code path that forgets stays on today's single-index behavior instead of crashing.
         lot_size = lot_size if lot_size is not None else self.lot_size
 
-        if self._realized_pnl_today <= -abs(self.max_daily_loss):
+        if self.max_daily_loss is not None and self._realized_pnl_today <= -abs(self.max_daily_loss):
             raise RiskLimitExceeded(f"Daily loss limit of {self.max_daily_loss} already hit")
-        if len(self._open_positions()) >= self.max_concurrent_positions:
+        if self.max_concurrent_positions is not None and len(self.get_positions()) >= self.max_concurrent_positions:
             raise RiskLimitExceeded(f"Max concurrent positions ({self.max_concurrent_positions}) reached")
+        if strategy is not None and self.has_open_position(strategy):
+            raise RiskLimitExceeded(f"Strategy '{strategy}' already has an open position")
         if strategy is not None and self._strategy_trades_today.get(strategy, 0) >= self.max_trades_per_day_per_strategy:
             raise RiskLimitExceeded(
                 f"Strategy '{strategy}' already hit its {self.max_trades_per_day_per_strategy} trades/day limit")
@@ -170,6 +167,15 @@ class PaperTrader:
             if paused_until is not None and timestamp.date() < paused_until:
                 raise RiskLimitExceeded(
                     f"Strategy '{strategy}' is paused by a circuit breaker until {paused_until}")
+
+            # Sequential entry rule: if previous trade on this strategy was a LOSS, enforce cooldown
+            if self.post_loss_cooldown_mins > 0:
+                last_exit = getattr(self, "_strategy_last_exit", {}).get(strategy)
+                if last_exit and last_exit.get("realized_pnl", 0) <= 0:
+                    cooldown_expiry = last_exit["exit_time"] + timedelta(minutes=self.post_loss_cooldown_mins)
+                    if timestamp < cooldown_expiry:
+                        raise RiskLimitExceeded(
+                            f"Strategy '{strategy}' in {self.post_loss_cooldown_mins}-min post-loss cooldown until {cooldown_expiry.strftime('%H:%M:%S')}")
 
         fill_price = price * (1 + self.slippage_pct / 100) if side == "BUY" else price * (1 - self.slippage_pct / 100)
         order_value = fill_price * qty * lot_size
@@ -234,6 +240,13 @@ class PaperTrader:
         self._roll_day(order.exit_time)
         self._realized_pnl_today += order.realized_pnl
         if order.strategy is not None:
+            if not hasattr(self, "_strategy_last_exit"):
+                self._strategy_last_exit = {}
+            self._strategy_last_exit[order.strategy] = {
+                "exit_time": order.exit_time,
+                "realized_pnl": order.realized_pnl,
+                "reason": reason,
+            }
             self._update_circuit_breakers(order.strategy, order.realized_pnl, order.exit_time.date())
             if order.strategy in self.wallet_balance:
                 self.wallet_balance[order.strategy] += exit_value - order.exit_charges
@@ -294,7 +307,7 @@ class PaperTrader:
         """current_prices: {symbol: ltp}. Applies SL/TP/time-exit. Returns orders closed this call."""
         timestamp = timestamp or datetime.now()
         closed = []
-        for order in self._open_positions():
+        for order in self.get_positions():
             price = current_prices.get(order.symbol)
             if price is None:
                 continue
@@ -351,7 +364,7 @@ class PaperTrader:
         return closed
 
     def get_positions(self) -> list[Order]:
-        return self._open_positions()
+        return [o for o in self.orders.values() if o.status == "OPEN"]
 
     def get_trade_history(self) -> list[Order]:
         return [o for o in self.orders.values() if o.status == "CLOSED"]
@@ -360,7 +373,7 @@ class PaperTrader:
         realized = sum(o.realized_pnl for o in self.get_trade_history())
         unrealized = 0.0
         if current_prices:
-            for o in self._open_positions():
+            for o in self.get_positions():
                 price = current_prices.get(o.symbol)
                 if price is not None:
                     unrealized += o.unrealized_pnl(price)

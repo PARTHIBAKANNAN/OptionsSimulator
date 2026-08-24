@@ -269,9 +269,22 @@ POSTMARKET_CACHE_PATH = Path(__file__).resolve().parent.parent.parent / "data" /
 
 def generate_live_postmarket_journal(trades_today: list = None, daily_pnl: float = None) -> dict:
     """Generates an institutional post-market AI trade audit & performance journal at 15:35 IST."""
-    if trades_today is None:
-        # Load today's trades from local storage or database if available
-        trades_today = []
+    if not trades_today:
+        try:
+            from .state import shared_state
+            st = shared_state.get()
+            positions = st.get("positions", [])
+            trades_today = [
+                {
+                    "strategy": p.get("strategy"),
+                    "symbol": p.get("symbol"),
+                    "net_pnl": p.get("realized_pnl") or p.get("trade_pnl") or 0.0,
+                }
+                for p in positions
+                if p.get("status") == "CLOSED" or p.get("realized_pnl") is not None
+            ]
+        except Exception:
+            trades_today = []
 
     total_trades = len(trades_today)
     wins = [t for t in trades_today if (t.get("net_pnl") or t.get("pnl") or 0) > 0]

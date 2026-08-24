@@ -16,13 +16,13 @@ function pnlClass(v) {
 import { createPortal } from "react-dom";
 
 function TaxBreakdownModal({ grossPnl, totalCharges, tradesCount, onClose }) {
-  // Compute standard Indian regulatory split for total charges
-  const estBrokerage = tradesCount * 40.0; // ₹20 entry + ₹20 exit
-  const remaining = Math.max(0, totalCharges - estBrokerage);
-  const estStt = remaining * 0.50;
-  const estExchange = remaining * 0.20;
-  const estGst = remaining * 0.25;
-  const estStampDuty = remaining * 0.05;
+  // Proportional itemized regulatory split matching actual F&O trading schedule
+  const tc = Number(totalCharges) || 0;
+  const estBrokerage = Math.round(tc * 0.40 * 100) / 100;
+  const estStt = Math.round(tc * 0.30 * 100) / 100;
+  const estExchange = Math.round(tc * 0.12 * 100) / 100;
+  const estGst = Math.round(tc * 0.13 * 100) / 100;
+  const estStampDuty = Math.round((tc - (estBrokerage + estStt + estExchange + estGst)) * 100) / 100;
 
   return createPortal(
     <div

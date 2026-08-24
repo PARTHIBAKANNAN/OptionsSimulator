@@ -156,8 +156,10 @@ def test_trailing_stop_does_not_arm_before_activation_threshold():
 def test_max_trades_per_day_per_strategy_enforced():
     trader = PaperTrader(slippage_pct=0, max_concurrent_positions=10, max_trades_per_day_per_strategy=2)
     day = datetime(2026, 1, 1, 9, 20)
-    trader.place_order("NIFTY24500CE", "BUY", qty=1, price=65.0, strategy="MACD_BULLISH", timestamp=day)
-    trader.place_order("NIFTY24600CE", "BUY", qty=1, price=40.0, strategy="MACD_BULLISH", timestamp=day)
+    o1 = trader.place_order("NIFTY24500CE", "BUY", qty=1, price=65.0, strategy="MACD_BULLISH", timestamp=day)
+    trader.close_position(o1.order_id, price=70.0, timestamp=day)
+    o2 = trader.place_order("NIFTY24600CE", "BUY", qty=1, price=40.0, strategy="MACD_BULLISH", timestamp=day)
+    trader.close_position(o2.order_id, price=45.0, timestamp=day)
     with pytest.raises(RiskLimitExceeded):
         trader.place_order("NIFTY24700CE", "BUY", qty=1, price=30.0, strategy="MACD_BULLISH", timestamp=day)
 
@@ -169,8 +171,10 @@ def test_max_trades_per_day_per_strategy_resets_next_day():
     trader = PaperTrader(slippage_pct=0, max_concurrent_positions=10, max_trades_per_day_per_strategy=2)
     day1 = datetime(2026, 1, 1, 9, 20)
     day2 = datetime(2026, 1, 2, 9, 20)
-    trader.place_order("NIFTY24500CE", "BUY", qty=1, price=65.0, strategy="MACD_BULLISH", timestamp=day1)
-    trader.place_order("NIFTY24600CE", "BUY", qty=1, price=40.0, strategy="MACD_BULLISH", timestamp=day1)
+    o1 = trader.place_order("NIFTY24500CE", "BUY", qty=1, price=65.0, strategy="MACD_BULLISH", timestamp=day1)
+    trader.close_position(o1.order_id, price=70.0, timestamp=day1)
+    o2 = trader.place_order("NIFTY24600CE", "BUY", qty=1, price=40.0, strategy="MACD_BULLISH", timestamp=day1)
+    trader.close_position(o2.order_id, price=45.0, timestamp=day1)
     order = trader.place_order("NIFTY24700CE", "BUY", qty=1, price=30.0, strategy="MACD_BULLISH", timestamp=day2)
     assert order.status == "OPEN"
 
