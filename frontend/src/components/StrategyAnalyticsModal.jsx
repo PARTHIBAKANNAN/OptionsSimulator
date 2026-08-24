@@ -230,15 +230,25 @@ function MultiYearCalendarHeatmap({ monthlyHeatmap = {} }) {
   );
 }
 
+function fmtReason(reason) {
+  if (!reason) return "—";
+  if (reason === "TRAILING_STOP") return "TSL";
+  if (reason === "STOP_LOSS") return "SL";
+  if (reason === "TAKE_PROFIT") return "Target TP";
+  if (reason === "MANUAL_SQUARE_OFF") return "Square Off";
+  if (reason === "TIME_EXIT") return "Time Exit";
+  return reason;
+}
+
 function exportCsv(strategy, trades) {
-  const header = ["Case", "T.Id", "Instrument", "Entry Timestamp", "Entry Price", "Exit Timestamp", "Exit Price", "Profit", "Cumulative Profit"];
+  const header = ["Case", "T.Id", "Instrument", "Entry Timestamp", "Entry Price", "Exit Timestamp", "Exit Price", "Exit Reason", "Profit", "Cumulative Profit"];
   const chrono = [...trades].sort((a, b) => new Date(a.exit_time) - new Date(b.exit_time));
   let cumulative = 0;
   const rows = chrono.map((t, i) => {
     cumulative += Number(t.net_pnl ?? t.realized_pnl ?? 0);
     const entryPx = t.entry_price != null ? Number(t.entry_price).toFixed(2) : "—";
     const exitPx = t.exit_price != null ? Number(t.exit_price).toFixed(2) : "—";
-    return [i + 1, t.order_id || `TR-${i + 1}`, t.contract || t.symbol, t.entry_time, entryPx, t.exit_time, exitPx, t.net_pnl ?? t.realized_pnl, cumulative.toFixed(2)];
+    return [i + 1, t.order_id || `TR-${i + 1}`, t.contract || t.symbol, t.entry_time, entryPx, t.exit_time, exitPx, fmtReason(t.exit_reason), t.net_pnl ?? t.realized_pnl, cumulative.toFixed(2)];
   });
   const csv = [header, ...rows].map((r) => r.map((v) => `"${v ?? ""}"`).join(",")).join("\n");
   const blob = new Blob([csv], { type: "text/csv" });
@@ -473,6 +483,7 @@ export function StrategyAnalyticsModal({ strategy, mode = "live", onClose }) {
                         <th className="px-3 py-2 text-right font-semibold">Entry Px</th>
                         <th className="px-3 py-2 text-left font-semibold">Exit Time</th>
                         <th className="px-3 py-2 text-right font-semibold">Exit Px</th>
+                        <th className="px-3 py-2 text-center font-semibold">Exit Reason</th>
                         <th className="px-3 py-2 text-right font-semibold">Profit</th>
                         <th className="px-3 py-2 text-right font-semibold">Cumulative Profit</th>
                       </tr>
@@ -492,6 +503,11 @@ export function StrategyAnalyticsModal({ strategy, mode = "live", onClose }) {
                             <td className="px-3 py-2 text-faint">{fmtDate(t.exit_time)}</td>
                             <td className="px-3 py-2 text-right font-medium text-primary tabular-nums">
                               {t.exit_price != null ? fmtRupee(t.exit_price) : "—"}
+                            </td>
+                            <td className="px-3 py-2 text-center font-sans">
+                              <span className="inline-block rounded px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-surface3 text-muted border border-subtle">
+                                {fmtReason(t.exit_reason)}
+                              </span>
                             </td>
                             <td className={`px-3 py-2 text-right font-bold tabular-nums ${pnlClass(pnl)}`}>
                               {pnl > 0 ? "+" : ""}{fmtRupee(pnl)}
