@@ -21,10 +21,10 @@ def test_brokerage_is_capped_at_flat_fee_for_large_orders():
     assert charges.brokerage == 20.0
 
 
-def test_brokerage_uses_percentage_for_small_orders():
-    # 0.03% of 10,000 = Rs. 3.00, well under the Rs. 20 flat fee
+def test_brokerage_is_flat_twenty_for_options_orders():
+    # Options orders use flat Rs. 20.0 per order leg
     charges = calculate_charges(order_value=10_000.0, side="BUY")
-    assert charges.brokerage == pytest.approx(3.0)
+    assert charges.brokerage == 20.0
 
 
 def test_gst_applies_to_brokerage_and_exchange_txn_only():
