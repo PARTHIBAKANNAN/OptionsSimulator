@@ -56,7 +56,21 @@ function AppInner() {
   const [showLoginModal, setShowLoginModal] = useState(false);
 
   useEffect(() => {
-    api("/api/auth/me").then(setUser).catch(() => setUser(null));
+    const timer = setTimeout(() => {
+      setUser((curr) => (curr === undefined ? null : curr));
+    }, 4000);
+
+    api("/api/auth/me")
+      .then((u) => {
+        clearTimeout(timer);
+        setUser(u);
+      })
+      .catch(() => {
+        clearTimeout(timer);
+        setUser(null);
+      });
+
+    return () => clearTimeout(timer);
   }, []);
 
   async function handleLogout() {
