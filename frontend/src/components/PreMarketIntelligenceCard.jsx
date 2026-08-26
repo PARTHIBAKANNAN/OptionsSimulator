@@ -3,26 +3,52 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Sparkles, TrendingUp, TrendingDown, ChevronDown, ChevronRight, Globe, Compass, Target, RotateCw, Bot } from "lucide-react";
 import { api } from "../hooks/usePaperTradingSync";
 
+function formatBriefingTime(isoStr) {
+  if (!isoStr) return null;
+  try {
+    const d = new Date(isoStr);
+    if (isNaN(d.getTime())) return null;
+    const time = d.toLocaleTimeString("en-IN", {
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: true,
+    });
+    const date = d.toLocaleDateString("en-IN", { day: "numeric", month: "short" });
+    return `${date} · ${time} IST`;
+  } catch {
+    return null;
+  }
+}
+
 export function PreMarketIntelligenceCard() {
   const [intel, setIntel] = useState(null);
   const [expanded, setExpanded] = useState(true);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [refreshMsg, setRefreshMsg] = useState(null);
 
   useEffect(() => {
     api("/api/paper/intelligence/premarket")
       .then((d) => setIntel(d))
-      .catch(() => {})
+      .catch((e) => console.error("Pre-market fetch error:", e))
       .finally(() => setLoading(false));
   }, []);
 
   async function handleRefreshAI() {
     setRefreshing(true);
+    setRefreshMsg(null);
     try {
       const res = await api("/api/paper/intelligence/premarket/refresh", { method: "POST" });
-      if (res) setIntel(res);
+      if (res) {
+        setIntel(res);
+        setRefreshMsg("Briefing refreshed just now!");
+        setTimeout(() => setRefreshMsg(null), 4000);
+      }
     } catch (e) {
       console.error("AI Refresh error:", e);
+      setRefreshMsg("Refresh failed: " + (e.message || "Unknown error"));
+      setTimeout(() => setRefreshMsg(null), 5000);
     } finally {
       setRefreshing(false);
     }
@@ -31,6 +57,7 @@ export function PreMarketIntelligenceCard() {
   if (loading || !intel) return null;
 
   const isGeminiLive = intel.source?.includes("Gemini");
+  const formattedTime = formatBriefingTime(intel.generated_at);
 
   return (
     <div className="rounded-2xl border border-subtle bg-surface p-4 shadow-sm backdrop-blur-sm">
@@ -41,7 +68,7 @@ export function PreMarketIntelligenceCard() {
             <Sparkles className="h-4 w-4" />
           </div>
           <div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <h3 className="text-xs font-bold uppercase tracking-wider text-primary">Pre-Market Catalyst Intelligence</h3>
               <span className="rounded-full bg-bull/15 px-2.5 py-0.5 text-[10px] font-extrabold text-bull border border-bull/30">
                 {intel.market_bias?.replace("_", " ")} ({intel.sentiment_score}%)
@@ -52,10 +79,23 @@ export function PreMarketIntelligenceCard() {
                 <Bot className="h-3 w-3" />
                 {intel.source || "Gemini 3.6 Flash"}
               </span>
+              {formattedTime && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-surface2 px-2.5 py-0.5 text-[10px] font-medium text-faint border border-subtle">
+                  <span className="h-1.5 w-1.5 rounded-full bg-purple-400 animate-pulse" />
+                  Last Briefing: {formattedTime}
+                </span>
+              )}
             </div>
-            <p className="text-[11px] text-faint mt-0.5">
-              GIFT Nifty, Global Macro &amp; Index Heavyweight Bias (08:50 AM Briefing)
-            </p>
+            <div className="flex items-center gap-2 mt-0.5">
+              <p className="text-[11px] text-faint">
+                GIFT Nifty, Global Macro &amp; Index Heavyweight Bias (08:50 AM Briefing)
+              </p>
+              {refreshMsg && (
+                <span className={`text-[10px] font-bold ${refreshMsg.includes("failed") ? "text-bear" : "text-bull"}`}>
+                  · {refreshMsg}
+                </span>
+              )}
+            </div>
           </div>
         </div>
 

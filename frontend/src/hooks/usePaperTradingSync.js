@@ -1,6 +1,6 @@
 import { API_BASE } from "../lib/apiBase";
 
-async function api(path, opts) {
+export async function api(path, opts) {
   const res = await fetch(`${API_BASE}${path}`, { credentials: "include", ...opts });
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
@@ -79,5 +79,3 @@ export async function downloadPnlExport(params) {
   a.remove();
   URL.revokeObjectURL(url);
 }
-
-export { api };

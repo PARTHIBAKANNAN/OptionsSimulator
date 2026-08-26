@@ -3,26 +3,52 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Award, CheckCircle2, AlertTriangle, ChevronDown, ChevronRight, RotateCw, Bot, FileText, TrendingUp, ShieldCheck } from "lucide-react";
 import { api } from "../hooks/usePaperTradingSync";
 
+function formatAuditTime(isoStr) {
+  if (!isoStr) return null;
+  try {
+    const d = new Date(isoStr);
+    if (isNaN(d.getTime())) return null;
+    const time = d.toLocaleTimeString("en-IN", {
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: true,
+    });
+    const date = d.toLocaleDateString("en-IN", { day: "numeric", month: "short" });
+    return `${date} · ${time} IST`;
+  } catch {
+    return null;
+  }
+}
+
 export function PostMarketJournalCard() {
   const [journal, setJournal] = useState(null);
   const [expanded, setExpanded] = useState(true);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [lastAuditMsg, setLastAuditMsg] = useState(null);
 
   useEffect(() => {
     api("/api/paper/intelligence/postmarket")
       .then((d) => setJournal(d))
-      .catch(() => {})
+      .catch((e) => console.error("Post-market fetch error:", e))
       .finally(() => setLoading(false));
   }, []);
 
   async function handleRefreshJournal() {
     setRefreshing(true);
+    setLastAuditMsg(null);
     try {
       const res = await api("/api/paper/intelligence/postmarket/refresh", { method: "POST" });
-      if (res) setJournal(res);
+      if (res) {
+        setJournal(res);
+        setLastAuditMsg("Audit updated just now!");
+        setTimeout(() => setLastAuditMsg(null), 4000);
+      }
     } catch (e) {
       console.error("Post-market journal refresh error:", e);
+      setLastAuditMsg("Audit failed: " + (e.message || "Unknown error"));
+      setTimeout(() => setLastAuditMsg(null), 5000);
     } finally {
       setRefreshing(false);
     }
@@ -33,6 +59,7 @@ export function PostMarketJournalCard() {
   const grade = journal.session_grade || "A";
   const isGradeGood = grade.startsWith("A") || grade.startsWith("B");
   const isGemini = journal.source?.includes("Gemini");
+  const formattedTime = formatAuditTime(journal.generated_at);
 
   return (
     <div className="rounded-2xl border border-subtle bg-surface p-4 shadow-sm backdrop-blur-sm">
@@ -56,10 +83,23 @@ export function PostMarketJournalCard() {
                 <Bot className="h-3 w-3" />
                 {journal.source || "Gemini 3.6 Flash"}
               </span>
+              {formattedTime && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-surface2 px-2.5 py-0.5 text-[10px] font-medium text-faint border border-subtle">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  Last Audited: {formattedTime}
+                </span>
+              )}
             </div>
-            <p className="text-[11px] text-faint mt-0.5">
-              Daily Quantitative Execution Audit &amp; Performance Review (15:35 IST Debrief)
-            </p>
+            <div className="flex items-center gap-2 mt-0.5">
+              <p className="text-[11px] text-faint">
+                Daily Quantitative Execution Audit &amp; Performance Review (15:35 IST Debrief)
+              </p>
+              {lastAuditMsg && (
+                <span className={`text-[10px] font-bold ${lastAuditMsg.includes("failed") ? "text-bear" : "text-bull"}`}>
+                  · {lastAuditMsg}
+                </span>
+              )}
+            </div>
           </div>
         </div>
 
@@ -67,11 +107,11 @@ export function PostMarketJournalCard() {
           <button
             onClick={handleRefreshJournal}
             disabled={refreshing}
-            title="Refresh AI Post-Market Audit"
-            className="flex items-center gap-1.5 rounded-xl border border-subtle bg-surface2 px-2.5 py-1.5 text-xs font-bold text-muted hover:bg-surface3 hover:text-primary transition disabled:opacity-50"
+            title="Trigger Instant Post-Market AI Audit"
+            className="flex items-center gap-1.5 rounded-xl border border-indigo-500/30 bg-indigo-500/10 px-3 py-1.5 text-xs font-bold text-indigo-300 hover:bg-indigo-500/20 hover:text-white transition disabled:opacity-50 shadow-sm"
           >
-            <RotateCw className={`h-3 w-3 ${refreshing ? "animate-spin text-accent" : ""}`} />
-            <span className="hidden sm:inline">{refreshing ? "Auditing..." : "Audit AI"}</span>
+            <RotateCw className={`h-3.5 w-3.5 ${refreshing ? "animate-spin text-indigo-400" : ""}`} />
+            <span className="hidden sm:inline">{refreshing ? "Auditing Session..." : "Audit AI"}</span>
           </button>
           <button
             onClick={() => setExpanded(!expanded)}
