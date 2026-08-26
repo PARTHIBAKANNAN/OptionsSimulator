@@ -12,7 +12,7 @@ from datetime import time as dtime
 RISK_FREE_RATE = 0.07
 DEFAULT_IV = 0.14
 
-SYMBOL_RE = re.compile(r"(?:NIFTY|SENSEX)(\d+)(CE|PE)$")
+SYMBOL_RE = re.compile(r"(?:NIFTY|SENSEX|BANKNIFTY)(\d+)(CE|PE)$")
 
 # Each index's weekly-expiry weekday, as a chronological list of (effective_from, weekday) --
 # weekday 0=Monday .. 6=Sunday. The applicable regime for a given date is the last entry whose
@@ -25,6 +25,8 @@ SYMBOL_RE = re.compile(r"(?:NIFTY|SENSEX)(\d+)(CE|PE)$")
 # SENSEX: BSE weekly options launched with a Friday expiry effective 2023-05-15, moved to Tuesday
 # for an interim phase effective 2025-01-01, then to Thursday (current) effective 2025-09-01 --
 # confirmed by user.
+#
+# BANKNIFTY: Thursday prior to 2023-09-01; Wednesday (2) since 2023-09-04.
 INDEX_EXPIRY_RULES = {
     "NIFTY": [
         (date.min, 3),          # Thursday, since inception
@@ -34,6 +36,9 @@ INDEX_EXPIRY_RULES = {
         (date(2023, 5, 15), 4),  # Friday, since weekly options launched
         (date(2025, 1, 1), 1),   # Tuesday, interim phase
         (date(2025, 9, 1), 3),   # Thursday, current
+    ],
+    "BANKNIFTY": [
+        (date.min, 1),          # Tuesday expiry
     ],
 }
 

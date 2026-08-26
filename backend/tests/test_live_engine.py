@@ -397,6 +397,7 @@ async def test_restore_candle_history_loads_todays_persisted_candles_with_delta(
         [{"bucket_minute": 555, "open": 24000.0, "high": 24010.0, "low": 23990.0,
           "close": 24005.0, "volume": 500, "delta": 42.0}],  # NIFTY
         [],  # SENSEX -- nothing persisted yet
+        [],  # BANKNIFTY -- nothing persisted yet
     ])
 
     await engine._restore_candle_history(fake_pool, today)

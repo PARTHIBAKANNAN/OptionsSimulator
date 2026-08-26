@@ -29,18 +29,21 @@ from src.config import Config
 from src.data_manager import DataManager
 from src.fyers.api_client import FyersAPIClient
 from src.simulator.paper_trader import PaperTrader, RiskLimitExceeded
-from src.strategies.engine import StrategyEngine, create_nifty_strategies, create_sensex_strategies
+from src.strategies.engine import (
+    StrategyEngine, create_nifty_strategies, create_sensex_strategies, create_banknifty_strategies
+)
 from src.alerts.telegram_alerts import TelegramAlertsManager
 from src.persistence.state_manager import StateManager
 from src.utils.logger import get_logger
 
 NIFTY_SYMBOL = "NSE:NIFTY50-INDEX"
 SENSEX_SYMBOL = "BSE:SENSEX-INDEX"
-INDEX_SYMBOLS = {"NIFTY": NIFTY_SYMBOL, "SENSEX": SENSEX_SYMBOL}
+BANKNIFTY_SYMBOL = "NSE:NIFTYBANK-INDEX"
+INDEX_SYMBOLS = {"NIFTY": NIFTY_SYMBOL, "SENSEX": SENSEX_SYMBOL, "BANKNIFTY": BANKNIFTY_SYMBOL}
 SYMBOL_TO_INDEX = {symbol: index for index, symbol in INDEX_SYMBOLS.items()}
 EXCHANGE_TO_INDEX = {"NSE": "NIFTY", "BSE": "SENSEX"}
-INDEX_TO_EXCHANGE = {index: exchange for exchange, index in EXCHANGE_TO_INDEX.items()}
-LOT_SIZE_BY_INDEX = {"NIFTY": 65, "SENSEX": 20}
+INDEX_TO_EXCHANGE = {"NIFTY": "NSE", "SENSEX": "BSE", "BANKNIFTY": "NSE"}
+LOT_SIZE_BY_INDEX = {"NIFTY": 65, "SENSEX": 20, "BANKNIFTY": 30}
 IST = ZoneInfo("Asia/Kolkata")
 DAILY_LOGIN_TIME = dtime(8, 50)
 CAPITAL_REQUIREMENTS_PATH = (
@@ -62,11 +65,16 @@ class LiveTrader:
         self.config = config
         self.logger = get_logger()
 
-        self.data_managers = {"NIFTY": DataManager(), "SENSEX": DataManager(underlying="SENSEX")}
+        self.data_managers = {
+            "NIFTY": DataManager(),
+            "SENSEX": DataManager(underlying="SENSEX"),
+            "BANKNIFTY": DataManager(underlying="BANKNIFTY"),
+        }
         self.data_manager = self.data_managers["NIFTY"]  # back-compat alias for NIFTY-only callers/tests
         self.strategy_engines = {
             "NIFTY": StrategyEngine(strategies=create_nifty_strategies(), logger=self.logger),
             "SENSEX": StrategyEngine(strategies=create_sensex_strategies(), logger=self.logger),
+            "BANKNIFTY": StrategyEngine(strategies=create_banknifty_strategies(), logger=self.logger),
         }
         self.strategy_engine = self.strategy_engines["NIFTY"]  # back-compat alias
         sizing = config.risk_params.get("position_sizing", {})
@@ -134,8 +142,16 @@ class LiveTrader:
             self.data_managers[index].on_nifty_tick(tick)
             return
 
-        exchange = symbol.split(":", 1)[0] if ":" in symbol else None
-        option_index = EXCHANGE_TO_INDEX.get(exchange)
+        if "BANKNIFTY" in symbol:
+            option_index = "BANKNIFTY"
+        elif "SENSEX" in symbol:
+            option_index = "SENSEX"
+        elif "NIFTY" in symbol:
+            option_index = "NIFTY"
+        else:
+            exchange = symbol.split(":", 1)[0] if ":" in symbol else None
+            option_index = EXCHANGE_TO_INDEX.get(exchange)
+
         if option_index is None:
             self.logger.log_error(f"on_tick: unrecognized symbol/exchange, dropping tick: {symbol}")
             return

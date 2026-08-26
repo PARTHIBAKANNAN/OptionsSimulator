@@ -31,6 +31,21 @@ from src.strategies.sensex_strategies import (
     SensexMACDBearish,
     SensexORBBearish,
 )
+from src.strategies.banknifty_5m_strategies import (
+    BankNiftySupportBounce5MITM,
+    BankNiftyHeikinAshiBullish5MITM,
+    BankNiftyORBBullish5MITM,
+    BankNiftyResistanceRejection5MITM,
+    BankNiftyHeikinAshiBearish5MITM,
+    BankNiftyORBBearish5MITM,
+)
+from src.strategies.banknifty_strategies import (
+    BankNiftyMACDBullish,
+    BankNiftySupportBounceBullish,
+    BankNiftyHeikinAshiTrendBearish,
+    BankNiftyMACDBearish,
+    BankNiftyORBBearish,
+)
 
 
 def create_nifty_strategies() -> list[BaseStrategy]:
@@ -66,9 +81,26 @@ def create_sensex_strategies() -> list[BaseStrategy]:
     ]
 
 
+def create_banknifty_strategies() -> list[BaseStrategy]:
+    """Returns the 11 active BANKNIFTY strategies (5 1M ATM + 6 5M ITM)."""
+    return [
+        BankNiftyMACDBullish(name="BANKNIFTY_MACD_BULLISH_1M_ATM"),
+        BankNiftySupportBounceBullish(name="BANKNIFTY_SUPPORT_BOUNCE_1M_ATM"),
+        BankNiftyHeikinAshiTrendBearish(name="BANKNIFTY_HEIKIN_ASHI_BEARISH_1M_ATM"),
+        BankNiftyMACDBearish(name="BANKNIFTY_MACD_BEARISH_1M_ATM"),
+        BankNiftyORBBearish(name="BANKNIFTY_ORB_BEARISH_1M_ATM"),
+        BankNiftySupportBounce5MITM(),
+        BankNiftyHeikinAshiBullish5MITM(),
+        BankNiftyORBBullish5MITM(),
+        BankNiftyResistanceRejection5MITM(),
+        BankNiftyHeikinAshiBearish5MITM(),
+        BankNiftyORBBearish5MITM(),
+    ]
+
+
 def create_all_strategies() -> list[BaseStrategy]:
-    """Returns the full master roster of 21 active strategies (10 NIFTY + 11 SENSEX)."""
-    return create_nifty_strategies() + create_sensex_strategies()
+    """Returns the full master roster of 32 active strategies (10 NIFTY + 11 SENSEX + 11 BANKNIFTY)."""
+    return create_nifty_strategies() + create_sensex_strategies() + create_banknifty_strategies()
 
 
 def create_live_strategies() -> list[BaseStrategy]:

@@ -183,7 +183,7 @@ def test_ensure_connection_state_seeds_historical_candles_before_market_opens():
     market_open = trader.ensure_connection_state(datetime(2026, 8, 4, 8, 55, tzinfo=IST))
 
     assert market_open is False
-    assert trader.fyers.get_historical_data.call_count == 2  # once each for NIFTY and SENSEX
+    assert trader.fyers.get_historical_data.call_count == 3  # once each for NIFTY, SENSEX, and BANKNIFTY
     trader.fyers.start_websocket.assert_not_called()  # still shouldn't connect the live stream
 
 
@@ -195,7 +195,7 @@ def test_ensure_connection_state_only_seeds_historical_candles_once_per_day():
     trader.ensure_connection_state(datetime(2026, 8, 4, 9, 15, tzinfo=IST))
     trader.ensure_connection_state(datetime(2026, 8, 4, 14, 0, tzinfo=IST))
 
-    assert trader.fyers.get_historical_data.call_count == 2  # once each for NIFTY and SENSEX, not re-triggered
+    assert trader.fyers.get_historical_data.call_count == 3  # once each for NIFTY, SENSEX, and BANKNIFTY, not re-triggered
 
 
 def test_on_tick_routes_index_ticks_to_the_matching_data_manager():

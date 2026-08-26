@@ -76,6 +76,14 @@ class WebLiveEngine(LiveTrader):
         sensex_change_pct = (
             (sensex_change / sensex_prev_close * 100) if (sensex_change is not None and sensex_prev_close) else None)
 
+        banknifty_state = self.data_managers["BANKNIFTY"].get_state()
+        banknifty_price = banknifty_state["nifty_price"]
+        banknifty_prev_close = self.data_managers["BANKNIFTY"].get_prev_close(today)
+        banknifty_change = (
+            (banknifty_price - banknifty_prev_close) if (banknifty_price is not None and banknifty_prev_close) else None)
+        banknifty_change_pct = (
+            (banknifty_change / banknifty_prev_close * 100) if (banknifty_change is not None and banknifty_prev_close) else None)
+
         # Fallback to cached market state after hours or on weekends
         if nifty_price is not None:
             self._cached_market_state["nifty_price"] = nifty_price
@@ -104,8 +112,20 @@ class WebLiveEngine(LiveTrader):
             sensex_change = self._cached_market_state.get("sensex_change", 3.11)
             sensex_change_pct = self._cached_market_state.get("sensex_change_pct", 0.00)
 
+        if banknifty_price is not None:
+            self._cached_market_state["banknifty_price"] = banknifty_price
+            self._cached_market_state["banknifty_prev_close"] = banknifty_prev_close
+            self._cached_market_state["banknifty_change"] = round(banknifty_change, 2) if banknifty_change is not None else None
+            self._cached_market_state["banknifty_change_pct"] = round(banknifty_change_pct, 2) if banknifty_change_pct is not None else None
+        else:
+            banknifty_price = self._cached_market_state.get("banknifty_price", 51240.50)
+            banknifty_prev_close = self._cached_market_state.get("banknifty_prev_close", 51180.20)
+            banknifty_change = self._cached_market_state.get("banknifty_change", 60.30)
+            banknifty_change_pct = self._cached_market_state.get("banknifty_change_pct", 0.12)
+
         nifty_candles_5m = self.data_manager.get_candles_5m_with_delta(today)
         sensex_candles_5m = self.data_managers["SENSEX"].get_candles_5m_with_delta(today)
+        banknifty_candles_5m = self.data_managers["BANKNIFTY"].get_candles_5m_with_delta(today)
 
         shared_state.update({
             "nifty_price": nifty_price,
@@ -119,6 +139,11 @@ class WebLiveEngine(LiveTrader):
             "sensex_change": round(sensex_change, 2) if sensex_change is not None else None,
             "sensex_change_pct": round(sensex_change_pct, 2) if sensex_change_pct is not None else None,
             "sensex_candles_5m": sensex_candles_5m,
+            "banknifty_price": banknifty_price,
+            "banknifty_prev_close": banknifty_prev_close,
+            "banknifty_change": round(banknifty_change, 2) if banknifty_change is not None else None,
+            "banknifty_change_pct": round(banknifty_change_pct, 2) if banknifty_change_pct is not None else None,
+            "banknifty_candles_5m": banknifty_candles_5m,
             "timestamp": state["timestamp"].isoformat() if state["timestamp"] else now.isoformat(),
             "market_open": self.is_running,
             "exchange_open": self.config.force_market_open or is_market_open(now, self.config.risk_params),
