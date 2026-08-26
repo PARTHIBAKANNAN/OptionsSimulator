@@ -55,12 +55,16 @@ export function BacktestReportScreen() {
     .map(([, value]) => value);
 
   const isSensex = (s) => s.strategy.startsWith("SENSEX_");
+  const isBankNifty = (s) => s.strategy.startsWith("BANKNIFTY_");
+  const isNifty = (s) => !isSensex(s) && !isBankNifty(s);
   const is5M = (s) => s.strategy.includes("_5M_");
 
-  const niftyCe = strategies.filter((s) => !isSensex(s) && s.direction === "CE");
-  const niftyPe = strategies.filter((s) => !isSensex(s) && s.direction === "PE");
+  const niftyCe = strategies.filter((s) => isNifty(s) && s.direction === "CE");
+  const niftyPe = strategies.filter((s) => isNifty(s) && s.direction === "PE");
   const sensexCe = strategies.filter((s) => isSensex(s) && s.direction === "CE");
   const sensexPe = strategies.filter((s) => isSensex(s) && s.direction === "PE");
+  const bankniftyCe = strategies.filter((s) => isBankNifty(s) && s.direction === "CE");
+  const bankniftyPe = strategies.filter((s) => isBankNifty(s) && s.direction === "PE");
 
   const totalPnl = strategies.reduce((sum, s) => sum + s.total_pnl, 0);
   const totalTrades = strategies.reduce((sum, s) => sum + s.total_trades, 0);
@@ -77,14 +81,14 @@ export function BacktestReportScreen() {
           label="Combined 1-Yr Net P&L"
           value={fmtRupee(Math.round(totalPnl))}
           valueClass="text-bull font-black"
-          sublabel="21 Master Strategies Combined"
+          sublabel={`${strategies.length} Master Strategies Combined`}
           icon={TrendingUp}
         />
         <InsightTile
           label="Overall Win Rate"
           value={`${avgWinRate.toFixed(1)}%`}
           valueClass="text-bull"
-          sublabel="Across 2,508 Total Signals"
+          sublabel={`Across ${totalTrades.toLocaleString()} Total Signals`}
           icon={ShieldCheck}
         />
         <InsightTile
@@ -107,7 +111,7 @@ export function BacktestReportScreen() {
       <div className="rounded-xl border border-subtle bg-surface p-4 sm:p-5">
         <div className="mb-4 flex items-center justify-between">
           <div>
-            <h3 className="font-semibold text-sm text-primary tracking-wide">P&amp;L Comparison &middot; All 21 Strategies</h3>
+            <h3 className="font-semibold text-sm text-primary tracking-wide">P&amp;L Comparison &middot; All {strategies.length} Strategies</h3>
             <p className="text-xs text-faint mt-0.5">Historical 1-year performance breakdown sorted by profitability</p>
           </div>
         </div>
@@ -120,7 +124,7 @@ export function BacktestReportScreen() {
           onClick={() => setActiveTab("all")}
           className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${activeTab === "all" ? "bg-accent text-white shadow-sm" : "bg-surface2 text-muted hover:bg-surface3 hover:text-primary"}`}
         >
-          All Strategies (21)
+          All Strategies ({strategies.length})
         </button>
         <button
           onClick={() => setActiveTab("nifty")}
@@ -135,16 +139,22 @@ export function BacktestReportScreen() {
           SENSEX Suite (11)
         </button>
         <button
+          onClick={() => setActiveTab("banknifty")}
+          className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${activeTab === "banknifty" ? "bg-accent text-white shadow-sm" : "bg-surface2 text-muted hover:bg-surface3 hover:text-primary"}`}
+        >
+          BANKNIFTY Suite (11)
+        </button>
+        <button
           onClick={() => setActiveTab("5m")}
           className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${activeTab === "5m" ? "bg-accent text-white shadow-sm" : "bg-surface2 text-muted hover:bg-surface3 hover:text-primary"}`}
         >
-          5M ITM Suite (12)
+          5M ITM Suite ({strategies.filter(is5M).length})
         </button>
         <button
           onClick={() => setActiveTab("1m")}
           className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${activeTab === "1m" ? "bg-accent text-white shadow-sm" : "bg-surface2 text-muted hover:bg-surface3 hover:text-primary"}`}
         >
-          1M ATM Baseline (9)
+          1M ATM Baseline ({strategies.filter((s) => !is5M(s)).length})
         </button>
       </div>
 
@@ -180,6 +190,23 @@ export function BacktestReportScreen() {
                 <span className="h-2 w-2 rounded-full bg-purple-400" /> SENSEX Bearish (PE) Strategies
               </div>
               <StrategyRankTable rows={sensexPe} dailyBreakdown={dailyBreakdown} capitalRequirements={capitalRequirements} />
+            </div>
+          </>
+        )}
+
+        {(activeTab === "all" || activeTab === "banknifty") && (
+          <>
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 font-semibold text-xs text-primary uppercase tracking-wider">
+                <span className="h-2 w-2 rounded-full bg-emerald-400" /> BANKNIFTY Bullish (CE) Strategies
+              </div>
+              <StrategyRankTable rows={bankniftyCe} dailyBreakdown={dailyBreakdown} capitalRequirements={capitalRequirements} />
+            </div>
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 font-semibold text-xs text-primary uppercase tracking-wider">
+                <span className="h-2 w-2 rounded-full bg-emerald-400" /> BANKNIFTY Bearish (PE) Strategies
+              </div>
+              <StrategyRankTable rows={bankniftyPe} dailyBreakdown={dailyBreakdown} capitalRequirements={capitalRequirements} />
             </div>
           </>
         )}

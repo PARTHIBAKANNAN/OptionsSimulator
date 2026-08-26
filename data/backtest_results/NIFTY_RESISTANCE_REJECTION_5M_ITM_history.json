@@ -77,17 +77,6 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY24750PE",
-    "strategy": "NIFTY_RESISTANCE_REJECTION_5M_ITM",
-    "entry_price": 118.25813999999998,
-    "entry_time": "2025-09-02T10:50:00",
-    "exit_price": 139.66,
-    "exit_time": "2025-09-02T12:50:00",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 1391.1209000000008,
-    "qty": 1
-  },
-  {
     "symbol": "NIFTY25000PE",
     "strategy": "NIFTY_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 200.85064999999997,
@@ -96,17 +85,6 @@
     "exit_time": "2025-09-04T13:05:00",
     "exit_reason": "TIME_EXIT",
     "realized_pnl": 3086.1577500000026,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY25000PE",
-    "strategy": "NIFTY_RESISTANCE_REJECTION_5M_ITM",
-    "entry_price": 202.72251999999997,
-    "entry_time": "2025-09-04T11:10:00",
-    "exit_price": 250.44,
-    "exit_time": "2025-09-04T13:10:00",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 3101.6362000000017,
     "qty": 1
   },
   {
@@ -123,34 +101,12 @@
   {
     "symbol": "NIFTY24900PE",
     "strategy": "NIFTY_RESISTANCE_REJECTION_5M_ITM",
-    "entry_price": 201.67146999999997,
-    "entry_time": "2025-09-05T12:20:00",
-    "exit_price": 216.96,
-    "exit_time": "2025-09-05T14:20:00",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 993.7544500000024,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY24900PE",
-    "strategy": "NIFTY_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 135.71558,
     "entry_time": "2025-09-08T11:25:00",
     "exit_price": 142.4,
     "exit_time": "2025-09-08T13:25:00",
     "exit_reason": "TIME_EXIT",
     "realized_pnl": 434.48730000000114,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY24900PE",
-    "strategy": "NIFTY_RESISTANCE_REJECTION_5M_ITM",
-    "entry_price": 135.99586,
-    "entry_time": "2025-09-08T11:30:00",
-    "exit_price": 142.69,
-    "exit_time": "2025-09-08T13:30:00",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 435.1191000000003,
     "qty": 1
   },
   {
@@ -195,17 +151,6 @@
     "exit_time": "2025-09-18T14:30:00",
     "exit_reason": "TIME_EXIT",
     "realized_pnl": 200.3560000000023,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY25550PE",
-    "strategy": "NIFTY_RESISTANCE_REJECTION_5M_ITM",
-    "entry_price": 217.95773999999997,
-    "entry_time": "2025-09-18T12:35:00",
-    "exit_price": 221.04,
-    "exit_time": "2025-09-18T14:35:00",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 200.34690000000126,
     "qty": 1
   },
   {
@@ -297,17 +242,6 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY24800PE",
-    "strategy": "NIFTY_RESISTANCE_REJECTION_5M_ITM",
-    "entry_price": 125.51538999999998,
-    "entry_time": "2025-09-29T10:40:00",
-    "exit_price": 146.88,
-    "exit_time": "2025-09-29T12:40:00",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 1388.699650000001,
-    "qty": 1
-  },
-  {
     "symbol": "NIFTY24750PE",
     "strategy": "NIFTY_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 83.2832,
@@ -316,17 +250,6 @@
     "exit_time": "2025-09-30T12:35:00",
     "exit_reason": "TIME_EXIT",
     "realized_pnl": 1282.2420000000006,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY24750PE",
-    "strategy": "NIFTY_RESISTANCE_REJECTION_5M_ITM",
-    "entry_price": 84.00392,
-    "entry_time": "2025-09-30T10:40:00",
-    "exit_price": 103.95,
-    "exit_time": "2025-09-30T12:40:00",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 1296.4952000000005,
     "qty": 1
   },
   {
@@ -352,17 +275,6 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY25300PE",
-    "strategy": "NIFTY_RESISTANCE_REJECTION_5M_ITM",
-    "entry_price": 91.58148999999999,
-    "entry_time": "2025-10-14T12:20:00",
-    "exit_price": 131.32,
-    "exit_time": "2025-10-14T14:20:00",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 2583.0031500000005,
-    "qty": 1
-  },
-  {
     "symbol": "NIFTY26000PE",
     "strategy": "NIFTY_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 112.93281999999998,
@@ -374,17 +286,6 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY26000PE",
-    "strategy": "NIFTY_RESISTANCE_REJECTION_5M_ITM",
-    "entry_price": 116.11599999999999,
-    "entry_time": "2025-10-21T12:20:00",
-    "exit_price": 125.5,
-    "exit_time": "2025-10-21T14:20:00",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 609.960000000001,
-    "qty": 1
-  },
-  {
     "symbol": "NIFTY26100PE",
     "strategy": "NIFTY_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 206.77656999999996,
@@ -393,17 +294,6 @@
     "exit_time": "2025-10-23T13:05:00",
     "exit_reason": "TIME_EXIT",
     "realized_pnl": 2008.7229500000028,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY26050PE",
-    "strategy": "NIFTY_RESISTANCE_REJECTION_5M_ITM",
-    "entry_price": 197.20700999999997,
-    "entry_time": "2025-10-23T12:20:00",
-    "exit_price": 227.31,
-    "exit_time": "2025-10-23T14:20:00",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 1956.6943500000023,
     "qty": 1
   },
   {
@@ -492,17 +382,6 @@
     "exit_time": "2025-11-13T13:15:00",
     "exit_reason": "TIME_EXIT",
     "realized_pnl": 308.6629000000019,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY26000PE",
-    "strategy": "NIFTY_RESISTANCE_REJECTION_5M_ITM",
-    "entry_price": 214.23402,
-    "entry_time": "2025-11-13T12:20:00",
-    "exit_price": 219.02,
-    "exit_time": "2025-11-13T14:20:00",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 311.0887000000015,
     "qty": 1
   },
   {
@@ -596,34 +475,12 @@
   {
     "symbol": "NIFTY26350PE",
     "strategy": "NIFTY_RESISTANCE_REJECTION_5M_ITM",
-    "entry_price": 218.76854999999998,
-    "entry_time": "2025-11-27T12:20:00",
-    "exit_price": 227.11,
-    "exit_time": "2025-11-27T14:20:00",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 542.1942500000024,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY26350PE",
-    "strategy": "NIFTY_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 208.78858,
     "entry_time": "2025-11-28T10:30:00",
     "exit_price": 215.28,
     "exit_time": "2025-11-28T12:30:00",
     "exit_reason": "TIME_EXIT",
     "realized_pnl": 421.94230000000033,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY26300PE",
-    "strategy": "NIFTY_RESISTANCE_REJECTION_5M_ITM",
-    "entry_price": 185.42524,
-    "entry_time": "2025-11-28T12:20:00",
-    "exit_price": 191.48,
-    "exit_time": "2025-11-28T14:20:00",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 393.5593999999992,
     "qty": 1
   },
   {
@@ -635,17 +492,6 @@
     "exit_time": "2025-12-01T12:50:00",
     "exit_reason": "TIME_EXIT",
     "realized_pnl": 2346.9316000000017,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY26350PE",
-    "strategy": "NIFTY_RESISTANCE_REJECTION_5M_ITM",
-    "entry_price": 133.65352,
-    "entry_time": "2025-12-01T12:20:00",
-    "exit_price": 168.66,
-    "exit_time": "2025-12-01T14:20:00",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 2275.4212000000007,
     "qty": 1
   },
   {
@@ -759,17 +605,6 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY26300PE",
-    "strategy": "NIFTY_RESISTANCE_REJECTION_5M_ITM",
-    "entry_price": 110.25013999999999,
-    "entry_time": "2025-12-23T12:20:00",
-    "exit_price": 117.76,
-    "exit_time": "2025-12-23T14:20:00",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 488.1409000000011,
-    "qty": 1
-  },
-  {
     "symbol": "NIFTY26250PE",
     "strategy": "NIFTY_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 221.26103999999998,
@@ -833,17 +668,6 @@
     "exit_time": "2026-01-01T13:40:00",
     "exit_reason": "TIME_EXIT",
     "realized_pnl": 298.08220000000017,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY26250PE",
-    "strategy": "NIFTY_RESISTANCE_REJECTION_5M_ITM",
-    "entry_price": 205.91571,
-    "entry_time": "2026-01-01T12:20:00",
-    "exit_price": 210.52,
-    "exit_time": "2026-01-01T14:20:00",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 299.2788500000013,
     "qty": 1
   },
   {
@@ -924,17 +748,6 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY25900PE",
-    "strategy": "NIFTY_RESISTANCE_REJECTION_5M_ITM",
-    "entry_price": 89.03895,
-    "entry_time": "2026-01-13T12:20:00",
-    "exit_price": 138.77,
-    "exit_time": "2026-01-13T14:20:00",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 3232.5182500000005,
-    "qty": 1
-  },
-  {
     "symbol": "NIFTY25800PE",
     "strategy": "NIFTY_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 197.16696999999996,
@@ -981,17 +794,6 @@
   {
     "symbol": "NIFTY25400PE",
     "strategy": "NIFTY_RESISTANCE_REJECTION_5M_ITM",
-    "entry_price": 197.00680999999997,
-    "entry_time": "2026-01-22T12:20:00",
-    "exit_price": 206.58,
-    "exit_time": "2026-01-22T14:20:00",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 622.2573500000026,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY25400PE",
-    "strategy": "NIFTY_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 186.42623999999998,
     "entry_time": "2026-01-23T09:55:00",
     "exit_price": 245.29,
@@ -1020,17 +822,6 @@
     "exit_time": "2026-02-03T13:15:00",
     "exit_reason": "TAKE_PROFIT",
     "realized_pnl": 9742.39435,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY26200PE",
-    "strategy": "NIFTY_RESISTANCE_REJECTION_5M_ITM",
-    "entry_price": 124.32419999999999,
-    "entry_time": "2026-02-03T11:40:00",
-    "exit_price": 274.2,
-    "exit_time": "2026-02-03T13:20:00",
-    "exit_reason": "TAKE_PROFIT",
-    "realized_pnl": 9741.927,
     "qty": 1
   },
   {
@@ -1064,17 +855,6 @@
     "exit_time": "2026-02-11T13:20:00",
     "exit_reason": "TIME_EXIT",
     "realized_pnl": 509.37770000000353,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY26100PE",
-    "strategy": "NIFTY_RESISTANCE_REJECTION_5M_ITM",
-    "entry_price": 237.66742999999997,
-    "entry_time": "2026-02-11T12:20:00",
-    "exit_price": 245.58,
-    "exit_time": "2026-02-11T14:20:00",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 514.317050000003,
     "qty": 1
   },
   {
@@ -1144,17 +924,6 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY25600PE",
-    "strategy": "NIFTY_RESISTANCE_REJECTION_5M_ITM",
-    "entry_price": 221.97175,
-    "entry_time": "2026-02-25T12:20:00",
-    "exit_price": 227.2,
-    "exit_time": "2026-02-25T14:20:00",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 339.8362500000002,
-    "qty": 1
-  },
-  {
     "symbol": "NIFTY25650PE",
     "strategy": "NIFTY_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 215.18496999999996,
@@ -1163,17 +932,6 @@
     "exit_time": "2026-02-26T13:10:00",
     "exit_reason": "TIME_EXIT",
     "realized_pnl": 719.8769500000017,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY25650PE",
-    "strategy": "NIFTY_RESISTANCE_REJECTION_5M_ITM",
-    "entry_price": 221.73150999999996,
-    "entry_time": "2026-02-26T12:20:00",
-    "exit_price": 233.0,
-    "exit_time": "2026-02-26T14:20:00",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 732.4518500000028,
     "qty": 1
   },
   {
@@ -1298,17 +1056,6 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY22900PE",
-    "strategy": "NIFTY_RESISTANCE_REJECTION_5M_ITM",
-    "entry_price": 210.06985999999998,
-    "entry_time": "2026-04-01T12:20:00",
-    "exit_price": 253.02,
-    "exit_time": "2026-04-01T14:20:00",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 2791.759100000002,
-    "qty": 1
-  },
-  {
     "symbol": "NIFTY23950PE",
     "strategy": "NIFTY_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 202.90269999999995,
@@ -1331,17 +1078,6 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY24400PE",
-    "strategy": "NIFTY_RESISTANCE_REJECTION_5M_ITM",
-    "entry_price": 206.33612999999997,
-    "entry_time": "2026-04-16T12:20:00",
-    "exit_price": 243.14,
-    "exit_time": "2026-04-16T14:20:00",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 2392.2515500000013,
-    "qty": 1
-  },
-  {
     "symbol": "NIFTY24500PE",
     "strategy": "NIFTY_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 142.90275999999997,
@@ -1350,17 +1086,6 @@
     "exit_time": "2026-04-20T13:40:00",
     "exit_reason": "TIME_EXIT",
     "realized_pnl": 404.77060000000154,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY24500PE",
-    "strategy": "NIFTY_RESISTANCE_REJECTION_5M_ITM",
-    "entry_price": 145.01487,
-    "entry_time": "2026-04-20T12:20:00",
-    "exit_price": 151.28,
-    "exit_time": "2026-04-20T14:20:00",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 407.23344999999995,
     "qty": 1
   },
   {
@@ -1430,17 +1155,6 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY24450PE",
-    "strategy": "NIFTY_RESISTANCE_REJECTION_5M_ITM",
-    "entry_price": 193.91371999999998,
-    "entry_time": "2026-05-07T12:20:00",
-    "exit_price": 206.9,
-    "exit_time": "2026-05-07T14:20:00",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 844.1082000000015,
-    "qty": 1
-  },
-  {
     "symbol": "NIFTY24300PE",
     "strategy": "NIFTY_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 183.61343,
@@ -1485,17 +1199,6 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY23800PE",
-    "strategy": "NIFTY_RESISTANCE_REJECTION_5M_ITM",
-    "entry_price": 191.46126999999998,
-    "entry_time": "2026-05-15T12:20:00",
-    "exit_price": 208.76,
-    "exit_time": "2026-05-15T14:20:00",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 1124.4174500000004,
-    "qty": 1
-  },
-  {
     "symbol": "NIFTY23750PE",
     "strategy": "NIFTY_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 94.26417,
@@ -1507,17 +1210,6 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY23750PE",
-    "strategy": "NIFTY_RESISTANCE_REJECTION_5M_ITM",
-    "entry_price": 104.51440999999998,
-    "entry_time": "2026-05-19T12:20:00",
-    "exit_price": 121.83,
-    "exit_time": "2026-05-19T14:20:00",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 1125.5133500000009,
-    "qty": 1
-  },
-  {
     "symbol": "NIFTY23900PE",
     "strategy": "NIFTY_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 211.34112999999996,
@@ -1526,17 +1218,6 @@
     "exit_time": "2026-05-21T13:05:00",
     "exit_reason": "TIME_EXIT",
     "realized_pnl": 2275.576550000002,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY23850PE",
-    "strategy": "NIFTY_RESISTANCE_REJECTION_5M_ITM",
-    "entry_price": 202.27206999999996,
-    "entry_time": "2026-05-21T12:20:00",
-    "exit_price": 236.49,
-    "exit_time": "2026-05-21T14:20:00",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 2224.1654500000036,
     "qty": 1
   },
   {
@@ -1606,17 +1287,6 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY23500PE",
-    "strategy": "NIFTY_RESISTANCE_REJECTION_5M_ITM",
-    "entry_price": 169.23906999999997,
-    "entry_time": "2026-06-05T12:20:00",
-    "exit_price": 190.19,
-    "exit_time": "2026-06-05T14:20:00",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 1361.8104500000018,
-    "qty": 1
-  },
-  {
     "symbol": "NIFTY23350PE",
     "strategy": "NIFTY_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 101.06095999999998,
@@ -1625,17 +1295,6 @@
     "exit_time": "2026-06-09T14:40:00",
     "exit_reason": "TIME_EXIT",
     "realized_pnl": 302.1876000000009,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY23350PE",
-    "strategy": "NIFTY_RESISTANCE_REJECTION_5M_ITM",
-    "entry_price": 101.21110999999999,
-    "entry_time": "2026-06-09T12:45:00",
-    "exit_price": 105.95,
-    "exit_time": "2026-06-09T14:45:00",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 308.0278500000008,
     "qty": 1
   },
   {
@@ -1658,17 +1317,6 @@
     "exit_time": "2026-06-15T13:50:00",
     "exit_reason": "TIME_EXIT",
     "realized_pnl": 2124.003700000001,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY24050PE",
-    "strategy": "NIFTY_RESISTANCE_REJECTION_5M_ITM",
-    "entry_price": 144.46432,
-    "entry_time": "2026-06-15T11:55:00",
-    "exit_price": 177.26,
-    "exit_time": "2026-06-15T13:55:00",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 2131.7192000000005,
     "qty": 1
   },
   {
@@ -1705,17 +1353,6 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY24200PE",
-    "strategy": "NIFTY_RESISTANCE_REJECTION_5M_ITM",
-    "entry_price": 204.83462999999998,
-    "entry_time": "2026-06-25T12:20:00",
-    "exit_price": 217.94,
-    "exit_time": "2026-06-25T14:20:00",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 851.8490500000014,
-    "qty": 1
-  },
-  {
     "symbol": "NIFTY24100PE",
     "strategy": "NIFTY_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 125.79566999999999,
@@ -1738,17 +1375,6 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY24050PE",
-    "strategy": "NIFTY_RESISTANCE_REJECTION_5M_ITM",
-    "entry_price": 103.01290999999999,
-    "entry_time": "2026-06-30T12:20:00",
-    "exit_price": 155.13,
-    "exit_time": "2026-06-30T14:20:00",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 3387.6108500000005,
-    "qty": 1
-  },
-  {
     "symbol": "NIFTY24450PE",
     "strategy": "NIFTY_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 195.84564999999998,
@@ -1760,17 +1386,6 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY24400PE",
-    "strategy": "NIFTY_RESISTANCE_REJECTION_5M_ITM",
-    "entry_price": 173.7736,
-    "entry_time": "2026-07-03T12:20:00",
-    "exit_price": 193.13,
-    "exit_time": "2026-07-03T14:20:00",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 1258.1660000000006,
-    "qty": 1
-  },
-  {
     "symbol": "NIFTY24550PE",
     "strategy": "NIFTY_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 105.83573,
@@ -1779,17 +1394,6 @@
     "exit_time": "2026-07-07T12:50:00",
     "exit_reason": "TIME_EXIT",
     "realized_pnl": 1177.4275500000003,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY24550PE",
-    "strategy": "NIFTY_RESISTANCE_REJECTION_5M_ITM",
-    "entry_price": 119.17905999999999,
-    "entry_time": "2026-07-07T12:20:00",
-    "exit_price": 139.64,
-    "exit_time": "2026-07-07T14:20:00",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 1329.9610999999995,
     "qty": 1
   },
   {
@@ -1828,34 +1432,12 @@
   {
     "symbol": "NIFTY24200PE",
     "strategy": "NIFTY_RESISTANCE_REJECTION_5M_ITM",
-    "entry_price": 221.72149999999996,
-    "entry_time": "2026-07-15T12:20:00",
-    "exit_price": 222.87,
-    "exit_time": "2026-07-15T14:20:00",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 74.65250000000268,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY24200PE",
-    "strategy": "NIFTY_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 186.50631999999996,
     "entry_time": "2026-07-16T10:55:00",
     "exit_price": 198.84,
     "exit_time": "2026-07-16T12:55:00",
     "exit_reason": "TIME_EXIT",
     "realized_pnl": 801.6892000000029,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY24200PE",
-    "strategy": "NIFTY_RESISTANCE_REJECTION_5M_ITM",
-    "entry_price": 187.02684,
-    "entry_time": "2026-07-16T11:00:00",
-    "exit_price": 199.37,
-    "exit_time": "2026-07-16T13:00:00",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 802.3054000000008,
     "qty": 1
   },
   {
@@ -1916,34 +1498,12 @@
   {
     "symbol": "NIFTY24750PE",
     "strategy": "NIFTY_RESISTANCE_REJECTION_5M_ITM",
-    "entry_price": 216.91669999999996,
-    "entry_time": "2026-08-05T12:20:00",
-    "exit_price": 224.85,
-    "exit_time": "2026-08-05T14:20:00",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 515.664500000002,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY24750PE",
-    "strategy": "NIFTY_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 208.89869,
     "entry_time": "2026-08-06T11:35:00",
     "exit_price": 209.62,
     "exit_time": "2026-08-06T13:35:00",
     "exit_reason": "TIME_EXIT",
     "realized_pnl": 46.88515000000109,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY24750PE",
-    "strategy": "NIFTY_RESISTANCE_REJECTION_5M_ITM",
-    "entry_price": 209.24903999999998,
-    "entry_time": "2026-08-06T12:20:00",
-    "exit_price": 209.97,
-    "exit_time": "2026-08-06T14:20:00",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 46.86240000000126,
     "qty": 1
   },
   {

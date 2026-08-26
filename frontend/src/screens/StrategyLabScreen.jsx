@@ -79,14 +79,14 @@ export function StrategyLabScreen() {
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="text-xs font-medium text-faint mb-1.5 block">Underlying Index</label>
-              <div className="grid grid-cols-2 gap-1 rounded-xl bg-surface2 p-1 border border-subtle">
-                {["NIFTY", "SENSEX"].map((idx) => (
+              <div className="grid grid-cols-3 gap-1 rounded-xl bg-surface2 p-1 border border-subtle">
+                {["NIFTY", "SENSEX", "BANKNIFTY"].map((idx) => (
                   <button
                     key={idx}
                     onClick={() => setIndex(idx)}
-                    className={`rounded-lg py-1.5 text-xs font-bold transition ${index === idx ? "bg-accent text-white shadow-sm" : "text-muted hover:text-primary"}`}
+                    className={`rounded-lg py-1.5 text-[11px] font-bold transition ${index === idx ? "bg-accent text-white shadow-sm" : "text-muted hover:text-primary"}`}
                   >
-                    {idx}
+                    {idx === "BANKNIFTY" ? "BNF" : idx}
                   </button>
                 ))}
               </div>

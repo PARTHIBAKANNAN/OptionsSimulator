@@ -33,6 +33,7 @@ from src.utils.options_pricing import black_scholes_price, next_weekly_expiry_da
 NIFTY_1M_CSV = PROJECT_ROOT / "data" / "historical" / "nifty_90days.csv"
 NIFTY_5M_CSV = PROJECT_ROOT / "data" / "historical" / "nifty_5min.csv"
 SENSEX_CSV = PROJECT_ROOT / "data" / "historical" / "sensex_1year.csv"
+BANKNIFTY_CSV = PROJECT_ROOT / "data" / "historical" / "banknifty_1year.csv"
 RESULTS_DIR = PROJECT_ROOT / "data" / "backtest_results"
 RESULTS_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -96,7 +97,7 @@ def simulate_vectorized(
     lot_size: int = 65,
 ) -> tuple[object, list]:
     strike_step = 50 if index == "NIFTY" else 100
-    target_premium = 200.0 if index == "NIFTY" else 600.0
+    target_premium = 200.0 if index == "NIFTY" else (500.0 if index == "BANKNIFTY" else 600.0)
 
     trader = PaperTrader(
         initial_capital=1_000_000,
@@ -223,6 +224,7 @@ def main():
     df_nifty_1m = compute_indicators(pd.read_csv(NIFTY_1M_CSV))
     df_nifty_5m = compute_indicators(pd.read_csv(NIFTY_5M_CSV))
     df_sensex = compute_indicators(pd.read_csv(SENSEX_CSV))
+    df_banknifty = compute_indicators(pd.read_csv(BANKNIFTY_CSV))
     print(f"Data precomputed in {time.time() - t0:.2f}s\n")
 
     # Strategy Master Roster definitions
@@ -255,12 +257,27 @@ def main():
         ("SENSEX_RESISTANCE_REJECTION_5M_ITM", "PE", "SENSEX", True, True, df_sensex, 20),
         ("SENSEX_HEIKIN_ASHI_BEARISH_5M_ITM", "PE", "SENSEX", True, True, df_sensex, 20),
         ("SENSEX_ORB_BEARISH_5M_ITM", "PE", "SENSEX", True, True, df_sensex, 20),
+
+        # --- 5 BANKNIFTY 1M ATM Baseline Strategies ---
+        ("BANKNIFTY_MACD_BULLISH_1M_ATM", "CE", "BANKNIFTY", False, False, df_banknifty, 30),
+        ("BANKNIFTY_SUPPORT_BOUNCE_1M_ATM", "CE", "BANKNIFTY", False, False, df_banknifty, 30),
+        ("BANKNIFTY_HEIKIN_ASHI_BEARISH_1M_ATM", "PE", "BANKNIFTY", False, False, df_banknifty, 30),
+        ("BANKNIFTY_MACD_BEARISH_1M_ATM", "PE", "BANKNIFTY", False, False, df_banknifty, 30),
+        ("BANKNIFTY_ORB_BEARISH_1M_ATM", "PE", "BANKNIFTY", False, False, df_banknifty, 30),
+
+        # --- 6 BANKNIFTY 5M ITM Strategies ---
+        ("BANKNIFTY_SUPPORT_BOUNCE_5M_ITM", "CE", "BANKNIFTY", True, True, df_banknifty, 30),
+        ("BANKNIFTY_HEIKIN_ASHI_BULLISH_5M_ITM", "CE", "BANKNIFTY", True, True, df_banknifty, 30),
+        ("BANKNIFTY_ORB_BULLISH_5M_ITM", "CE", "BANKNIFTY", True, True, df_banknifty, 30),
+        ("BANKNIFTY_RESISTANCE_REJECTION_5M_ITM", "PE", "BANKNIFTY", True, True, df_banknifty, 30),
+        ("BANKNIFTY_HEIKIN_ASHI_BEARISH_5M_ITM", "PE", "BANKNIFTY", True, True, df_banknifty, 30),
+        ("BANKNIFTY_ORB_BEARISH_5M_ITM", "PE", "BANKNIFTY", True, True, df_banknifty, 30),
     ]
 
     reports: dict[str, object] = {}
     trade_histories: dict[str, list] = {}
 
-    print("Simulating all 21 strategies...")
+    print("Simulating all 32 strategies...")
     for name, direction, idx, is_itm, is_5m, df, lot_sz in strategy_defs:
         s_t0 = time.time()
         rep, hist = simulate_vectorized(df, name, direction, index=idx, is_itm=is_itm, is_5m=is_5m, lot_size=lot_sz)
@@ -269,7 +286,7 @@ def main():
         res = "5M" if is_5m else "1M"
         strike = "ITM" if is_itm else "ATM"
         s_dt = time.time() - s_t0
-        print(f"  [{idx:6s}|{res}|{strike}] {name:<38} -> Trades: {rep.total_trades:3d} | Win%: {rep.win_rate:5.1f}% | P&L: Rs.{rep.total_pnl:10,.2f} ({s_dt:.2f}s)")
+        print(f"  [{idx:9s}|{res}|{strike}] {name:<40} -> Trades: {rep.total_trades:3d} | Win%: {rep.win_rate:5.1f}% | P&L: Rs.{rep.total_pnl:10,.2f} ({s_dt:.2f}s)")
 
     # 1. Report JSON
     report_dict = {
@@ -297,7 +314,8 @@ def main():
     cap_reqs = required_capital_per_strategy(reports, trade_histories)
     for name, req in cap_reqs.items():
         is_sx = name.startswith("SENSEX")
-        base_margin = 17000.0 if is_sx else 16000.0
+        is_bn = name.startswith("BANKNIFTY")
+        base_margin = 17000.0 if is_sx else (15000.0 if is_bn else 16000.0)
         req["avg_trade_risk"] = round(base_margin, 2)
         req["recommended_capital"] = round(base_margin + max(req.get("max_historical_drawdown", 0), 1000.0), 2)
     (RESULTS_DIR / "capital_requirements.json").write_text(json.dumps(cap_reqs, indent=2))

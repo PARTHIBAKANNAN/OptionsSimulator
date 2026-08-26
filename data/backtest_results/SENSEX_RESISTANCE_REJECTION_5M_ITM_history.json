@@ -11,17 +11,6 @@
     "qty": 1
   },
   {
-    "symbol": "SENSEX82300PE",
-    "strategy": "SENSEX_RESISTANCE_REJECTION_5M_ITM",
-    "entry_price": 624.34372,
-    "entry_time": "2025-08-21T13:45:00+05:30",
-    "exit_price": 652.12,
-    "exit_time": "2025-08-22T09:30:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 555.5256000000008,
-    "qty": 1
-  },
-  {
     "symbol": "SENSEX81800PE",
     "strategy": "SENSEX_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 534.1235899999999,
@@ -101,34 +90,12 @@
   {
     "symbol": "SENSEX81100PE",
     "strategy": "SENSEX_RESISTANCE_REJECTION_5M_ITM",
-    "entry_price": 655.6650099999999,
-    "entry_time": "2025-09-05T12:15:00+05:30",
-    "exit_price": 710.31,
-    "exit_time": "2025-09-05T14:15:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 1092.8998000000001,
-    "qty": 1
-  },
-  {
-    "symbol": "SENSEX81100PE",
-    "strategy": "SENSEX_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 519.6791599999999,
     "entry_time": "2025-09-08T12:00:00+05:30",
     "exit_price": 541.92,
     "exit_time": "2025-09-08T14:00:00+05:30",
     "exit_reason": "TIME_EXIT",
     "realized_pnl": 444.81680000000097,
-    "qty": 1
-  },
-  {
-    "symbol": "SENSEX81000PE",
-    "strategy": "SENSEX_RESISTANCE_REJECTION_5M_ITM",
-    "entry_price": 466.12566,
-    "entry_time": "2025-09-08T12:15:00+05:30",
-    "exit_price": 487.0,
-    "exit_time": "2025-09-08T14:15:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 417.48680000000036,
     "qty": 1
   },
   {
@@ -140,17 +107,6 @@
     "exit_time": "2025-09-15T13:45:00+05:30",
     "exit_reason": "TIME_EXIT",
     "realized_pnl": 527.313200000001,
-    "qty": 1
-  },
-  {
-    "symbol": "SENSEX82100PE",
-    "strategy": "SENSEX_RESISTANCE_REJECTION_5M_ITM",
-    "entry_price": 521.5009799999999,
-    "entry_time": "2025-09-15T12:15:00+05:30",
-    "exit_price": 548.07,
-    "exit_time": "2025-09-15T14:15:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 531.3804000000027,
     "qty": 1
   },
   {
@@ -231,17 +187,6 @@
     "qty": 1
   },
   {
-    "symbol": "SENSEX80600PE",
-    "strategy": "SENSEX_RESISTANCE_REJECTION_5M_ITM",
-    "entry_price": 421.8213999999999,
-    "entry_time": "2025-09-30T12:15:00+05:30",
-    "exit_price": 475.99,
-    "exit_time": "2025-09-30T14:15:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 1083.3720000000017,
-    "qty": 1
-  },
-  {
     "symbol": "SENSEX82100PE",
     "strategy": "SENSEX_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 353.48312999999996,
@@ -272,17 +217,6 @@
     "exit_time": "2025-10-14T13:00:00+05:30",
     "exit_reason": "TIME_EXIT",
     "realized_pnl": 1506.1180000000002,
-    "qty": 1
-  },
-  {
-    "symbol": "SENSEX82400PE",
-    "strategy": "SENSEX_RESISTANCE_REJECTION_5M_ITM",
-    "entry_price": 421.54112,
-    "entry_time": "2025-10-14T12:15:00+05:30",
-    "exit_price": 495.64,
-    "exit_time": "2025-10-14T14:15:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 1481.9776000000002,
     "qty": 1
   },
   {
@@ -352,14 +286,14 @@
     "qty": 1
   },
   {
-    "symbol": "SENSEX84100PE",
+    "symbol": "SENSEX83900PE",
     "strategy": "SENSEX_RESISTANCE_REJECTION_5M_ITM",
-    "entry_price": 419.2588399999999,
-    "entry_time": "2025-11-04T10:00:00+05:30",
-    "exit_price": 527.11,
-    "exit_time": "2025-11-04T12:00:00+05:30",
+    "entry_price": 420.1997799999999,
+    "entry_time": "2025-11-04T12:15:00+05:30",
+    "exit_price": 528.35,
+    "exit_time": "2025-11-04T14:15:00+05:30",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 2157.0232000000024,
+    "realized_pnl": 2163.004400000002,
     "qty": 1
   },
   {
@@ -393,17 +327,6 @@
     "exit_time": "2025-11-18T13:30:00+05:30",
     "exit_reason": "TIME_EXIT",
     "realized_pnl": 1465.617000000002,
-    "qty": 1
-  },
-  {
-    "symbol": "SENSEX85100PE",
-    "strategy": "SENSEX_RESISTANCE_REJECTION_5M_ITM",
-    "entry_price": 466.4760099999999,
-    "entry_time": "2025-11-18T12:15:00+05:30",
-    "exit_price": 542.21,
-    "exit_time": "2025-11-18T14:15:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 1514.6798000000024,
     "qty": 1
   },
   {
@@ -473,17 +396,6 @@
     "qty": 1
   },
   {
-    "symbol": "SENSEX86100PE",
-    "strategy": "SENSEX_RESISTANCE_REJECTION_5M_ITM",
-    "entry_price": 541.0905499999999,
-    "entry_time": "2025-12-01T12:15:00+05:30",
-    "exit_price": 624.54,
-    "exit_time": "2025-12-01T14:15:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 1668.9890000000014,
-    "qty": 1
-  },
-  {
     "symbol": "SENSEX85400PE",
     "strategy": "SENSEX_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 424.88445999999993,
@@ -514,17 +426,6 @@
     "exit_time": "2025-12-08T12:30:00+05:30",
     "exit_reason": "TIME_EXIT",
     "realized_pnl": 2003.1200000000001,
-    "qty": 1
-  },
-  {
-    "symbol": "SENSEX85600PE",
-    "strategy": "SENSEX_RESISTANCE_REJECTION_5M_ITM",
-    "entry_price": 533.15262,
-    "entry_time": "2025-12-08T12:15:00+05:30",
-    "exit_price": 636.58,
-    "exit_time": "2025-12-08T14:15:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 2068.5476000000017,
     "qty": 1
   },
   {
@@ -660,17 +561,6 @@
     "qty": 1
   },
   {
-    "symbol": "SENSEX85700PE",
-    "strategy": "SENSEX_RESISTANCE_REJECTION_5M_ITM",
-    "entry_price": 491.5911,
-    "entry_time": "2026-01-05T12:15:00+05:30",
-    "exit_price": 527.87,
-    "exit_time": "2026-01-05T14:15:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 725.5780000000004,
-    "qty": 1
-  },
-  {
     "symbol": "SENSEX85400PE",
     "strategy": "SENSEX_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 444.53408999999994,
@@ -712,17 +602,6 @@
     "exit_time": "2026-01-13T13:45:00+05:30",
     "exit_reason": "TIME_EXIT",
     "realized_pnl": 1833.1474000000014,
-    "qty": 1
-  },
-  {
-    "symbol": "SENSEX84100PE",
-    "strategy": "SENSEX_RESISTANCE_REJECTION_5M_ITM",
-    "entry_price": 465.18471999999997,
-    "entry_time": "2026-01-13T12:15:00+05:30",
-    "exit_price": 559.3,
-    "exit_time": "2026-01-13T14:15:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 1882.3055999999997,
     "qty": 1
   },
   {
@@ -800,17 +679,6 @@
     "exit_time": "2026-02-03T15:00:00+05:30",
     "exit_reason": "TAKE_PROFIT",
     "realized_pnl": 2990.8758000000025,
-    "qty": 1
-  },
-  {
-    "symbol": "SENSEX84200PE",
-    "strategy": "SENSEX_RESISTANCE_REJECTION_5M_ITM",
-    "entry_price": 436.5361,
-    "entry_time": "2026-02-03T14:15:00+05:30",
-    "exit_price": 586.1,
-    "exit_time": "2026-02-03T15:15:00+05:30",
-    "exit_reason": "TAKE_PROFIT",
-    "realized_pnl": 2991.278000000001,
     "qty": 1
   },
   {
@@ -924,17 +792,6 @@
     "qty": 1
   },
   {
-    "symbol": "SENSEX82500PE",
-    "strategy": "SENSEX_RESISTANCE_REJECTION_5M_ITM",
-    "entry_price": 194.07387999999997,
-    "entry_time": "2026-02-26T12:15:00+05:30",
-    "exit_price": 225.31,
-    "exit_time": "2026-02-26T14:15:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 624.7224000000006,
-    "qty": 1
-  },
-  {
     "symbol": "SENSEX82000PE",
     "strategy": "SENSEX_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 665.6950299999999,
@@ -1020,17 +877,6 @@
     "exit_time": "2026-03-20T12:45:00+05:30",
     "exit_reason": "TIME_EXIT",
     "realized_pnl": 83.82200000000239,
-    "qty": 1
-  },
-  {
-    "symbol": "SENSEX74700PE",
-    "strategy": "SENSEX_RESISTANCE_REJECTION_5M_ITM",
-    "entry_price": 569.2687,
-    "entry_time": "2026-03-20T12:15:00+05:30",
-    "exit_price": 573.27,
-    "exit_time": "2026-03-20T14:15:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 80.0260000000003,
     "qty": 1
   },
   {
@@ -1320,17 +1166,6 @@
     "qty": 1
   },
   {
-    "symbol": "SENSEX74700PE",
-    "strategy": "SENSEX_RESISTANCE_REJECTION_5M_ITM",
-    "entry_price": 349.1187699999999,
-    "entry_time": "2026-06-03T11:00:00+05:30",
-    "exit_price": 385.2,
-    "exit_time": "2026-06-03T13:00:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 721.6246000000012,
-    "qty": 1
-  },
-  {
     "symbol": "SENSEX74600PE",
     "strategy": "SENSEX_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 573.5629899999999,
@@ -1408,17 +1243,6 @@
     "qty": 1
   },
   {
-    "symbol": "SENSEX76900PE",
-    "strategy": "SENSEX_RESISTANCE_REJECTION_5M_ITM",
-    "entry_price": 386.2658799999999,
-    "entry_time": "2026-06-30T12:15:00+05:30",
-    "exit_price": 492.11,
-    "exit_time": "2026-06-30T14:15:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 2116.882400000002,
-    "qty": 1
-  },
-  {
     "symbol": "SENSEX78100PE",
     "strategy": "SENSEX_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 636.46583,
@@ -1474,17 +1298,6 @@
     "qty": 1
   },
   {
-    "symbol": "SENSEX77500PE",
-    "strategy": "SENSEX_RESISTANCE_REJECTION_5M_ITM",
-    "entry_price": 233.11287999999996,
-    "entry_time": "2026-07-16T12:30:00+05:30",
-    "exit_price": 287.57,
-    "exit_time": "2026-07-16T14:30:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 1089.1424000000006,
-    "qty": 1
-  },
-  {
     "symbol": "SENSEX78200PE",
     "strategy": "SENSEX_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 496.91641999999996,
@@ -1493,17 +1306,6 @@
     "exit_time": "2026-07-20T13:45:00+05:30",
     "exit_reason": "TIME_EXIT",
     "realized_pnl": 1767.0716000000004,
-    "qty": 1
-  },
-  {
-    "symbol": "SENSEX78100PE",
-    "strategy": "SENSEX_RESISTANCE_REJECTION_5M_ITM",
-    "entry_price": 461.07061,
-    "entry_time": "2026-07-20T12:15:00+05:30",
-    "exit_price": 545.81,
-    "exit_time": "2026-07-20T14:15:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 1694.7877999999992,
     "qty": 1
   },
   {
@@ -1575,34 +1377,12 @@
   {
     "symbol": "SENSEX79000PE",
     "strategy": "SENSEX_RESISTANCE_REJECTION_5M_ITM",
-    "entry_price": 429.54911999999996,
-    "entry_time": "2026-08-04T12:15:00+05:30",
-    "exit_price": 579.12,
-    "exit_time": "2026-08-04T14:15:00+05:30",
-    "exit_reason": "TAKE_PROFIT",
-    "realized_pnl": 2991.4176000000007,
-    "qty": 1
-  },
-  {
-    "symbol": "SENSEX79000PE",
-    "strategy": "SENSEX_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 311.85154,
     "entry_time": "2026-08-05T12:00:00+05:30",
     "exit_price": 414.37,
     "exit_time": "2026-08-05T14:00:00+05:30",
     "exit_reason": "TIME_EXIT",
     "realized_pnl": 2050.3692,
-    "qty": 1
-  },
-  {
-    "symbol": "SENSEX79000PE",
-    "strategy": "SENSEX_RESISTANCE_REJECTION_5M_ITM",
-    "entry_price": 323.83350999999993,
-    "entry_time": "2026-08-05T12:15:00+05:30",
-    "exit_price": 428.33,
-    "exit_time": "2026-08-05T14:15:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 2089.929800000001,
     "qty": 1
   },
   {

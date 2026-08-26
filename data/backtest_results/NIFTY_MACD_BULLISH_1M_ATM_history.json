@@ -13,12 +13,12 @@
   {
     "symbol": "NIFTY24950CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 138.07793999999998,
-    "entry_time": "2025-08-25T12:18:00+05:30",
-    "exit_price": 141.13,
-    "exit_time": "2025-08-25T14:18:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 198.38390000000075,
+    "entry_price": 141.03088999999997,
+    "entry_time": "2025-08-25T14:09:00+05:30",
+    "exit_price": 112.71199999999999,
+    "exit_time": "2025-08-26T09:20:00+05:30",
+    "exit_reason": "STOP_LOSS",
+    "realized_pnl": -1840.7278499999989,
     "qty": 1
   },
   {
@@ -33,14 +33,14 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY24500CE",
+    "symbol": "NIFTY24550CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 70.21014,
-    "entry_time": "2025-09-01T11:11:00+05:30",
-    "exit_price": 104.89,
-    "exit_time": "2025-09-01T13:11:00+05:30",
+    "entry_price": 75.78570999999998,
+    "entry_time": "2025-09-01T13:09:00+05:30",
+    "exit_price": 111.87,
+    "exit_time": "2025-09-01T15:09:00+05:30",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 2254.1909000000005,
+    "realized_pnl": 2345.478850000002,
     "qty": 1
   },
   {
@@ -55,14 +55,14 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY24650CE",
+    "symbol": "NIFTY24700CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 194.77458,
-    "entry_time": "2025-09-03T11:48:00+05:30",
-    "exit_price": 211.95,
-    "exit_time": "2025-09-03T13:48:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 1116.4023000000002,
+    "entry_price": 185.05487,
+    "entry_time": "2025-09-03T13:45:00+05:30",
+    "exit_price": 334.87,
+    "exit_time": "2025-09-04T09:20:00+05:30",
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 9737.983450000002,
     "qty": 1
   },
   {
@@ -79,12 +79,12 @@
   {
     "symbol": "NIFTY24850CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 36.86682999999999,
-    "entry_time": "2025-09-09T12:02:00+05:30",
-    "exit_price": 29.464,
-    "exit_time": "2025-09-09T13:49:00+05:30",
+    "entry_price": 29.429399999999994,
+    "entry_time": "2025-09-09T13:49:00+05:30",
+    "exit_price": 23.52,
+    "exit_time": "2025-09-09T14:49:00+05:30",
     "exit_reason": "STOP_LOSS",
-    "realized_pnl": -481.18394999999964,
+    "realized_pnl": -384.11099999999965,
     "qty": 1
   },
   {
@@ -99,14 +99,14 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY24950CE",
+    "symbol": "NIFTY25000CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 188.21802999999997,
-    "entry_time": "2025-09-11T12:11:00+05:30",
-    "exit_price": 198.79,
-    "exit_time": "2025-09-11T14:11:00+05:30",
+    "entry_price": 171.86168999999998,
+    "entry_time": "2025-09-11T14:08:00+05:30",
+    "exit_price": 198.2,
+    "exit_time": "2025-09-12T09:20:00+05:30",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 687.1780500000013,
+    "realized_pnl": 1711.9901500000005,
     "qty": 1
   },
   {
@@ -123,12 +123,12 @@
   {
     "symbol": "NIFTY25100CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 152.47231999999997,
-    "entry_time": "2025-09-12T12:00:00+05:30",
-    "exit_price": 158.94,
-    "exit_time": "2025-09-12T14:00:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 420.39920000000194,
+    "entry_price": 158.81865999999997,
+    "entry_time": "2025-09-12T13:55:00+05:30",
+    "exit_price": 126.928,
+    "exit_time": "2025-09-15T09:20:00+05:30",
+    "exit_reason": "STOP_LOSS",
+    "realized_pnl": -2072.892899999998,
     "qty": 1
   },
   {
@@ -143,14 +143,14 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY25150CE",
+    "symbol": "NIFTY25200CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 21.241219999999995,
-    "entry_time": "2025-09-16T11:17:00+05:30",
-    "exit_price": 41.29,
-    "exit_time": "2025-09-16T13:17:00+05:30",
+    "entry_price": 13.813799999999999,
+    "entry_time": "2025-09-16T13:12:00+05:30",
+    "exit_price": 32.2,
+    "exit_time": "2025-09-16T15:12:00+05:30",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 1303.1707000000004,
+    "realized_pnl": 1195.103,
     "qty": 1
   },
   {
@@ -167,12 +167,12 @@
   {
     "symbol": "NIFTY25300CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 196.47627999999997,
-    "entry_time": "2025-09-17T12:02:00+05:30",
-    "exit_price": 205.52,
-    "exit_time": "2025-09-17T14:02:00+05:30",
+    "entry_price": 205.65544999999997,
+    "entry_time": "2025-09-17T14:01:00+05:30",
+    "exit_price": 261.21,
+    "exit_time": "2025-09-18T09:20:00+05:30",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 587.8418000000023,
+    "realized_pnl": 3611.04575,
     "qty": 1
   },
   {
@@ -187,14 +187,14 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY24700CE",
+    "symbol": "NIFTY24750CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 184.06387999999998,
-    "entry_time": "2025-10-01T11:08:00+05:30",
-    "exit_price": 221.77,
-    "exit_time": "2025-10-01T13:08:00+05:30",
+    "entry_price": 192.10190999999998,
+    "entry_time": "2025-10-01T13:00:00+05:30",
+    "exit_price": 230.69,
+    "exit_time": "2025-10-01T15:00:00+05:30",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 2450.8978000000016,
+    "realized_pnl": 2508.2258500000016,
     "qty": 1
   },
   {
@@ -209,14 +209,14 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY24850CE",
+    "symbol": "NIFTY24900CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 160.63046999999997,
-    "entry_time": "2025-10-03T13:55:00+05:30",
-    "exit_price": 128.376,
+    "entry_price": 146.71657,
+    "entry_time": "2025-10-03T14:58:00+05:30",
+    "exit_price": 117.256,
     "exit_time": "2025-10-06T09:20:00+05:30",
     "exit_reason": "STOP_LOSS",
-    "realized_pnl": -2096.540549999998,
+    "realized_pnl": -1914.9370499999993,
     "qty": 1
   },
   {
@@ -231,14 +231,14 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY25000CE",
+    "symbol": "NIFTY25050CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 64.50443999999999,
-    "entry_time": "2025-10-06T11:36:00+05:30",
-    "exit_price": 91.25,
-    "exit_time": "2025-10-06T13:36:00+05:30",
+    "entry_price": 65.23517,
+    "entry_time": "2025-10-06T13:35:00+05:30",
+    "exit_price": 58.44,
+    "exit_time": "2025-10-07T09:20:00+05:30",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 1738.4614000000008,
+    "realized_pnl": -441.6860499999999,
     "qty": 1
   },
   {
@@ -255,12 +255,12 @@
   {
     "symbol": "NIFTY25100CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 27.157129999999995,
-    "entry_time": "2025-10-07T11:33:00+05:30",
-    "exit_price": 21.71,
-    "exit_time": "2025-10-07T13:33:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -354.06344999999965,
+    "entry_price": 21.791769999999996,
+    "entry_time": "2025-10-07T13:32:00+05:30",
+    "exit_price": 17.416,
+    "exit_time": "2025-10-07T14:32:00+05:30",
+    "exit_reason": "STOP_LOSS",
+    "realized_pnl": -284.4250499999997,
     "qty": 1
   },
   {
@@ -275,14 +275,14 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY25100CE",
+    "symbol": "NIFTY25150CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 185.18499999999997,
-    "entry_time": "2025-10-09T11:41:00+05:30",
-    "exit_price": 204.28,
-    "exit_time": "2025-10-09T13:41:00+05:30",
+    "entry_price": 176.02584999999996,
+    "entry_time": "2025-10-09T13:33:00+05:30",
+    "exit_price": 167.1,
+    "exit_time": "2025-10-10T09:20:00+05:30",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 1241.1750000000018,
+    "realized_pnl": -580.180249999998,
     "qty": 1
   },
   {
@@ -297,14 +297,14 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY25200CE",
+    "symbol": "NIFTY25250CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 164.19402999999997,
-    "entry_time": "2025-10-10T11:39:00+05:30",
-    "exit_price": 185.1,
-    "exit_time": "2025-10-10T13:39:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 1358.8880500000016,
+    "entry_price": 157.83767999999998,
+    "entry_time": "2025-10-10T13:38:00+05:30",
+    "exit_price": 126.144,
+    "exit_time": "2025-10-13T09:20:00+05:30",
+    "exit_reason": "STOP_LOSS",
+    "realized_pnl": -2060.089199999998,
     "qty": 1
   },
   {
@@ -321,12 +321,12 @@
   {
     "symbol": "NIFTY25200CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 76.00592999999999,
-    "entry_time": "2025-10-13T12:02:00+05:30",
-    "exit_price": 84.41,
-    "exit_time": "2025-10-13T14:02:00+05:30",
+    "entry_price": 83.91382999999999,
+    "entry_time": "2025-10-13T13:54:00+05:30",
+    "exit_price": 87.88,
+    "exit_time": "2025-10-14T09:20:00+05:30",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 546.2645500000003,
+    "realized_pnl": 257.8010500000004,
     "qty": 1
   },
   {
@@ -341,14 +341,14 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY25250CE",
+    "symbol": "NIFTY25300CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 189.09891,
-    "entry_time": "2025-10-15T11:41:00+05:30",
-    "exit_price": 213.34,
-    "exit_time": "2025-10-15T13:41:00+05:30",
+    "entry_price": 186.15596999999997,
+    "entry_time": "2025-10-15T13:36:00+05:30",
+    "exit_price": 233.54,
+    "exit_time": "2025-10-16T09:20:00+05:30",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 1575.6708500000009,
+    "realized_pnl": 3079.9619500000017,
     "qty": 1
   },
   {
@@ -363,14 +363,14 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY25500CE",
+    "symbol": "NIFTY25550CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 166.58641999999998,
-    "entry_time": "2025-10-16T11:53:00+05:30",
-    "exit_price": 198.93,
-    "exit_time": "2025-10-16T13:53:00+05:30",
+    "entry_price": 172.58240999999998,
+    "entry_time": "2025-10-16T13:53:00+05:30",
+    "exit_price": 158.82,
+    "exit_time": "2025-10-17T09:20:00+05:30",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 2102.332700000002,
+    "realized_pnl": -894.5566499999993,
     "qty": 1
   },
   {
@@ -385,14 +385,14 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY25600CE",
+    "symbol": "NIFTY25650CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 166.52635999999998,
-    "entry_time": "2025-10-17T11:46:00+05:30",
-    "exit_price": 195.89,
-    "exit_time": "2025-10-17T13:46:00+05:30",
+    "entry_price": 167.13697,
+    "entry_time": "2025-10-17T13:42:00+05:30",
+    "exit_price": 196.93,
+    "exit_time": "2025-10-20T09:20:00+05:30",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 1908.6366000000003,
+    "realized_pnl": 1936.546950000001,
     "qty": 1
   },
   {
@@ -409,12 +409,12 @@
   {
     "symbol": "NIFTY25850CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 69.84978,
-    "entry_time": "2025-10-20T12:09:00+05:30",
-    "exit_price": 72.65,
-    "exit_time": "2025-10-20T14:09:00+05:30",
+    "entry_price": 72.24216999999999,
+    "entry_time": "2025-10-20T13:49:00+05:30",
+    "exit_price": 69.85,
+    "exit_time": "2025-10-21T09:20:00+05:30",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 182.01430000000067,
+    "realized_pnl": -155.49104999999955,
     "qty": 1
   },
   {
@@ -429,14 +429,14 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY25900CE",
+    "symbol": "NIFTY25950CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 74.99492,
-    "entry_time": "2025-10-27T11:48:00+05:30",
-    "exit_price": 96.17,
-    "exit_time": "2025-10-27T13:48:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 1376.3802000000005,
+    "entry_price": 69.50943999999998,
+    "entry_time": "2025-10-27T13:45:00+05:30",
+    "exit_price": 55.552,
+    "exit_time": "2025-10-28T09:20:00+05:30",
+    "exit_reason": "STOP_LOSS",
+    "realized_pnl": -907.233599999999,
     "qty": 1
   },
   {
@@ -451,14 +451,14 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY26000CE",
+    "symbol": "NIFTY26050CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 208.84863999999996,
-    "entry_time": "2025-10-29T11:59:00+05:30",
-    "exit_price": 221.34,
-    "exit_time": "2025-10-29T13:59:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 811.9384000000027,
+    "entry_price": 193.98378999999997,
+    "entry_time": "2025-10-29T13:49:00+05:30",
+    "exit_price": 155.032,
+    "exit_time": "2025-10-30T09:20:00+05:30",
+    "exit_reason": "STOP_LOSS",
+    "realized_pnl": -2531.8663499999975,
     "qty": 1
   },
   {
@@ -475,12 +475,12 @@
   {
     "symbol": "NIFTY25750CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 66.24618,
-    "entry_time": "2025-11-03T12:00:00+05:30",
-    "exit_price": 76.5,
-    "exit_time": "2025-11-03T14:00:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 666.4983000000003,
+    "entry_price": 76.04597,
+    "entry_time": "2025-11-03T13:54:00+05:30",
+    "exit_price": 60.776,
+    "exit_time": "2025-11-04T09:20:00+05:30",
+    "exit_reason": "STOP_LOSS",
+    "realized_pnl": -992.5480499999995,
     "qty": 1
   },
   {
@@ -495,14 +495,14 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY25450CE",
+    "symbol": "NIFTY25500CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 164.70453999999998,
-    "entry_time": "2025-11-07T12:09:00+05:30",
-    "exit_price": 174.78,
-    "exit_time": "2025-11-07T14:09:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 654.9049000000014,
+    "entry_price": 147.69755,
+    "entry_time": "2025-11-07T13:55:00+05:30",
+    "exit_price": 118.04000000000002,
+    "exit_time": "2025-11-10T09:20:00+05:30",
+    "exit_reason": "STOP_LOSS",
+    "realized_pnl": -1927.740749999999,
     "qty": 1
   },
   {
@@ -519,12 +519,12 @@
   {
     "symbol": "NIFTY25550CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 67.78772,
-    "entry_time": "2025-11-10T11:39:00+05:30",
-    "exit_price": 78.97,
-    "exit_time": "2025-11-10T13:39:00+05:30",
+    "entry_price": 77.57749999999999,
+    "entry_time": "2025-11-10T13:24:00+05:30",
+    "exit_price": 82.22,
+    "exit_time": "2025-11-11T09:20:00+05:30",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 726.8482000000004,
+    "realized_pnl": 301.76250000000084,
     "qty": 1
   },
   {
@@ -541,12 +541,12 @@
   {
     "symbol": "NIFTY25650CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 29.119089999999996,
-    "entry_time": "2025-11-11T11:43:00+05:30",
-    "exit_price": 34.13,
-    "exit_time": "2025-11-11T13:43:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 325.7091500000004,
+    "entry_price": 34.10406999999999,
+    "entry_time": "2025-11-11T13:42:00+05:30",
+    "exit_price": 184.07,
+    "exit_time": "2025-11-12T09:20:00+05:30",
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 9747.785450000001,
     "qty": 1
   },
   {
@@ -563,12 +563,12 @@
   {
     "symbol": "NIFTY25850CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 202.24203999999997,
-    "entry_time": "2025-11-12T12:07:00+05:30",
-    "exit_price": 209.2,
-    "exit_time": "2025-11-12T14:07:00+05:30",
+    "entry_price": 208.98878,
+    "entry_time": "2025-11-12T14:00:00+05:30",
+    "exit_price": 212.38,
+    "exit_time": "2025-11-13T09:20:00+05:30",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 452.2674000000009,
+    "realized_pnl": 220.42930000000027,
     "qty": 1
   },
   {
@@ -596,12 +596,12 @@
   {
     "symbol": "NIFTY26000CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 66.63656999999999,
-    "entry_time": "2025-11-17T11:51:00+05:30",
-    "exit_price": 76.67,
-    "exit_time": "2025-11-17T13:51:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 652.1729500000006,
+    "entry_price": 76.65657999999999,
+    "entry_time": "2025-11-17T13:50:00+05:30",
+    "exit_price": 61.264,
+    "exit_time": "2025-11-18T09:20:00+05:30",
+    "exit_reason": "STOP_LOSS",
+    "realized_pnl": -1000.5176999999992,
     "qty": 1
   },
   {
@@ -618,12 +618,12 @@
   {
     "symbol": "NIFTY26000CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 188.78859999999997,
-    "entry_time": "2025-11-19T11:54:00+05:30",
-    "exit_price": 211.32,
-    "exit_time": "2025-11-19T13:54:00+05:30",
+    "entry_price": 204.35414999999998,
+    "entry_time": "2025-11-19T13:17:00+05:30",
+    "exit_price": 260.73,
+    "exit_time": "2025-11-20T09:20:00+05:30",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 1464.5410000000013,
+    "realized_pnl": 3664.4302500000026,
     "qty": 1
   },
   {
@@ -638,14 +638,14 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY26150CE",
+    "symbol": "NIFTY26200CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 188.94875999999996,
-    "entry_time": "2025-11-20T12:06:00+05:30",
-    "exit_price": 199.24,
-    "exit_time": "2025-11-20T14:06:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 668.9306000000029,
+    "entry_price": 172.04187,
+    "entry_time": "2025-11-20T13:51:00+05:30",
+    "exit_price": 137.496,
+    "exit_time": "2025-11-21T09:20:00+05:30",
+    "exit_reason": "STOP_LOSS",
+    "realized_pnl": -2245.4815499999986,
     "qty": 1
   },
   {
@@ -660,14 +660,14 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY26000CE",
+    "symbol": "NIFTY26100CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 203.61341,
-    "entry_time": "2025-11-26T12:01:00+05:30",
-    "exit_price": 270.98,
-    "exit_time": "2025-11-26T14:01:00+05:30",
+    "entry_price": 210.00979999999998,
+    "entry_time": "2025-11-26T13:55:00+05:30",
+    "exit_price": 279.67,
+    "exit_time": "2025-11-27T09:20:00+05:30",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 4378.828350000002,
+    "realized_pnl": 4527.913000000002,
     "qty": 1
   },
   {
@@ -684,12 +684,12 @@
   {
     "symbol": "NIFTY26000CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 182.75256999999996,
-    "entry_time": "2025-12-04T11:25:00+05:30",
-    "exit_price": 191.47,
-    "exit_time": "2025-12-04T13:25:00+05:30",
+    "entry_price": 191.28108999999998,
+    "entry_time": "2025-12-04T13:20:00+05:30",
+    "exit_price": 163.34,
+    "exit_time": "2025-12-05T09:20:00+05:30",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 566.6329500000023,
+    "realized_pnl": -1816.1708499999984,
     "qty": 1
   },
   {
@@ -704,14 +704,14 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY26100CE",
+    "symbol": "NIFTY26150CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 152.97281999999998,
-    "entry_time": "2025-12-05T11:57:00+05:30",
-    "exit_price": 184.85,
-    "exit_time": "2025-12-05T13:57:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 2072.0167000000006,
+    "entry_price": 157.54738999999998,
+    "entry_time": "2025-12-05T13:54:00+05:30",
+    "exit_price": 125.91199999999999,
+    "exit_time": "2025-12-08T09:20:00+05:30",
+    "exit_reason": "STOP_LOSS",
+    "realized_pnl": -2056.300349999999,
     "qty": 1
   },
   {
@@ -737,14 +737,14 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY26000CE",
+    "symbol": "NIFTY26050CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 163.87371,
-    "entry_time": "2025-12-12T11:52:00+05:30",
-    "exit_price": 176.82,
-    "exit_time": "2025-12-12T13:52:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 841.5088500000003,
+    "entry_price": 150.27012,
+    "entry_time": "2025-12-12T13:45:00+05:30",
+    "exit_price": 120.096,
+    "exit_time": "2025-12-15T09:20:00+05:30",
+    "exit_reason": "STOP_LOSS",
+    "realized_pnl": -1961.3177999999991,
     "qty": 1
   },
   {
@@ -761,12 +761,12 @@
   {
     "symbol": "NIFTY25800CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 174.84466999999998,
-    "entry_time": "2025-12-18T12:02:00+05:30",
-    "exit_price": 183.19,
-    "exit_time": "2025-12-18T14:02:00+05:30",
+    "entry_price": 182.94275999999996,
+    "entry_time": "2025-12-18T13:56:00+05:30",
+    "exit_price": 226.21,
+    "exit_time": "2025-12-19T09:20:00+05:30",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 542.4464500000012,
+    "realized_pnl": 2812.370600000003,
     "qty": 1
   },
   {
@@ -783,12 +783,12 @@
   {
     "symbol": "NIFTY25950CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 155.20505,
-    "entry_time": "2025-12-19T12:08:00+05:30",
-    "exit_price": 164.2,
-    "exit_time": "2025-12-19T14:08:00+05:30",
+    "entry_price": 162.73256999999998,
+    "entry_time": "2025-12-19T13:47:00+05:30",
+    "exit_price": 145.06,
+    "exit_time": "2025-12-22T09:20:00+05:30",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 584.6717499999993,
+    "realized_pnl": -1148.7170499999986,
     "qty": 1
   },
   {
@@ -803,14 +803,14 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY26100CE",
+    "symbol": "NIFTY26150CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 82.52243999999999,
-    "entry_time": "2025-12-22T11:59:00+05:30",
-    "exit_price": 103.56,
-    "exit_time": "2025-12-22T13:59:00+05:30",
+    "entry_price": 75.41534,
+    "entry_time": "2025-12-22T13:54:00+05:30",
+    "exit_price": 73.13,
+    "exit_time": "2025-12-23T09:20:00+05:30",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 1367.4414000000008,
+    "realized_pnl": -148.54710000000034,
     "qty": 1
   },
   {
@@ -825,14 +825,14 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY26050CE",
+    "symbol": "NIFTY26100CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 194.84464999999997,
-    "entry_time": "2025-12-31T11:49:00+05:30",
-    "exit_price": 222.07,
-    "exit_time": "2025-12-31T13:49:00+05:30",
+    "entry_price": 194.58438999999996,
+    "entry_time": "2025-12-31T13:44:00+05:30",
+    "exit_price": 224.2,
+    "exit_time": "2026-01-01T09:20:00+05:30",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 1769.6477500000012,
+    "realized_pnl": 1925.0146500000021,
     "qty": 1
   },
   {
@@ -847,14 +847,14 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY26200CE",
+    "symbol": "NIFTY26250CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 169.48931999999996,
-    "entry_time": "2026-01-02T11:16:00+05:30",
-    "exit_price": 200.71,
-    "exit_time": "2026-01-02T13:16:00+05:30",
+    "entry_price": 171.35118,
+    "entry_time": "2026-01-02T13:10:00+05:30",
+    "exit_price": 202.72,
+    "exit_time": "2026-01-02T15:10:00+05:30",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 2029.344200000003,
+    "realized_pnl": 2038.9732999999999,
     "qty": 1
   },
   {
@@ -869,14 +869,14 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY25700CE",
+    "symbol": "NIFTY25750CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 87.42733999999999,
-    "entry_time": "2026-01-12T11:47:00+05:30",
-    "exit_price": 110.32,
-    "exit_time": "2026-01-12T13:47:00+05:30",
+    "entry_price": 81.24116,
+    "entry_time": "2026-01-12T13:45:00+05:30",
+    "exit_price": 149.05,
+    "exit_time": "2026-01-13T09:20:00+05:30",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 1488.0229000000004,
+    "realized_pnl": 4407.574600000001,
     "qty": 1
   },
   {
@@ -893,12 +893,12 @@
   {
     "symbol": "NIFTY25650CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 202.20199999999997,
-    "entry_time": "2026-01-14T12:03:00+05:30",
-    "exit_price": 204.93,
-    "exit_time": "2026-01-14T14:03:00+05:30",
+    "entry_price": 204.99478999999997,
+    "entry_time": "2026-01-14T13:57:00+05:30",
+    "exit_price": 185.18,
+    "exit_time": "2026-01-16T09:20:00+05:30",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 177.3200000000024,
+    "realized_pnl": -1287.9613499999973,
     "qty": 1
   },
   {
@@ -915,12 +915,12 @@
   {
     "symbol": "NIFTY25150CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 194.27408,
-    "entry_time": "2026-01-21T12:07:00+05:30",
-    "exit_price": 196.88,
-    "exit_time": "2026-01-21T14:07:00+05:30",
+    "entry_price": 196.82662999999997,
+    "entry_time": "2026-01-21T13:56:00+05:30",
+    "exit_price": 296.04,
+    "exit_time": "2026-01-22T09:20:00+05:30",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 169.38479999999984,
+    "realized_pnl": 6448.869050000004,
     "qty": 1
   },
   {
@@ -935,14 +935,14 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY25100CE",
+    "symbol": "NIFTY25150CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 29.28926,
-    "entry_time": "2026-01-27T10:55:00+05:30",
-    "exit_price": 41.85,
-    "exit_time": "2026-01-27T12:55:00+05:30",
+    "entry_price": 15.495479999999999,
+    "entry_time": "2026-01-27T12:59:00+05:30",
+    "exit_price": 21.0,
+    "exit_time": "2026-01-27T14:59:00+05:30",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 816.4481000000002,
+    "realized_pnl": 357.7938000000001,
     "qty": 1
   },
   {
@@ -959,12 +959,12 @@
   {
     "symbol": "NIFTY25300CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 192.94275,
-    "entry_time": "2026-01-28T11:51:00+05:30",
-    "exit_price": 207.16,
-    "exit_time": "2026-01-28T13:51:00+05:30",
+    "entry_price": 206.87666999999996,
+    "entry_time": "2026-01-28T13:47:00+05:30",
+    "exit_price": 202.94,
+    "exit_time": "2026-01-29T09:20:00+05:30",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 924.1212500000005,
+    "realized_pnl": -255.88354999999765,
     "qty": 1
   },
   {
@@ -979,14 +979,14 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY25350CE",
+    "symbol": "NIFTY25400CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 187.62743999999998,
-    "entry_time": "2026-01-29T11:09:00+05:30",
-    "exit_price": 200.59,
-    "exit_time": "2026-01-29T13:09:00+05:30",
+    "entry_price": 173.19302,
+    "entry_time": "2026-01-29T13:01:00+05:30",
+    "exit_price": 185.54,
+    "exit_time": "2026-01-29T15:01:00+05:30",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 842.5664000000016,
+    "realized_pnl": 802.5537000000002,
     "qty": 1
   },
   {
@@ -1003,12 +1003,12 @@
   {
     "symbol": "NIFTY25300CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 148.24809999999997,
-    "entry_time": "2026-01-30T12:07:00+05:30",
-    "exit_price": 160.2,
-    "exit_time": "2026-01-30T14:07:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 776.8735000000015,
+    "entry_price": 159.63947999999996,
+    "entry_time": "2026-01-30T14:00:00+05:30",
+    "exit_price": 127.584,
+    "exit_time": "2026-02-02T09:20:00+05:30",
+    "exit_reason": "STOP_LOSS",
+    "realized_pnl": -2083.6061999999974,
     "qty": 1
   },
   {
@@ -1023,14 +1023,14 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY24950CE",
+    "symbol": "NIFTY25050CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 75.55547999999999,
-    "entry_time": "2026-02-02T12:32:00+05:30",
-    "exit_price": 132.78,
-    "exit_time": "2026-02-02T14:32:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 3719.593800000001,
+    "entry_price": 66.58652,
+    "entry_time": "2026-02-02T14:16:00+05:30",
+    "exit_price": 216.51999999999998,
+    "exit_time": "2026-02-03T09:20:00+05:30",
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 9745.676199999998,
     "qty": 1
   },
   {
@@ -1069,12 +1069,12 @@
   {
     "symbol": "NIFTY25650CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 157.52737,
-    "entry_time": "2026-02-06T12:02:00+05:30",
-    "exit_price": 172.42,
-    "exit_time": "2026-02-06T14:02:00+05:30",
+    "entry_price": 171.95177999999999,
+    "entry_time": "2026-02-06T13:57:00+05:30",
+    "exit_price": 252.13,
+    "exit_time": "2026-02-09T09:20:00+05:30",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 968.0209499999999,
+    "realized_pnl": 5211.5843,
     "qty": 1
   },
   {
@@ -1091,12 +1091,12 @@
   {
     "symbol": "NIFTY25950CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 19.13912,
-    "entry_time": "2026-02-10T12:09:00+05:30",
-    "exit_price": 15.296000000000001,
-    "exit_time": "2026-02-10T13:11:00+05:30",
+    "entry_price": 15.495479999999999,
+    "entry_time": "2026-02-10T13:08:00+05:30",
+    "exit_price": 12.384,
+    "exit_time": "2026-02-10T13:50:00+05:30",
     "exit_reason": "STOP_LOSS",
-    "realized_pnl": -249.80279999999982,
+    "realized_pnl": -202.2461999999999,
     "qty": 1
   },
   {
@@ -1111,14 +1111,14 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY25550CE",
+    "symbol": "NIFTY25600CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 70.87079999999999,
-    "entry_time": "2026-02-16T11:59:00+05:30",
-    "exit_price": 118.39,
-    "exit_time": "2026-02-16T13:59:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 3088.748000000001,
+    "entry_price": 86.74665999999999,
+    "entry_time": "2026-02-16T13:55:00+05:30",
+    "exit_price": 69.328,
+    "exit_time": "2026-02-17T09:20:00+05:30",
+    "exit_reason": "STOP_LOSS",
+    "realized_pnl": -1132.2128999999993,
     "qty": 1
   },
   {
@@ -1135,12 +1135,12 @@
   {
     "symbol": "NIFTY25700CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 18.6186,
-    "entry_time": "2026-02-17T11:54:00+05:30",
-    "exit_price": 21.21,
-    "exit_time": "2026-02-17T13:54:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 168.441,
+    "entry_price": 21.1211,
+    "entry_time": "2026-02-17T13:49:00+05:30",
+    "exit_price": 171.1,
+    "exit_time": "2026-02-18T09:20:00+05:30",
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 9748.6285,
     "qty": 1
   },
   {
@@ -1157,12 +1157,12 @@
   {
     "symbol": "NIFTY25800CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 189.05886999999998,
-    "entry_time": "2026-02-18T11:42:00+05:30",
-    "exit_price": 200.0,
-    "exit_time": "2026-02-18T13:42:00+05:30",
+    "entry_price": 199.62942999999999,
+    "entry_time": "2026-02-18T13:36:00+05:30",
+    "exit_price": 219.05,
+    "exit_time": "2026-02-19T09:20:00+05:30",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 711.173450000001,
+    "realized_pnl": 1262.3370500000017,
     "qty": 1
   },
   {
@@ -1177,14 +1177,14 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY25500CE",
+    "symbol": "NIFTY25550CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 150.29013999999998,
-    "entry_time": "2026-02-20T12:08:00+05:30",
-    "exit_price": 178.33,
-    "exit_time": "2026-02-20T14:08:00+05:30",
+    "entry_price": 149.14899999999997,
+    "entry_time": "2026-02-20T13:55:00+05:30",
+    "exit_price": 160.0,
+    "exit_time": "2026-02-23T09:20:00+05:30",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 1822.5909000000022,
+    "realized_pnl": 705.3150000000018,
     "qty": 1
   },
   {
@@ -1201,12 +1201,12 @@
   {
     "symbol": "NIFTY25700CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 74.86479,
-    "entry_time": "2026-02-23T12:08:00+05:30",
-    "exit_price": 80.47,
-    "exit_time": "2026-02-23T14:08:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 364.33865,
+    "entry_price": 80.35026999999998,
+    "entry_time": "2026-02-23T14:04:00+05:30",
+    "exit_price": 64.216,
+    "exit_time": "2026-02-24T09:20:00+05:30",
+    "exit_reason": "STOP_LOSS",
+    "realized_pnl": -1048.7275499999992,
     "qty": 1
   },
   {
@@ -1221,14 +1221,14 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY24750CE",
+    "symbol": "NIFTY24800CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 80.20012,
-    "entry_time": "2026-03-02T12:18:00+05:30",
-    "exit_price": 120.22,
-    "exit_time": "2026-03-02T14:18:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 2601.2922,
+    "entry_price": 87.75766999999999,
+    "entry_time": "2026-03-02T14:13:00+05:30",
+    "exit_price": 70.13600000000001,
+    "exit_time": "2026-03-04T09:20:00+05:30",
+    "exit_reason": "STOP_LOSS",
+    "realized_pnl": -1145.4085499999987,
     "qty": 1
   },
   {
@@ -1245,12 +1245,12 @@
   {
     "symbol": "NIFTY24450CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 181.06087999999997,
-    "entry_time": "2026-03-04T12:18:00+05:30",
-    "exit_price": 196.4,
-    "exit_time": "2026-03-04T14:18:00+05:30",
+    "entry_price": 196.73653999999996,
+    "entry_time": "2026-03-04T14:19:00+05:30",
+    "exit_price": 273.84,
+    "exit_time": "2026-03-05T09:20:00+05:30",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 997.0428000000024,
+    "realized_pnl": 5011.724900000001,
     "qty": 1
   },
   {
@@ -1265,14 +1265,14 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY24700CE",
+    "symbol": "NIFTY24750CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 164.80463999999998,
-    "entry_time": "2026-03-05T12:02:00+05:30",
-    "exit_price": 190.3,
-    "exit_time": "2026-03-05T14:02:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 1657.1984000000023,
+    "entry_price": 163.78361999999998,
+    "entry_time": "2026-03-05T14:00:00+05:30",
+    "exit_price": 130.89600000000002,
+    "exit_time": "2026-03-06T09:20:00+05:30",
+    "exit_reason": "STOP_LOSS",
+    "realized_pnl": -2137.695299999998,
     "qty": 1
   },
   {
@@ -1287,14 +1287,14 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY23950CE",
+    "symbol": "NIFTY24000CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 74.71463999999999,
-    "entry_time": "2026-03-09T12:37:00+05:30",
-    "exit_price": 104.39,
-    "exit_time": "2026-03-09T14:37:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 1928.8984000000007,
+    "entry_price": 74.22415,
+    "entry_time": "2026-03-09T14:31:00+05:30",
+    "exit_price": 224.15,
+    "exit_time": "2026-03-10T09:20:00+05:30",
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 9745.180250000001,
     "qty": 1
   },
   {
@@ -1309,14 +1309,14 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY23250CE",
+    "symbol": "NIFTY23350CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 67.08702,
-    "entry_time": "2026-03-16T11:58:00+05:30",
-    "exit_price": 123.78,
-    "exit_time": "2026-03-16T13:58:00+05:30",
+    "entry_price": 62.162099999999995,
+    "entry_time": "2026-03-16T13:52:00+05:30",
+    "exit_price": 147.23,
+    "exit_time": "2026-03-17T09:20:00+05:30",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 3685.0437,
+    "realized_pnl": 5529.4135,
     "qty": 1
   },
   {
@@ -1333,12 +1333,12 @@
   {
     "symbol": "NIFTY23550CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 18.62861,
-    "entry_time": "2026-03-17T12:03:00+05:30",
-    "exit_price": 23.11,
-    "exit_time": "2026-03-17T14:03:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 291.29035000000005,
+    "entry_price": 22.77275,
+    "entry_time": "2026-03-17T13:55:00+05:30",
+    "exit_price": 172.75,
+    "exit_time": "2026-03-18T09:20:00+05:30",
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 9748.52125,
     "qty": 1
   },
   {
@@ -1353,14 +1353,14 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY23700CE",
+    "symbol": "NIFTY23750CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 179.85968,
-    "entry_time": "2026-03-18T11:49:00+05:30",
-    "exit_price": 204.97,
-    "exit_time": "2026-03-18T13:49:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 1632.1708,
+    "entry_price": 176.81663999999998,
+    "entry_time": "2026-03-18T13:41:00+05:30",
+    "exit_price": 141.31199999999998,
+    "exit_time": "2026-03-19T09:20:00+05:30",
+    "exit_reason": "STOP_LOSS",
+    "realized_pnl": -2307.8016,
     "qty": 1
   },
   {
@@ -1377,12 +1377,12 @@
   {
     "symbol": "NIFTY23100CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 150.64049,
-    "entry_time": "2026-03-20T12:04:00+05:30",
-    "exit_price": 151.23,
-    "exit_time": "2026-03-20T14:04:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 38.31814999999935,
+    "entry_price": 151.37122,
+    "entry_time": "2026-03-20T14:02:00+05:30",
+    "exit_price": 120.976,
+    "exit_time": "2026-03-23T09:20:00+05:30",
+    "exit_reason": "STOP_LOSS",
+    "realized_pnl": -1975.6892999999995,
     "qty": 1
   },
   {
@@ -1399,12 +1399,12 @@
   {
     "symbol": "NIFTY22900CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 22.21219,
-    "entry_time": "2026-03-24T12:24:00+05:30",
-    "exit_price": 17.93,
-    "exit_time": "2026-03-24T14:24:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -278.34235,
+    "entry_price": 18.27826,
+    "entry_time": "2026-03-24T14:18:00+05:30",
+    "exit_price": 14.608000000000002,
+    "exit_time": "2026-03-24T15:08:00+05:30",
+    "exit_reason": "STOP_LOSS",
+    "realized_pnl": -238.5668999999998,
     "qty": 1
   },
   {
@@ -1419,14 +1419,14 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY23150CE",
+    "symbol": "NIFTY23250CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 192.37218,
-    "entry_time": "2026-03-25T12:04:00+05:30",
-    "exit_price": 237.87,
-    "exit_time": "2026-03-25T14:04:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 2957.3583000000012,
+    "entry_price": 178.64846999999997,
+    "entry_time": "2026-03-25T13:57:00+05:30",
+    "exit_price": 142.776,
+    "exit_time": "2026-03-27T09:20:00+05:30",
+    "exit_reason": "STOP_LOSS",
+    "realized_pnl": -2331.7105499999975,
     "qty": 1
   },
   {
@@ -1441,14 +1441,14 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY22550CE",
+    "symbol": "NIFTY22650CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 150.33017999999998,
-    "entry_time": "2026-04-02T12:06:00+05:30",
-    "exit_price": 210.06,
-    "exit_time": "2026-04-02T14:06:00+05:30",
+    "entry_price": 153.09293999999997,
+    "entry_time": "2026-04-02T14:04:00+05:30",
+    "exit_price": 156.33,
+    "exit_time": "2026-04-06T09:20:00+05:30",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 3882.438300000001,
+    "realized_pnl": 210.40890000000275,
     "qty": 1
   },
   {
@@ -1463,14 +1463,14 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY22850CE",
+    "symbol": "NIFTY22900CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 77.98790999999999,
-    "entry_time": "2026-04-06T12:07:00+05:30",
-    "exit_price": 115.35,
-    "exit_time": "2026-04-06T14:07:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 2428.5358500000007,
+    "entry_price": 82.22214,
+    "entry_time": "2026-04-06T14:01:00+05:30",
+    "exit_price": 65.712,
+    "exit_time": "2026-04-07T09:20:00+05:30",
+    "exit_reason": "STOP_LOSS",
+    "realized_pnl": -1073.1590999999996,
     "qty": 1
   },
   {
@@ -1485,14 +1485,14 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY22950CE",
+    "symbol": "NIFTY23050CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 36.72668999999999,
-    "entry_time": "2026-04-07T12:07:00+05:30",
-    "exit_price": 111.46,
-    "exit_time": "2026-04-07T14:07:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 4857.66515,
+    "entry_price": 21.471449999999997,
+    "entry_time": "2026-04-07T14:04:00+05:30",
+    "exit_price": 171.45,
+    "exit_time": "2026-04-08T09:20:00+05:30",
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 9748.605749999999,
     "qty": 1
   },
   {
@@ -1509,12 +1509,12 @@
   {
     "symbol": "NIFTY23950CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 178.06788999999998,
-    "entry_time": "2026-04-08T12:46:00+05:30",
-    "exit_price": 202.37,
-    "exit_time": "2026-04-08T14:46:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 1579.6371500000018,
+    "entry_price": 197.31712,
+    "entry_time": "2026-04-08T14:21:00+05:30",
+    "exit_price": 157.69600000000003,
+    "exit_time": "2026-04-09T09:20:00+05:30",
+    "exit_reason": "STOP_LOSS",
+    "realized_pnl": -2575.3727999999974,
     "qty": 1
   },
   {
@@ -1529,14 +1529,14 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY23950CE",
+    "symbol": "NIFTY24000CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 152.68252999999999,
-    "entry_time": "2026-04-10T12:01:00+05:30",
-    "exit_price": 183.16,
-    "exit_time": "2026-04-10T14:01:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 1981.0355500000007,
+    "entry_price": 152.76261,
+    "entry_time": "2026-04-10T13:50:00+05:30",
+    "exit_price": 122.08800000000002,
+    "exit_time": "2026-04-13T09:20:00+05:30",
+    "exit_reason": "STOP_LOSS",
+    "realized_pnl": -1993.8496499999983,
     "qty": 1
   },
   {
@@ -1551,14 +1551,14 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY23700CE",
+    "symbol": "NIFTY23800CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 85.12504,
-    "entry_time": "2026-04-13T12:35:00+05:30",
-    "exit_price": 138.34,
-    "exit_time": "2026-04-13T14:35:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 3458.9724,
+    "entry_price": 73.35328,
+    "entry_time": "2026-04-13T14:30:00+05:30",
+    "exit_price": 223.28,
+    "exit_time": "2026-04-15T09:20:00+05:30",
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 9745.236799999999,
     "qty": 1
   },
   {
@@ -1575,12 +1575,12 @@
   {
     "symbol": "NIFTY24200CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 187.21703,
-    "entry_time": "2026-04-15T12:31:00+05:30",
-    "exit_price": 198.68,
-    "exit_time": "2026-04-15T14:31:00+05:30",
+    "entry_price": 197.30711,
+    "entry_time": "2026-04-15T14:15:00+05:30",
+    "exit_price": 282.44,
+    "exit_time": "2026-04-16T09:20:00+05:30",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 745.0930500000009,
+    "realized_pnl": 5533.63785,
     "qty": 1
   },
   {
@@ -1595,14 +1595,14 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY24250CE",
+    "symbol": "NIFTY24300CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 147.55740999999998,
-    "entry_time": "2026-04-17T11:48:00+05:30",
-    "exit_price": 180.48,
-    "exit_time": "2026-04-17T13:48:00+05:30",
+    "entry_price": 152.14199,
+    "entry_time": "2026-04-17T13:44:00+05:30",
+    "exit_price": 129.09,
+    "exit_time": "2026-04-20T09:20:00+05:30",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 2139.968350000001,
+    "realized_pnl": -1498.3793499999992,
     "qty": 1
   },
   {
@@ -1617,14 +1617,14 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY24450CE",
+    "symbol": "NIFTY24500CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 30.450419999999998,
-    "entry_time": "2026-04-21T11:40:00+05:30",
-    "exit_price": 70.0,
-    "exit_time": "2026-04-21T13:40:00+05:30",
+    "entry_price": 22.20218,
+    "entry_time": "2026-04-21T13:04:00+05:30",
+    "exit_price": 63.21,
+    "exit_time": "2026-04-21T15:04:00+05:30",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 2570.7227000000003,
+    "realized_pnl": 2665.5083,
     "qty": 1
   },
   {
@@ -1639,14 +1639,14 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY24000CE",
+    "symbol": "NIFTY24050CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 75.92584999999998,
-    "entry_time": "2026-04-27T11:50:00+05:30",
-    "exit_price": 103.21,
-    "exit_time": "2026-04-27T13:50:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 1773.4697500000007,
+    "entry_price": 73.20312999999999,
+    "entry_time": "2026-04-27T13:43:00+05:30",
+    "exit_price": 58.504,
+    "exit_time": "2026-04-28T09:20:00+05:30",
+    "exit_reason": "STOP_LOSS",
+    "realized_pnl": -955.4434499999993,
     "qty": 1
   },
   {
@@ -1663,12 +1663,12 @@
   {
     "symbol": "NIFTY24150CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 178.14797,
-    "entry_time": "2026-04-29T12:00:00+05:30",
-    "exit_price": 191.57,
-    "exit_time": "2026-04-29T14:00:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 872.4319500000004,
+    "entry_price": 191.42122999999998,
+    "entry_time": "2026-04-29T13:57:00+05:30",
+    "exit_price": 152.984,
+    "exit_time": "2026-04-30T09:20:00+05:30",
+    "exit_reason": "STOP_LOSS",
+    "realized_pnl": -2498.419949999998,
     "qty": 1
   },
   {
@@ -1685,12 +1685,12 @@
   {
     "symbol": "NIFTY24000CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 167.32716,
-    "entry_time": "2026-04-30T12:50:00+05:30",
-    "exit_price": 167.26,
-    "exit_time": "2026-04-30T14:50:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -4.365400000000079,
+    "entry_price": 167.42725999999996,
+    "entry_time": "2026-04-30T14:50:00+05:30",
+    "exit_price": 133.808,
+    "exit_time": "2026-05-04T09:20:00+05:30",
+    "exit_reason": "STOP_LOSS",
+    "realized_pnl": -2185.251899999998,
     "qty": 1
   },
   {
@@ -1707,12 +1707,12 @@
   {
     "symbol": "NIFTY24100CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 66.14608,
-    "entry_time": "2026-05-04T11:49:00+05:30",
-    "exit_price": 75.05,
-    "exit_time": "2026-05-04T13:49:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 578.7547999999999,
+    "entry_price": 74.74467,
+    "entry_time": "2026-05-04T13:44:00+05:30",
+    "exit_price": 59.736000000000004,
+    "exit_time": "2026-05-05T09:20:00+05:30",
+    "exit_reason": "STOP_LOSS",
+    "realized_pnl": -975.5635499999996,
     "qty": 1
   },
   {
@@ -1727,14 +1727,14 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY24250CE",
+    "symbol": "NIFTY24300CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 184.49430999999998,
-    "entry_time": "2026-05-06T12:04:00+05:30",
-    "exit_price": 212.35,
-    "exit_time": "2026-05-06T14:04:00+05:30",
+    "entry_price": 184.68449999999999,
+    "entry_time": "2026-05-06T14:00:00+05:30",
+    "exit_price": 226.75,
+    "exit_time": "2026-05-07T09:20:00+05:30",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 1810.6198500000007,
+    "realized_pnl": 2734.257500000001,
     "qty": 1
   },
   {
@@ -1751,12 +1751,12 @@
   {
     "symbol": "NIFTY23400CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 172.29211999999998,
-    "entry_time": "2026-05-13T11:44:00+05:30",
-    "exit_price": 180.48,
-    "exit_time": "2026-05-13T13:44:00+05:30",
+    "entry_price": 180.45027,
+    "entry_time": "2026-05-13T13:41:00+05:30",
+    "exit_price": 243.0,
+    "exit_time": "2026-05-14T09:20:00+05:30",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 532.2122000000004,
+    "realized_pnl": 4065.732450000001,
     "qty": 1
   },
   {
@@ -1771,14 +1771,14 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY23600CE",
+    "symbol": "NIFTY23650CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 167.12696,
-    "entry_time": "2026-05-14T12:04:00+05:30",
-    "exit_price": 195.34,
-    "exit_time": "2026-05-14T14:04:00+05:30",
+    "entry_price": 167.17700999999997,
+    "entry_time": "2026-05-14T14:00:00+05:30",
+    "exit_price": 193.16,
+    "exit_time": "2026-05-15T09:20:00+05:30",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 1833.8476000000005,
+    "realized_pnl": 1688.8943500000019,
     "qty": 1
   },
   {
@@ -1793,14 +1793,14 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY23550CE",
+    "symbol": "NIFTY23600CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 77.28720999999999,
-    "entry_time": "2026-05-18T12:12:00+05:30",
-    "exit_price": 109.47,
-    "exit_time": "2026-05-18T14:12:00+05:30",
+    "entry_price": 78.53845999999999,
+    "entry_time": "2026-05-18T14:08:00+05:30",
+    "exit_price": 85.14,
+    "exit_time": "2026-05-19T09:20:00+05:30",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 2091.8813500000006,
+    "realized_pnl": 429.1001000000009,
     "qty": 1
   },
   {
@@ -1815,14 +1815,14 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY23550CE",
+    "symbol": "NIFTY23600CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 184.63444999999996,
-    "entry_time": "2026-05-20T12:14:00+05:30",
-    "exit_price": 220.89,
-    "exit_time": "2026-05-20T14:14:00+05:30",
+    "entry_price": 189.16897999999998,
+    "entry_time": "2026-05-20T14:01:00+05:30",
+    "exit_price": 311.22,
+    "exit_time": "2026-05-21T09:20:00+05:30",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 2356.6107500000016,
+    "realized_pnl": 7933.316300000003,
     "qty": 1
   },
   {
@@ -1839,12 +1839,12 @@
   {
     "symbol": "NIFTY23700CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 141.82168,
-    "entry_time": "2026-05-22T11:27:00+05:30",
-    "exit_price": 149.69,
-    "exit_time": "2026-05-22T13:27:00+05:30",
+    "entry_price": 149.42927999999998,
+    "entry_time": "2026-05-22T13:21:00+05:30",
+    "exit_price": 252.28,
+    "exit_time": "2026-05-25T09:20:00+05:30",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 511.44080000000076,
+    "realized_pnl": 6685.296800000002,
     "qty": 1
   },
   {
@@ -1861,12 +1861,12 @@
   {
     "symbol": "NIFTY24000CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 64.07401,
-    "entry_time": "2026-05-25T12:09:00+05:30",
-    "exit_price": 78.86,
-    "exit_time": "2026-05-25T14:09:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 961.0893499999999,
+    "entry_price": 77.75768,
+    "entry_time": "2026-05-25T14:00:00+05:30",
+    "exit_price": 62.144000000000005,
+    "exit_time": "2026-05-26T09:20:00+05:30",
+    "exit_reason": "STOP_LOSS",
+    "realized_pnl": -1014.8891999999992,
     "qty": 1
   },
   {
@@ -1883,12 +1883,12 @@
   {
     "symbol": "NIFTY23900CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 180.57038999999997,
-    "entry_time": "2026-05-27T11:43:00+05:30",
-    "exit_price": 184.9,
-    "exit_time": "2026-05-27T13:43:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 281.424650000002,
+    "entry_price": 184.90471999999997,
+    "entry_time": "2026-05-27T13:38:00+05:30",
+    "exit_price": 147.776,
+    "exit_time": "2026-05-29T09:20:00+05:30",
+    "exit_reason": "STOP_LOSS",
+    "realized_pnl": -2413.3667999999975,
     "qty": 1
   },
   {
@@ -1903,14 +1903,14 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY23400CE",
+    "symbol": "NIFTY23450CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 21.30128,
-    "entry_time": "2026-06-02T13:30:00+05:30",
-    "exit_price": 171.28,
+    "entry_price": 19.46945,
+    "entry_time": "2026-06-02T15:03:00+05:30",
+    "exit_price": 164.12,
     "exit_time": "2026-06-03T09:20:00+05:30",
-    "exit_reason": "TAKE_PROFIT",
-    "realized_pnl": 9748.6168,
+    "exit_reason": "TIME_EXIT",
+    "realized_pnl": 9402.285750000001,
     "qty": 1
   },
   {
@@ -1925,14 +1925,14 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY23350CE",
+    "symbol": "NIFTY23400CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 161.47131,
-    "entry_time": "2026-06-04T12:09:00+05:30",
-    "exit_price": 184.7,
-    "exit_time": "2026-06-04T14:09:00+05:30",
+    "entry_price": 157.83767999999998,
+    "entry_time": "2026-06-04T14:07:00+05:30",
+    "exit_price": 189.94,
+    "exit_time": "2026-06-05T09:20:00+05:30",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 1509.86485,
+    "realized_pnl": 2086.6508000000013,
     "qty": 1
   },
   {
@@ -1949,12 +1949,12 @@
   {
     "symbol": "NIFTY23100CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 70.38031,
-    "entry_time": "2026-06-08T12:15:00+05:30",
-    "exit_price": 77.5,
-    "exit_time": "2026-06-08T14:15:00+05:30",
+    "entry_price": 77.08700999999999,
+    "entry_time": "2026-06-08T14:07:00+05:30",
+    "exit_price": 161.02,
+    "exit_time": "2026-06-09T09:20:00+05:30",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 462.77985000000035,
+    "realized_pnl": 5455.644350000001,
     "qty": 1
   },
   {
@@ -1971,12 +1971,12 @@
   {
     "symbol": "NIFTY23150CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 152.56240999999997,
-    "entry_time": "2026-06-11T12:04:00+05:30",
-    "exit_price": 161.87,
-    "exit_time": "2026-06-11T14:04:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 604.9933500000021,
+    "entry_price": 161.39122999999998,
+    "entry_time": "2026-06-11T13:56:00+05:30",
+    "exit_price": 311.23,
+    "exit_time": "2026-06-12T09:20:00+05:30",
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 9739.520050000003,
     "qty": 1
   },
   {
@@ -1991,14 +1991,14 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY23500CE",
+    "symbol": "NIFTY23600CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 154.94478999999998,
-    "entry_time": "2026-06-12T12:18:00+05:30",
-    "exit_price": 193.94,
-    "exit_time": "2026-06-12T14:18:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 2534.688650000001,
+    "entry_price": 137.13699999999997,
+    "entry_time": "2026-06-12T14:13:00+05:30",
+    "exit_price": 287.0,
+    "exit_time": "2026-06-15T09:20:00+05:30",
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 9741.095000000001,
     "qty": 1
   },
   {
@@ -2015,12 +2015,12 @@
   {
     "symbol": "NIFTY23950CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 28.478449999999995,
-    "entry_time": "2026-06-16T12:00:00+05:30",
-    "exit_price": 32.0,
-    "exit_time": "2026-06-16T14:00:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 228.9007500000003,
+    "entry_price": 32.00196999999999,
+    "entry_time": "2026-06-16T13:59:00+05:30",
+    "exit_price": 181.97,
+    "exit_time": "2026-06-17T09:20:00+05:30",
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 9747.92195,
     "qty": 1
   },
   {
@@ -2035,14 +2035,14 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY24050CE",
+    "symbol": "NIFTY24100CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 196.6965,
-    "entry_time": "2026-06-17T12:57:00+05:30",
-    "exit_price": 203.8,
-    "exit_time": "2026-06-17T14:57:00+05:30",
+    "entry_price": 174.37419999999997,
+    "entry_time": "2026-06-17T14:00:00+05:30",
+    "exit_price": 156.46,
+    "exit_time": "2026-06-18T09:20:00+05:30",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 461.72750000000167,
+    "realized_pnl": -1164.4229999999977,
     "qty": 1
   },
   {
@@ -2057,14 +2057,14 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY24100CE",
+    "symbol": "NIFTY24150CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 173.06288999999995,
-    "entry_time": "2026-06-18T11:26:00+05:30",
-    "exit_price": 189.47,
-    "exit_time": "2026-06-18T13:26:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 1066.462150000003,
+    "entry_price": 162.92275999999998,
+    "entry_time": "2026-06-18T13:25:00+05:30",
+    "exit_price": 130.208,
+    "exit_time": "2026-06-19T09:20:00+05:30",
+    "exit_reason": "STOP_LOSS",
+    "realized_pnl": -2126.459399999999,
     "qty": 1
   },
   {
@@ -2081,12 +2081,12 @@
   {
     "symbol": "NIFTY24000CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 150.54038999999997,
-    "entry_time": "2026-06-19T12:09:00+05:30",
-    "exit_price": 154.11,
-    "exit_time": "2026-06-19T14:09:00+05:30",
+    "entry_price": 154.20405,
+    "entry_time": "2026-06-19T14:07:00+05:30",
+    "exit_price": 139.42,
+    "exit_time": "2026-06-22T09:20:00+05:30",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 232.0246500000026,
+    "realized_pnl": -960.9632500000005,
     "qty": 1
   },
   {
@@ -2101,14 +2101,14 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY23900CE",
+    "symbol": "NIFTY23950CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 179.44926999999998,
-    "entry_time": "2026-06-24T11:49:00+05:30",
-    "exit_price": 219.28,
-    "exit_time": "2026-06-24T13:49:00+05:30",
+    "entry_price": 190.44025,
+    "entry_time": "2026-06-24T13:45:00+05:30",
+    "exit_price": 275.42,
+    "exit_time": "2026-06-25T09:20:00+05:30",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 2588.997450000001,
+    "realized_pnl": 5523.683750000002,
     "qty": 1
   },
   {
@@ -2125,12 +2125,12 @@
   {
     "symbol": "NIFTY23950CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 180.40022,
-    "entry_time": "2026-07-01T11:41:00+05:30",
-    "exit_price": 198.82,
-    "exit_time": "2026-07-01T13:41:00+05:30",
+    "entry_price": 198.06786999999997,
+    "entry_time": "2026-07-01T13:35:00+05:30",
+    "exit_price": 234.58,
+    "exit_time": "2026-07-02T09:20:00+05:30",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 1197.2857000000001,
+    "realized_pnl": 2373.2884500000027,
     "qty": 1
   },
   {
@@ -2145,14 +2145,14 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY24100CE",
+    "symbol": "NIFTY24150CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 176.16599,
-    "entry_time": "2026-07-02T12:01:00+05:30",
-    "exit_price": 196.28,
-    "exit_time": "2026-07-02T14:01:00+05:30",
+    "entry_price": 168.47831,
+    "entry_time": "2026-07-02T13:56:00+05:30",
+    "exit_price": 295.03,
+    "exit_time": "2026-07-03T09:20:00+05:30",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 1307.4106500000005,
+    "realized_pnl": 8225.859849999999,
     "qty": 1
   },
   {
@@ -2167,14 +2167,14 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY24350CE",
+    "symbol": "NIFTY24400CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 79.73965999999999,
-    "entry_time": "2026-07-06T12:01:00+05:30",
-    "exit_price": 102.7,
-    "exit_time": "2026-07-06T14:01:00+05:30",
+    "entry_price": 69.91984999999998,
+    "entry_time": "2026-07-06T13:34:00+05:30",
+    "exit_price": 77.44,
+    "exit_time": "2026-07-07T09:20:00+05:30",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 1492.4221000000011,
+    "realized_pnl": 488.809750000001,
     "qty": 1
   },
   {
@@ -2191,12 +2191,12 @@
   {
     "symbol": "NIFTY23950CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 164.44428,
-    "entry_time": "2026-07-09T11:44:00+05:30",
-    "exit_price": 169.97,
-    "exit_time": "2026-07-09T13:44:00+05:30",
+    "entry_price": 169.99983,
+    "entry_time": "2026-07-09T13:41:00+05:30",
+    "exit_price": 258.4,
+    "exit_time": "2026-07-10T09:20:00+05:30",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 359.1718000000004,
+    "realized_pnl": 5746.011049999998,
     "qty": 1
   },
   {
@@ -2211,14 +2211,14 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY24150CE",
+    "symbol": "NIFTY24200CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 163.49333,
-    "entry_time": "2026-07-10T12:58:00+05:30",
-    "exit_price": 178.24,
-    "exit_time": "2026-07-10T14:58:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 958.5335500000015,
+    "entry_price": 148.23809,
+    "entry_time": "2026-07-10T14:33:00+05:30",
+    "exit_price": 118.47200000000001,
+    "exit_time": "2026-07-13T09:20:00+05:30",
+    "exit_reason": "STOP_LOSS",
+    "realized_pnl": -1934.7958499999995,
     "qty": 1
   },
   {
@@ -2233,14 +2233,14 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY24100CE",
+    "symbol": "NIFTY24200CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 84.66457999999999,
-    "entry_time": "2026-07-13T12:15:00+05:30",
-    "exit_price": 118.79,
-    "exit_time": "2026-07-13T14:15:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 2218.152300000001,
+    "entry_price": 61.78171999999999,
+    "entry_time": "2026-07-13T14:14:00+05:30",
+    "exit_price": 49.376000000000005,
+    "exit_time": "2026-07-14T09:20:00+05:30",
+    "exit_reason": "STOP_LOSS",
+    "realized_pnl": -806.3717999999992,
     "qty": 1
   },
   {
@@ -2255,14 +2255,14 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY24200CE",
+    "symbol": "NIFTY24300CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 159.30915,
-    "entry_time": "2026-07-17T11:54:00+05:30",
-    "exit_price": 197.48,
-    "exit_time": "2026-07-17T13:54:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 2481.10525,
+    "entry_price": 139.28914999999998,
+    "entry_time": "2026-07-17T13:43:00+05:30",
+    "exit_price": 111.32000000000001,
+    "exit_time": "2026-07-20T09:20:00+05:30",
+    "exit_reason": "STOP_LOSS",
+    "realized_pnl": -1817.994749999998,
     "qty": 1
   },
   {
@@ -2277,14 +2277,14 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY24200CE",
+    "symbol": "NIFTY24250CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 79.85977999999999,
-    "entry_time": "2026-07-20T12:10:00+05:30",
-    "exit_price": 88.45,
-    "exit_time": "2026-07-20T14:10:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 558.3643000000011,
+    "entry_price": 62.162099999999995,
+    "entry_time": "2026-07-20T14:01:00+05:30",
+    "exit_price": 49.68000000000001,
+    "exit_time": "2026-07-21T09:20:00+05:30",
+    "exit_reason": "STOP_LOSS",
+    "realized_pnl": -811.3364999999992,
     "qty": 1
   },
   {
@@ -2299,14 +2299,14 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY23700CE",
+    "symbol": "NIFTY23750CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 159.62946999999997,
-    "entry_time": "2026-07-24T12:40:00+05:30",
-    "exit_price": 177.86,
-    "exit_time": "2026-07-24T14:40:00+05:30",
+    "entry_price": 146.77662999999998,
+    "entry_time": "2026-07-24T14:14:00+05:30",
+    "exit_price": 197.01,
+    "exit_time": "2026-07-27T09:20:00+05:30",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 1184.9844500000029,
+    "realized_pnl": 3265.1690500000004,
     "qty": 1
   },
   {
@@ -2321,14 +2321,14 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY23950CE",
+    "symbol": "NIFTY24000CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 77.35727999999999,
-    "entry_time": "2026-07-27T12:07:00+05:30",
-    "exit_price": 89.37,
-    "exit_time": "2026-07-27T14:07:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 780.8268000000011,
+    "entry_price": 62.78271999999999,
+    "entry_time": "2026-07-27T14:01:00+05:30",
+    "exit_price": 50.176,
+    "exit_time": "2026-07-28T09:20:00+05:30",
+    "exit_reason": "STOP_LOSS",
+    "realized_pnl": -819.4367999999993,
     "qty": 1
   },
   {
@@ -2345,12 +2345,12 @@
   {
     "symbol": "NIFTY24000CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 18.06805,
-    "entry_time": "2026-07-28T11:43:00+05:30",
-    "exit_price": 14.440000000000001,
-    "exit_time": "2026-07-28T12:55:00+05:30",
+    "entry_price": 14.744729999999999,
+    "entry_time": "2026-07-28T12:49:00+05:30",
+    "exit_price": 11.784,
+    "exit_time": "2026-07-28T13:37:00+05:30",
     "exit_reason": "STOP_LOSS",
-    "realized_pnl": -235.8232499999999,
+    "realized_pnl": -192.4474499999999,
     "qty": 1
   },
   {
@@ -2365,14 +2365,14 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY24200CE",
+    "symbol": "NIFTY24250CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 195.05486,
-    "entry_time": "2026-07-29T12:24:00+05:30",
-    "exit_price": 207.9,
-    "exit_time": "2026-07-29T14:24:00+05:30",
+    "entry_price": 180.84065999999999,
+    "entry_time": "2026-07-29T14:18:00+05:30",
+    "exit_price": 170.57,
+    "exit_time": "2026-07-30T09:20:00+05:30",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 834.934100000001,
+    "realized_pnl": -667.5928999999995,
     "qty": 1
   },
   {
@@ -2389,12 +2389,12 @@
   {
     "symbol": "NIFTY24250CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 178.5784,
-    "entry_time": "2026-07-30T10:41:00+05:30",
-    "exit_price": 190.38,
-    "exit_time": "2026-07-30T12:41:00+05:30",
+    "entry_price": 183.92373999999998,
+    "entry_time": "2026-07-30T11:35:00+05:30",
+    "exit_price": 195.93,
+    "exit_time": "2026-07-30T13:35:00+05:30",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 767.1040000000005,
+    "realized_pnl": 780.4069000000017,
     "qty": 1
   },
   {
@@ -2409,14 +2409,14 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY24350CE",
+    "symbol": "NIFTY24400CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 163.08291999999997,
-    "entry_time": "2026-07-31T11:51:00+05:30",
-    "exit_price": 166.84,
-    "exit_time": "2026-07-31T13:51:00+05:30",
+    "entry_price": 140.79065,
+    "entry_time": "2026-07-31T13:46:00+05:30",
+    "exit_price": 194.92,
+    "exit_time": "2026-08-03T09:20:00+05:30",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 244.21020000000198,
+    "realized_pnl": 3518.4077499999994,
     "qty": 1
   },
   {
@@ -2431,14 +2431,14 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY24650CE",
+    "symbol": "NIFTY24700CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 81.51143,
-    "entry_time": "2026-08-03T12:03:00+05:30",
-    "exit_price": 120.91,
-    "exit_time": "2026-08-03T14:03:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 2560.9070499999993,
+    "entry_price": 87.99790999999999,
+    "entry_time": "2026-08-03T13:57:00+05:30",
+    "exit_price": 70.328,
+    "exit_time": "2026-08-04T09:20:00+05:30",
+    "exit_reason": "STOP_LOSS",
+    "realized_pnl": -1148.5441499999993,
     "qty": 1
   },
   {
@@ -2455,12 +2455,12 @@
   {
     "symbol": "NIFTY24550CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 155.85569999999998,
-    "entry_time": "2026-08-07T12:24:00+05:30",
-    "exit_price": 161.14,
-    "exit_time": "2026-08-07T14:24:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 343.47950000000014,
+    "entry_price": 159.83968,
+    "entry_time": "2026-08-07T13:52:00+05:30",
+    "exit_price": 127.74400000000001,
+    "exit_time": "2026-08-10T09:20:00+05:30",
+    "exit_reason": "STOP_LOSS",
+    "realized_pnl": -2086.219199999998,
     "qty": 1
   },
   {
@@ -2477,12 +2477,12 @@
   {
     "symbol": "NIFTY24600CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 65.61554999999998,
-    "entry_time": "2026-08-10T11:38:00+05:30",
-    "exit_price": 65.93,
-    "exit_time": "2026-08-10T13:38:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 20.439250000001437,
+    "entry_price": 65.95589,
+    "entry_time": "2026-08-10T13:25:00+05:30",
+    "exit_price": 52.712,
+    "exit_time": "2026-08-11T09:20:00+05:30",
+    "exit_reason": "STOP_LOSS",
+    "realized_pnl": -860.8528499999995,
     "qty": 1
   },
   {
@@ -2499,12 +2499,12 @@
   {
     "symbol": "NIFTY24350CE",
     "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 159.20905,
-    "entry_time": "2026-08-14T11:46:00+05:30",
-    "exit_price": 159.76,
-    "exit_time": "2026-08-14T13:46:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 35.81175000000002,
+    "entry_price": 159.88973,
+    "entry_time": "2026-08-14T13:40:00+05:30",
+    "exit_price": 127.78399999999999,
+    "exit_time": "2026-08-17T09:20:00+05:30",
+    "exit_reason": "STOP_LOSS",
+    "realized_pnl": -2086.87245,
     "qty": 1
   },
   {
@@ -2516,17 +2516,6 @@
     "exit_time": "2026-08-20T13:59:00+05:30",
     "exit_reason": "TIME_EXIT",
     "realized_pnl": 56.60655000000162,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY24250CE",
-    "strategy": "NIFTY_MACD_BULLISH_1M_ATM",
-    "entry_price": 159.34919,
-    "entry_time": "2026-08-20T12:06:00+05:30",
-    "exit_price": 160.22,
-    "exit_time": "2026-08-20T14:06:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 56.60265000000038,
     "qty": 1
   }
 ]
