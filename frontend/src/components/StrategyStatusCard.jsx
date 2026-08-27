@@ -417,6 +417,7 @@ export function StrategyStatusList({ strategies = [], pendingSignals = [] }) {
     });
   }, [strategies, filterTab, searchTerm]);
 
+  const activeCount = strategies.filter((s) => s.status === "SIGNAL_ENTERED").length;
   const niftyCount = strategies.filter((s) => s.strategy.startsWith("NIFTY")).length;
   const sensexCount = strategies.filter((s) => s.strategy.startsWith("SENSEX")).length;
   const bankNiftyCount = strategies.filter((s) => s.strategy.startsWith("BANKNIFTY")).length;
