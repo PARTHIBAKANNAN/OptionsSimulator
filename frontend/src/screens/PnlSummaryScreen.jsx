@@ -4,7 +4,7 @@ import { fetchPnlReport, downloadPnlExport } from "../hooks/usePaperTradingSync"
 import { Card } from "../components/ui/Card";
 import { DateRangePicker } from "../components/DateRangePicker";
 import { DailyPnlChart } from "../components/DailyPnlChart";
-import { StrategyAnalyticsModal } from "../components/StrategyAnalyticsModal";
+import { PostMarketJournalCard } from "../components/PostMarketJournalCard";
 
 function fmt(v) {
   if (v == null) return "—";
@@ -133,6 +133,9 @@ export function PnlSummaryScreen() {
           />
         </div>
       </div>
+
+      {/* 15:35 IST Post-Market AI Trade Journal & Performance Review */}
+      <PostMarketJournalCard />
 
       {error && <Card><p className="text-bear">{error}</p></Card>}
       {!report && !error && <Card><p className="text-faint">Loading P&amp;L Report…</p></Card>}

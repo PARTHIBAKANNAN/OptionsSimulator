@@ -18,16 +18,21 @@ export function ChartModal({
   sensexPrice,
   sensexChange,
   sensexChangePct,
+  bankniftyCandles = [],
+  bankniftyPrice,
+  bankniftyChange,
+  bankniftyChangePct,
   onClose,
 }) {
   const [dualView, setDualView] = useState(false);
-  const [activeTab, setActiveTab] = useState(initialIndex?.includes("SENSEX") ? "SENSEX" : "NIFTY");
+  const [activeTab, setActiveTab] = useState(
+    initialIndex?.includes("BANKNIFTY") ? "BANKNIFTY" : initialIndex?.includes("SENSEX") ? "SENSEX" : "NIFTY"
+  );
 
-  const isNiftyActive = activeTab === "NIFTY";
-  const currentCandles = isNiftyActive ? niftyCandles : sensexCandles;
-  const currentPrice = isNiftyActive ? niftyPrice : sensexPrice;
-  const currentChange = isNiftyActive ? niftyChange : sensexChange;
-  const currentChangePct = isNiftyActive ? niftyChangePct : sensexChangePct;
+  const currentCandles = activeTab === "BANKNIFTY" ? bankniftyCandles : activeTab === "SENSEX" ? sensexCandles : niftyCandles;
+  const currentPrice = activeTab === "BANKNIFTY" ? bankniftyPrice : activeTab === "SENSEX" ? sensexPrice : niftyPrice;
+  const currentChange = activeTab === "BANKNIFTY" ? bankniftyChange : activeTab === "SENSEX" ? sensexChange : niftyChange;
+  const currentChangePct = activeTab === "BANKNIFTY" ? bankniftyChangePct : activeTab === "SENSEX" ? sensexChangePct : niftyChangePct;
   const positive = (currentChange ?? 0) >= 0;
 
   return createPortal(
@@ -56,7 +61,7 @@ export function ChartModal({
                 <button
                   onClick={() => setActiveTab("NIFTY")}
                   className={`rounded-lg px-3.5 py-1 text-xs font-bold transition ${
-                    isNiftyActive ? "bg-accent text-white shadow-sm" : "text-faint hover:text-primary"
+                    activeTab === "NIFTY" ? "bg-accent text-white shadow-sm" : "text-faint hover:text-primary"
                   }`}
                 >
                   NIFTY 50
@@ -64,10 +69,18 @@ export function ChartModal({
                 <button
                   onClick={() => setActiveTab("SENSEX")}
                   className={`rounded-lg px-3.5 py-1 text-xs font-bold transition ${
-                    !isNiftyActive ? "bg-purple-600 text-white shadow-sm" : "text-faint hover:text-primary"
+                    activeTab === "SENSEX" ? "bg-accent text-white shadow-sm" : "text-faint hover:text-primary"
                   }`}
                 >
                   SENSEX
+                </button>
+                <button
+                  onClick={() => setActiveTab("BANKNIFTY")}
+                  className={`rounded-lg px-3.5 py-1 text-xs font-bold transition ${
+                    activeTab === "BANKNIFTY" ? "bg-accent text-white shadow-sm" : "text-faint hover:text-primary"
+                  }`}
+                >
+                  BANKNIFTY
                 </button>
               </div>
 

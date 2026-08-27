@@ -20,9 +20,6 @@ export function LiveDashboardScreen() {
       {/* 08:50 AM Pre-Market Catalyst & Sentiment Card */}
       <PreMarketIntelligenceCard />
 
-      {/* 15:35 IST Post-Market AI Trade Journal & Performance Review */}
-      <PostMarketJournalCard />
-
       {/* Live Telemetry Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <IntradayEquityCurve todayPnl={totalTodayPnl} />

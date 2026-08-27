@@ -271,14 +271,38 @@ def generate_live_postmarket_journal(trades_today: list = None, daily_pnl: float
     """Generates an institutional post-market AI trade audit & performance journal at 15:35 IST."""
     if not trades_today:
         try:
+            from . import db
+            pool = db.get_pool()
+            if pool:
+                import asyncio
+                loop = asyncio.get_event_loop()
+
+                async def _fetch():
+                    return await pool.fetch(
+                        """SELECT order_id, strategy, symbol, qty, lot_size, entry_price, entry_time, exit_price, exit_time, status, exit_reason, realized_pnl, entry_charges, exit_charges
+                           FROM options_positions
+                           WHERE exit_time::date = CURRENT_DATE OR entry_time::date = CURRENT_DATE
+                           ORDER BY entry_time ASC"""
+                    )
+                if loop.is_running():
+                    # If in running loop, use fallback sync or shared_state
+                    pass
+        except Exception:
+            pass
+
+    if not trades_today:
+        try:
             from .state import shared_state
             st = shared_state.get()
             positions = st.get("positions", [])
             trades_today = [
                 {
+                    "order_id": p.get("order_id"),
                     "strategy": p.get("strategy"),
                     "symbol": p.get("symbol"),
-                    "net_pnl": p.get("realized_pnl") or p.get("trade_pnl") or 0.0,
+                    "exit_reason": p.get("exit_reason"),
+                    "net_pnl": (p.get("realized_pnl") or 0.0) - (p.get("entry_charges") or 0.0) - (p.get("exit_charges") or 0.0),
+                    "gross_pnl": p.get("realized_pnl") or p.get("trade_pnl") or 0.0,
                 }
                 for p in positions
                 if p.get("status") == "CLOSED" or p.get("realized_pnl") is not None

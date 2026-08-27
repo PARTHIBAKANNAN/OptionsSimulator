@@ -58,6 +58,7 @@ export function MarketHeader({ state }) {
   const {
     nifty_price, nifty_prev_close, nifty_change, nifty_change_pct, nifty_candles_5m,
     sensex_price, sensex_prev_close, sensex_change, sensex_change_pct, sensex_candles_5m,
+    banknifty_price, banknifty_prev_close, banknifty_change, banknifty_change_pct, banknifty_candles_5m,
     mode, exchange_open, fyers_authenticated, timestamp,
   } = state;
 
@@ -88,6 +89,10 @@ export function MarketHeader({ state }) {
           <IndexCard
             label="SENSEX" price={sensex_price} prevClose={sensex_prev_close} change={sensex_change}
             changePct={sensex_change_pct} exchangeOpen={exchange_open} onOpenChart={() => setChartFor("SENSEX")}
+          />
+          <IndexCard
+            label="BANKNIFTY" price={banknifty_price} prevClose={banknifty_prev_close} change={banknifty_change}
+            changePct={banknifty_change_pct} exchangeOpen={exchange_open} onOpenChart={() => setChartFor("BANKNIFTY")}
           />
         </div>
 
@@ -156,6 +161,10 @@ export function MarketHeader({ state }) {
           sensexPrice={sensex_price}
           sensexChange={sensex_change}
           sensexChangePct={sensex_change_pct}
+          bankniftyCandles={banknifty_candles_5m}
+          bankniftyPrice={banknifty_price}
+          bankniftyChange={banknifty_change}
+          bankniftyChangePct={banknifty_change_pct}
           onClose={() => setChartFor(null)}
         />
       )}

@@ -44,13 +44,14 @@ function StatusBeacon({ entered }) {
 }
 
 function parseStrategyMeta(name) {
+  const isBankNifty = name.startsWith("BANKNIFTY");
   const isSensex = name.startsWith("SENSEX");
   const is5M = name.includes("_5M_");
   const isITM = name.includes("_ITM");
   const isCE = name.includes("_BULLISH") || name.includes("_SUPPORT_BOUNCE");
 
   return {
-    index: isSensex ? "SENSEX" : "NIFTY",
+    index: isBankNifty ? "BANKNIFTY" : isSensex ? "SENSEX" : "NIFTY",
     tf: is5M ? "5M" : "1M",
     mode: isITM ? "ITM" : "ATM",
     dir: isCE ? "CE" : "PE",
@@ -392,14 +393,16 @@ export function StrategyStatusList({ strategies = [], pendingSignals = [] }) {
   const filteredStrategies = useMemo(() => {
     return strategies.filter((s) => {
       const name = s.strategy;
+      const isBankNifty = name.startsWith("BANKNIFTY");
       const isSensex = name.startsWith("SENSEX");
+      const isNifty = !isBankNifty && !isSensex;
       const is5M = name.includes("_5M_");
-      const isITM = name.includes("_ITM");
       const isCE = name.includes("_BULLISH") || name.includes("_SUPPORT_BOUNCE");
       const isEntered = s.status === "SIGNAL_ENTERED";
 
-      if (filterTab === "nifty" && isSensex) return false;
+      if (filterTab === "nifty" && !isNifty) return false;
       if (filterTab === "sensex" && !isSensex) return false;
+      if (filterTab === "banknifty" && !isBankNifty) return false;
       if (filterTab === "5m" && !is5M) return false;
       if (filterTab === "1m" && is5M) return false;
       if (filterTab === "ce" && !isCE) return false;
@@ -414,9 +417,9 @@ export function StrategyStatusList({ strategies = [], pendingSignals = [] }) {
     });
   }, [strategies, filterTab, searchTerm]);
 
-  const activeCount = strategies.filter((s) => s.status === "SIGNAL_ENTERED").length;
-  const niftyCount = strategies.filter((s) => !s.strategy.startsWith("SENSEX")).length;
+  const niftyCount = strategies.filter((s) => s.strategy.startsWith("NIFTY")).length;
   const sensexCount = strategies.filter((s) => s.strategy.startsWith("SENSEX")).length;
+  const bankNiftyCount = strategies.filter((s) => s.strategy.startsWith("BANKNIFTY")).length;
   const fiveMCount = strategies.filter((s) => s.strategy.includes("_5M_")).length;
   const oneMCount = strategies.filter((s) => !s.strategy.includes("_5M_")).length;
 
@@ -442,6 +445,12 @@ export function StrategyStatusList({ strategies = [], pendingSignals = [] }) {
             className={`rounded-xl px-3 py-1.5 text-xs font-bold transition ${filterTab === "sensex" ? "bg-accent text-white shadow-sm" : "bg-surface2 text-muted hover:bg-surface3 hover:text-primary"}`}
           >
             SENSEX ({sensexCount})
+          </button>
+          <button
+            onClick={() => setFilterTab("banknifty")}
+            className={`rounded-xl px-3 py-1.5 text-xs font-bold transition ${filterTab === "banknifty" ? "bg-accent text-white shadow-sm" : "bg-surface2 text-muted hover:bg-surface3 hover:text-primary"}`}
+          >
+            BANKNIFTY ({bankNiftyCount})
           </button>
           <button
             onClick={() => setFilterTab("5m")}
