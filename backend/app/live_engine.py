@@ -469,9 +469,17 @@ class WebLiveEngine(LiveTrader):
     # ---- Overrides: dual-path (web + Telegram) signal approval ----------------------
 
     def evaluate_strategies(self):
-        signals = super().evaluate_strategies()
-        self._publish_state()
-        self._maybe_persist_new_candles()
+        try:
+            signals = super().evaluate_strategies()
+        except Exception as e:
+            self.logger.log_error(f"Strategy evaluation exception caught safely: {e}\n{traceback.format_exc()}")
+            signals = []
+
+        try:
+            self._publish_state()
+            self._maybe_persist_new_candles()
+        except Exception as e:
+            self.logger.log_error(f"State publish / candle persist exception caught safely: {e}\n{traceback.format_exc()}")
         return signals
 
     def _on_market_closed_tick(self) -> None:

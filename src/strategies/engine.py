@@ -1,5 +1,5 @@
 """Runs every registered strategy against the current data_state, deduping and rate-limiting signals."""
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, time as dtime
 
 from src.strategies.base_strategy import BaseStrategy, Signal
 from src.strategies.heikin_ashi_trend_bearish import HeikinAshiTrendBearish
@@ -114,6 +114,10 @@ class StrategyEngine:
         self.logger = logger
 
     def evaluate_all(self, data_state: dict) -> list[Signal]:
+        ts = data_state.get("timestamp")
+        if ts and hasattr(ts, "time") and ts.time() < dtime(9, 25):
+            return []
+
         signals = []
         for strategy in self.strategies:
             try:

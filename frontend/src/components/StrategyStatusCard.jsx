@@ -112,15 +112,14 @@ function SteppedTslProgressGauge({ entryPrice, ltp, stopLoss, takeProfit, closed
       {/* Progress Track */}
       <div className="relative h-2 w-full rounded-full bg-surface3/80 overflow-hidden">
         <div
-          className={`h-full rounded-full transition-all duration-300 ${
-            currentStep >= 3
+          className={`h-full rounded-full transition-all duration-300 ${currentStep >= 3
               ? "bg-gradient-to-r from-emerald-500 via-cyan-500 to-indigo-500 shadow-[0_0_8px_rgba(59,130,246,0.6)]"
               : currentStep >= 1
-              ? "bg-gradient-to-r from-emerald-500 to-cyan-500"
-              : isProfit
-              ? "bg-emerald-500"
-              : "bg-rose-500"
-          }`}
+                ? "bg-gradient-to-r from-emerald-500 to-cyan-500"
+                : isProfit
+                  ? "bg-emerald-500"
+                  : "bg-rose-500"
+            }`}
           style={{ width: `${progressPct}%` }}
         />
       </div>

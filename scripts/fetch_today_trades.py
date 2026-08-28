@@ -14,11 +14,11 @@ async def main():
     rows = await conn.fetch("""
         SELECT order_id, strategy, symbol, qty, lot_size, entry_price, entry_time, exit_price, exit_time, status, exit_reason, realized_pnl, entry_charges, exit_charges
         FROM options_positions
-        WHERE exit_time::date = '2026-08-27' OR entry_time::date = '2026-08-27'
+        WHERE exit_time::date = '2026-08-28' OR entry_time::date = '2026-08-28'
         ORDER BY entry_time ASC
     """)
     
-    print(f"=== TODAY (2026-08-27) TRADES COUNT: {len(rows)} ===")
+    print(f"=== TODAY (2026-08-28) TRADES COUNT: {len(rows)} ===")
     tot_gross = 0.0
     tot_chg = 0.0
     wins = 0

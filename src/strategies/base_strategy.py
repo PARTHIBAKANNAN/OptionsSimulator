@@ -33,7 +33,11 @@ class BaseStrategy:
         self._last_signal_bar: Optional[datetime] = None
 
     def can_trigger(self, current_time: datetime) -> bool:
-        """Enforces a minimum cooldown between signals to prevent immediate duplicate re-entries."""
+        """Enforces opening 09:25 AM cutoff and a minimum cooldown between signals to prevent immediate duplicate re-entries."""
+        if current_time is not None:
+            t = current_time.time() if hasattr(current_time, "time") else None
+            if t and t < OPENING_CUTOFF_TIME:
+                return False
         if self.last_signal_time is None:
             return True
         elapsed_seconds = (current_time - self.last_signal_time).total_seconds()

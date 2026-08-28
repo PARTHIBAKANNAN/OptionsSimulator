@@ -13,7 +13,7 @@ from src.strategies.rsi_oversold_bullish import RSIOversoldBullish
 
 
 def _synthetic_df(n=300):
-    base = datetime(2026, 1, 6, 9, 15)
+    base = datetime(2026, 1, 6, 9, 25)
     rows = []
     price = 24000.0
     for i in range(n):
