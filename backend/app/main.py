@@ -156,8 +156,11 @@ async def get_public_market_summary():
         "sensex_price": sensex or 77540.83,
         "sensex_change": current_state.get("sensex_change") or 3.11,
         "sensex_change_pct": current_state.get("sensex_change_pct") or 0.00,
+        "banknifty_price": current_state.get("banknifty_price") or 57496.30,
+        "banknifty_change": current_state.get("banknifty_change") or -13.65,
+        "banknifty_change_pct": current_state.get("banknifty_change_pct") or -0.02,
         "market_open": current_state.get("market_open", False),
-        "strategies_count": 21,
+        "strategies_count": 44,
     }
 
 

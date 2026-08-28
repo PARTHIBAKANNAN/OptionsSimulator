@@ -429,17 +429,17 @@ export function LandingScreen({ onLoginClick }) {
                     <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-ping" />
                   </div>
                   <div className="font-mono text-base sm:text-lg font-black text-white tabular-nums">
-                    {fmtNum(marketData?.banknifty_price || 51240.50)}
+                    {fmtNum(marketData?.banknifty_price || 57496.30)}
                   </div>
                 </div>
                 <div className="flex items-center gap-1">
                   <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold font-mono border ${
-                    (marketData?.banknifty_change ?? 60.30) >= 0
+                    (marketData?.banknifty_change ?? -13.65) >= 0
                       ? "bg-bull/15 text-bull border-bull/30"
                       : "bg-bear/15 text-bear border-bear/30"
                   }`}>
-                    {(marketData?.banknifty_change ?? 60.30) >= 0 ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
-                    {(marketData?.banknifty_change ?? 60.30) >= 0 ? "+" : ""}{fmtNum(marketData?.banknifty_change || 60.30)}
+                    {(marketData?.banknifty_change ?? -13.65) >= 0 ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
+                    {(marketData?.banknifty_change ?? -13.65) >= 0 ? "+" : ""}{fmtNum(marketData?.banknifty_change || -13.65)} ({(marketData?.banknifty_change_pct ?? -0.02) >= 0 ? "+" : ""}{Number(marketData?.banknifty_change_pct || -0.02).toFixed(2)}%)
                   </span>
                 </div>
               </div>
