@@ -258,18 +258,19 @@ export function LandingScreen({ onLoginClick }) {
   const netPnl = grossPnl - totalCharges;
 
   // Filter and Search Logic
-  const filteredStrats = FLEET_21_STRATEGIES.filter((s) => {
+  const filteredStrats = FLEET_44_STRATEGIES.filter((s) => {
     const matchesFilter =
       activeFilter === "ALL" ||
       (activeFilter === "NIFTY" && s.index.includes("NIFTY")) ||
       (activeFilter === "SENSEX" && s.index.includes("SENSEX")) ||
+      (activeFilter === "BANKNIFTY" && s.index.includes("BANKNIFTY")) ||
       (activeFilter === "5M" && s.tf === "5M") ||
       (activeFilter === "1M" && s.tf === "1M");
 
     const matchesSearch =
       !searchQuery.trim() ||
       s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      s.profile.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (s.profile && s.profile.toLowerCase().includes(searchQuery.toLowerCase())) ||
       s.desc.toLowerCase().includes(searchQuery.toLowerCase());
 
     return matchesFilter && matchesSearch;
@@ -346,7 +347,7 @@ export function LandingScreen({ onLoginClick }) {
             transition={{ delay: 0.2 }}
             className="mx-auto max-w-2xl text-sm sm:text-base text-gray-300 leading-relaxed font-sans"
           >
-            NUKEBOX is an institutional quantitative derivatives sandbox built for NSE NIFTY 50 and BSE SENSEX options. Featuring 21 autonomous execution models, dynamic Greeks Delta strike selection, multi-tier stepped profit locks, and dual AI market debriefs.
+            NUKEBOX is an institutional quantitative derivatives sandbox built for NSE NIFTY 50, BSE SENSEX, and BANKNIFTY options. Featuring 44 autonomous execution models, dynamic Greeks Delta strike selection, multi-tier stepped profit locks, and dual AI market debriefs.
           </motion.p>
 
           <motion.div
@@ -367,7 +368,7 @@ export function LandingScreen({ onLoginClick }) {
               className="flex items-center gap-2 rounded-2xl border border-subtle bg-surface2/80 px-5 py-3.5 text-sm font-bold text-gray-300 hover:bg-surface3 hover:text-white backdrop-blur-sm transition cursor-pointer"
             >
               <Eye className="h-4 w-4 text-cyan-400" />
-              <span>Explore 21 Strategy Models</span>
+              <span>Explore 44 Strategy Models</span>
             </a>
           </motion.div>
 
