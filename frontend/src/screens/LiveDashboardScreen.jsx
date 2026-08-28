@@ -6,7 +6,6 @@ import { ExposureMeter } from "../components/ExposureMeter";
 import { IntradayEquityCurve } from "../components/IntradayEquityCurve";
 import { PreMarketIntelligenceCard } from "../components/PreMarketIntelligenceCard";
 import { PostMarketJournalCard } from "../components/PostMarketJournalCard";
-import { IndexHeatmapMatrix } from "../components/IndexHeatmapMatrix";
 
 export function LiveDashboardScreen() {
   const state = useMarketState();
@@ -17,9 +16,6 @@ export function LiveDashboardScreen() {
   return (
     <div className="space-y-4">
       <MarketHeader state={state} />
-      
-      {/* Real-time Index Trend Bias Heatmap */}
-      <IndexHeatmapMatrix state={state} />
 
       {/* 08:50 AM Pre-Market Catalyst & Sentiment Card */}
       <PreMarketIntelligenceCard />

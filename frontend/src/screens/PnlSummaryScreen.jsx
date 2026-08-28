@@ -266,6 +266,69 @@ export function PnlSummaryScreen() {
               </tbody>
             </table>
           </div>
+
+          {/* Individual Trades Log Table */}
+          <div className="rounded-xl border border-subtle bg-surface p-4 sm:p-5 space-y-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-sm font-bold text-primary">Executed Individual Trades Log</h3>
+                <p className="text-xs text-faint">Detailed record of every trade executed within selected date range</p>
+              </div>
+              <span className="rounded-full bg-accent/15 px-2.5 py-1 text-xs font-mono font-bold text-accent">
+                {(report?.trades || []).length} Executed Trades
+              </span>
+            </div>
+
+            <div className="overflow-x-auto rounded-xl border border-subtle">
+              <table className="w-full text-xs">
+                <thead className="bg-surface2 text-faint">
+                  <tr>
+                    <th className="py-2.5 px-3 text-left font-semibold uppercase">Order ID</th>
+                    <th className="py-2.5 px-3 text-left font-semibold uppercase">Strategy</th>
+                    <th className="py-2.5 px-3 text-left font-semibold uppercase">Contract Symbol</th>
+                    <th className="py-2.5 px-3 text-left font-semibold uppercase">Entry Time</th>
+                    <th className="py-2.5 px-3 text-right font-semibold uppercase">Entry Price</th>
+                    <th className="py-2.5 px-3 text-left font-semibold uppercase">Exit Time</th>
+                    <th className="py-2.5 px-3 text-right font-semibold uppercase">Exit Price</th>
+                    <th className="py-2.5 px-3 text-center font-semibold uppercase">Exit Reason</th>
+                    <th className="py-2.5 px-3 text-right font-semibold uppercase">Net P&amp;L</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-subtle font-mono">
+                  {(report?.trades || []).length === 0 ? (
+                    <tr>
+                      <td colSpan="9" className="py-6 text-center text-xs text-faint font-sans">
+                        No individual trades executed for the selected date range.
+                      </td>
+                    </tr>
+                  ) : (
+                    (report?.trades || []).map((t) => {
+                      const pnl = (t.realized_pnl || 0) - (t.entry_charges || 0) - (t.exit_charges || 0);
+                      return (
+                        <tr key={t.order_id} className="hover:bg-surface2/50 transition">
+                          <td className="py-2.5 px-3 text-muted">{t.order_id}</td>
+                          <td className="py-2.5 px-3 font-sans font-medium text-primary">{t.strategy}</td>
+                          <td className="py-2.5 px-3 font-bold text-accent">{t.symbol}</td>
+                          <td className="py-2.5 px-3 text-faint">{t.entry_time ? new Date(t.entry_time).toLocaleString("en-IN") : "—"}</td>
+                          <td className="py-2.5 px-3 text-right text-primary font-medium">{t.entry_price ? fmt(t.entry_price) : "—"}</td>
+                          <td className="py-2.5 px-3 text-faint">{t.exit_time ? new Date(t.exit_time).toLocaleString("en-IN") : "—"}</td>
+                          <td className="py-2.5 px-3 text-right text-primary font-medium">{t.exit_price ? fmt(t.exit_price) : "—"}</td>
+                          <td className="py-2.5 px-3 text-center font-sans">
+                            <span className="inline-block rounded px-1.5 py-0.5 text-[10px] font-bold uppercase bg-surface3 text-muted border border-subtle">
+                              {t.exit_reason || "TSL"}
+                            </span>
+                          </td>
+                          <td className={`py-2.5 px-3 text-right font-bold tabular-nums ${pnlClass(pnl)}`}>
+                            {pnl > 0 ? "+" : ""}{fmt(pnl)}
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       )}
 

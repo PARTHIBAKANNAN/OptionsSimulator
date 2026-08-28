@@ -180,10 +180,12 @@ async def get_pnl_report(request: Request, range: str = "today", start: str = No
     strategies = pnl_service.build_strategy_summary(strategy_names, db_rows, wallets)
     combined = pnl_service.combine_totals(strategies)
     daily_net_pnl = await pnl_service.daily_net_pnl_series(start_date, end_date)
+    trades = await pnl_service.closed_trades_in_range(start_date, end_date)
 
     return {
         "range": {"start": start_date.isoformat(), "end": end_date.isoformat()},
         "strategies": strategies, "combined": combined, "daily_net_pnl": daily_net_pnl,
+        "trades": trades,
     }
 
 
