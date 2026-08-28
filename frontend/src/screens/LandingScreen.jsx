@@ -373,50 +373,73 @@ export function LandingScreen({ onLoginClick }) {
           </motion.div>
 
           {/* Auto-Updating Live Ticker Strip */}
-          <div className="pt-8 max-w-3xl mx-auto space-y-3">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 rounded-2xl border border-subtle bg-surface/80 backdrop-blur-xl shadow-md">
+          <div className="pt-8 max-w-4xl mx-auto space-y-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3 rounded-2xl border border-subtle bg-surface/80 backdrop-blur-xl shadow-md">
               {/* NIFTY Ticker */}
-              <div className="flex items-center justify-between px-4 py-2.5 rounded-xl bg-surface2/60 border border-subtle">
+              <div className="flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-surface2/60 border border-subtle">
                 <div className="text-left">
                   <div className="flex items-center gap-1.5">
-                    <span className="text-[10px] font-bold uppercase text-cyan-400 tracking-wider font-mono">NSE NIFTY 50 (Lot 65)</span>
+                    <span className="text-[10px] font-bold uppercase text-cyan-400 tracking-wider font-mono">NIFTY 50 (Lot 65)</span>
                     <span className="h-1.5 w-1.5 rounded-full bg-cyan-400 animate-ping" />
                   </div>
-                  <div className="font-mono text-lg font-black text-white tabular-nums">
+                  <div className="font-mono text-base sm:text-lg font-black text-white tabular-nums">
                     {fmtNum(marketData?.nifty_price || 24252.00)}
                   </div>
                 </div>
                 <div className="flex items-center gap-1">
-                  <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-bold font-mono border ${
+                  <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold font-mono border ${
                     (marketData?.nifty_change ?? 20.15) >= 0
                       ? "bg-bull/15 text-bull border-bull/30"
                       : "bg-bear/15 text-bear border-bear/30"
                   }`}>
                     {(marketData?.nifty_change ?? 20.15) >= 0 ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
-                    {(marketData?.nifty_change ?? 20.15) >= 0 ? "+" : ""}{fmtNum(marketData?.nifty_change || 20.15)} ({(marketData?.nifty_change ?? 20.15) >= 0 ? "+" : ""}{Number(marketData?.nifty_change_pct || 0.08).toFixed(2)}%)
+                    {(marketData?.nifty_change ?? 20.15) >= 0 ? "+" : ""}{fmtNum(marketData?.nifty_change || 20.15)}
                   </span>
                 </div>
               </div>
 
               {/* SENSEX Ticker */}
-              <div className="flex items-center justify-between px-4 py-2.5 rounded-xl bg-surface2/60 border border-subtle">
+              <div className="flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-surface2/60 border border-subtle">
                 <div className="text-left">
                   <div className="flex items-center gap-1.5">
-                    <span className="text-[10px] font-bold uppercase text-purple-400 tracking-wider font-mono">BSE SENSEX (Lot 20)</span>
+                    <span className="text-[10px] font-bold uppercase text-purple-400 tracking-wider font-mono">SENSEX (Lot 20)</span>
                     <span className="h-1.5 w-1.5 rounded-full bg-purple-400 animate-ping" />
                   </div>
-                  <div className="font-mono text-lg font-black text-white tabular-nums">
+                  <div className="font-mono text-base sm:text-lg font-black text-white tabular-nums">
                     {fmtNum(marketData?.sensex_price || 77540.83)}
                   </div>
                 </div>
                 <div className="flex items-center gap-1">
-                  <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-bold font-mono border ${
+                  <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold font-mono border ${
                     (marketData?.sensex_change ?? 3.11) >= 0
                       ? "bg-bull/15 text-bull border-bull/30"
                       : "bg-bear/15 text-bear border-bear/30"
                   }`}>
                     {(marketData?.sensex_change ?? 3.11) >= 0 ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
-                    {(marketData?.sensex_change ?? 3.11) >= 0 ? "+" : ""}{fmtNum(marketData?.sensex_change || 3.11)} ({(marketData?.sensex_change ?? 3.11) >= 0 ? "+" : ""}{Number(marketData?.sensex_change_pct || 0.00).toFixed(2)}%)
+                    {(marketData?.sensex_change ?? 3.11) >= 0 ? "+" : ""}{fmtNum(marketData?.sensex_change || 3.11)}
+                  </span>
+                </div>
+              </div>
+
+              {/* BANKNIFTY Ticker */}
+              <div className="flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-surface2/60 border border-subtle">
+                <div className="text-left">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[10px] font-bold uppercase text-amber-400 tracking-wider font-mono">BANKNIFTY (Lot 30)</span>
+                    <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-ping" />
+                  </div>
+                  <div className="font-mono text-base sm:text-lg font-black text-white tabular-nums">
+                    {fmtNum(marketData?.banknifty_price || 51240.50)}
+                  </div>
+                </div>
+                <div className="flex items-center gap-1">
+                  <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold font-mono border ${
+                    (marketData?.banknifty_change ?? 60.30) >= 0
+                      ? "bg-bull/15 text-bull border-bull/30"
+                      : "bg-bear/15 text-bear border-bear/30"
+                  }`}>
+                    {(marketData?.banknifty_change ?? 60.30) >= 0 ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
+                    {(marketData?.banknifty_change ?? 60.30) >= 0 ? "+" : ""}{fmtNum(marketData?.banknifty_change || 60.30)}
                   </span>
                 </div>
               </div>
@@ -431,7 +454,7 @@ export function LandingScreen({ onLoginClick }) {
               <span>•</span>
               <span>100% DETERMINISTIC SANDBOX</span>
               <span>•</span>
-              <span className="text-gray-400">SEBI CALENDAR: TUE (NIFTY) / THU (SENSEX)</span>
+              <span className="text-gray-400">SEBI CALENDAR: TUE (NIFTY) / WED (BANKNIFTY) / THU (SENSEX)</span>
             </div>
           </div>
         </div>
