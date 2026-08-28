@@ -111,56 +111,23 @@ export function StrategyRankTable({ title, rows, dailyBreakdown = {}, capitalReq
                     <td className="py-2.5 px-3 text-right">
                       <div className="flex items-center justify-end gap-1.5">
                         <button
-                          onClick={() => setActiveSpecStrategy(r.strategy)}
-                          title="View Quantitative Strategy Formulas & Specifications"
-                          className="flex items-center gap-1 rounded bg-indigo-500/15 text-indigo-400 border border-indigo-500/30 px-2 py-1 text-[11px] font-sans font-bold hover:bg-indigo-500 hover:text-white transition shadow-sm"
+                          onClick={() => setActiveSpecStrategy({
+                            ...r,
+                            capital: capitalRequirements[r.strategy],
+                            daily: dailyBreakdown[r.strategy],
+                          })}
+                          title="View Strategy Overview & Capital Requirements"
+                          className="flex items-center gap-1 rounded bg-indigo-500/15 text-indigo-400 border border-indigo-500/30 px-2.5 py-1 text-[11px] font-sans font-bold hover:bg-indigo-500 hover:text-white transition shadow-sm"
                         >
-                          <BookOpen className="h-3 w-3" /> Specs
+                          <BookOpen className="h-3 w-3" /> Specs &amp; Details
                         </button>
                         <button
                           onClick={() => setActiveModalStrategy(r.strategy)}
-                          className="flex items-center gap-1 rounded bg-accent px-2 py-1 text-[11px] font-sans font-medium text-white hover:bg-accent/90 transition shadow-sm"
+                          className="flex items-center gap-1 rounded bg-accent px-2.5 py-1 text-[11px] font-sans font-medium text-white hover:bg-accent/90 transition shadow-sm"
                         >
                           <BarChart2 className="h-3 w-3" /> Analytics
                         </button>
-                        {hasDetails && (
-                          <button
-                            onClick={() => setExpanded(isOpen ? null : r.strategy)}
-                            className="flex items-center gap-0.5 rounded bg-surface3 px-2 py-1 text-[11px] font-sans font-medium text-muted hover:bg-surface4 hover:text-primary transition"
-                          >
-                            Details
-                            <motion.span animate={{ rotate: isOpen ? 180 : 0 }} transition={{ duration: 0.15 }}>
-                              <ChevronDown className="h-3 w-3" />
-                            </motion.span>
-                          </button>
-                        )}
                       </div>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td colSpan={10} className="p-0">
-                      <AnimatePresence initial={false}>
-                        {isOpen && hasDetails && (
-                          <motion.div
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: "auto", opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            transition={{ duration: 0.2 }}
-                            className="overflow-hidden"
-                          >
-                            <div className="p-3 bg-surface2/80 border-b border-subtle">
-                              {capitalRequirements[r.strategy] && (
-                                <div className="mb-3 grid grid-cols-3 gap-2">
-                                  <CapitalTile label="Trade Margin + Buffer" value={fmtRupee(capitalRequirements[r.strategy].avg_trade_risk)} />
-                                  <CapitalTile label="Max Historical Drawdown" value={fmtRupee(capitalRequirements[r.strategy].max_historical_drawdown)} valueClass="text-bear" />
-                                  <CapitalTile label="Recommended Capital" value={fmtRupee(capitalRequirements[r.strategy].recommended_capital)} valueClass="text-accent" />
-                                </div>
-                              )}
-                              {dailyBreakdown[r.strategy] && <MiniEquityCurve days={dailyBreakdown[r.strategy]} />}
-                            </div>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
                     </td>
                   </tr>
                 </Fragment>
