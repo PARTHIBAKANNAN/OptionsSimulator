@@ -454,7 +454,7 @@ export function LandingScreen({ onLoginClick }) {
               <span>•</span>
               <span>100% DETERMINISTIC SANDBOX</span>
               <span>•</span>
-              <span className="text-gray-400">SEBI CALENDAR: TUE (NIFTY) / WED (BANKNIFTY) / THU (SENSEX)</span>
+              <span className="text-gray-400">SEBI CALENDAR: TUE (NIFTY) / THU (SENSEX) / LAST TUE (BANKNIFTY)</span>
             </div>
           </div>
         </div>
