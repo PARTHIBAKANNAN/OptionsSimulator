@@ -46,7 +46,7 @@ export function ChartModal({
         transition={{ duration: 0.15 }}
       >
         <motion.div
-          className="flex h-[90vh] w-full max-w-7xl flex-col rounded-3xl border border-subtle bg-surface p-4 sm:p-6 shadow-2xl overflow-hidden"
+          className="flex h-[95vh] w-[98vw] max-w-[98vw] flex-col rounded-3xl border border-subtle bg-surface p-3 sm:p-5 shadow-2xl overflow-hidden"
           onClick={(e) => e.stopPropagation()}
           initial={{ opacity: 0, scale: 0.96, y: 15 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -54,7 +54,7 @@ export function ChartModal({
           transition={{ duration: 0.18, ease: "easeOut" }}
         >
           {/* Top Control Header */}
-          <div className="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-subtle pb-3">
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-3 border-b border-subtle pb-3">
             <div className="flex flex-wrap items-center gap-3">
               {/* Index Switcher Tabs */}
               <div className="flex items-center gap-1 rounded-xl bg-surface2 p-1 border border-subtle">
@@ -99,25 +99,12 @@ export function ChartModal({
 
               <span className="hidden md:inline-flex items-center gap-1 rounded-full bg-cyan-500/10 px-2.5 py-0.5 text-[10px] font-bold text-cyan-400 border border-cyan-500/20">
                 <Layers className="h-3 w-3" />
-                EMA 20 (Cyan) • EMA 50 (Orange) • CVD Delta
+                EMA 20 (Cyan) • EMA 50 (Orange)
               </span>
             </div>
 
-            {/* Right: Dual View Toggle & Close */}
+            {/* Right: Close Button */}
             <div className="flex items-center gap-2">
-              <button
-                onClick={() => setDualView(!dualView)}
-                title={dualView ? "Switch to Single Chart" : "Switch to Side-by-Side Dual Charts"}
-                className={`flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold transition border ${
-                  dualView
-                    ? "border-accent/40 bg-accent/15 text-accent shadow-sm"
-                    : "border-subtle bg-surface2 text-faint hover:text-primary"
-                }`}
-              >
-                {dualView ? <Square className="h-3.5 w-3.5" /> : <Columns2 className="h-3.5 w-3.5" />}
-                <span className="hidden sm:inline">{dualView ? "Single View" : "Split Dual View"}</span>
-              </button>
-
               <button
                 onClick={onClose}
                 className="rounded-xl p-1.5 text-faint hover:bg-surface2 hover:text-primary transition"

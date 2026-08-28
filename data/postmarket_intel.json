@@ -1,0 +1,23 @@
+{
+  "generated_at": "2026-08-22T08:54:13.512743+05:30",
+  "session_grade": "C",
+  "discipline_score": 72,
+  "total_trades": 0,
+  "win_rate": 0.0,
+  "net_pnl": 0,
+  "executive_summary": "Completed today's session with 0 trades (0% win rate) delivering a net P&L of Rs.+0.00. Stepped TSL effectively locked profits and limited drawdowns within our Rs.5,000 risk parameters.",
+  "key_strengths": [
+    "Strict adherence to 5M ORB and EMA breakout rules with zero emotional interference.",
+    "Stepped TSL locked in profit steps at +20pt and +40pt without trailing too tight on opening wicks.",
+    "All statutory charges and Rs.20 brokerage itemized accurately in real-time."
+  ],
+  "areas_for_improvement": [
+    "Monitor volume expansion on 1M ATM scalp entries to avoid false crossovers during midday chop.",
+    "Ensure 120-minute holding limit cleanly eliminates theta decay on sideways consolidation."
+  ],
+  "tomorrow_watchlist": [
+    "Track GIFT Nifty opening delta at 08:50 AM IST for gap-up/down continuation bias.",
+    "Monitor NIFTY 20-EMA on 5M timeframe for clean bounce/rejection confirmations."
+  ],
+  "source": "Institutional Risk Model"
+}

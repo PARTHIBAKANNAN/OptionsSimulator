@@ -2,17 +2,6 @@
   {
     "symbol": "BANKNIFTY54200PE",
     "strategy": "BANKNIFTY_MACD_BEARISH_1M_ATM",
-    "entry_price": 311.39107999999993,
-    "entry_time": "2025-08-28T09:20:00",
-    "exit_price": 310.53,
-    "exit_time": "2025-08-28T11:20:00",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -25.832399999998756,
-    "qty": 1
-  },
-  {
-    "symbol": "BANKNIFTY54200PE",
-    "strategy": "BANKNIFTY_MACD_BEARISH_1M_ATM",
     "entry_price": 332.31198,
     "entry_time": "2025-08-28T12:05:00",
     "exit_price": 424.39,
@@ -22,14 +11,14 @@
     "qty": 1
   },
   {
-    "symbol": "BANKNIFTY53700PE",
+    "symbol": "BANKNIFTY53900PE",
     "strategy": "BANKNIFTY_MACD_BEARISH_1M_ATM",
-    "entry_price": 287.36707999999993,
-    "entry_time": "2025-08-29T09:20:00",
-    "exit_price": 229.664,
-    "exit_time": "2025-08-29T10:00:00",
-    "exit_reason": "STOP_LOSS",
-    "realized_pnl": -1731.0923999999982,
+    "entry_price": 307.11681,
+    "entry_time": "2025-08-28T14:35:00",
+    "exit_price": 382.3,
+    "exit_time": "2025-08-29T09:25:00",
+    "exit_reason": "TIME_EXIT",
+    "realized_pnl": 2255.495700000001,
     "qty": 1
   },
   {
@@ -38,7 +27,7 @@
     "entry_price": 273.68341,
     "entry_time": "2025-08-29T14:30:00",
     "exit_price": 218.72800000000004,
-    "exit_time": "2025-09-01T09:20:00",
+    "exit_time": "2025-09-01T09:25:00",
     "exit_reason": "STOP_LOSS",
     "realized_pnl": -1648.6622999999984,
     "qty": 1
@@ -82,7 +71,7 @@
     "entry_price": 307.04674,
     "entry_time": "2025-09-19T14:40:00",
     "exit_price": 245.39200000000002,
-    "exit_time": "2025-09-22T09:20:00",
+    "exit_time": "2025-09-22T09:25:00",
     "exit_reason": "STOP_LOSS",
     "realized_pnl": -1849.6421999999993,
     "qty": 1
@@ -103,10 +92,10 @@
     "strategy": "BANKNIFTY_MACD_BEARISH_1M_ATM",
     "entry_price": 377.88750999999996,
     "entry_time": "2025-09-24T13:50:00",
-    "exit_price": 399.17,
-    "exit_time": "2025-09-25T09:20:00",
+    "exit_price": 394.86,
+    "exit_time": "2025-09-25T09:25:00",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 638.4747000000016,
+    "realized_pnl": 509.1747000000015,
     "qty": 1
   },
   {
@@ -126,7 +115,7 @@
     "entry_price": 300.43012999999996,
     "entry_time": "2025-09-26T13:35:00",
     "exit_price": 240.104,
-    "exit_time": "2025-09-29T09:20:00",
+    "exit_time": "2025-09-29T09:25:00",
     "exit_reason": "STOP_LOSS",
     "realized_pnl": -1809.7838999999985,
     "qty": 1
@@ -159,7 +148,7 @@
     "entry_price": 13.64363,
     "entry_time": "2025-10-21T14:40:00",
     "exit_price": 163.63,
-    "exit_time": "2025-10-23T09:20:00",
+    "exit_time": "2025-10-23T09:25:00",
     "exit_reason": "TAKE_PROFIT",
     "realized_pnl": 4499.5911,
     "qty": 1
@@ -187,17 +176,6 @@
     "qty": 1
   },
   {
-    "symbol": "BANKNIFTY58000PE",
-    "strategy": "BANKNIFTY_MACD_BEARISH_1M_ATM",
-    "entry_price": 84.85476999999999,
-    "entry_time": "2025-10-28T09:20:00",
-    "exit_price": 186.99,
-    "exit_time": "2025-10-28T11:20:00",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 3064.0569000000005,
-    "qty": 1
-  },
-  {
     "symbol": "BANKNIFTY58200PE",
     "strategy": "BANKNIFTY_MACD_BEARISH_1M_ATM",
     "entry_price": 347.52718,
@@ -213,21 +191,21 @@
     "strategy": "BANKNIFTY_MACD_BEARISH_1M_ATM",
     "entry_price": 361.69132999999994,
     "entry_time": "2025-10-30T13:45:00",
-    "exit_price": 449.4,
-    "exit_time": "2025-10-31T09:20:00",
+    "exit_price": 444.86,
+    "exit_time": "2025-10-31T09:25:00",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 2631.2601000000013,
+    "realized_pnl": 2495.0601000000024,
     "qty": 1
   },
   {
-    "symbol": "BANKNIFTY58000PE",
+    "symbol": "BANKNIFTY57900PE",
     "strategy": "BANKNIFTY_MACD_BEARISH_1M_ATM",
-    "entry_price": 339.79945999999995,
-    "entry_time": "2025-10-31T09:20:00",
-    "exit_price": 435.1,
-    "exit_time": "2025-10-31T11:20:00",
+    "entry_price": 301.20089999999993,
+    "entry_time": "2025-10-31T10:35:00",
+    "exit_price": 293.95,
+    "exit_time": "2025-10-31T12:35:00",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 2859.016200000002,
+    "realized_pnl": -217.52699999999834,
     "qty": 1
   },
   {
@@ -236,7 +214,7 @@
     "entry_price": 307.6973899999999,
     "entry_time": "2025-10-31T13:25:00",
     "exit_price": 245.912,
-    "exit_time": "2025-11-03T09:20:00",
+    "exit_time": "2025-11-03T09:25:00",
     "exit_reason": "STOP_LOSS",
     "realized_pnl": -1853.5616999999977,
     "qty": 1
@@ -280,7 +258,7 @@
     "entry_price": 338.50817,
     "entry_time": "2025-11-21T14:25:00",
     "exit_price": 270.536,
-    "exit_time": "2025-11-24T09:20:00",
+    "exit_time": "2025-11-24T09:25:00",
     "exit_reason": "STOP_LOSS",
     "realized_pnl": -2039.1651000000002,
     "qty": 1
@@ -302,7 +280,7 @@
     "entry_price": 151.35119999999998,
     "entry_time": "2025-12-01T14:50:00",
     "exit_price": 301.2,
-    "exit_time": "2025-12-02T09:20:00",
+    "exit_time": "2025-12-02T09:25:00",
     "exit_reason": "TAKE_PROFIT",
     "realized_pnl": 4495.464,
     "qty": 1
@@ -316,17 +294,6 @@
     "exit_time": "2025-12-02T14:05:00",
     "exit_reason": "TIME_EXIT",
     "realized_pnl": 283.80030000000033,
-    "qty": 1
-  },
-  {
-    "symbol": "BANKNIFTY59200PE",
-    "strategy": "BANKNIFTY_MACD_BEARISH_1M_ATM",
-    "entry_price": 394.41401999999994,
-    "entry_time": "2025-12-03T09:20:00",
-    "exit_price": 495.55,
-    "exit_time": "2025-12-03T11:20:00",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 3034.0794000000024,
     "qty": 1
   },
   {
@@ -346,7 +313,7 @@
     "entry_price": 179.03886,
     "entry_time": "2025-12-08T13:30:00",
     "exit_price": 328.86,
-    "exit_time": "2025-12-09T09:20:00",
+    "exit_time": "2025-12-09T09:25:00",
     "exit_reason": "TAKE_PROFIT",
     "realized_pnl": 4494.6342,
     "qty": 1
@@ -411,10 +378,10 @@
     "strategy": "BANKNIFTY_MACD_BEARISH_1M_ATM",
     "entry_price": 348.88854,
     "entry_time": "2026-01-08T14:45:00",
-    "exit_price": 382.91,
-    "exit_time": "2026-01-09T09:20:00",
+    "exit_price": 385.28,
+    "exit_time": "2026-01-09T09:25:00",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 1020.6438000000014,
+    "realized_pnl": 1091.7437999999997,
     "qty": 1
   },
   {
@@ -434,7 +401,7 @@
     "entry_price": 396.64624999999995,
     "entry_time": "2026-01-21T13:45:00",
     "exit_price": 317.0,
-    "exit_time": "2026-01-22T09:20:00",
+    "exit_time": "2026-01-22T09:25:00",
     "exit_reason": "STOP_LOSS",
     "realized_pnl": -2389.3874999999985,
     "qty": 1
@@ -478,7 +445,7 @@
     "entry_price": 339.55922,
     "entry_time": "2026-01-30T14:50:00",
     "exit_price": 271.37600000000003,
-    "exit_time": "2026-02-03T09:20:00",
+    "exit_time": "2026-02-03T09:25:00",
     "exit_reason": "STOP_LOSS",
     "realized_pnl": -2045.4965999999986,
     "qty": 1
@@ -499,10 +466,10 @@
     "strategy": "BANKNIFTY_MACD_BEARISH_1M_ATM",
     "entry_price": 385.69530999999995,
     "entry_time": "2026-02-05T14:05:00",
-    "exit_price": 331.98,
-    "exit_time": "2026-02-06T09:20:00",
+    "exit_price": 335.64,
+    "exit_time": "2026-02-06T09:25:00",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": -1611.459299999998,
+    "realized_pnl": -1501.659299999999,
     "qty": 1
   },
   {
@@ -532,10 +499,10 @@
     "strategy": "BANKNIFTY_MACD_BEARISH_1M_ATM",
     "entry_price": 326.80647999999997,
     "entry_time": "2026-02-13T14:00:00",
-    "exit_price": 372.29,
-    "exit_time": "2026-02-16T09:20:00",
+    "exit_price": 338.11,
+    "exit_time": "2026-02-16T09:25:00",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 1364.5056000000018,
+    "realized_pnl": 339.10560000000146,
     "qty": 1
   },
   {
@@ -543,10 +510,10 @@
     "strategy": "BANKNIFTY_MACD_BEARISH_1M_ATM",
     "entry_price": 387.57719,
     "entry_time": "2026-02-19T14:20:00",
-    "exit_price": 510.76,
-    "exit_time": "2026-02-20T09:20:00",
+    "exit_price": 490.58,
+    "exit_time": "2026-02-20T09:25:00",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 3695.4843000000005,
+    "realized_pnl": 3090.0843000000004,
     "qty": 1
   },
   {
@@ -555,7 +522,7 @@
     "entry_price": 59.399339999999995,
     "entry_time": "2026-02-24T14:55:00",
     "exit_price": 209.34,
-    "exit_time": "2026-02-25T09:20:00",
+    "exit_time": "2026-02-25T09:25:00",
     "exit_reason": "TAKE_PROFIT",
     "realized_pnl": 4498.2198,
     "qty": 1
@@ -566,7 +533,7 @@
     "entry_price": 327.94762,
     "entry_time": "2026-02-27T14:30:00",
     "exit_price": 477.62,
-    "exit_time": "2026-03-02T09:20:00",
+    "exit_time": "2026-03-02T09:25:00",
     "exit_reason": "TAKE_PROFIT",
     "realized_pnl": 4490.171400000001,
     "qty": 1
@@ -599,7 +566,7 @@
     "entry_price": 367.73736999999994,
     "entry_time": "2026-03-11T14:55:00",
     "exit_price": 517.37,
-    "exit_time": "2026-03-12T09:20:00",
+    "exit_time": "2026-03-12T09:25:00",
     "exit_reason": "TAKE_PROFIT",
     "realized_pnl": 4488.978900000002,
     "qty": 1
@@ -621,7 +588,7 @@
     "entry_price": 356.10574999999994,
     "entry_time": "2026-03-12T14:35:00",
     "exit_price": 505.75,
-    "exit_time": "2026-03-13T09:20:00",
+    "exit_time": "2026-03-13T09:25:00",
     "exit_reason": "TAKE_PROFIT",
     "realized_pnl": 4489.327500000001,
     "qty": 1
@@ -643,7 +610,7 @@
     "entry_price": 297.71742,
     "entry_time": "2026-03-13T15:05:00",
     "exit_price": 237.93600000000004,
-    "exit_time": "2026-03-16T09:20:00",
+    "exit_time": "2026-03-16T09:25:00",
     "exit_reason": "STOP_LOSS",
     "realized_pnl": -1793.442599999999,
     "qty": 1
@@ -698,7 +665,7 @@
     "entry_price": 285.22493999999995,
     "entry_time": "2026-03-27T14:10:00",
     "exit_price": 434.94,
-    "exit_time": "2026-03-30T09:20:00",
+    "exit_time": "2026-03-30T09:25:00",
     "exit_reason": "TAKE_PROFIT",
     "realized_pnl": 4491.451800000002,
     "qty": 1
@@ -734,17 +701,6 @@
     "exit_time": "2026-04-23T13:10:00",
     "exit_reason": "TIME_EXIT",
     "realized_pnl": 2524.3860000000004,
-    "qty": 1
-  },
-  {
-    "symbol": "BANKNIFTY56200PE",
-    "strategy": "BANKNIFTY_MACD_BEARISH_1M_ATM",
-    "entry_price": 319.48917,
-    "entry_time": "2026-04-24T09:20:00",
-    "exit_price": 447.43,
-    "exit_time": "2026-04-24T11:20:00",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 3838.2249,
     "qty": 1
   },
   {
@@ -797,7 +753,7 @@
     "entry_price": 50.32027,
     "entry_time": "2026-05-12T13:45:00",
     "exit_price": 200.27,
-    "exit_time": "2026-05-13T09:20:00",
+    "exit_time": "2026-05-13T09:25:00",
     "exit_reason": "TAKE_PROFIT",
     "realized_pnl": 4498.491900000001,
     "qty": 1
@@ -841,7 +797,7 @@
     "entry_price": 285.95567,
     "entry_time": "2026-05-29T14:30:00",
     "exit_price": 228.53600000000003,
-    "exit_time": "2026-06-01T09:20:00",
+    "exit_time": "2026-06-01T09:25:00",
     "exit_reason": "STOP_LOSS",
     "realized_pnl": -1722.590099999999,
     "qty": 1
@@ -869,17 +825,6 @@
     "qty": 1
   },
   {
-    "symbol": "BANKNIFTY54300PE",
-    "strategy": "BANKNIFTY_MACD_BEARISH_1M_ATM",
-    "entry_price": 162.33216999999996,
-    "entry_time": "2026-06-08T09:20:00",
-    "exit_price": 129.736,
-    "exit_time": "2026-06-08T09:25:00",
-    "exit_reason": "STOP_LOSS",
-    "realized_pnl": -977.8850999999992,
-    "qty": 1
-  },
-  {
     "symbol": "BANKNIFTY54100PE",
     "strategy": "BANKNIFTY_MACD_BEARISH_1M_ATM",
     "entry_price": 163.06289999999998,
@@ -891,12 +836,23 @@
     "qty": 1
   },
   {
+    "symbol": "BANKNIFTY54300PE",
+    "strategy": "BANKNIFTY_MACD_BEARISH_1M_ATM",
+    "entry_price": 175.4753,
+    "entry_time": "2026-06-08T13:20:00",
+    "exit_price": 140.24,
+    "exit_time": "2026-06-09T09:25:00",
+    "exit_reason": "STOP_LOSS",
+    "realized_pnl": -1057.0589999999997,
+    "qty": 1
+  },
+  {
     "symbol": "BANKNIFTY55200PE",
     "strategy": "BANKNIFTY_MACD_BEARISH_1M_ATM",
     "entry_price": 317.35704,
     "entry_time": "2026-06-11T14:45:00",
     "exit_price": 253.63200000000003,
-    "exit_time": "2026-06-12T09:20:00",
+    "exit_time": "2026-06-12T09:25:00",
     "exit_reason": "STOP_LOSS",
     "realized_pnl": -1911.7511999999986,
     "qty": 1
@@ -907,7 +863,7 @@
     "entry_price": 161.69152999999997,
     "entry_time": "2026-06-15T15:05:00",
     "exit_price": 129.22400000000002,
-    "exit_time": "2026-06-16T09:20:00",
+    "exit_time": "2026-06-16T09:25:00",
     "exit_reason": "STOP_LOSS",
     "realized_pnl": -974.0258999999986,
     "qty": 1
@@ -940,7 +896,7 @@
     "entry_price": 378.86848999999995,
     "entry_time": "2026-06-17T14:25:00",
     "exit_price": 302.79200000000003,
-    "exit_time": "2026-06-18T09:20:00",
+    "exit_time": "2026-06-18T09:25:00",
     "exit_reason": "STOP_LOSS",
     "realized_pnl": -2282.2946999999976,
     "qty": 1
@@ -984,20 +940,9 @@
     "entry_price": 14.774759999999999,
     "entry_time": "2026-06-23T15:10:00",
     "exit_price": 164.76,
-    "exit_time": "2026-06-24T09:20:00",
+    "exit_time": "2026-06-24T09:25:00",
     "exit_reason": "TAKE_PROFIT",
     "realized_pnl": 4499.5572,
-    "qty": 1
-  },
-  {
-    "symbol": "BANKNIFTY58100PE",
-    "strategy": "BANKNIFTY_MACD_BEARISH_1M_ATM",
-    "entry_price": 174.69451999999998,
-    "entry_time": "2026-06-29T09:20:00",
-    "exit_price": 139.616,
-    "exit_time": "2026-06-29T10:25:00",
-    "exit_reason": "STOP_LOSS",
-    "realized_pnl": -1052.355599999999,
     "qty": 1
   },
   {
@@ -1009,6 +954,17 @@
     "exit_time": "2026-06-29T12:30:00",
     "exit_reason": "TAKE_PROFIT",
     "realized_pnl": 4494.4794,
+    "qty": 1
+  },
+  {
+    "symbol": "BANKNIFTY57800PE",
+    "strategy": "BANKNIFTY_MACD_BEARISH_1M_ATM",
+    "entry_price": 174.30413,
+    "entry_time": "2026-06-29T14:55:00",
+    "exit_price": 139.304,
+    "exit_time": "2026-06-30T09:25:00",
+    "exit_reason": "STOP_LOSS",
+    "realized_pnl": -1050.0038999999995,
     "qty": 1
   },
   {
@@ -1049,10 +1005,10 @@
     "strategy": "BANKNIFTY_MACD_BEARISH_1M_ATM",
     "entry_price": 373.51313999999996,
     "entry_time": "2026-07-02T13:25:00",
-    "exit_price": 328.91,
-    "exit_time": "2026-07-03T09:20:00",
+    "exit_price": 312.78,
+    "exit_time": "2026-07-03T09:25:00",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": -1338.0941999999982,
+    "realized_pnl": -1821.9941999999996,
     "qty": 1
   },
   {
@@ -1072,7 +1028,7 @@
     "entry_price": 9.669659999999999,
     "entry_time": "2026-07-07T15:05:00",
     "exit_price": 159.66,
-    "exit_time": "2026-07-08T09:20:00",
+    "exit_time": "2026-07-08T09:25:00",
     "exit_reason": "TAKE_PROFIT",
     "realized_pnl": 4499.7102,
     "qty": 1
@@ -1259,7 +1215,7 @@
     "entry_price": 176.37619999999998,
     "entry_time": "2026-08-03T15:05:00",
     "exit_price": 140.96,
-    "exit_time": "2026-08-04T09:20:00",
+    "exit_time": "2026-08-04T09:25:00",
     "exit_reason": "STOP_LOSS",
     "realized_pnl": -1062.4859999999992,
     "qty": 1
@@ -1292,7 +1248,7 @@
     "entry_price": 313.79348,
     "entry_time": "2026-08-07T14:50:00",
     "exit_price": 250.78400000000002,
-    "exit_time": "2026-08-10T09:20:00",
+    "exit_time": "2026-08-10T09:25:00",
     "exit_reason": "STOP_LOSS",
     "realized_pnl": -1890.284399999999,
     "qty": 1
@@ -1333,23 +1289,23 @@
   {
     "symbol": "BANKNIFTY57600PE",
     "strategy": "BANKNIFTY_MACD_BEARISH_1M_ATM",
-    "entry_price": 353.4430899999999,
-    "entry_time": "2026-08-13T09:20:00",
-    "exit_price": 360.87,
-    "exit_time": "2026-08-13T11:20:00",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 222.80730000000233,
-    "qty": 1
-  },
-  {
-    "symbol": "BANKNIFTY57600PE",
-    "strategy": "BANKNIFTY_MACD_BEARISH_1M_ATM",
     "entry_price": 342.56221999999997,
     "entry_time": "2026-08-13T12:55:00",
     "exit_price": 356.58,
     "exit_time": "2026-08-13T14:55:00",
     "exit_reason": "TIME_EXIT",
     "realized_pnl": 420.5334000000005,
+    "qty": 1
+  },
+  {
+    "symbol": "BANKNIFTY57600PE",
+    "strategy": "BANKNIFTY_MACD_BEARISH_1M_ATM",
+    "entry_price": 356.93657999999994,
+    "entry_time": "2026-08-13T14:55:00",
+    "exit_price": 370.32,
+    "exit_time": "2026-08-14T09:25:00",
+    "exit_reason": "TIME_EXIT",
+    "realized_pnl": 401.50260000000173,
     "qty": 1
   },
   {
@@ -1424,7 +1380,7 @@
     "entry_price": 335.20486999999997,
     "entry_time": "2026-08-21T13:30:00",
     "exit_price": 267.896,
-    "exit_time": "2026-08-24T09:20:00",
+    "exit_time": "2026-08-24T09:25:00",
     "exit_reason": "STOP_LOSS",
     "realized_pnl": -2019.2660999999987,
     "qty": 1

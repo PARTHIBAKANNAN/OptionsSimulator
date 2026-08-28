@@ -170,7 +170,7 @@
     "entry_price": 458.93847999999997,
     "entry_time": "2025-09-12T14:40:00",
     "exit_price": 366.78400000000005,
-    "exit_time": "2025-09-15T09:20:00",
+    "exit_time": "2025-09-15T09:25:00",
     "exit_reason": "STOP_LOSS",
     "realized_pnl": -2764.6343999999976,
     "qty": 1
@@ -554,10 +554,10 @@
     "strategy": "BANKNIFTY_ORB_BULLISH_5M_ITM",
     "entry_price": 518.7782599999999,
     "entry_time": "2025-10-16T14:00:00",
-    "exit_price": 442.83,
-    "exit_time": "2025-10-17T09:20:00",
+    "exit_price": 453.81,
+    "exit_time": "2025-10-17T09:25:00",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": -2278.4477999999986,
+    "realized_pnl": -1949.047799999998,
     "qty": 1
   },
   {
@@ -665,7 +665,7 @@
     "entry_price": 152.04188999999997,
     "entry_time": "2025-10-28T14:40:00",
     "exit_price": 301.89,
-    "exit_time": "2025-10-29T09:20:00",
+    "exit_time": "2025-10-29T09:25:00",
     "exit_reason": "TAKE_PROFIT",
     "realized_pnl": 4495.443300000001,
     "qty": 1
@@ -687,7 +687,7 @@
     "entry_price": 563.1525899999999,
     "entry_time": "2025-10-29T14:25:00",
     "exit_price": 450.07200000000006,
-    "exit_time": "2025-10-30T09:20:00",
+    "exit_time": "2025-10-30T09:25:00",
     "exit_reason": "STOP_LOSS",
     "realized_pnl": -3392.417699999996,
     "qty": 1
@@ -808,7 +808,7 @@
     "entry_price": 231.04080999999996,
     "entry_time": "2025-11-11T15:05:00",
     "exit_price": 380.81,
-    "exit_time": "2025-11-12T09:20:00",
+    "exit_time": "2025-11-12T09:25:00",
     "exit_reason": "TAKE_PROFIT",
     "realized_pnl": 4493.075700000001,
     "qty": 1
@@ -906,10 +906,10 @@
     "strategy": "BANKNIFTY_ORB_BULLISH_5M_ITM",
     "entry_price": 578.8582799999999,
     "entry_time": "2025-11-19T14:05:00",
-    "exit_price": 653.58,
-    "exit_time": "2025-11-20T09:20:00",
+    "exit_price": 645.07,
+    "exit_time": "2025-11-20T09:25:00",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 2241.651600000004,
+    "realized_pnl": 1986.3516000000038,
     "qty": 1
   },
   {
@@ -929,7 +929,7 @@
     "entry_price": 502.2117099999999,
     "entry_time": "2025-11-20T15:05:00",
     "exit_price": 401.368,
-    "exit_time": "2025-11-21T09:20:00",
+    "exit_time": "2025-11-21T09:25:00",
     "exit_reason": "STOP_LOSS",
     "realized_pnl": -3025.311299999998,
     "qty": 1
@@ -1071,10 +1071,10 @@
     "strategy": "BANKNIFTY_ORB_BULLISH_5M_ITM",
     "entry_price": 577.2566799999998,
     "entry_time": "2025-12-03T14:35:00",
-    "exit_price": 584.74,
-    "exit_time": "2025-12-04T09:20:00",
+    "exit_price": 591.36,
+    "exit_time": "2025-12-04T09:25:00",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 224.49960000000488,
+    "realized_pnl": 423.099600000005,
     "qty": 1
   },
   {
@@ -1236,10 +1236,10 @@
     "strategy": "BANKNIFTY_ORB_BULLISH_5M_ITM",
     "entry_price": 511.32080999999994,
     "entry_time": "2025-12-19T14:00:00",
-    "exit_price": 477.87,
-    "exit_time": "2025-12-22T09:20:00",
+    "exit_price": 484.3,
+    "exit_time": "2025-12-22T09:25:00",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": -1003.524299999998,
+    "realized_pnl": -810.6242999999978,
     "qty": 1
   },
   {
@@ -1544,10 +1544,10 @@
     "strategy": "BANKNIFTY_ORB_BULLISH_5M_ITM",
     "entry_price": 558.5780199999999,
     "entry_time": "2026-01-28T15:10:00",
-    "exit_price": 456.26,
-    "exit_time": "2026-01-29T09:20:00",
+    "exit_price": 461.1,
+    "exit_time": "2026-01-29T09:25:00",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": -3069.540599999998,
+    "realized_pnl": -2924.340599999997,
     "qty": 1
   },
   {
@@ -1622,7 +1622,7 @@
     "entry_price": 495.89539999999994,
     "entry_time": "2026-02-06T14:35:00",
     "exit_price": 645.4,
-    "exit_time": "2026-02-09T09:20:00",
+    "exit_time": "2026-02-09T09:25:00",
     "exit_reason": "TAKE_PROFIT",
     "realized_pnl": 4485.138000000001,
     "qty": 1
@@ -1654,10 +1654,10 @@
     "strategy": "BANKNIFTY_ORB_BULLISH_5M_ITM",
     "entry_price": 596.3157199999999,
     "entry_time": "2026-02-11T14:00:00",
-    "exit_price": 584.0,
-    "exit_time": "2026-02-12T09:20:00",
+    "exit_price": 588.4,
+    "exit_time": "2026-02-12T09:25:00",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": -369.47159999999826,
+    "realized_pnl": -237.47159999999894,
     "qty": 1
   },
   {
@@ -1742,10 +1742,10 @@
     "strategy": "BANKNIFTY_ORB_BULLISH_5M_ITM",
     "entry_price": 562.6020399999999,
     "entry_time": "2026-02-18T13:40:00",
-    "exit_price": 696.8,
-    "exit_time": "2026-02-19T09:20:00",
+    "exit_price": 679.04,
+    "exit_time": "2026-02-19T09:25:00",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 4025.9388000000026,
+    "realized_pnl": 3493.1388000000024,
     "qty": 1
   },
   {
@@ -1809,7 +1809,7 @@
     "entry_price": 534.5740399999999,
     "entry_time": "2026-02-26T15:10:00",
     "exit_price": 427.23199999999997,
-    "exit_time": "2026-02-27T09:20:00",
+    "exit_time": "2026-02-27T09:25:00",
     "exit_reason": "STOP_LOSS",
     "realized_pnl": -3220.2611999999963,
     "qty": 1
@@ -1875,7 +1875,7 @@
     "entry_price": 278.3781,
     "entry_time": "2026-03-09T15:10:00",
     "exit_price": 428.1,
-    "exit_time": "2026-03-10T09:20:00",
+    "exit_time": "2026-03-10T09:25:00",
     "exit_reason": "TAKE_PROFIT",
     "realized_pnl": 4491.657,
     "qty": 1
@@ -1963,7 +1963,7 @@
     "entry_price": 213.88366999999997,
     "entry_time": "2026-03-17T14:25:00",
     "exit_price": 363.66999999999996,
-    "exit_time": "2026-03-18T09:20:00",
+    "exit_time": "2026-03-18T09:25:00",
     "exit_reason": "TAKE_PROFIT",
     "realized_pnl": 4493.5899,
     "qty": 1
@@ -2381,7 +2381,7 @@
     "entry_price": 496.1156199999999,
     "entry_time": "2026-04-30T13:50:00",
     "exit_price": 396.49600000000004,
-    "exit_time": "2026-05-04T09:20:00",
+    "exit_time": "2026-05-04T09:25:00",
     "exit_reason": "STOP_LOSS",
     "realized_pnl": -2988.5885999999964,
     "qty": 1
@@ -2534,10 +2534,10 @@
     "strategy": "BANKNIFTY_ORB_BULLISH_5M_ITM",
     "entry_price": 277.03675999999996,
     "entry_time": "2026-05-18T13:45:00",
-    "exit_price": 304.92,
-    "exit_time": "2026-05-19T09:20:00",
+    "exit_price": 305.26,
+    "exit_time": "2026-05-19T09:25:00",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 836.4972000000017,
+    "realized_pnl": 846.697200000001,
     "qty": 1
   },
   {
@@ -2942,7 +2942,7 @@
     "entry_price": 311.35104,
     "entry_time": "2026-06-22T14:25:00",
     "exit_price": 248.83200000000002,
-    "exit_time": "2026-06-23T09:20:00",
+    "exit_time": "2026-06-23T09:25:00",
     "exit_reason": "STOP_LOSS",
     "realized_pnl": -1875.5711999999996,
     "qty": 1
@@ -3183,10 +3183,10 @@
     "strategy": "BANKNIFTY_ORB_BULLISH_5M_ITM",
     "entry_price": 277.8575799999999,
     "entry_time": "2026-07-20T13:55:00",
-    "exit_price": 304.47,
-    "exit_time": "2026-07-21T09:20:00",
+    "exit_price": 282.59,
+    "exit_time": "2026-07-21T09:25:00",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 798.372600000003,
+    "realized_pnl": 141.97260000000142,
     "qty": 1
   },
   {
@@ -3238,10 +3238,10 @@
     "strategy": "BANKNIFTY_ORB_BULLISH_5M_ITM",
     "entry_price": 526.64612,
     "entry_time": "2026-07-30T15:00:00",
-    "exit_price": 652.26,
-    "exit_time": "2026-07-31T09:20:00",
+    "exit_price": 612.51,
+    "exit_time": "2026-07-31T09:25:00",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 3768.4164,
+    "realized_pnl": 2575.9164,
     "qty": 1
   },
   {
@@ -3305,7 +3305,7 @@
     "entry_price": 545.21467,
     "entry_time": "2026-08-12T14:50:00",
     "exit_price": 435.736,
-    "exit_time": "2026-08-13T09:20:00",
+    "exit_time": "2026-08-13T09:25:00",
     "exit_reason": "STOP_LOSS",
     "realized_pnl": -3284.360099999999,
     "qty": 1
@@ -3338,7 +3338,7 @@
     "entry_price": 286.40612,
     "entry_time": "2026-08-17T14:50:00",
     "exit_price": 228.89600000000002,
-    "exit_time": "2026-08-18T09:20:00",
+    "exit_time": "2026-08-18T09:25:00",
     "exit_reason": "STOP_LOSS",
     "realized_pnl": -1725.3035999999993,
     "qty": 1

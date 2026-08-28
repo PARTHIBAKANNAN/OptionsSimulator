@@ -328,7 +328,7 @@ function StrategyCard({ row, pendingSignal }) {
         )}
       </div>
 
-      {/* 3. Collapsible / Visible Instrument Box */}
+      {/* 3. Collapsible QuantMan Position Panel */}
       <AnimatePresence initial={false}>
         {expanded && hasDetails && (
           <motion.div
@@ -336,22 +336,69 @@ function StrategyCard({ row, pendingSignal }) {
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="overflow-hidden mt-3"
+            className="overflow-hidden mt-3 space-y-3"
           >
-            {row.entry ? (
-              <QuantManInstrumentBox
-                contract={row.entry.contract} qty={row.entry.qty} entryTime={row.entry.entry_time}
-                entryPrice={row.entry.entry_price} ltp={row.entry.ltp} pnl={row.entry.trade_pnl}
-                stopLoss={row.entry.stop_loss} takeProfit={row.entry.take_profit}
-              />
-            ) : (
-              <QuantManInstrumentBox
-                contract={row.last_closed.contract} qty={row.last_closed.qty}
-                entryTime={row.last_closed.entry_time} entryPrice={row.last_closed.entry_price}
-                ltp={row.last_closed.exit_price} pnl={row.last_closed.pnl}
-                stopLoss={row.last_closed.stop_loss} takeProfit={row.last_closed.take_profit}
-                exitTime={row.last_closed.exit_time}
-              />
+            {/* Open Positions Group */}
+            {row.open_positions && row.open_positions.length > 0 && (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-[11px] font-bold tracking-wider text-emerald-400">
+                  <span className="flex items-center gap-1.5">
+                    <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+                    OPEN POSITIONS ({row.open_positions.length})
+                  </span>
+                  <span>Running P&amp;L : {fmtRupee(row.open_positions.reduce((sum, p) => sum + (p.trade_pnl || 0), 0))}</span>
+                </div>
+                {row.open_positions.map((pos, idx) => (
+                  <QuantManInstrumentBox
+                    key={pos.order_id || idx}
+                    contract={pos.contract} qty={pos.qty} entryTime={pos.entry_time}
+                    entryPrice={pos.entry_price} ltp={pos.ltp} pnl={pos.trade_pnl}
+                    stopLoss={pos.stop_loss} takeProfit={pos.take_profit}
+                  />
+                ))}
+              </div>
+            )}
+
+            {/* Closed Positions Group */}
+            {row.closed_positions && row.closed_positions.length > 0 && (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-[11px] font-bold tracking-wider text-faint">
+                  <span className="flex items-center gap-1.5">
+                    <span className="h-2 w-2 rounded-full bg-gray-500" />
+                    CLOSED POSITIONS ({row.closed_positions.length})
+                  </span>
+                  <span>Booked P&amp;L : {fmtRupee(row.closed_positions.reduce((sum, p) => sum + (p.pnl || 0), 0))}</span>
+                </div>
+                {row.closed_positions.map((pos, idx) => (
+                  <QuantManInstrumentBox
+                    key={idx}
+                    contract={pos.contract} qty={pos.qty}
+                    entryTime={pos.entry_time} entryPrice={pos.entry_price}
+                    ltp={pos.exit_price} pnl={pos.pnl}
+                    stopLoss={pos.stop_loss} takeProfit={pos.take_profit}
+                    exitTime={pos.exit_time}
+                  />
+                ))}
+              </div>
+            )}
+
+            {/* Fallback Single Entry/Exit if arrays not passed */}
+            {(!row.open_positions || row.open_positions.length === 0) && (!row.closed_positions || row.closed_positions.length === 0) && (
+              row.entry ? (
+                <QuantManInstrumentBox
+                  contract={row.entry.contract} qty={row.entry.qty} entryTime={row.entry.entry_time}
+                  entryPrice={row.entry.entry_price} ltp={row.entry.ltp} pnl={row.entry.trade_pnl}
+                  stopLoss={row.entry.stop_loss} takeProfit={row.entry.take_profit}
+                />
+              ) : row.last_closed ? (
+                <QuantManInstrumentBox
+                  contract={row.last_closed.contract} qty={row.last_closed.qty}
+                  entryTime={row.last_closed.entry_time} entryPrice={row.last_closed.entry_price}
+                  ltp={row.last_closed.exit_price} pnl={row.last_closed.pnl}
+                  stopLoss={row.last_closed.stop_loss} takeProfit={row.last_closed.take_profit}
+                  exitTime={row.last_closed.exit_time}
+                />
+              ) : null
             )}
           </motion.div>
         )}

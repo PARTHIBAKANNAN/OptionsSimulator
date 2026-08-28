@@ -2,12 +2,12 @@
   {
     "symbol": "BANKNIFTY54400PE",
     "strategy": "BANKNIFTY_RESISTANCE_REJECTION_5M_ITM",
-    "entry_price": 412.9425299999999,
-    "entry_time": "2025-08-28T09:20:00",
-    "exit_price": 411.86,
-    "exit_time": "2025-08-28T11:20:00",
+    "entry_price": 422.83241,
+    "entry_time": "2025-08-28T09:25:00",
+    "exit_price": 414.66,
+    "exit_time": "2025-08-28T11:25:00",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": -32.47589999999718,
+    "realized_pnl": -245.1722999999987,
     "qty": 1
   },
   {
@@ -38,7 +38,7 @@
     "entry_price": 394.94455,
     "entry_time": "2025-08-29T14:40:00",
     "exit_price": 315.64000000000004,
-    "exit_time": "2025-09-01T09:20:00",
+    "exit_time": "2025-09-01T09:25:00",
     "exit_reason": "STOP_LOSS",
     "realized_pnl": -2379.1364999999987,
     "qty": 1
@@ -114,10 +114,10 @@
     "strategy": "BANKNIFTY_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 432.63219999999995,
     "entry_time": "2025-09-04T13:25:00",
-    "exit_price": 377.6,
-    "exit_time": "2025-09-05T09:20:00",
+    "exit_price": 397.96,
+    "exit_time": "2025-09-05T09:25:00",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": -1650.965999999998,
+    "realized_pnl": -1040.1659999999993,
     "qty": 1
   },
   {
@@ -147,10 +147,10 @@
     "strategy": "BANKNIFTY_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 249.27902999999998,
     "entry_time": "2025-09-08T14:00:00",
-    "exit_price": 199.75,
-    "exit_time": "2025-09-09T09:20:00",
+    "exit_price": 209.38,
+    "exit_time": "2025-09-09T09:25:00",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": -1485.8708999999994,
+    "realized_pnl": -1196.9708999999993,
     "qty": 1
   },
   {
@@ -191,10 +191,10 @@
     "strategy": "BANKNIFTY_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 489.99950999999993,
     "entry_time": "2025-09-10T15:05:00",
-    "exit_price": 544.92,
-    "exit_time": "2025-09-11T09:20:00",
+    "exit_price": 536.73,
+    "exit_time": "2025-09-11T09:25:00",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 1647.614700000001,
+    "realized_pnl": 1401.9147000000025,
     "qty": 1
   },
   {
@@ -202,10 +202,10 @@
     "strategy": "BANKNIFTY_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 434.18375,
     "entry_time": "2025-09-11T14:35:00",
-    "exit_price": 353.31,
-    "exit_time": "2025-09-12T09:20:00",
+    "exit_price": 359.12,
+    "exit_time": "2025-09-12T09:25:00",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": -2426.212499999999,
+    "realized_pnl": -2251.912499999999,
     "qty": 1
   },
   {
@@ -225,7 +225,7 @@
     "entry_price": 404.39399,
     "entry_time": "2025-09-12T13:55:00",
     "exit_price": 323.192,
-    "exit_time": "2025-09-15T09:20:00",
+    "exit_time": "2025-09-15T09:25:00",
     "exit_reason": "STOP_LOSS",
     "realized_pnl": -2436.059699999999,
     "qty": 1
@@ -280,7 +280,7 @@
     "entry_price": 413.91349999999994,
     "entry_time": "2025-09-19T14:40:00",
     "exit_price": 330.8,
-    "exit_time": "2025-09-22T09:20:00",
+    "exit_time": "2025-09-22T09:25:00",
     "exit_reason": "STOP_LOSS",
     "realized_pnl": -2493.404999999998,
     "qty": 1
@@ -324,7 +324,7 @@
     "entry_price": 184.56437999999997,
     "entry_time": "2025-09-23T15:05:00",
     "exit_price": 334.38,
-    "exit_time": "2025-09-24T09:20:00",
+    "exit_time": "2025-09-24T09:25:00",
     "exit_reason": "TAKE_PROFIT",
     "realized_pnl": 4494.468600000001,
     "qty": 1
@@ -345,10 +345,10 @@
     "strategy": "BANKNIFTY_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 468.82836,
     "entry_time": "2025-09-24T13:35:00",
-    "exit_price": 515.04,
-    "exit_time": "2025-09-25T09:20:00",
+    "exit_price": 510.03,
+    "exit_time": "2025-09-25T09:25:00",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 1386.3491999999997,
+    "realized_pnl": 1236.0492,
     "qty": 1
   },
   {
@@ -368,7 +368,7 @@
     "entry_price": 460.08962999999994,
     "entry_time": "2025-09-25T14:20:00",
     "exit_price": 609.63,
-    "exit_time": "2025-09-26T09:20:00",
+    "exit_time": "2025-09-26T09:25:00",
     "exit_reason": "TAKE_PROFIT",
     "realized_pnl": 4486.211100000001,
     "qty": 1
@@ -390,7 +390,7 @@
     "entry_price": 387.23685,
     "entry_time": "2025-09-26T13:25:00",
     "exit_price": 309.48,
-    "exit_time": "2025-09-29T09:20:00",
+    "exit_time": "2025-09-29T09:25:00",
     "exit_reason": "STOP_LOSS",
     "realized_pnl": -2332.7054999999996,
     "qty": 1
@@ -434,7 +434,7 @@
     "entry_price": 212.95273999999998,
     "entry_time": "2025-09-30T13:35:00",
     "exit_price": 362.74,
-    "exit_time": "2025-10-01T09:20:00",
+    "exit_time": "2025-10-01T09:25:00",
     "exit_reason": "TAKE_PROFIT",
     "realized_pnl": 4493.617800000001,
     "qty": 1
@@ -445,7 +445,7 @@
     "entry_price": 392.52212999999995,
     "entry_time": "2025-10-03T13:35:00",
     "exit_price": 313.704,
-    "exit_time": "2025-10-06T09:20:00",
+    "exit_time": "2025-10-06T09:25:00",
     "exit_reason": "STOP_LOSS",
     "realized_pnl": -2364.5438999999983,
     "qty": 1
@@ -456,7 +456,7 @@
     "entry_price": 276.17589999999996,
     "entry_time": "2025-10-06T13:45:00",
     "exit_price": 220.72,
-    "exit_time": "2025-10-07T09:20:00",
+    "exit_time": "2025-10-07T09:25:00",
     "exit_reason": "STOP_LOSS",
     "realized_pnl": -1663.6769999999988,
     "qty": 1
@@ -478,7 +478,7 @@
     "entry_price": 164.44428,
     "entry_time": "2025-10-07T15:05:00",
     "exit_price": 314.28,
-    "exit_time": "2025-10-08T09:20:00",
+    "exit_time": "2025-10-08T09:25:00",
     "exit_reason": "TAKE_PROFIT",
     "realized_pnl": 4495.071599999999,
     "qty": 1
@@ -499,10 +499,10 @@
     "strategy": "BANKNIFTY_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 491.44094999999993,
     "entry_time": "2025-10-08T14:25:00",
-    "exit_price": 525.32,
-    "exit_time": "2025-10-09T09:20:00",
+    "exit_price": 528.4,
+    "exit_time": "2025-10-09T09:25:00",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 1016.3715000000036,
+    "realized_pnl": 1108.7715000000014,
     "qty": 1
   },
   {
@@ -532,10 +532,10 @@
     "strategy": "BANKNIFTY_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 430.29986999999994,
     "entry_time": "2025-10-10T14:30:00",
-    "exit_price": 558.83,
-    "exit_time": "2025-10-13T09:20:00",
+    "exit_price": 543.6,
+    "exit_time": "2025-10-13T09:25:00",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 3855.903900000003,
+    "realized_pnl": 3399.0039000000024,
     "qty": 1
   },
   {
@@ -543,10 +543,10 @@
     "strategy": "BANKNIFTY_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 261.08081999999996,
     "entry_time": "2025-10-13T13:50:00",
-    "exit_price": 256.07,
-    "exit_time": "2025-10-14T09:20:00",
+    "exit_price": 257.38,
+    "exit_time": "2025-10-14T09:25:00",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": -150.324599999999,
+    "realized_pnl": -111.02459999999894,
     "qty": 1
   },
   {
@@ -577,7 +577,7 @@
     "entry_price": 481.6011199999999,
     "entry_time": "2025-10-15T14:05:00",
     "exit_price": 384.896,
-    "exit_time": "2025-10-16T09:20:00",
+    "exit_time": "2025-10-16T09:25:00",
     "exit_reason": "STOP_LOSS",
     "realized_pnl": -2901.1535999999974,
     "qty": 1
@@ -609,10 +609,10 @@
     "strategy": "BANKNIFTY_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 227.77755,
     "entry_time": "2025-10-21T14:20:00",
-    "exit_price": 337.58,
-    "exit_time": "2025-10-23T09:20:00",
+    "exit_price": 328.54,
+    "exit_time": "2025-10-23T09:25:00",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 3294.0735,
+    "realized_pnl": 3022.873500000001,
     "qty": 1
   },
   {
@@ -631,10 +631,10 @@
     "strategy": "BANKNIFTY_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 481.90142,
     "entry_time": "2025-10-23T14:05:00",
-    "exit_price": 510.37,
-    "exit_time": "2025-10-24T09:20:00",
+    "exit_price": 520.26,
+    "exit_time": "2025-10-24T09:25:00",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 854.0574000000009,
+    "realized_pnl": 1150.7574000000004,
     "qty": 1
   },
   {
@@ -697,10 +697,10 @@
     "strategy": "BANKNIFTY_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 501.42091999999997,
     "entry_time": "2025-10-29T14:55:00",
-    "exit_price": 602.23,
-    "exit_time": "2025-10-30T09:20:00",
+    "exit_price": 595.61,
+    "exit_time": "2025-10-30T09:25:00",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 3024.2724000000017,
+    "realized_pnl": 2825.6724000000013,
     "qty": 1
   },
   {
@@ -719,10 +719,10 @@
     "strategy": "BANKNIFTY_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 450.7202699999999,
     "entry_time": "2025-10-30T13:30:00",
-    "exit_price": 577.41,
-    "exit_time": "2025-10-31T09:20:00",
+    "exit_price": 572.19,
+    "exit_time": "2025-10-31T09:25:00",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 3800.6919000000016,
+    "realized_pnl": 3644.091900000004,
     "qty": 1
   },
   {
@@ -752,10 +752,10 @@
     "strategy": "BANKNIFTY_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 314.67436,
     "entry_time": "2025-11-03T14:40:00",
-    "exit_price": 436.54,
-    "exit_time": "2025-11-04T09:20:00",
+    "exit_price": 440.71,
+    "exit_time": "2025-11-04T09:25:00",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 3655.9692000000014,
+    "realized_pnl": 3781.0692,
     "qty": 1
   },
   {
@@ -829,10 +829,10 @@
     "strategy": "BANKNIFTY_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 278.20793,
     "entry_time": "2025-11-10T14:00:00",
-    "exit_price": 262.52,
-    "exit_time": "2025-11-11T09:20:00",
+    "exit_price": 282.77,
+    "exit_time": "2025-11-11T09:25:00",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": -470.63789999999983,
+    "realized_pnl": 136.86210000000017,
     "qty": 1
   },
   {
@@ -873,10 +873,10 @@
     "strategy": "BANKNIFTY_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 461.52106,
     "entry_time": "2025-11-12T14:10:00",
-    "exit_price": 507.94,
-    "exit_time": "2025-11-13T09:20:00",
+    "exit_price": 493.61,
+    "exit_time": "2025-11-13T09:25:00",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 1392.5682000000006,
+    "realized_pnl": 962.6682000000011,
     "qty": 1
   },
   {
@@ -885,7 +885,7 @@
     "entry_price": 484.37388999999996,
     "entry_time": "2025-11-13T13:20:00",
     "exit_price": 633.89,
-    "exit_time": "2025-11-14T09:20:00",
+    "exit_time": "2025-11-14T09:25:00",
     "exit_reason": "TAKE_PROFIT",
     "realized_pnl": 4485.483300000001,
     "qty": 1
@@ -907,7 +907,7 @@
     "entry_price": 310.52020999999996,
     "entry_time": "2025-11-17T14:55:00",
     "exit_price": 248.168,
-    "exit_time": "2025-11-18T09:20:00",
+    "exit_time": "2025-11-18T09:25:00",
     "exit_reason": "STOP_LOSS",
     "realized_pnl": -1870.5662999999986,
     "qty": 1
@@ -929,7 +929,7 @@
     "entry_price": 180.86067999999997,
     "entry_time": "2025-11-18T14:30:00",
     "exit_price": 330.68,
-    "exit_time": "2025-11-19T09:20:00",
+    "exit_time": "2025-11-19T09:25:00",
     "exit_reason": "TAKE_PROFIT",
     "realized_pnl": 4494.579600000001,
     "qty": 1
@@ -961,10 +961,10 @@
     "strategy": "BANKNIFTY_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 490.87037999999995,
     "entry_time": "2025-11-20T15:05:00",
-    "exit_price": 616.62,
-    "exit_time": "2025-11-21T09:20:00",
+    "exit_price": 624.55,
+    "exit_time": "2025-11-21T09:25:00",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 3772.4886000000015,
+    "realized_pnl": 4010.3886,
     "qty": 1
   },
   {
@@ -984,7 +984,7 @@
     "entry_price": 446.9565099999999,
     "entry_time": "2025-11-21T14:25:00",
     "exit_price": 357.208,
-    "exit_time": "2025-11-24T09:20:00",
+    "exit_time": "2025-11-24T09:25:00",
     "exit_reason": "STOP_LOSS",
     "realized_pnl": -2692.455299999997,
     "qty": 1
@@ -1005,10 +1005,10 @@
     "strategy": "BANKNIFTY_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 284.84455999999994,
     "entry_time": "2025-11-24T14:45:00",
-    "exit_price": 267.16,
-    "exit_time": "2025-11-25T09:20:00",
+    "exit_price": 259.63,
+    "exit_time": "2025-11-25T09:25:00",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": -530.5367999999976,
+    "realized_pnl": -756.4367999999985,
     "qty": 1
   },
   {
@@ -1148,10 +1148,10 @@
     "strategy": "BANKNIFTY_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 482.79230999999993,
     "entry_time": "2025-12-04T13:45:00",
-    "exit_price": 430.26,
-    "exit_time": "2025-12-05T09:20:00",
+    "exit_price": 409.9,
+    "exit_time": "2025-12-05T09:25:00",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": -1575.9692999999982,
+    "realized_pnl": -2186.7692999999986,
     "qty": 1
   },
   {
@@ -1204,7 +1204,7 @@
     "entry_price": 246.58633999999998,
     "entry_time": "2025-12-09T14:35:00",
     "exit_price": 396.34000000000003,
-    "exit_time": "2025-12-10T09:20:00",
+    "exit_time": "2025-12-10T09:25:00",
     "exit_reason": "TAKE_PROFIT",
     "realized_pnl": 4492.609800000002,
     "qty": 1
@@ -1248,7 +1248,7 @@
     "entry_price": 461.38091999999995,
     "entry_time": "2025-12-11T14:50:00",
     "exit_price": 368.73600000000005,
-    "exit_time": "2025-12-12T09:20:00",
+    "exit_time": "2025-12-12T09:25:00",
     "exit_reason": "STOP_LOSS",
     "realized_pnl": -2779.347599999997,
     "qty": 1
@@ -1269,10 +1269,10 @@
     "strategy": "BANKNIFTY_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 305.22492,
     "entry_time": "2025-12-15T13:50:00",
-    "exit_price": 407.55,
-    "exit_time": "2025-12-16T09:20:00",
+    "exit_price": 423.35,
+    "exit_time": "2025-12-16T09:25:00",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 3069.7524000000003,
+    "realized_pnl": 3543.7524000000008,
     "qty": 1
   },
   {
@@ -1390,10 +1390,10 @@
     "strategy": "BANKNIFTY_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 493.1326399999999,
     "entry_time": "2025-12-24T14:10:00",
-    "exit_price": 490.53,
-    "exit_time": "2025-12-26T09:20:00",
+    "exit_price": 489.37,
+    "exit_time": "2025-12-26T09:25:00",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": -78.07919999999854,
+    "realized_pnl": -112.87919999999758,
     "qty": 1
   },
   {
@@ -1445,10 +1445,10 @@
     "strategy": "BANKNIFTY_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 510.77025999999995,
     "entry_time": "2025-12-31T14:35:00",
-    "exit_price": 482.39,
-    "exit_time": "2026-01-01T09:20:00",
+    "exit_price": 483.12,
+    "exit_time": "2026-01-01T09:25:00",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": -851.4077999999989,
+    "realized_pnl": -829.5077999999984,
     "qty": 1
   },
   {
@@ -1467,10 +1467,10 @@
     "strategy": "BANKNIFTY_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 468.39793,
     "entry_time": "2026-01-01T14:55:00",
-    "exit_price": 387.55,
-    "exit_time": "2026-01-02T09:20:00",
+    "exit_price": 375.23,
+    "exit_time": "2026-01-02T09:25:00",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": -2425.437899999999,
+    "realized_pnl": -2795.0378999999984,
     "qty": 1
   },
   {
@@ -1544,10 +1544,10 @@
     "strategy": "BANKNIFTY_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 441.85141,
     "entry_time": "2026-01-08T14:35:00",
-    "exit_price": 498.46,
-    "exit_time": "2026-01-09T09:20:00",
+    "exit_price": 501.23,
+    "exit_time": "2026-01-09T09:25:00",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 1698.2576999999997,
+    "realized_pnl": 1781.357700000001,
     "qty": 1
   },
   {
@@ -1599,10 +1599,10 @@
     "strategy": "BANKNIFTY_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 516.58607,
     "entry_time": "2026-01-14T13:50:00",
-    "exit_price": 473.69,
-    "exit_time": "2026-01-16T09:20:00",
+    "exit_price": 451.25,
+    "exit_time": "2026-01-16T09:25:00",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": -1286.8820999999984,
+    "realized_pnl": -1960.0820999999985,
     "qty": 1
   },
   {
@@ -1617,25 +1617,25 @@
     "qty": 1
   },
   {
-    "symbol": "BANKNIFTY60300PE",
+    "symbol": "BANKNIFTY60200PE",
     "strategy": "BANKNIFTY_RESISTANCE_REJECTION_5M_ITM",
-    "entry_price": 317.23692,
-    "entry_time": "2026-01-19T09:20:00",
-    "exit_price": 466.92,
-    "exit_time": "2026-01-19T09:50:00",
+    "entry_price": 275.42515,
+    "entry_time": "2026-01-19T09:25:00",
+    "exit_price": 425.15,
+    "exit_time": "2026-01-19T09:55:00",
     "exit_reason": "TAKE_PROFIT",
-    "realized_pnl": 4490.492400000001,
+    "realized_pnl": 4491.7455,
     "qty": 1
   },
   {
     "symbol": "BANKNIFTY60000PE",
     "strategy": "BANKNIFTY_RESISTANCE_REJECTION_5M_ITM",
-    "entry_price": 270.32005,
-    "entry_time": "2026-01-19T09:50:00",
-    "exit_price": 317.21,
-    "exit_time": "2026-01-19T11:50:00",
+    "entry_price": 295.87557999999996,
+    "entry_time": "2026-01-19T09:55:00",
+    "exit_price": 314.34,
+    "exit_time": "2026-01-19T11:55:00",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 1406.6985,
+    "realized_pnl": 553.9326000000005,
     "qty": 1
   },
   {
@@ -1886,7 +1886,7 @@
     "entry_price": 160.09993999999998,
     "entry_time": "2026-02-10T13:25:00",
     "exit_price": 309.94,
-    "exit_time": "2026-02-11T09:20:00",
+    "exit_time": "2026-02-11T09:25:00",
     "exit_reason": "TAKE_PROFIT",
     "realized_pnl": 4495.201800000001,
     "qty": 1
@@ -1918,10 +1918,10 @@
     "strategy": "BANKNIFTY_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 486.86637999999994,
     "entry_time": "2026-02-12T14:30:00",
-    "exit_price": 629.82,
-    "exit_time": "2026-02-13T09:20:00",
+    "exit_price": 635.01,
+    "exit_time": "2026-02-13T09:25:00",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 4288.608600000003,
+    "realized_pnl": 4444.308600000002,
     "qty": 1
   },
   {
@@ -1940,10 +1940,10 @@
     "strategy": "BANKNIFTY_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 415.21479999999997,
     "entry_time": "2026-02-13T13:30:00",
-    "exit_price": 536.73,
-    "exit_time": "2026-02-16T09:20:00",
+    "exit_price": 496.88,
+    "exit_time": "2026-02-16T09:25:00",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 3645.4560000000015,
+    "realized_pnl": 2449.956000000001,
     "qty": 1
   },
   {
@@ -1996,7 +1996,7 @@
     "entry_price": 450.0896399999999,
     "entry_time": "2026-02-20T15:05:00",
     "exit_price": 359.712,
-    "exit_time": "2026-02-23T09:20:00",
+    "exit_time": "2026-02-23T09:25:00",
     "exit_reason": "STOP_LOSS",
     "realized_pnl": -2711.329199999998,
     "qty": 1
@@ -2139,7 +2139,7 @@
     "entry_price": 473.07259999999997,
     "entry_time": "2026-03-04T14:45:00",
     "exit_price": 378.08000000000004,
-    "exit_time": "2026-03-05T09:20:00",
+    "exit_time": "2026-03-05T09:25:00",
     "exit_reason": "STOP_LOSS",
     "realized_pnl": -2849.7779999999975,
     "qty": 1
@@ -2160,10 +2160,10 @@
     "strategy": "BANKNIFTY_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 475.95547999999997,
     "entry_time": "2026-03-05T13:30:00",
-    "exit_price": 529.31,
-    "exit_time": "2026-03-06T09:20:00",
+    "exit_price": 541.34,
+    "exit_time": "2026-03-06T09:25:00",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 1600.6355999999994,
+    "realized_pnl": 1961.535600000002,
     "qty": 1
   },
   {
@@ -2205,7 +2205,7 @@
     "entry_price": 231.50126999999998,
     "entry_time": "2026-03-10T14:55:00",
     "exit_price": 381.27,
-    "exit_time": "2026-03-11T09:20:00",
+    "exit_time": "2026-03-11T09:25:00",
     "exit_reason": "TAKE_PROFIT",
     "realized_pnl": 4493.061900000001,
     "qty": 1
@@ -2249,7 +2249,7 @@
     "entry_price": 448.7182699999999,
     "entry_time": "2026-03-12T14:30:00",
     "exit_price": 598.27,
-    "exit_time": "2026-03-13T09:20:00",
+    "exit_time": "2026-03-13T09:25:00",
     "exit_reason": "TAKE_PROFIT",
     "realized_pnl": 4486.551900000002,
     "qty": 1
@@ -2402,10 +2402,10 @@
     "strategy": "BANKNIFTY_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 206.56636,
     "entry_time": "2026-03-24T14:40:00",
-    "exit_price": 267.25,
-    "exit_time": "2026-03-25T09:20:00",
+    "exit_price": 243.32,
+    "exit_time": "2026-03-25T09:25:00",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 1820.5092,
+    "realized_pnl": 1102.6091999999996,
     "qty": 1
   },
   {
@@ -2425,7 +2425,7 @@
     "entry_price": 479.68920999999995,
     "entry_time": "2026-03-25T14:50:00",
     "exit_price": 629.21,
-    "exit_time": "2026-03-27T09:20:00",
+    "exit_time": "2026-03-27T09:25:00",
     "exit_reason": "TAKE_PROFIT",
     "realized_pnl": 4485.623700000003,
     "qty": 1
@@ -2623,7 +2623,7 @@
     "entry_price": 471.72124999999994,
     "entry_time": "2026-04-22T13:30:00",
     "exit_price": 621.25,
-    "exit_time": "2026-04-23T09:20:00",
+    "exit_time": "2026-04-23T09:25:00",
     "exit_reason": "TAKE_PROFIT",
     "realized_pnl": 4485.862500000002,
     "qty": 1
@@ -2689,7 +2689,7 @@
     "entry_price": 277.14687,
     "entry_time": "2026-04-27T15:05:00",
     "exit_price": 426.87,
-    "exit_time": "2026-04-28T09:20:00",
+    "exit_time": "2026-04-28T09:25:00",
     "exit_reason": "TAKE_PROFIT",
     "realized_pnl": 4491.693900000001,
     "qty": 1
@@ -2744,7 +2744,7 @@
     "entry_price": 458.23777999999993,
     "entry_time": "2026-04-30T14:50:00",
     "exit_price": 366.224,
-    "exit_time": "2026-05-04T09:20:00",
+    "exit_time": "2026-05-04T09:25:00",
     "exit_reason": "STOP_LOSS",
     "realized_pnl": -2760.413399999998,
     "qty": 1
@@ -2831,10 +2831,10 @@
     "strategy": "BANKNIFTY_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 471.02054999999996,
     "entry_time": "2026-05-07T14:30:00",
-    "exit_price": 620.46,
-    "exit_time": "2026-05-08T09:20:00",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 4483.183500000003,
+    "exit_price": 620.55,
+    "exit_time": "2026-05-08T09:25:00",
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 4485.8835,
     "qty": 1
   },
   {
@@ -2854,7 +2854,7 @@
     "entry_price": 388.5381499999999,
     "entry_time": "2026-05-08T13:45:00",
     "exit_price": 538.15,
-    "exit_time": "2026-05-11T09:20:00",
+    "exit_time": "2026-05-11T09:25:00",
     "exit_reason": "TAKE_PROFIT",
     "realized_pnl": 4488.3555000000015,
     "qty": 1
@@ -2941,10 +2941,10 @@
     "strategy": "BANKNIFTY_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 454.53407999999996,
     "entry_time": "2026-05-14T14:30:00",
-    "exit_price": 450.01,
-    "exit_time": "2026-05-15T09:20:00",
+    "exit_price": 452.73,
+    "exit_time": "2026-05-15T09:25:00",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": -135.72239999999908,
+    "realized_pnl": -54.122399999998265,
     "qty": 1
   },
   {
@@ -3041,7 +3041,7 @@
     "entry_price": 402.9025,
     "entry_time": "2026-05-22T13:50:00",
     "exit_price": 322.0,
-    "exit_time": "2026-05-25T09:20:00",
+    "exit_time": "2026-05-25T09:25:00",
     "exit_reason": "STOP_LOSS",
     "realized_pnl": -2427.0749999999994,
     "qty": 1
@@ -3326,21 +3326,10 @@
     "strategy": "BANKNIFTY_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 306.02572,
     "entry_time": "2026-06-15T14:50:00",
-    "exit_price": 297.83,
-    "exit_time": "2026-06-16T09:20:00",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -245.87159999999983,
-    "qty": 1
-  },
-  {
-    "symbol": "BANKNIFTY57400PE",
-    "strategy": "BANKNIFTY_RESISTANCE_REJECTION_5M_ITM",
-    "entry_price": 211.29108,
-    "entry_time": "2026-06-16T09:20:00",
-    "exit_price": 168.86400000000003,
+    "exit_price": 244.57600000000002,
     "exit_time": "2026-06-16T09:25:00",
     "exit_reason": "STOP_LOSS",
-    "realized_pnl": -1272.812399999999,
+    "realized_pnl": -1843.4915999999987,
     "qty": 1
   },
   {
@@ -3357,12 +3346,23 @@
   {
     "symbol": "BANKNIFTY57400PE",
     "strategy": "BANKNIFTY_RESISTANCE_REJECTION_5M_ITM",
-    "entry_price": 466.45599,
-    "entry_time": "2026-06-17T09:20:00",
-    "exit_price": 372.79200000000003,
-    "exit_time": "2026-06-17T10:15:00",
+    "entry_price": 219.50928999999996,
+    "entry_time": "2026-06-16T10:55:00",
+    "exit_price": 271.65,
+    "exit_time": "2026-06-16T12:55:00",
+    "exit_reason": "TIME_EXIT",
+    "realized_pnl": 1564.2213000000004,
+    "qty": 1
+  },
+  {
+    "symbol": "BANKNIFTY57500PE",
+    "strategy": "BANKNIFTY_RESISTANCE_REJECTION_5M_ITM",
+    "entry_price": 500.01951999999994,
+    "entry_time": "2026-06-17T10:00:00",
+    "exit_price": 399.616,
+    "exit_time": "2026-06-17T10:20:00",
     "exit_reason": "STOP_LOSS",
-    "realized_pnl": -2809.9196999999986,
+    "realized_pnl": -3012.105599999999,
     "qty": 1
   },
   {
@@ -3392,10 +3392,10 @@
     "strategy": "BANKNIFTY_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 471.6611899999999,
     "entry_time": "2026-06-18T13:20:00",
-    "exit_price": 579.41,
-    "exit_time": "2026-06-19T09:20:00",
+    "exit_price": 594.26,
+    "exit_time": "2026-06-19T09:25:00",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 3232.4643000000015,
+    "realized_pnl": 3677.9643000000024,
     "qty": 1
   },
   {
@@ -3415,7 +3415,7 @@
     "entry_price": 416.35594,
     "entry_time": "2026-06-19T14:50:00",
     "exit_price": 332.752,
-    "exit_time": "2026-06-22T09:20:00",
+    "exit_time": "2026-06-22T09:25:00",
     "exit_reason": "STOP_LOSS",
     "realized_pnl": -2508.118199999999,
     "qty": 1
@@ -3481,7 +3481,7 @@
     "entry_price": 511.56104999999997,
     "entry_time": "2026-06-24T15:05:00",
     "exit_price": 408.84000000000003,
-    "exit_time": "2026-06-25T09:20:00",
+    "exit_time": "2026-06-25T09:25:00",
     "exit_reason": "STOP_LOSS",
     "realized_pnl": -3081.631499999998,
     "qty": 1
@@ -3500,17 +3500,6 @@
   {
     "symbol": "BANKNIFTY58300PE",
     "strategy": "BANKNIFTY_RESISTANCE_REJECTION_5M_ITM",
-    "entry_price": 295.14484999999996,
-    "entry_time": "2026-06-29T09:20:00",
-    "exit_price": 235.88000000000002,
-    "exit_time": "2026-06-29T10:25:00",
-    "exit_reason": "STOP_LOSS",
-    "realized_pnl": -1777.9454999999982,
-    "qty": 1
-  },
-  {
-    "symbol": "BANKNIFTY58300PE",
-    "strategy": "BANKNIFTY_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 296.42612999999994,
     "entry_time": "2026-06-29T10:50:00",
     "exit_price": 446.13,
@@ -3520,14 +3509,25 @@
     "qty": 1
   },
   {
-    "symbol": "BANKNIFTY58000PE",
+    "symbol": "BANKNIFTY57900PE",
     "strategy": "BANKNIFTY_RESISTANCE_REJECTION_5M_ITM",
-    "entry_price": 246.83658999999997,
-    "entry_time": "2026-06-30T09:20:00",
-    "exit_price": 197.27200000000002,
-    "exit_time": "2026-06-30T10:00:00",
+    "entry_price": 249.57933,
+    "entry_time": "2026-06-29T13:30:00",
+    "exit_price": 199.46400000000003,
+    "exit_time": "2026-06-29T14:00:00",
     "exit_reason": "STOP_LOSS",
-    "realized_pnl": -1486.9376999999986,
+    "realized_pnl": -1503.4598999999992,
+    "qty": 1
+  },
+  {
+    "symbol": "BANKNIFTY57900PE",
+    "strategy": "BANKNIFTY_RESISTANCE_REJECTION_5M_ITM",
+    "entry_price": 186.4863,
+    "entry_time": "2026-06-30T09:25:00",
+    "exit_price": 149.04000000000002,
+    "exit_time": "2026-06-30T09:55:00",
+    "exit_reason": "STOP_LOSS",
+    "realized_pnl": -1123.3889999999994,
     "qty": 1
   },
   {
@@ -3712,7 +3712,7 @@
     "entry_price": 447.04659999999996,
     "entry_time": "2026-07-10T14:40:00",
     "exit_price": 596.6,
-    "exit_time": "2026-07-13T09:20:00",
+    "exit_time": "2026-07-13T09:25:00",
     "exit_reason": "TAKE_PROFIT",
     "realized_pnl": 4486.602000000002,
     "qty": 1
@@ -3777,21 +3777,21 @@
     "strategy": "BANKNIFTY_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 492.42193,
     "entry_time": "2026-07-15T14:15:00",
-    "exit_price": 461.41,
-    "exit_time": "2026-07-16T09:20:00",
+    "exit_price": 470.75,
+    "exit_time": "2026-07-16T09:25:00",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": -930.3578999999985,
+    "realized_pnl": -650.1578999999992,
     "qty": 1
   },
   {
     "symbol": "BANKNIFTY57900PE",
     "strategy": "BANKNIFTY_RESISTANCE_REJECTION_5M_ITM",
-    "entry_price": 461.87140999999997,
-    "entry_time": "2026-07-16T09:20:00",
-    "exit_price": 465.36,
-    "exit_time": "2026-07-16T11:20:00",
+    "entry_price": 482.91243,
+    "entry_time": "2026-07-16T09:35:00",
+    "exit_price": 457.31,
+    "exit_time": "2026-07-16T11:35:00",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 104.65770000000134,
+    "realized_pnl": -768.0728999999991,
     "qty": 1
   },
   {
@@ -3833,7 +3833,7 @@
     "entry_price": 259.72947,
     "entry_time": "2026-07-20T15:00:00",
     "exit_price": 207.57600000000002,
-    "exit_time": "2026-07-21T09:20:00",
+    "exit_time": "2026-07-21T09:25:00",
     "exit_reason": "STOP_LOSS",
     "realized_pnl": -1564.604099999999,
     "qty": 1
@@ -3898,10 +3898,10 @@
     "strategy": "BANKNIFTY_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 460.77030999999994,
     "entry_time": "2026-07-23T14:40:00",
-    "exit_price": 558.35,
-    "exit_time": "2026-07-24T09:20:00",
+    "exit_price": 585.74,
+    "exit_time": "2026-07-24T09:25:00",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 2927.3907000000027,
+    "realized_pnl": 3749.090700000002,
     "qty": 1
   },
   {
@@ -3921,7 +3921,7 @@
     "entry_price": 424.24381999999997,
     "entry_time": "2026-07-24T14:40:00",
     "exit_price": 339.05600000000004,
-    "exit_time": "2026-07-27T09:20:00",
+    "exit_time": "2026-07-27T09:25:00",
     "exit_reason": "STOP_LOSS",
     "realized_pnl": -2555.634599999998,
     "qty": 1
@@ -3986,10 +3986,10 @@
     "strategy": "BANKNIFTY_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 472.5721,
     "entry_time": "2026-07-29T15:00:00",
-    "exit_price": 610.03,
-    "exit_time": "2026-07-30T09:20:00",
+    "exit_price": 605.89,
+    "exit_time": "2026-07-30T09:25:00",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 4123.737,
+    "realized_pnl": 3999.5370000000003,
     "qty": 1
   },
   {
@@ -4009,7 +4009,7 @@
     "entry_price": 458.57811999999996,
     "entry_time": "2026-07-30T13:45:00",
     "exit_price": 366.49600000000004,
-    "exit_time": "2026-07-31T09:20:00",
+    "exit_time": "2026-07-31T09:25:00",
     "exit_reason": "STOP_LOSS",
     "realized_pnl": -2762.4635999999973,
     "qty": 1
@@ -4031,7 +4031,7 @@
     "entry_price": 428.68825999999996,
     "entry_time": "2026-07-31T14:00:00",
     "exit_price": 342.608,
-    "exit_time": "2026-08-03T09:20:00",
+    "exit_time": "2026-08-03T09:25:00",
     "exit_reason": "STOP_LOSS",
     "realized_pnl": -2582.4077999999986,
     "qty": 1
@@ -4053,7 +4053,7 @@
     "entry_price": 271.72144999999995,
     "entry_time": "2026-08-03T15:00:00",
     "exit_price": 217.16,
-    "exit_time": "2026-08-04T09:20:00",
+    "exit_time": "2026-08-04T09:25:00",
     "exit_reason": "STOP_LOSS",
     "realized_pnl": -1636.8434999999986,
     "qty": 1
@@ -4097,7 +4097,7 @@
     "entry_price": 461.21074999999996,
     "entry_time": "2026-08-05T13:50:00",
     "exit_price": 368.6,
-    "exit_time": "2026-08-06T09:20:00",
+    "exit_time": "2026-08-06T09:25:00",
     "exit_reason": "STOP_LOSS",
     "realized_pnl": -2778.3224999999984,
     "qty": 1
@@ -4173,10 +4173,10 @@
     "strategy": "BANKNIFTY_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 231.12088999999997,
     "entry_time": "2026-08-11T14:25:00",
-    "exit_price": 380.89,
-    "exit_time": "2026-08-12T09:20:00",
-    "exit_reason": "TAKE_PROFIT",
-    "realized_pnl": 4493.0733,
+    "exit_price": 331.4,
+    "exit_time": "2026-08-12T09:25:00",
+    "exit_reason": "TIME_EXIT",
+    "realized_pnl": 3008.3733,
     "qty": 1
   },
   {
@@ -4312,17 +4312,6 @@
     "qty": 1
   },
   {
-    "symbol": "BANKNIFTY57700PE",
-    "strategy": "BANKNIFTY_RESISTANCE_REJECTION_5M_ITM",
-    "entry_price": 418.29787999999996,
-    "entry_time": "2026-08-21T09:20:00",
-    "exit_price": 334.30400000000003,
-    "exit_time": "2026-08-21T09:40:00",
-    "exit_reason": "STOP_LOSS",
-    "realized_pnl": -2519.816399999998,
-    "qty": 1
-  },
-  {
     "symbol": "BANKNIFTY57900PE",
     "strategy": "BANKNIFTY_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 433.9535199999999,
@@ -4331,6 +4320,17 @@
     "exit_time": "2026-08-21T13:50:00",
     "exit_reason": "TIME_EXIT",
     "realized_pnl": 511.69440000000236,
+    "qty": 1
+  },
+  {
+    "symbol": "BANKNIFTY57800PE",
+    "strategy": "BANKNIFTY_RESISTANCE_REJECTION_5M_ITM",
+    "entry_price": 398.53813999999994,
+    "entry_time": "2026-08-21T14:00:00",
+    "exit_price": 318.512,
+    "exit_time": "2026-08-24T09:25:00",
+    "exit_reason": "STOP_LOSS",
+    "realized_pnl": -2400.7841999999982,
     "qty": 1
   },
   {
@@ -4350,7 +4350,7 @@
     "entry_price": 251.66140999999996,
     "entry_time": "2026-08-24T13:30:00",
     "exit_price": 201.12800000000001,
-    "exit_time": "2026-08-25T09:20:00",
+    "exit_time": "2026-08-25T09:25:00",
     "exit_reason": "STOP_LOSS",
     "realized_pnl": -1516.0022999999983,
     "qty": 1

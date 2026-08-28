@@ -11,30 +11,60 @@ import {
 import { NukeBoxLogo } from "../components/NukeBoxLogo";
 import { API_BASE, WS_BASE } from "../lib/apiBase";
 
-// 21 Proprietary Algorithmic Strategies (Strictly high-level qualitative descriptions with zero math/logic leaks)
-const FLEET_21_STRATEGIES = [
-  { id: "NIFTY_ORB_BULLISH_5M_ITM", name: "NIFTY Opening Range Momentum CE", index: "NIFTY 50", tf: "5M", mode: "High-Conviction ITM", dir: "CE", profile: "Opening Breakout Alpha", desc: "Captures morning opening momentum following initial session price discovery with macro trend alignment." },
-  { id: "NIFTY_ORB_BEARISH_5M_ITM", name: "NIFTY Opening Range Breakdown PE", index: "NIFTY 50", tf: "5M", mode: "High-Conviction ITM", dir: "PE", profile: "Opening Breakdown Alpha", desc: "Executes directional downside breakdowns on expanding negative order flow velocity." },
-  { id: "NIFTY_EMA_BOUNCE_5M_ITM", name: "NIFTY Dynamic Support Pullback CE", index: "NIFTY 50", tf: "5M", mode: "High-Conviction ITM", dir: "CE", profile: "Trend Continuation", desc: "Enters high-probability trend continuation pullbacks testing institutional dynamic support levels." },
-  { id: "NIFTY_EMA_REJECTION_5M_ITM", name: "NIFTY Dynamic Resistance Rejection PE", index: "NIFTY 50", tf: "5M", mode: "High-Conviction ITM", dir: "PE", profile: "Trend Continuation", desc: "Capitalizes on overhead resistance rejections aligned with higher-timeframe bearish momentum." },
-  { id: "NIFTY_HEIKIN_ASHI_BULLISH_5M_ITM", name: "NIFTY Directional Trend Pulse CE", index: "NIFTY 50", tf: "5M", mode: "High-Conviction ITM", dir: "CE", profile: "Smoothed Trend Riding", desc: "Smoothed noise-filtered trend-following model capturing multi-candle directional thrusts." },
-  { id: "NIFTY_HEIKIN_ASHI_BEARISH_5M_ITM", name: "NIFTY Directional Trend Pulse PE", index: "NIFTY 50", tf: "5M", mode: "High-Conviction ITM", dir: "PE", profile: "Smoothed Trend Riding", desc: "Rides sustained downward momentum pulses with clean directional confirmation." },
-  { id: "NIFTY_STOCHASTIC_BOUNCE_5M_ITM", name: "NIFTY Oversold Exhaustion Reversal CE", index: "NIFTY 50", tf: "5M", mode: "High-Conviction ITM", dir: "CE", profile: "Mean-Reversion Sweep", desc: "Exploits short-term oversold exhaustion bounces within primary uptrend regimes." },
-  { id: "NIFTY_STOCHASTIC_REJECTION_5M_ITM", name: "NIFTY Overbought Exhaustion Reversal PE", index: "NIFTY 50", tf: "5M", mode: "High-Conviction ITM", dir: "PE", profile: "Mean-Reversion Sweep", desc: "Captures rapid mean-reversion rejections from extended overbought supply zones." },
-  { id: "NIFTY_1M_SCALP_CE", name: "NIFTY High-Velocity Micro Scalp CE", index: "NIFTY 50", tf: "1M", mode: "High-Frequency ATM", dir: "CE", profile: "Sub-Minute Momentum", desc: "Sub-minute momentum scalping engine exploiting instantaneous tick liquidity bursts." },
-  { id: "NIFTY_1M_SCALP_PE", name: "NIFTY High-Velocity Micro Scalp PE", index: "NIFTY 50", tf: "1M", mode: "High-Frequency ATM", dir: "PE", profile: "Sub-Minute Momentum", desc: "High-frequency downside scalps executed within strict risk and time constraints." },
+// 44 Master Algorithmic Strategies (Qualitative descriptions with zero math/logic leaks)
+const FLEET_44_STRATEGIES = [
+  // NIFTY 50 (14)
+  { id: "NIFTY_ORB_BULLISH_5M_ITM", name: "NIFTY Opening Range Momentum CE", index: "NIFTY 50", tf: "5M", mode: "ITM", dir: "CE", desc: "Captures morning opening momentum following session price discovery with macro trend alignment." },
+  { id: "NIFTY_ORB_BEARISH_5M_ITM", name: "NIFTY Opening Range Breakdown PE", index: "NIFTY 50", tf: "5M", mode: "ITM", dir: "PE", desc: "Executes directional downside breakdowns on expanding negative order flow velocity." },
+  { id: "NIFTY_SUPPORT_BOUNCE_5M_ITM", name: "NIFTY Support Bounce CE", index: "NIFTY 50", tf: "5M", mode: "ITM", dir: "CE", desc: "Enters trend continuation pullbacks testing institutional dynamic support levels." },
+  { id: "NIFTY_RESISTANCE_REJECTION_5M_ITM", name: "NIFTY Resistance Rejection PE", index: "NIFTY 50", tf: "5M", mode: "ITM", dir: "PE", desc: "Capitalizes on overhead resistance rejections aligned with higher-timeframe bearish momentum." },
+  { id: "NIFTY_HEIKIN_ASHI_BULLISH_5M_ITM", name: "NIFTY Smoothed Trend Pulse CE", index: "NIFTY 50", tf: "5M", mode: "ITM", dir: "CE", desc: "Noise-filtered trend-following model capturing multi-candle directional thrusts." },
+  { id: "NIFTY_HEIKIN_ASHI_BEARISH_5M_ITM", name: "NIFTY Smoothed Trend Pulse PE", index: "NIFTY 50", tf: "5M", mode: "ITM", dir: "PE", desc: "Rides sustained downward momentum pulses with clean directional confirmation." },
+  { id: "NIFTY_MACD_BULLISH_1M_ATM", name: "NIFTY Micro Momentum Scalp CE", index: "NIFTY 50", tf: "1M", mode: "ATM", dir: "CE", desc: "1-minute momentum scalping engine exploiting instantaneous tick liquidity bursts." },
+  { id: "NIFTY_MACD_BEARISH_1M_ATM", name: "NIFTY Micro Momentum Scalp PE", index: "NIFTY 50", tf: "1M", mode: "ATM", dir: "PE", desc: "1-minute downside scalps executed within strict risk and time constraints." },
+  { id: "NIFTY_ORB_BULLISH_1M_ATM", name: "NIFTY 1M Opening Breakout CE", index: "NIFTY 50", tf: "1M", mode: "ATM", dir: "CE", desc: "Sub-minute opening breakout capture on initial session volume acceleration." },
+  { id: "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM", name: "NIFTY 1M Trend Extension PE", index: "NIFTY 50", tf: "1M", mode: "ATM", dir: "PE", desc: "Fast-reacting ATM PE scalp with deterministic stop loss guardrails." },
+  // NIFTY Expansion (4)
+  { id: "NIFTY_VWAP_POC_PULLBACK_CE", name: "NIFTY VWAP / POC Fair Value Bounce CE ★", index: "NIFTY 50", tf: "5M", mode: "Expansion ITM", dir: "CE", desc: "Institutional Volume Profile Point-of-Control pullback bounce within primary uptrend." },
+  { id: "NIFTY_VWAP_POC_BREAKDOWN_PE", name: "NIFTY VWAP / POC Fair Value Breakdown PE ★", index: "NIFTY 50", tf: "5M", mode: "Expansion ITM", dir: "PE", desc: "Downside value area breakdown execution below institutional volume node." },
+  { id: "NIFTY_SUPERTREND_CMF_BULLISH_CE", name: "NIFTY Supertrend + Money Flow CE ★", index: "NIFTY 50", tf: "5M", mode: "Expansion ITM", dir: "CE", desc: "Combines Supertrend volatility trailing with Chaikin Money Flow institutional accumulation." },
+  { id: "NIFTY_SUPERTREND_CMF_BEARISH_PE", name: "NIFTY Supertrend + Money Flow PE ★", index: "NIFTY 50", tf: "5M", mode: "Expansion ITM", dir: "PE", desc: "Combines Supertrend bearish trend lock with heavy institutional money flow distribution." },
 
-  { id: "SENSEX_ORB_BULLISH_5M_ITM", name: "SENSEX Index Breakout Expansion CE", index: "SENSEX", tf: "5M", mode: "High-Conviction ITM", dir: "CE", profile: "Opening Breakout Alpha", desc: "High-velocity breakout model calibrated for BSE SENSEX 100-point strike spacing." },
-  { id: "SENSEX_ORB_BEARISH_5M_ITM", name: "SENSEX Index Breakdown Expansion PE", index: "SENSEX", tf: "5M", mode: "High-Conviction ITM", dir: "PE", profile: "Opening Breakdown Alpha", desc: "Captures rapid morning panic breakdowns on 30-share heavyweight index components." },
-  { id: "SENSEX_EMA_BOUNCE_5M_ITM", name: "SENSEX Structural Support Pullback CE", index: "SENSEX", tf: "5M", mode: "High-Conviction ITM", dir: "CE", profile: "Trend Continuation", desc: "Systematic pullback entries at structural moving average confluence zones." },
-  { id: "SENSEX_EMA_REJECTION_5M_ITM", name: "SENSEX Structural Resistance Rejection PE", index: "SENSEX", tf: "5M", mode: "High-Conviction ITM", dir: "PE", profile: "Trend Continuation", desc: "Downside rejection execution testing downward-sloping institutional resistance." },
-  { id: "SENSEX_HEIKIN_ASHI_BULLISH_5M_ITM", name: "SENSEX Smoothed Trend Flow CE", index: "SENSEX", tf: "5M", mode: "High-Conviction ITM", dir: "CE", profile: "Smoothed Trend Riding", desc: "Filters erratic intraday wicks to lock onto institutional multi-bar trend runs." },
-  { id: "SENSEX_HEIKIN_ASHI_BEARISH_5M_ITM", name: "SENSEX Smoothed Trend Flow PE", index: "SENSEX", tf: "5M", mode: "High-Conviction ITM", dir: "PE", profile: "Smoothed Trend Riding", desc: "Bearish trend extension model with automated stepped trailing profit locks." },
-  { id: "SENSEX_STOCHASTIC_BOUNCE_5M_ITM", name: "SENSEX Liquidity Sweep Reversal CE", index: "SENSEX", tf: "5M", mode: "High-Conviction ITM", dir: "CE", profile: "Mean-Reversion Sweep", desc: "Trades sharp liquidity sweep reversals from extreme oversold conditions." },
-  { id: "SENSEX_STOCHASTIC_REJECTION_5M_ITM", name: "SENSEX Liquidity Sweep Rejection PE", index: "SENSEX", tf: "5M", mode: "High-Conviction ITM", dir: "PE", profile: "Mean-Reversion Sweep", desc: "Reversal model executing on false breakouts at session resistance." },
-  { id: "SENSEX_1M_SCALP_CE", name: "SENSEX High-Frequency Micro Scalp CE", index: "SENSEX", tf: "1M", mode: "High-Frequency ATM", dir: "CE", profile: "Sub-Minute Momentum", desc: "Rapid ATM scalp capture on explosive 1-minute volume surges." },
-  { id: "SENSEX_1M_SCALP_PE", name: "SENSEX High-Frequency Micro Scalp PE", index: "SENSEX", tf: "1M", mode: "High-Frequency ATM", dir: "PE", profile: "Sub-Minute Momentum", desc: "Fast-reacting ATM PE scalp with deterministic stop loss guardrails." },
-  { id: "SENSEX_ATM_VOLATILITY_EXPANSION", name: "SENSEX Volatility Surge Model", index: "SENSEX", tf: "1M", mode: "High-Frequency ATM", dir: "CE / PE", profile: "Volatility Expansion", desc: "Captures sudden expansion in implied volatility around macroeconomic events." }
+  // SENSEX (15)
+  { id: "SENSEX_ORB_BULLISH_5M_ITM", name: "SENSEX Index Breakout CE", index: "SENSEX", tf: "5M", mode: "ITM", dir: "CE", desc: "High-velocity breakout model calibrated for BSE SENSEX 100-point strike spacing." },
+  { id: "SENSEX_ORB_BEARISH_5M_ITM", name: "SENSEX Index Breakdown PE", index: "SENSEX", tf: "5M", mode: "ITM", dir: "PE", desc: "Captures rapid morning panic breakdowns on 30-share heavyweight index components." },
+  { id: "SENSEX_SUPPORT_BOUNCE_5M_ITM", name: "SENSEX Support Pullback CE", index: "SENSEX", tf: "5M", mode: "ITM", dir: "CE", desc: "Systematic pullback entries at structural moving average confluence zones." },
+  { id: "SENSEX_RESISTANCE_REJECTION_5M_ITM", name: "SENSEX Resistance Rejection PE", index: "SENSEX", tf: "5M", mode: "ITM", dir: "PE", desc: "Downside rejection execution testing downward-sloping institutional resistance." },
+  { id: "SENSEX_HEIKIN_ASHI_BULLISH_5M_ITM", name: "SENSEX Smoothed Flow CE", index: "SENSEX", tf: "5M", mode: "ITM", dir: "CE", desc: "Filters erratic intraday wicks to lock onto institutional multi-bar trend runs." },
+  { id: "SENSEX_HEIKIN_ASHI_BEARISH_5M_ITM", name: "SENSEX Smoothed Flow PE", index: "SENSEX", tf: "5M", mode: "ITM", dir: "PE", desc: "Bearish trend extension model with automated stepped trailing profit locks." },
+  { id: "SENSEX_MACD_BULLISH_1M_ATM", name: "SENSEX 1M Scalp CE", index: "SENSEX", tf: "1M", mode: "ATM", dir: "CE", desc: "Rapid ATM scalp capture on explosive 1-minute volume surges." },
+  { id: "SENSEX_MACD_BEARISH_1M_ATM", name: "SENSEX 1M Scalp PE", index: "SENSEX", tf: "1M", mode: "ATM", dir: "PE", desc: "Fast-reacting ATM PE scalp with deterministic stop loss guardrails." },
+  { id: "SENSEX_SUPPORT_BOUNCE_1M_ATM", name: "SENSEX 1M Support Bounce CE", index: "SENSEX", tf: "1M", mode: "ATM", dir: "CE", desc: "Quick 1-minute dip buying at micro support zones." },
+  { id: "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM", name: "SENSEX 1M Bearish Pulse PE", index: "SENSEX", tf: "1M", mode: "ATM", dir: "PE", desc: "Sub-minute bearish momentum scalping on high-beta BSE index." },
+  { id: "SENSEX_ORB_BEARISH_1M_ATM", name: "SENSEX 1M Opening Breakdown PE", index: "SENSEX", tf: "1M", mode: "ATM", dir: "PE", desc: "Fast morning breakdown execution targeting 100-point index drops." },
+  // SENSEX Expansion (4)
+  { id: "SENSEX_BB_SQUEEZE_EXPLOSION_CE", name: "SENSEX Bollinger Squeeze Breakout CE ★", index: "SENSEX", tf: "5M", mode: "Expansion ITM", dir: "CE", desc: "Exploits tight Bollinger Band volatility squeezes expanding inside Keltner Channels." },
+  { id: "SENSEX_BB_SQUEEZE_EXPLOSION_PE", name: "SENSEX Bollinger Squeeze Breakdown PE ★", index: "SENSEX", tf: "5M", mode: "Expansion ITM", dir: "PE", desc: "Captures sudden downside volatility explosions from narrow consolidation channels." },
+  { id: "SENSEX_OI_SHORT_SQUEEZE_CE", name: "SENSEX Call Wall Short Squeeze CE ★", index: "SENSEX", tf: "5M", mode: "Expansion ATM", dir: "CE", desc: "Buys Calls when spot breaks above peak Call Open Interest strike, triggering seller short covering." },
+  { id: "SENSEX_OI_LONG_UNWINDING_PE", name: "SENSEX Put Wall Long Unwinding PE ★", index: "SENSEX", tf: "5M", mode: "Expansion ATM", dir: "PE", desc: "Buys Puts when spot breaks below peak Put Open Interest strike, triggering panic long unwinding." },
+
+  // BANKNIFTY (15)
+  { id: "BANKNIFTY_SUPPORT_BOUNCE_5M_ITM", name: "BANKNIFTY Support Rebound CE", index: "BANKNIFTY", tf: "5M", mode: "ITM", dir: "CE", desc: "High-beta banking index support bounce model targeting 500-point ITM options." },
+  { id: "BANKNIFTY_RESISTANCE_REJECTION_5M_ITM", name: "BANKNIFTY Resistance Rejection PE", index: "BANKNIFTY", tf: "5M", mode: "ITM", dir: "PE", desc: "Downside rejection at key banking sector resistance levels." },
+  { id: "BANKNIFTY_HEIKIN_ASHI_BULLISH_5M_ITM", name: "BANKNIFTY Trend Flow CE", index: "BANKNIFTY", tf: "5M", mode: "ITM", dir: "CE", desc: "Rides sustained multi-bar banking rallies with noise-filtered Heikin-Ashi candles." },
+  { id: "BANKNIFTY_HEIKIN_ASHI_BEARISH_5M_ITM", name: "BANKNIFTY Trend Flow PE", index: "BANKNIFTY", tf: "5M", mode: "ITM", dir: "PE", desc: "Rides sustained multi-bar banking decline pulses." },
+  { id: "BANKNIFTY_ORB_BULLISH_5M_ITM", name: "BANKNIFTY Opening Range Breakout CE", index: "BANKNIFTY", tf: "5M", mode: "ITM", dir: "CE", desc: "High-volume opening range momentum breakout on banking heavyweights." },
+  { id: "BANKNIFTY_ORB_BEARISH_5M_ITM", name: "BANKNIFTY Opening Range Breakdown PE", index: "BANKNIFTY", tf: "5M", mode: "ITM", dir: "PE", desc: "High-volume opening breakdown execution." },
+  { id: "BANKNIFTY_MACD_BULLISH_1M_ATM", name: "BANKNIFTY 1M Momentum CE", index: "BANKNIFTY", tf: "1M", mode: "ATM", dir: "CE", desc: "High-frequency 1-minute ATM momentum scalping." },
+  { id: "BANKNIFTY_MACD_BEARISH_1M_ATM", name: "BANKNIFTY 1M Momentum PE", index: "BANKNIFTY", tf: "1M", mode: "ATM", dir: "PE", desc: "High-frequency 1-minute ATM downside scalping." },
+  { id: "BANKNIFTY_SUPPORT_BOUNCE_1M_ATM", name: "BANKNIFTY 1M Support Bounce CE", index: "BANKNIFTY", tf: "1M", mode: "ATM", dir: "CE", desc: "Sub-minute support bounce scalping on banking index." },
+  { id: "BANKNIFTY_HEIKIN_ASHI_BEARISH_1M_ATM", name: "BANKNIFTY 1M Bearish Pulse PE", index: "BANKNIFTY", tf: "1M", mode: "ATM", dir: "PE", desc: "Sub-minute bearish trend pulse scalps." },
+  { id: "BANKNIFTY_ORB_BEARISH_1M_ATM", name: "BANKNIFTY 1M Opening Breakdown PE", index: "BANKNIFTY", tf: "1M", mode: "ATM", dir: "PE", desc: "Fast 1-minute opening range breakdown execution." },
+  // BANKNIFTY Expansion (4)
+  { id: "BANKNIFTY_DUAL_SUPERTREND_BB_CE", name: "BANKNIFTY Dual Supertrend + BB Lock CE ★", index: "BANKNIFTY", tf: "5M", mode: "Expansion ITM", dir: "CE", desc: "Aligns 15M Macro Supertrend with 5M Micro Supertrend and Middle Bollinger Band trend lock." },
+  { id: "BANKNIFTY_DUAL_SUPERTREND_BB_PE", name: "BANKNIFTY Dual Supertrend + BB Lock PE ★", index: "BANKNIFTY", tf: "5M", mode: "Expansion ITM", dir: "PE", desc: "Aligns 15M Bearish Supertrend with 5M Micro Supertrend breakdown." },
+  { id: "BANKNIFTY_VWAP_BB_LIQUIDITY_REBOUND_CE", name: "BANKNIFTY VWAP + BB Liquidity Sweep CE ★", index: "BANKNIFTY", tf: "5M", mode: "Expansion ITM", dir: "CE", desc: "Exploits Lower Bollinger Band liquidity sweeps rebounding back above VWAP." },
+  { id: "BANKNIFTY_GAMMA_WALL_BREAKOUT_PE", name: "BANKNIFTY Gamma Wall Breakdown PE ★", index: "BANKNIFTY", tf: "5M", mode: "Expansion ITM", dir: "PE", desc: "Captures rapid 150-300 point BankNifty drops when spot breaks down below Put Wall hedging levels." },
 ];
 
 // Interactive Market Regimes Simulation Scenarios
@@ -652,9 +682,9 @@ export function LandingScreen({ onLoginClick }) {
             <Layers className="h-3.5 w-3.5" />
             <span>Quantitative Model Fleet</span>
           </div>
-          <h2 className="text-2xl sm:text-3xl font-black text-white">21 Autonomous Quantitative Strategies</h2>
+          <h2 className="text-2xl sm:text-3xl font-black text-white">44 Autonomous Quantitative Strategies</h2>
           <p className="text-xs sm:text-sm text-gray-400 max-w-xl mx-auto font-sans">
-            Systematic, non-discretionary execution models engineered specifically for Indian equity index derivatives microstructure.
+            Systematic, non-discretionary execution models engineered specifically for NIFTY, SENSEX, and BANKNIFTY options microstructure.
           </p>
 
           {/* Search Bar & Instant Filter Controls */}
@@ -663,7 +693,7 @@ export function LandingScreen({ onLoginClick }) {
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-faint" />
               <input
                 type="text"
-                placeholder="Search strategies by keyword (e.g., Breakout, Scalp, Reversal)..."
+                placeholder="Search 44 strategies by keyword (e.g., Breakout, Supertrend, VWAP, Squeeze)..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full rounded-2xl border border-subtle bg-surface px-10 py-2.5 text-xs text-primary placeholder:text-faint focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent shadow-sm font-sans"
@@ -681,11 +711,12 @@ export function LandingScreen({ onLoginClick }) {
             {/* Category Filter Chips */}
             <div className="flex flex-wrap items-center justify-center gap-2">
               {[
-                { key: "ALL", label: "All 21 Models" },
-                { key: "NIFTY", label: "NIFTY 50 (10)" },
-                { key: "SENSEX", label: "BSE SENSEX (11)" },
-                { key: "5M", label: "5M High-Conviction (12)" },
-                { key: "1M", label: "1M Micro-Scalps (9)" }
+                { key: "ALL", label: "All 44 Models" },
+                { key: "NIFTY", label: "NIFTY 50 (14)" },
+                { key: "SENSEX", label: "BSE SENSEX (15)" },
+                { key: "BANKNIFTY", label: "BANKNIFTY (15)" },
+                { key: "5M", label: "5M High-Conviction (30)" },
+                { key: "1M", label: "1M Micro-Scalps (14)" }
               ].map((f) => (
                 <button
                   key={f.key}
@@ -703,7 +734,7 @@ export function LandingScreen({ onLoginClick }) {
 
             {/* Results Counter */}
             <div className="text-[11px] font-mono text-faint">
-              Showing <strong className="text-accent">{filteredStrats.length}</strong> of 21 Strategy Models
+              Showing <strong className="text-accent">{filteredStrats.length}</strong> of 44 Strategy Models
             </div>
           </div>
         </div>
@@ -717,7 +748,11 @@ export function LandingScreen({ onLoginClick }) {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-1.5">
                     <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black border ${
-                      s.index.includes("NIFTY") ? "bg-cyan-500/15 text-cyan-400 border-cyan-500/30" : "bg-purple-500/15 text-purple-400 border-purple-500/30"
+                      s.index.includes("BANKNIFTY")
+                        ? "bg-amber-500/15 text-amber-400 border-amber-500/30"
+                        : s.index.includes("NIFTY")
+                        ? "bg-cyan-500/15 text-cyan-400 border-cyan-500/30"
+                        : "bg-purple-500/15 text-purple-400 border-purple-500/30"
                     }`}>
                       {s.index}
                     </span>

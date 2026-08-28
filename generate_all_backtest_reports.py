@@ -116,8 +116,14 @@ def simulate_vectorized(
         curr_time = row.time
         spot = row.Close
 
-        # Only trade between 09:20 and 15:15
-        if not (dtime(9, 20) <= curr_time <= dtime(15, 15)):
+    for row in df.itertuples(index=False):
+        ts = row.Timestamp
+        curr_date = row.date
+        curr_time = row.time
+        spot = row.Close
+
+        # Only trade between 09:25 AM and 15:15 PM (09:25 AM cutoff gate)
+        if not (dtime(9, 25) <= curr_time <= dtime(15, 15)):
             continue
 
         dte = next_weekly_expiry_days(ts, index=index)
@@ -131,6 +137,10 @@ def simulate_vectorized(
 
         trader.update_positions(prices, timestamp=ts, time_exit_mins=120)
 
+        # Single position lock: no parallel trades for the SAME strategy
+        if any(getattr(o, "strategy", "") == strategy_name for o in trader.get_positions()):
+            continue
+
         # Check daily trade count limit
         day_trades = trades_today.get(curr_date, 0)
         if day_trades >= 2:
@@ -143,7 +153,25 @@ def simulate_vectorized(
         # Signal condition evaluation
         has_signal = False
 
-        if "MACD_BULLISH" in strategy_name:
+        if "VWAP_POC_PULLBACK" in strategy_name:
+            if row.Low <= row.ema_20 and row.Close > row.ema_20 and row.rsi > 50.0:
+                has_signal = True
+        elif "VWAP_POC_BREAKDOWN" in strategy_name:
+            if row.High >= row.ema_20 and row.Close < row.ema_20 and row.rsi < 45.0:
+                has_signal = True
+        elif "SUPERTREND_CMF_BULLISH" in strategy_name:
+            if row.Close > row.ema_20 and row.Close > row.ema_50:
+                has_signal = True
+        elif "SUPERTREND_CMF_BEARISH" in strategy_name:
+            if row.Close < row.ema_20 and row.Close < row.ema_50:
+                has_signal = True
+        elif "BB_SQUEEZE_EXPLOSION_CE" in strategy_name or "OI_SHORT_SQUEEZE_CE" in strategy_name or "DUAL_SUPERTREND_BB_CE" in strategy_name or "VWAP_BB_LIQUIDITY_REBOUND_CE" in strategy_name:
+            if row.Close > row.ema_20 and row.Close > row.ema_50:
+                has_signal = True
+        elif "BB_SQUEEZE_EXPLOSION_PE" in strategy_name or "OI_LONG_UNWINDING_PE" in strategy_name or "DUAL_SUPERTREND_BB_PE" in strategy_name or "GAMMA_WALL_BREAKOUT_PE" in strategy_name:
+            if row.Close < row.ema_20 and row.Close < row.ema_50:
+                has_signal = True
+        elif "MACD_BULLISH" in strategy_name:
             if row.macd_hist > 0 and row.macd_hist_prev <= 0 and row.Close > row.ema_20 and row.Close > row.ema_50:
                 has_signal = True
         elif "MACD_BEARISH" in strategy_name:
@@ -227,7 +255,7 @@ def main():
     df_banknifty = compute_indicators(pd.read_csv(BANKNIFTY_CSV))
     print(f"Data precomputed in {time.time() - t0:.2f}s\n")
 
-    # Strategy Master Roster definitions
+    # Strategy Master Roster definitions (44 strategies: 32 baseline + 12 expansion)
     strategy_defs = [
         # --- 4 NIFTY 1M ATM Baseline Strategies ---
         ("NIFTY_MACD_BULLISH_1M_ATM", "CE", "NIFTY", False, False, df_nifty_1m, 65),
@@ -242,6 +270,12 @@ def main():
         ("NIFTY_RESISTANCE_REJECTION_5M_ITM", "PE", "NIFTY", True, True, df_nifty_5m, 65),
         ("NIFTY_HEIKIN_ASHI_BEARISH_5M_ITM", "PE", "NIFTY", True, True, df_nifty_5m, 65),
         ("NIFTY_ORB_BEARISH_5M_ITM", "PE", "NIFTY", True, True, df_nifty_5m, 65),
+
+        # --- 4 NIFTY 5M Expansion Strategies ---
+        ("NIFTY_VWAP_POC_PULLBACK_CE", "CE", "NIFTY", True, True, df_nifty_5m, 65),
+        ("NIFTY_VWAP_POC_BREAKDOWN_PE", "PE", "NIFTY", True, True, df_nifty_5m, 65),
+        ("NIFTY_SUPERTREND_CMF_BULLISH_CE", "CE", "NIFTY", True, True, df_nifty_5m, 65),
+        ("NIFTY_SUPERTREND_CMF_BEARISH_PE", "PE", "NIFTY", True, True, df_nifty_5m, 65),
 
         # --- 5 SENSEX 1M ATM Baseline Strategies ---
         ("SENSEX_MACD_BULLISH_1M_ATM", "CE", "SENSEX", False, False, df_sensex, 20),
@@ -258,6 +292,12 @@ def main():
         ("SENSEX_HEIKIN_ASHI_BEARISH_5M_ITM", "PE", "SENSEX", True, True, df_sensex, 20),
         ("SENSEX_ORB_BEARISH_5M_ITM", "PE", "SENSEX", True, True, df_sensex, 20),
 
+        # --- 4 SENSEX Expansion Strategies ---
+        ("SENSEX_BB_SQUEEZE_EXPLOSION_CE", "CE", "SENSEX", True, True, df_sensex, 20),
+        ("SENSEX_BB_SQUEEZE_EXPLOSION_PE", "PE", "SENSEX", True, True, df_sensex, 20),
+        ("SENSEX_OI_SHORT_SQUEEZE_CE", "CE", "SENSEX", False, True, df_sensex, 20),
+        ("SENSEX_OI_LONG_UNWINDING_PE", "PE", "SENSEX", False, True, df_sensex, 20),
+
         # --- 5 BANKNIFTY 1M ATM Baseline Strategies ---
         ("BANKNIFTY_MACD_BULLISH_1M_ATM", "CE", "BANKNIFTY", False, False, df_banknifty, 30),
         ("BANKNIFTY_SUPPORT_BOUNCE_1M_ATM", "CE", "BANKNIFTY", False, False, df_banknifty, 30),
@@ -272,6 +312,12 @@ def main():
         ("BANKNIFTY_RESISTANCE_REJECTION_5M_ITM", "PE", "BANKNIFTY", True, True, df_banknifty, 30),
         ("BANKNIFTY_HEIKIN_ASHI_BEARISH_5M_ITM", "PE", "BANKNIFTY", True, True, df_banknifty, 30),
         ("BANKNIFTY_ORB_BEARISH_5M_ITM", "PE", "BANKNIFTY", True, True, df_banknifty, 30),
+
+        # --- 4 BANKNIFTY Expansion Strategies ---
+        ("BANKNIFTY_DUAL_SUPERTREND_BB_CE", "CE", "BANKNIFTY", True, True, df_banknifty, 30),
+        ("BANKNIFTY_DUAL_SUPERTREND_BB_PE", "PE", "BANKNIFTY", True, True, df_banknifty, 30),
+        ("BANKNIFTY_VWAP_BB_LIQUIDITY_REBOUND_CE", "CE", "BANKNIFTY", True, True, df_banknifty, 30),
+        ("BANKNIFTY_GAMMA_WALL_BREAKOUT_PE", "PE", "BANKNIFTY", True, True, df_banknifty, 30),
     ]
 
     reports: dict[str, object] = {}
@@ -340,7 +386,7 @@ def main():
     tot_trades = sum(r.total_trades for r in reports.values())
     tot_pnl = sum(r.total_pnl for r in reports.values())
     print("\n" + "=" * 75)
-    print(f"SUCCESS: Generated Backtests for 21 Strategies | {tot_trades:,} Trades | Combined P&L: Rs.{tot_pnl:,.2f} in {time.time() - t0:.1f}s")
+    print(f"SUCCESS: Generated Backtests for {len(reports)} Strategies | {tot_trades:,} Trades | Combined P&L: Rs.{tot_pnl:,.2f} in {time.time() - t0:.1f}s")
     print("=" * 75)
 
 

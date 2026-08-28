@@ -147,19 +147,14 @@ export function CandleChart({ candles = [], tradeMarkers = [], height = 400 }) {
     ema20SeriesRef.current = ema20Series;
     ema50SeriesRef.current = ema50Series;
     candleMarkersRef.current = candleMarkers;
-    deltaSeriesRef.current = deltaSeries;
-    deltaMarkersRef.current = deltaMarkers;
 
     return () => {
-      chart.unsubscribeCrosshairMove(onCrosshairMove);
       chart.remove();
       chartRef.current = null;
       seriesRef.current = null;
       ema20SeriesRef.current = null;
       ema50SeriesRef.current = null;
       candleMarkersRef.current = null;
-      deltaSeriesRef.current = null;
-      deltaMarkersRef.current = null;
     };
   }, []);
 
@@ -193,31 +188,6 @@ export function CandleChart({ candles = [], tradeMarkers = [], height = 400 }) {
     }
   }, [candles, showEma]);
 
-  // Delta CVD Histogram
-  useEffect(() => {
-    if (!deltaSeriesRef.current) return;
-    const { up, down } = readCandleColors();
-    let cumulative = 0;
-    const data = (candles || [])
-      .map((c) => {
-        cumulative += c.delta || 0;
-        return {
-          time: bucketToTime(c.bucket),
-          value: cumulative,
-          color: cumulative >= 0 ? up : down,
-        };
-      })
-      .sort((a, b) => a.time - b.time);
-
-    setLatestDelta(cumulative);
-    deltaDataRef.current = data;
-    if (data.length > 0) {
-      deltaSeriesRef.current.setData(data);
-    }
-  }, [candles, theme]);
-
-  const displayDelta = hoveredDelta ?? latestDelta;
-
   return (
     <div className="relative w-full rounded-2xl overflow-hidden border border-subtle bg-surface" style={{ height }}>
       {/* Top Chart Controls */}
@@ -238,10 +208,6 @@ export function CandleChart({ candles = [], tradeMarkers = [], height = 400 }) {
             <span className="text-orange-400">● EMA50</span>
           </div>
         )}
-      </div>
-
-      <div className="absolute top-2 right-3 z-10 pointer-events-none rounded-md border border-subtle bg-surface2/90 px-2 py-0.5 text-[10px] font-mono font-bold text-primary backdrop-blur-sm">
-        CVD {formatDelta(displayDelta)}
       </div>
 
       <div ref={containerRef} style={{ height: "100%" }} className="w-full" />

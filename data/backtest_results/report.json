@@ -4,8 +4,8 @@
     "direction": "CE",
     "total_trades": 229,
     "win_rate": 71.62,
-    "profit_factor": 4.74,
-    "total_pnl": 311539.11,
+    "profit_factor": 4.75,
+    "total_pnl": 311641.16,
     "max_drawdown_pct": 0.44
   },
   "NIFTY_ORB_BULLISH_1M_ATM": {
@@ -20,28 +20,28 @@
   "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM": {
     "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
     "direction": "PE",
-    "total_trades": 407,
-    "win_rate": 57.0,
-    "profit_factor": 2.55,
-    "total_pnl": 190537.3,
-    "max_drawdown_pct": 1.06
+    "total_trades": 370,
+    "win_rate": 62.7,
+    "profit_factor": 3.42,
+    "total_pnl": 219401.01,
+    "max_drawdown_pct": 0.86
   },
   "NIFTY_MACD_BEARISH_1M_ATM": {
     "strategy": "NIFTY_MACD_BEARISH_1M_ATM",
     "direction": "PE",
     "total_trades": 253,
     "win_rate": 70.36,
-    "profit_factor": 7.15,
-    "total_pnl": 454752.94,
+    "profit_factor": 7.14,
+    "total_pnl": 455057.66,
     "max_drawdown_pct": 0.39
   },
   "NIFTY_SUPPORT_BOUNCE_5M_ITM": {
     "strategy": "NIFTY_SUPPORT_BOUNCE_5M_ITM",
     "direction": "CE",
-    "total_trades": 134,
-    "win_rate": 97.76,
-    "profit_factor": 6000.59,
-    "total_pnl": 235680.21,
+    "total_trades": 133,
+    "win_rate": 97.74,
+    "profit_factor": 5928.32,
+    "total_pnl": 232841.61,
     "max_drawdown_pct": 0.0
   },
   "NIFTY_HEIKIN_ASHI_BULLISH_5M_ITM": {
@@ -50,7 +50,7 @@
     "total_trades": 381,
     "win_rate": 60.1,
     "profit_factor": 2.67,
-    "total_pnl": 249695.64,
+    "total_pnl": 250235.47,
     "max_drawdown_pct": 1.28
   },
   "NIFTY_ORB_BULLISH_5M_ITM": {
@@ -65,11 +65,11 @@
   "NIFTY_RESISTANCE_REJECTION_5M_ITM": {
     "strategy": "NIFTY_RESISTANCE_REJECTION_5M_ITM",
     "direction": "PE",
-    "total_trades": 143,
-    "win_rate": 97.9,
-    "profit_factor": 125.96,
-    "total_pnl": 244167.48,
-    "max_drawdown_pct": 0.18
+    "total_trades": 142,
+    "win_rate": 97.89,
+    "profit_factor": 128.56,
+    "total_pnl": 243446.89,
+    "max_drawdown_pct": 0.17
   },
   "NIFTY_HEIKIN_ASHI_BEARISH_5M_ITM": {
     "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_5M_ITM",
@@ -77,8 +77,8 @@
     "total_trades": 385,
     "win_rate": 65.97,
     "profit_factor": 3.0,
-    "total_pnl": 290098.19,
-    "max_drawdown_pct": 0.81
+    "total_pnl": 290920.0,
+    "max_drawdown_pct": 0.8
   },
   "NIFTY_ORB_BEARISH_5M_ITM": {
     "strategy": "NIFTY_ORB_BEARISH_5M_ITM",
@@ -88,6 +88,42 @@
     "profit_factor": 1045.5,
     "total_pnl": 425973.63,
     "max_drawdown_pct": 0.02
+  },
+  "NIFTY_VWAP_POC_PULLBACK_CE": {
+    "strategy": "NIFTY_VWAP_POC_PULLBACK_CE",
+    "direction": "CE",
+    "total_trades": 5,
+    "win_rate": 100.0,
+    "profit_factor": 999.99,
+    "total_pnl": 12308.41,
+    "max_drawdown_pct": 0.0
+  },
+  "NIFTY_VWAP_POC_BREAKDOWN_PE": {
+    "strategy": "NIFTY_VWAP_POC_BREAKDOWN_PE",
+    "direction": "PE",
+    "total_trades": 130,
+    "win_rate": 97.69,
+    "profit_factor": 114.28,
+    "total_pnl": 216187.54,
+    "max_drawdown_pct": 0.17
+  },
+  "NIFTY_SUPERTREND_CMF_BULLISH_CE": {
+    "strategy": "NIFTY_SUPERTREND_CMF_BULLISH_CE",
+    "direction": "CE",
+    "total_trades": 286,
+    "win_rate": 68.88,
+    "profit_factor": 4.32,
+    "total_pnl": 328961.65,
+    "max_drawdown_pct": 0.65
+  },
+  "NIFTY_SUPERTREND_CMF_BEARISH_PE": {
+    "strategy": "NIFTY_SUPERTREND_CMF_BEARISH_PE",
+    "direction": "PE",
+    "total_trades": 301,
+    "win_rate": 71.43,
+    "profit_factor": 4.38,
+    "total_pnl": 368550.57,
+    "max_drawdown_pct": 0.7
   },
   "SENSEX_MACD_BULLISH_1M_ATM": {
     "strategy": "SENSEX_MACD_BULLISH_1M_ATM",
@@ -188,40 +224,76 @@
     "total_pnl": 377173.65,
     "max_drawdown_pct": 0.05
   },
+  "SENSEX_BB_SQUEEZE_EXPLOSION_CE": {
+    "strategy": "SENSEX_BB_SQUEEZE_EXPLOSION_CE",
+    "direction": "CE",
+    "total_trades": 280,
+    "win_rate": 59.29,
+    "profit_factor": 2.46,
+    "total_pnl": 166155.34,
+    "max_drawdown_pct": 0.73
+  },
+  "SENSEX_BB_SQUEEZE_EXPLOSION_PE": {
+    "strategy": "SENSEX_BB_SQUEEZE_EXPLOSION_PE",
+    "direction": "PE",
+    "total_trades": 284,
+    "win_rate": 65.14,
+    "profit_factor": 2.74,
+    "total_pnl": 203890.14,
+    "max_drawdown_pct": 0.99
+  },
+  "SENSEX_OI_SHORT_SQUEEZE_CE": {
+    "strategy": "SENSEX_OI_SHORT_SQUEEZE_CE",
+    "direction": "CE",
+    "total_trades": 280,
+    "win_rate": 59.29,
+    "profit_factor": 2.73,
+    "total_pnl": 151337.65,
+    "max_drawdown_pct": 0.55
+  },
+  "SENSEX_OI_LONG_UNWINDING_PE": {
+    "strategy": "SENSEX_OI_LONG_UNWINDING_PE",
+    "direction": "PE",
+    "total_trades": 287,
+    "win_rate": 62.37,
+    "profit_factor": 3.0,
+    "total_pnl": 185774.35,
+    "max_drawdown_pct": 0.82
+  },
   "BANKNIFTY_MACD_BULLISH_1M_ATM": {
     "strategy": "BANKNIFTY_MACD_BULLISH_1M_ATM",
     "direction": "CE",
-    "total_trades": 167,
-    "win_rate": 46.11,
-    "profit_factor": 1.86,
-    "total_pnl": 92916.94,
-    "max_drawdown_pct": 1.24
+    "total_trades": 158,
+    "win_rate": 45.57,
+    "profit_factor": 1.82,
+    "total_pnl": 81878.6,
+    "max_drawdown_pct": 1.35
   },
   "BANKNIFTY_SUPPORT_BOUNCE_1M_ATM": {
     "strategy": "BANKNIFTY_SUPPORT_BOUNCE_1M_ATM",
     "direction": "CE",
-    "total_trades": 404,
-    "win_rate": 57.43,
-    "profit_factor": 3.1,
-    "total_pnl": 413815.65,
-    "max_drawdown_pct": 1.24
+    "total_trades": 403,
+    "win_rate": 57.32,
+    "profit_factor": 3.12,
+    "total_pnl": 413391.68,
+    "max_drawdown_pct": 1.09
   },
   "BANKNIFTY_HEIKIN_ASHI_BEARISH_1M_ATM": {
     "strategy": "BANKNIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
     "direction": "PE",
     "total_trades": 489,
-    "win_rate": 47.85,
-    "profit_factor": 2.13,
-    "total_pnl": 292236.36,
-    "max_drawdown_pct": 1.71
+    "win_rate": 48.47,
+    "profit_factor": 2.19,
+    "total_pnl": 301745.93,
+    "max_drawdown_pct": 1.34
   },
   "BANKNIFTY_MACD_BEARISH_1M_ATM": {
     "strategy": "BANKNIFTY_MACD_BEARISH_1M_ATM",
     "direction": "PE",
-    "total_trades": 132,
-    "win_rate": 53.03,
-    "profit_factor": 2.38,
-    "total_pnl": 110199.21,
+    "total_trades": 128,
+    "win_rate": 52.34,
+    "profit_factor": 2.26,
+    "total_pnl": 99101.3,
     "max_drawdown_pct": 1.02
   },
   "BANKNIFTY_ORB_BEARISH_1M_ATM": {
@@ -229,62 +301,98 @@
     "direction": "PE",
     "total_trades": 320,
     "win_rate": 54.37,
-    "profit_factor": 3.4,
-    "total_pnl": 334891.71,
-    "max_drawdown_pct": 1.05
+    "profit_factor": 3.39,
+    "total_pnl": 335551.59,
+    "max_drawdown_pct": 1.1
   },
   "BANKNIFTY_SUPPORT_BOUNCE_5M_ITM": {
     "strategy": "BANKNIFTY_SUPPORT_BOUNCE_5M_ITM",
     "direction": "CE",
-    "total_trades": 411,
-    "win_rate": 61.56,
+    "total_trades": 410,
+    "win_rate": 61.46,
     "profit_factor": 2.67,
-    "total_pnl": 455758.42,
-    "max_drawdown_pct": 1.77
+    "total_pnl": 452225.43,
+    "max_drawdown_pct": 1.6
   },
   "BANKNIFTY_HEIKIN_ASHI_BULLISH_5M_ITM": {
     "strategy": "BANKNIFTY_HEIKIN_ASHI_BULLISH_5M_ITM",
     "direction": "CE",
     "total_trades": 487,
     "win_rate": 49.28,
-    "profit_factor": 1.69,
-    "total_pnl": 284464.44,
-    "max_drawdown_pct": 1.49
+    "profit_factor": 1.64,
+    "total_pnl": 263730.87,
+    "max_drawdown_pct": 1.73
   },
   "BANKNIFTY_ORB_BULLISH_5M_ITM": {
     "strategy": "BANKNIFTY_ORB_BULLISH_5M_ITM",
     "direction": "CE",
     "total_trades": 309,
     "win_rate": 66.67,
-    "profit_factor": 3.59,
-    "total_pnl": 446320.84,
+    "profit_factor": 3.6,
+    "total_pnl": 444692.14,
     "max_drawdown_pct": 1.09
   },
   "BANKNIFTY_RESISTANCE_REJECTION_5M_ITM": {
     "strategy": "BANKNIFTY_RESISTANCE_REJECTION_5M_ITM",
     "direction": "PE",
     "total_trades": 399,
-    "win_rate": 58.4,
-    "profit_factor": 2.57,
-    "total_pnl": 424257.27,
-    "max_drawdown_pct": 1.4
+    "win_rate": 58.65,
+    "profit_factor": 2.55,
+    "total_pnl": 421969.03,
+    "max_drawdown_pct": 1.25
   },
   "BANKNIFTY_HEIKIN_ASHI_BEARISH_5M_ITM": {
     "strategy": "BANKNIFTY_HEIKIN_ASHI_BEARISH_5M_ITM",
     "direction": "PE",
     "total_trades": 488,
-    "win_rate": 50.82,
-    "profit_factor": 1.89,
-    "total_pnl": 321473.42,
-    "max_drawdown_pct": 2.31
+    "win_rate": 51.84,
+    "profit_factor": 1.95,
+    "total_pnl": 333332.96,
+    "max_drawdown_pct": 1.69
   },
   "BANKNIFTY_ORB_BEARISH_5M_ITM": {
     "strategy": "BANKNIFTY_ORB_BEARISH_5M_ITM",
     "direction": "PE",
     "total_trades": 318,
-    "win_rate": 59.12,
-    "profit_factor": 3.14,
-    "total_pnl": 385604.73,
-    "max_drawdown_pct": 1.14
+    "win_rate": 59.43,
+    "profit_factor": 3.1,
+    "total_pnl": 384759.87,
+    "max_drawdown_pct": 1.23
+  },
+  "BANKNIFTY_DUAL_SUPERTREND_BB_CE": {
+    "strategy": "BANKNIFTY_DUAL_SUPERTREND_BB_CE",
+    "direction": "CE",
+    "total_trades": 399,
+    "win_rate": 57.14,
+    "profit_factor": 2.24,
+    "total_pnl": 365861.49,
+    "max_drawdown_pct": 0.97
+  },
+  "BANKNIFTY_DUAL_SUPERTREND_BB_PE": {
+    "strategy": "BANKNIFTY_DUAL_SUPERTREND_BB_PE",
+    "direction": "PE",
+    "total_trades": 370,
+    "win_rate": 53.78,
+    "profit_factor": 2.1,
+    "total_pnl": 316491.56,
+    "max_drawdown_pct": 1.23
+  },
+  "BANKNIFTY_VWAP_BB_LIQUIDITY_REBOUND_CE": {
+    "strategy": "BANKNIFTY_VWAP_BB_LIQUIDITY_REBOUND_CE",
+    "direction": "CE",
+    "total_trades": 399,
+    "win_rate": 57.14,
+    "profit_factor": 2.24,
+    "total_pnl": 365861.49,
+    "max_drawdown_pct": 0.97
+  },
+  "BANKNIFTY_GAMMA_WALL_BREAKOUT_PE": {
+    "strategy": "BANKNIFTY_GAMMA_WALL_BREAKOUT_PE",
+    "direction": "PE",
+    "total_trades": 370,
+    "win_rate": 53.78,
+    "profit_factor": 2.1,
+    "total_pnl": 316491.56,
+    "max_drawdown_pct": 1.23
   }
 }

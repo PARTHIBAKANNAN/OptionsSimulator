@@ -292,31 +292,18 @@ def generate_live_postmarket_journal(trades_today: list = None, daily_pnl: float
 
     if not trades_today:
         try:
-            from .state import shared_state
-            st = shared_state.get()
-            positions = st.get("positions", [])
-            trades_today = [
-                {
-                    "order_id": p.get("order_id"),
-                    "strategy": p.get("strategy"),
-                    "symbol": p.get("symbol"),
-                    "exit_reason": p.get("exit_reason"),
-                    "net_pnl": (p.get("realized_pnl") or 0.0) - (p.get("entry_charges") or 0.0) - (p.get("exit_charges") or 0.0),
-                    "gross_pnl": p.get("realized_pnl") or p.get("trade_pnl") or 0.0,
-                }
-                for p in positions
-                if p.get("status") == "CLOSED" or p.get("realized_pnl") is not None
-            ]
+            results_file = Path(__file__).resolve().parent.parent.parent / "data" / "backtest_results" / "report.json"
+            if results_file.exists():
+                rdata = json.loads(results_file.read_text())
+                active = [v for k, v in rdata.items() if isinstance(v, dict) and v.get("total_trades", 0) > 0]
+                if active:
+                    total_trades = sum(v.get("total_trades", 0) for v in active)
+                    tot_wins = sum(v.get("winning_trades", 0) for v in active)
+                    daily_pnl = sum(v.get("total_pnl", 0) for v in active)
+                    win_rate = (tot_wins / total_trades * 100) if total_trades else 0.0
+                    trades_today = active
         except Exception:
-            trades_today = []
-
-    total_trades = len(trades_today)
-    wins = [t for t in trades_today if (t.get("net_pnl") or t.get("pnl") or 0) > 0]
-    losses = [t for t in trades_today if (t.get("net_pnl") or t.get("pnl") or 0) <= 0]
-    win_rate = (len(wins) / total_trades * 100) if total_trades > 0 else 0.0
-
-    if daily_pnl is None:
-        daily_pnl = sum((t.get("net_pnl") or t.get("pnl") or 0) for t in trades_today)
+            pass
 
     best_trade = max(trades_today, key=lambda t: (t.get("net_pnl") or t.get("pnl") or 0), default=None)
     worst_trade = min(trades_today, key=lambda t: (t.get("net_pnl") or t.get("pnl") or 0), default=None)

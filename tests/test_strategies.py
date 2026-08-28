@@ -343,9 +343,9 @@ def test_heikin_ashi_trend_bearish_no_signal_in_the_10am_to_12pm_dead_zone():
 
 
 def test_nifty_live_roster_is_the_curated_four_strategy_set():
-    # Master roster contains all 32 strategies (10 NIFTY + 11 SENSEX + 11 BANKNIFTY)
+    # Master roster contains all 44 strategies (14 NIFTY + 15 SENSEX + 15 BANKNIFTY)
     strategies = create_all_strategies()
-    assert len(strategies) == 32
+    assert len(strategies) == 44
     names = {s.name for s in strategies}
     assert "NIFTY_ORB_BULLISH_1M_ATM" in names
     assert "NIFTY_SUPPORT_BOUNCE_5M_ITM" in names
@@ -354,7 +354,7 @@ def test_nifty_live_roster_is_the_curated_four_strategy_set():
 
 
 def test_confidence_score_present_on_all_strategies():
-    assert len(create_all_strategies()) == 32
+    assert len(create_all_strategies()) == 44
     # RSI strategy confidence is fixed at 0.75 by design
     strategy = RSIOversoldBullish()
     signal = strategy.evaluate(base_state(indicators={

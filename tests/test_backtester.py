@@ -35,7 +35,7 @@ def test_backtest_engine_runs_all_strategies():
     engine = BacktestEngine(risk_params=risk_params)
     reports = engine.run(df)
 
-    assert len(reports) == 33  # 32 directional strategies + IRON_FLY_HEDGE (enabled by default when unset)
+    assert len(reports) == 45  # 44 directional strategies + IRON_FLY_HEDGE (enabled by default when unset)
     for report in reports.values():
         assert report.total_trades >= 0
         assert report.win_rate >= 0

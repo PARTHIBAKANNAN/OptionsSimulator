@@ -48,8 +48,24 @@ from src.strategies.banknifty_strategies import (
 )
 
 
+from src.strategies.expansion_strategies import (
+    NiftyVwapPocPullbackCE,
+    NiftyVwapPocBreakdownPE,
+    NiftySupertrendCmfBullishCE,
+    NiftySupertrendCmfBearishPE,
+    SensexBbSqueezeExplosionCE,
+    SensexBbSqueezeExplosionPE,
+    SensexOiShortSqueezeCE,
+    SensexOiLongUnwindingPE,
+    BankNiftyDualSupertrendBbCE,
+    BankNiftyDualSupertrendBbPE,
+    BankNiftyVwapBbLiquidityReboundCE,
+    BankNiftyGammaWallBreakoutPE,
+)
+
+
 def create_nifty_strategies() -> list[BaseStrategy]:
-    """Returns the 10 active NIFTY strategies (4 1M ATM + 6 5M ITM)."""
+    """Returns the 14 active NIFTY strategies (4 1M ATM + 6 5M ITM + 4 Expansion)."""
     return [
         ORBBullish(name="NIFTY_ORB_BULLISH_1M_ATM"),
         MACDBullish(name="NIFTY_MACD_BULLISH_1M_ATM"),
@@ -61,11 +77,15 @@ def create_nifty_strategies() -> list[BaseStrategy]:
         NiftyResistanceRejection5MITM(),
         NiftyHeikinAshiBearish5MITM(),
         NiftyORBBearish5MITM(),
+        NiftyVwapPocPullbackCE(),
+        NiftyVwapPocBreakdownPE(),
+        NiftySupertrendCmfBullishCE(),
+        NiftySupertrendCmfBearishPE(),
     ]
 
 
 def create_sensex_strategies() -> list[BaseStrategy]:
-    """Returns the 11 active SENSEX strategies (5 1M ATM + 6 5M ITM)."""
+    """Returns the 15 active SENSEX strategies (5 1M ATM + 6 5M ITM + 4 Expansion)."""
     return [
         SensexMACDBullish(name="SENSEX_MACD_BULLISH_1M_ATM"),
         SensexSupportBounceBullish(name="SENSEX_SUPPORT_BOUNCE_1M_ATM"),
@@ -78,11 +98,15 @@ def create_sensex_strategies() -> list[BaseStrategy]:
         SensexResistanceRejection5MITM(),
         SensexHeikinAshiBearish5MITM(),
         SensexORBBearish5MITM(),
+        SensexBbSqueezeExplosionCE(),
+        SensexBbSqueezeExplosionPE(),
+        SensexOiShortSqueezeCE(),
+        SensexOiLongUnwindingPE(),
     ]
 
 
 def create_banknifty_strategies() -> list[BaseStrategy]:
-    """Returns the 11 active BANKNIFTY strategies (5 1M ATM + 6 5M ITM)."""
+    """Returns the 15 active BANKNIFTY strategies (5 1M ATM + 6 5M ITM + 4 Expansion)."""
     return [
         BankNiftyMACDBullish(name="BANKNIFTY_MACD_BULLISH_1M_ATM"),
         BankNiftySupportBounceBullish(name="BANKNIFTY_SUPPORT_BOUNCE_1M_ATM"),
@@ -95,11 +119,15 @@ def create_banknifty_strategies() -> list[BaseStrategy]:
         BankNiftyResistanceRejection5MITM(),
         BankNiftyHeikinAshiBearish5MITM(),
         BankNiftyORBBearish5MITM(),
+        BankNiftyDualSupertrendBbCE(),
+        BankNiftyDualSupertrendBbPE(),
+        BankNiftyVwapBbLiquidityReboundCE(),
+        BankNiftyGammaWallBreakoutPE(),
     ]
 
 
 def create_all_strategies() -> list[BaseStrategy]:
-    """Returns the full master roster of 32 active strategies (10 NIFTY + 11 SENSEX + 11 BANKNIFTY)."""
+    """Returns the full master roster of 44 active strategies (14 NIFTY + 15 SENSEX + 15 BANKNIFTY)."""
     return create_nifty_strategies() + create_sensex_strategies() + create_banknifty_strategies()
 
 

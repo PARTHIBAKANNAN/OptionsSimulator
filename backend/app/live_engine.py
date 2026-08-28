@@ -224,11 +224,44 @@ class WebLiveEngine(LiveTrader):
                         "take_profit": last.take_profit,
                     }
 
+            open_list = [
+                {
+                    "order_id": o.order_id,
+                    "contract": format_display_symbol(o.symbol, next_weekly_expiry_date(o.entry_time)),
+                    "qty": o.qty,
+                    "entry_price": o.entry_price,
+                    "entry_time": o.entry_time.isoformat(),
+                    "ltp": current_prices.get(o.symbol),
+                    "trade_pnl": o.unrealized_pnl(current_prices.get(o.symbol)) if current_prices.get(o.symbol) is not None else 0.0,
+                    "stop_loss": o.stop_loss,
+                    "take_profit": o.take_profit,
+                }
+                for o in opens
+            ]
+
+            closed_list = [
+                {
+                    "contract": format_display_symbol(o.symbol, next_weekly_expiry_date(o.entry_time)),
+                    "qty": o.qty,
+                    "entry_price": o.entry_price,
+                    "entry_time": o.entry_time.isoformat(),
+                    "exit_price": o.exit_price,
+                    "exit_time": o.exit_time.isoformat(),
+                    "pnl": o.net_pnl if o.net_pnl is not None else o.realized_pnl,
+                    "exit_reason": o.exit_reason,
+                    "stop_loss": o.stop_loss,
+                    "take_profit": o.take_profit,
+                }
+                for o in closed_today
+            ]
+
             rows.append({
                 "strategy": name,
                 "status": "SIGNAL_ENTERED" if opens else "WAITING",
                 "entry": entry,
                 "last_closed": last_closed,
+                "open_positions": open_list,
+                "closed_positions": closed_list,
                 "today_pnl": round(today_pnl, 2),
             })
         return rows

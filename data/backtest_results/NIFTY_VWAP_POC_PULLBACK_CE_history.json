@@ -1,0 +1,57 @@
+[
+  {
+    "symbol": "NIFTY25600CE",
+    "strategy": "NIFTY_VWAP_POC_PULLBACK_CE",
+    "entry_price": 130.64050999999998,
+    "entry_time": "2026-01-12T10:10:00",
+    "exit_price": 158.75,
+    "exit_time": "2026-01-12T12:10:00",
+    "exit_reason": "TIME_EXIT",
+    "realized_pnl": 1827.1168500000015,
+    "qty": 1
+  },
+  {
+    "symbol": "NIFTY25000CE",
+    "strategy": "NIFTY_VWAP_POC_PULLBACK_CE",
+    "entry_price": 88.02793999999999,
+    "entry_time": "2026-01-27T10:00:00",
+    "exit_price": 116.18,
+    "exit_time": "2026-01-27T12:00:00",
+    "exit_reason": "TIME_EXIT",
+    "realized_pnl": 1829.8839000000014,
+    "qty": 1
+  },
+  {
+    "symbol": "NIFTY23050CE",
+    "strategy": "NIFTY_VWAP_POC_PULLBACK_CE",
+    "entry_price": 141.46131999999997,
+    "entry_time": "2026-03-16T10:10:00",
+    "exit_price": 219.35,
+    "exit_time": "2026-03-16T12:10:00",
+    "exit_reason": "TIME_EXIT",
+    "realized_pnl": 5062.764200000001,
+    "qty": 1
+  },
+  {
+    "symbol": "NIFTY23600CE",
+    "strategy": "NIFTY_VWAP_POC_PULLBACK_CE",
+    "entry_price": 190.20000999999996,
+    "entry_time": "2026-05-22T09:45:00",
+    "exit_price": 199.55,
+    "exit_time": "2026-05-22T11:45:00",
+    "exit_reason": "TIME_EXIT",
+    "realized_pnl": 607.7493500000031,
+    "qty": 1
+  },
+  {
+    "symbol": "NIFTY23750CE",
+    "strategy": "NIFTY_VWAP_POC_PULLBACK_CE",
+    "entry_price": 230.36012999999997,
+    "entry_time": "2026-06-24T10:10:00",
+    "exit_price": 276.22,
+    "exit_time": "2026-06-24T12:10:00",
+    "exit_reason": "TIME_EXIT",
+    "realized_pnl": 2980.891550000004,
+    "qty": 1
+  }
+]
