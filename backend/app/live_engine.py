@@ -367,11 +367,14 @@ class WebLiveEngine(LiveTrader):
         today = datetime.now(IST).date()
         try:
             wallet_rows = await asyncio.wait_for(
-                pool.fetch("SELECT strategy, balance FROM options_wallets"), timeout=self.DB_TIMEOUT_SECS)
+                pool.fetch("SELECT strategy, balance, allocated_capital FROM options_wallets"), timeout=self.DB_TIMEOUT_SECS)
             restored_wallets = 0
             for row in wallet_rows:
-                if row["strategy"] in self.paper_trader.wallet_balance:
-                    self.paper_trader.wallet_balance[row["strategy"]] = float(row["balance"])
+                strat = row["strategy"]
+                if strat in self.paper_trader.wallet_balance:
+                    self.paper_trader.wallet_balance[strat] = float(row["balance"])
+                    if row["allocated_capital"] is not None:
+                        self.paper_trader.capital_by_strategy[strat] = float(row["allocated_capital"])
                     restored_wallets += 1
 
             open_rows = await asyncio.wait_for(

@@ -362,7 +362,7 @@ export function StrategyAnalyticsModal({ strategy, mode = "live", onClose }) {
                     <Wallet className="h-4 w-4 text-accent" /> Strategy Allocated Capital
                   </div>
                   <div className="mt-2 font-mono text-xl font-bold text-primary">
-                    {fmtRupee(liveData?.wallet?.allocated_capital ?? 85000)}
+                    {fmtRupee(liveData?.wallet?.allocated_capital ?? (strategy?.startsWith("BANKNIFTY") ? 30000 : 20000))}
                   </div>
                 </div>
                 <div className="rounded-xl border border-subtle bg-surface2/80 p-4">
@@ -370,7 +370,7 @@ export function StrategyAnalyticsModal({ strategy, mode = "live", onClose }) {
                     <ShieldCheck className="h-4 w-4 text-bull" /> Available Balance
                   </div>
                   <div className="mt-2 font-mono text-xl font-bold text-bull">
-                    {fmtRupee(liveData?.wallet?.balance ?? 85000)}
+                    {fmtRupee(liveData?.wallet?.balance ?? (strategy?.startsWith("BANKNIFTY") ? 30000 : 20000))}
                   </div>
                 </div>
                 <div className="rounded-xl border border-subtle bg-surface2/80 p-4">

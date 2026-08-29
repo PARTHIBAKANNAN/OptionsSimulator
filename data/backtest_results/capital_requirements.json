@@ -1,222 +1,222 @@
 {
-  "NIFTY_MACD_BULLISH_1M_ATM": {
-    "avg_trade_risk": 16000.0,
-    "max_historical_drawdown": 5784.58,
-    "recommended_capital": 21784.58
-  },
   "NIFTY_ORB_BULLISH_1M_ATM": {
-    "avg_trade_risk": 16000.0,
-    "max_historical_drawdown": 893.96,
-    "recommended_capital": 17000.0
+    "avg_trade_risk": 15000.0,
+    "max_historical_drawdown": 0.0,
+    "recommended_capital": 20000.0
+  },
+  "NIFTY_MACD_BULLISH_1M_ATM": {
+    "avg_trade_risk": 15000.0,
+    "max_historical_drawdown": 0.0,
+    "recommended_capital": 20000.0
   },
   "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM": {
-    "avg_trade_risk": 16000.0,
-    "max_historical_drawdown": 8867.0,
-    "recommended_capital": 24867.0
+    "avg_trade_risk": 15000.0,
+    "max_historical_drawdown": 0.0,
+    "recommended_capital": 20000.0
   },
   "NIFTY_MACD_BEARISH_1M_ATM": {
-    "avg_trade_risk": 16000.0,
-    "max_historical_drawdown": 4465.77,
-    "recommended_capital": 20465.77
+    "avg_trade_risk": 15000.0,
+    "max_historical_drawdown": 0.0,
+    "recommended_capital": 20000.0
   },
   "NIFTY_SUPPORT_BOUNCE_5M_ITM": {
-    "avg_trade_risk": 16000.0,
-    "max_historical_drawdown": 23.0,
-    "recommended_capital": 17000.0
+    "avg_trade_risk": 15000.0,
+    "max_historical_drawdown": 0.0,
+    "recommended_capital": 20000.0
   },
   "NIFTY_HEIKIN_ASHI_BULLISH_5M_ITM": {
-    "avg_trade_risk": 16000.0,
-    "max_historical_drawdown": 12858.68,
-    "recommended_capital": 28858.68
+    "avg_trade_risk": 15000.0,
+    "max_historical_drawdown": 0.0,
+    "recommended_capital": 20000.0
   },
   "NIFTY_ORB_BULLISH_5M_ITM": {
-    "avg_trade_risk": 16000.0,
-    "max_historical_drawdown": 150.69,
-    "recommended_capital": 17000.0
+    "avg_trade_risk": 15000.0,
+    "max_historical_drawdown": 0.0,
+    "recommended_capital": 20000.0
   },
   "NIFTY_RESISTANCE_REJECTION_5M_ITM": {
-    "avg_trade_risk": 16000.0,
-    "max_historical_drawdown": 1862.7,
-    "recommended_capital": 17862.7
+    "avg_trade_risk": 15000.0,
+    "max_historical_drawdown": 0.0,
+    "recommended_capital": 20000.0
   },
   "NIFTY_HEIKIN_ASHI_BEARISH_5M_ITM": {
-    "avg_trade_risk": 16000.0,
-    "max_historical_drawdown": 9764.13,
-    "recommended_capital": 25764.13
+    "avg_trade_risk": 15000.0,
+    "max_historical_drawdown": 0.0,
+    "recommended_capital": 20000.0
   },
   "NIFTY_ORB_BEARISH_5M_ITM": {
-    "avg_trade_risk": 16000.0,
-    "max_historical_drawdown": 242.19,
-    "recommended_capital": 17000.0
+    "avg_trade_risk": 15000.0,
+    "max_historical_drawdown": 0.0,
+    "recommended_capital": 20000.0
   },
   "NIFTY_VWAP_POC_PULLBACK_CE": {
-    "avg_trade_risk": 16000.0,
+    "avg_trade_risk": 15000.0,
     "max_historical_drawdown": 0.0,
-    "recommended_capital": 17000.0
+    "recommended_capital": 20000.0
   },
   "NIFTY_VWAP_POC_BREAKDOWN_PE": {
-    "avg_trade_risk": 16000.0,
-    "max_historical_drawdown": 1862.7,
-    "recommended_capital": 17862.7
+    "avg_trade_risk": 15000.0,
+    "max_historical_drawdown": 0.0,
+    "recommended_capital": 20000.0
   },
   "NIFTY_SUPERTREND_CMF_BULLISH_CE": {
-    "avg_trade_risk": 16000.0,
-    "max_historical_drawdown": 7090.75,
-    "recommended_capital": 23090.75
+    "avg_trade_risk": 15000.0,
+    "max_historical_drawdown": 0.0,
+    "recommended_capital": 20000.0
   },
   "NIFTY_SUPERTREND_CMF_BEARISH_PE": {
-    "avg_trade_risk": 16000.0,
-    "max_historical_drawdown": 9475.36,
-    "recommended_capital": 25475.36
+    "avg_trade_risk": 15000.0,
+    "max_historical_drawdown": 0.0,
+    "recommended_capital": 20000.0
   },
   "SENSEX_MACD_BULLISH_1M_ATM": {
-    "avg_trade_risk": 17000.0,
-    "max_historical_drawdown": 1383.8,
-    "recommended_capital": 18383.8
+    "avg_trade_risk": 15000.0,
+    "max_historical_drawdown": 0.0,
+    "recommended_capital": 20000.0
   },
   "SENSEX_SUPPORT_BOUNCE_1M_ATM": {
-    "avg_trade_risk": 17000.0,
-    "max_historical_drawdown": 3903.73,
-    "recommended_capital": 20903.73
+    "avg_trade_risk": 15000.0,
+    "max_historical_drawdown": 0.0,
+    "recommended_capital": 20000.0
   },
   "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM": {
-    "avg_trade_risk": 17000.0,
-    "max_historical_drawdown": 5281.8,
-    "recommended_capital": 22281.8
+    "avg_trade_risk": 15000.0,
+    "max_historical_drawdown": 0.0,
+    "recommended_capital": 20000.0
   },
   "SENSEX_MACD_BEARISH_1M_ATM": {
-    "avg_trade_risk": 17000.0,
-    "max_historical_drawdown": 1703.56,
-    "recommended_capital": 18703.56
+    "avg_trade_risk": 15000.0,
+    "max_historical_drawdown": 0.0,
+    "recommended_capital": 20000.0
   },
   "SENSEX_ORB_BEARISH_1M_ATM": {
-    "avg_trade_risk": 17000.0,
-    "max_historical_drawdown": 715.93,
-    "recommended_capital": 18000.0
+    "avg_trade_risk": 15000.0,
+    "max_historical_drawdown": 0.0,
+    "recommended_capital": 20000.0
   },
   "SENSEX_SUPPORT_BOUNCE_5M_ITM": {
-    "avg_trade_risk": 17000.0,
-    "max_historical_drawdown": 4241.24,
-    "recommended_capital": 21241.24
+    "avg_trade_risk": 15000.0,
+    "max_historical_drawdown": 0.0,
+    "recommended_capital": 20000.0
   },
   "SENSEX_HEIKIN_ASHI_BULLISH_5M_ITM": {
-    "avg_trade_risk": 17000.0,
-    "max_historical_drawdown": 6380.01,
-    "recommended_capital": 23380.01
+    "avg_trade_risk": 15000.0,
+    "max_historical_drawdown": 0.0,
+    "recommended_capital": 20000.0
   },
   "SENSEX_ORB_BULLISH_5M_ITM": {
-    "avg_trade_risk": 17000.0,
+    "avg_trade_risk": 15000.0,
     "max_historical_drawdown": 0.0,
-    "recommended_capital": 18000.0
+    "recommended_capital": 20000.0
   },
   "SENSEX_RESISTANCE_REJECTION_5M_ITM": {
-    "avg_trade_risk": 17000.0,
-    "max_historical_drawdown": 3710.7,
-    "recommended_capital": 20710.7
+    "avg_trade_risk": 15000.0,
+    "max_historical_drawdown": 0.0,
+    "recommended_capital": 20000.0
   },
   "SENSEX_HEIKIN_ASHI_BEARISH_5M_ITM": {
-    "avg_trade_risk": 17000.0,
-    "max_historical_drawdown": 6810.99,
-    "recommended_capital": 23810.99
+    "avg_trade_risk": 15000.0,
+    "max_historical_drawdown": 0.0,
+    "recommended_capital": 20000.0
   },
   "SENSEX_ORB_BEARISH_5M_ITM": {
-    "avg_trade_risk": 17000.0,
-    "max_historical_drawdown": 564.77,
-    "recommended_capital": 18000.0
+    "avg_trade_risk": 15000.0,
+    "max_historical_drawdown": 0.0,
+    "recommended_capital": 20000.0
   },
   "SENSEX_BB_SQUEEZE_EXPLOSION_CE": {
-    "avg_trade_risk": 17000.0,
-    "max_historical_drawdown": 8559.89,
-    "recommended_capital": 25559.89
+    "avg_trade_risk": 15000.0,
+    "max_historical_drawdown": 0.0,
+    "recommended_capital": 20000.0
   },
   "SENSEX_BB_SQUEEZE_EXPLOSION_PE": {
-    "avg_trade_risk": 17000.0,
-    "max_historical_drawdown": 10718.6,
-    "recommended_capital": 27718.6
+    "avg_trade_risk": 15000.0,
+    "max_historical_drawdown": 0.0,
+    "recommended_capital": 20000.0
   },
   "SENSEX_OI_SHORT_SQUEEZE_CE": {
-    "avg_trade_risk": 17000.0,
-    "max_historical_drawdown": 6335.1,
-    "recommended_capital": 23335.1
+    "avg_trade_risk": 15000.0,
+    "max_historical_drawdown": 0.0,
+    "recommended_capital": 20000.0
   },
   "SENSEX_OI_LONG_UNWINDING_PE": {
-    "avg_trade_risk": 17000.0,
-    "max_historical_drawdown": 8749.78,
-    "recommended_capital": 25749.78
+    "avg_trade_risk": 15000.0,
+    "max_historical_drawdown": 0.0,
+    "recommended_capital": 20000.0
   },
   "BANKNIFTY_MACD_BULLISH_1M_ATM": {
-    "avg_trade_risk": 15000.0,
-    "max_historical_drawdown": 14770.14,
-    "recommended_capital": 29770.14
+    "avg_trade_risk": 18000.0,
+    "max_historical_drawdown": 0.0,
+    "recommended_capital": 30000.0
   },
   "BANKNIFTY_SUPPORT_BOUNCE_1M_ATM": {
-    "avg_trade_risk": 15000.0,
-    "max_historical_drawdown": 15343.14,
-    "recommended_capital": 30343.14
+    "avg_trade_risk": 18000.0,
+    "max_historical_drawdown": 0.0,
+    "recommended_capital": 30000.0
   },
   "BANKNIFTY_HEIKIN_ASHI_BEARISH_1M_ATM": {
-    "avg_trade_risk": 15000.0,
-    "max_historical_drawdown": 17065.98,
-    "recommended_capital": 32065.98
+    "avg_trade_risk": 18000.0,
+    "max_historical_drawdown": 0.0,
+    "recommended_capital": 30000.0
   },
   "BANKNIFTY_MACD_BEARISH_1M_ATM": {
-    "avg_trade_risk": 15000.0,
-    "max_historical_drawdown": 11236.9,
-    "recommended_capital": 26236.9
+    "avg_trade_risk": 18000.0,
+    "max_historical_drawdown": 0.0,
+    "recommended_capital": 30000.0
   },
   "BANKNIFTY_ORB_BEARISH_1M_ATM": {
-    "avg_trade_risk": 15000.0,
-    "max_historical_drawdown": 14779.47,
-    "recommended_capital": 29779.47
+    "avg_trade_risk": 18000.0,
+    "max_historical_drawdown": 0.0,
+    "recommended_capital": 30000.0
   },
   "BANKNIFTY_SUPPORT_BOUNCE_5M_ITM": {
-    "avg_trade_risk": 15000.0,
-    "max_historical_drawdown": 23177.43,
-    "recommended_capital": 38177.43
+    "avg_trade_risk": 18000.0,
+    "max_historical_drawdown": 0.0,
+    "recommended_capital": 30000.0
   },
   "BANKNIFTY_HEIKIN_ASHI_BULLISH_5M_ITM": {
-    "avg_trade_risk": 15000.0,
-    "max_historical_drawdown": 22219.35,
-    "recommended_capital": 37219.35
+    "avg_trade_risk": 18000.0,
+    "max_historical_drawdown": 0.0,
+    "recommended_capital": 30000.0
   },
   "BANKNIFTY_ORB_BULLISH_5M_ITM": {
-    "avg_trade_risk": 15000.0,
-    "max_historical_drawdown": 15613.07,
-    "recommended_capital": 30613.07
+    "avg_trade_risk": 18000.0,
+    "max_historical_drawdown": 0.0,
+    "recommended_capital": 30000.0
   },
   "BANKNIFTY_RESISTANCE_REJECTION_5M_ITM": {
-    "avg_trade_risk": 15000.0,
-    "max_historical_drawdown": 17814.54,
-    "recommended_capital": 32814.54
+    "avg_trade_risk": 18000.0,
+    "max_historical_drawdown": 0.0,
+    "recommended_capital": 30000.0
   },
   "BANKNIFTY_HEIKIN_ASHI_BEARISH_5M_ITM": {
-    "avg_trade_risk": 15000.0,
-    "max_historical_drawdown": 21870.41,
-    "recommended_capital": 36870.41
+    "avg_trade_risk": 18000.0,
+    "max_historical_drawdown": 0.0,
+    "recommended_capital": 30000.0
   },
   "BANKNIFTY_ORB_BEARISH_5M_ITM": {
-    "avg_trade_risk": 15000.0,
-    "max_historical_drawdown": 17147.59,
-    "recommended_capital": 32147.59
+    "avg_trade_risk": 18000.0,
+    "max_historical_drawdown": 0.0,
+    "recommended_capital": 30000.0
   },
   "BANKNIFTY_DUAL_SUPERTREND_BB_CE": {
-    "avg_trade_risk": 15000.0,
-    "max_historical_drawdown": 13279.05,
-    "recommended_capital": 28279.05
+    "avg_trade_risk": 18000.0,
+    "max_historical_drawdown": 0.0,
+    "recommended_capital": 30000.0
   },
   "BANKNIFTY_DUAL_SUPERTREND_BB_PE": {
-    "avg_trade_risk": 15000.0,
-    "max_historical_drawdown": 16075.49,
-    "recommended_capital": 31075.49
+    "avg_trade_risk": 18000.0,
+    "max_historical_drawdown": 0.0,
+    "recommended_capital": 30000.0
   },
   "BANKNIFTY_VWAP_BB_LIQUIDITY_REBOUND_CE": {
-    "avg_trade_risk": 15000.0,
-    "max_historical_drawdown": 13279.05,
-    "recommended_capital": 28279.05
+    "avg_trade_risk": 18000.0,
+    "max_historical_drawdown": 0.0,
+    "recommended_capital": 30000.0
   },
   "BANKNIFTY_GAMMA_WALL_BREAKOUT_PE": {
-    "avg_trade_risk": 15000.0,
-    "max_historical_drawdown": 16075.49,
-    "recommended_capital": 31075.49
+    "avg_trade_risk": 18000.0,
+    "max_historical_drawdown": 0.0,
+    "recommended_capital": 30000.0
   }
 }
