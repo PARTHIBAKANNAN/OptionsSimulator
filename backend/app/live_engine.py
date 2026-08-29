@@ -373,7 +373,7 @@ class WebLiveEngine(LiveTrader):
                 strat = row["strategy"]
                 if strat in self.paper_trader.wallet_balance:
                     self.paper_trader.wallet_balance[strat] = float(row["balance"])
-                    if row["allocated_capital"] is not None:
+                    if row.get("allocated_capital") is not None:
                         self.paper_trader.capital_by_strategy[strat] = float(row["allocated_capital"])
                     restored_wallets += 1
 
