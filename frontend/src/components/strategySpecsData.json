@@ -1,0 +1,582 @@
+{
+  "NIFTY_ORB_BULLISH_1M_ATM": {
+    "timeframe": "1-Minute",
+    "index": "NSE NIFTY 50 (Lot Size: 65)",
+    "strikeMode": "Delta-Optimized ATM Call (CE)",
+    "profile": "1-Minute Momentum Alpha",
+    "indicators": [
+      "Opening Range Breakout (09:15-09:25)",
+      "Volume Breakout"
+    ],
+    "summary": "High-probability algorithmic 1-Minute execution model on NSE NIFTY 50 (Lot Size: 65) trading Delta-Optimized ATM Call (CE).",
+    "overview": "Monitors real-time price discovery and volatility structure using Opening Range Breakout (09:15-09:25) with disciplined profit trailing and strict invalidation stops.",
+    "riskProfile": "Strict per-trade stop loss with multi-tiered stepped trailing profit ratchet and 15:15 EOD square-off."
+  },
+  "NIFTY_MACD_BULLISH_1M_ATM": {
+    "timeframe": "1-Minute",
+    "index": "NSE NIFTY 50 (Lot Size: 65)",
+    "strikeMode": "Delta-Optimized ATM Call (CE)",
+    "profile": "1-Minute Momentum Alpha",
+    "indicators": [
+      "MACD Histogram",
+      "Signal Line Cross"
+    ],
+    "summary": "High-probability algorithmic 1-Minute execution model on NSE NIFTY 50 (Lot Size: 65) trading Delta-Optimized ATM Call (CE).",
+    "overview": "Monitors real-time price discovery and volatility structure using MACD Histogram with disciplined profit trailing and strict invalidation stops.",
+    "riskProfile": "Strict per-trade stop loss with multi-tiered stepped trailing profit ratchet and 15:15 EOD square-off."
+  },
+  "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM": {
+    "timeframe": "1-Minute",
+    "index": "NSE NIFTY 50 (Lot Size: 65)",
+    "strikeMode": "Delta-Optimized ATM Put (PE)",
+    "profile": "1-Minute Momentum Alpha",
+    "indicators": [
+      "Heikin-Ashi Trend Color",
+      "Directional Momentum Filter"
+    ],
+    "summary": "High-probability algorithmic 1-Minute execution model on NSE NIFTY 50 (Lot Size: 65) trading Delta-Optimized ATM Put (PE).",
+    "overview": "Monitors real-time price discovery and volatility structure using Heikin-Ashi Trend Color with disciplined profit trailing and strict invalidation stops.",
+    "riskProfile": "Strict per-trade stop loss with multi-tiered stepped trailing profit ratchet and 15:15 EOD square-off."
+  },
+  "NIFTY_MACD_BEARISH_1M_ATM": {
+    "timeframe": "1-Minute",
+    "index": "NSE NIFTY 50 (Lot Size: 65)",
+    "strikeMode": "Delta-Optimized ATM Put (PE)",
+    "profile": "1-Minute Momentum Alpha",
+    "indicators": [
+      "MACD Histogram",
+      "Signal Line Cross"
+    ],
+    "summary": "High-probability algorithmic 1-Minute execution model on NSE NIFTY 50 (Lot Size: 65) trading Delta-Optimized ATM Put (PE).",
+    "overview": "Monitors real-time price discovery and volatility structure using MACD Histogram with disciplined profit trailing and strict invalidation stops.",
+    "riskProfile": "Strict per-trade stop loss with multi-tiered stepped trailing profit ratchet and 15:15 EOD square-off."
+  },
+  "NIFTY_SUPPORT_BOUNCE_5M_ITM": {
+    "timeframe": "5-Minute",
+    "index": "NSE NIFTY 50 (Lot Size: 65)",
+    "strikeMode": "Delta-Optimized ITM Call (CE)",
+    "profile": "5-Minute Momentum Alpha",
+    "indicators": [
+      "Dynamic EMA Support",
+      "Mean-Reversion Rebound"
+    ],
+    "summary": "High-probability algorithmic 5-Minute execution model on NSE NIFTY 50 (Lot Size: 65) trading Delta-Optimized ITM Call (CE).",
+    "overview": "Monitors real-time price discovery and volatility structure using Dynamic EMA Support with disciplined profit trailing and strict invalidation stops.",
+    "riskProfile": "Strict per-trade stop loss with multi-tiered stepped trailing profit ratchet and 15:15 EOD square-off."
+  },
+  "NIFTY_HEIKIN_ASHI_BULLISH_5M_ITM": {
+    "timeframe": "5-Minute",
+    "index": "NSE NIFTY 50 (Lot Size: 65)",
+    "strikeMode": "Delta-Optimized ITM Call (CE)",
+    "profile": "5-Minute Momentum Alpha",
+    "indicators": [
+      "Heikin-Ashi Trend Color",
+      "Directional Momentum Filter"
+    ],
+    "summary": "High-probability algorithmic 5-Minute execution model on NSE NIFTY 50 (Lot Size: 65) trading Delta-Optimized ITM Call (CE).",
+    "overview": "Monitors real-time price discovery and volatility structure using Heikin-Ashi Trend Color with disciplined profit trailing and strict invalidation stops.",
+    "riskProfile": "Strict per-trade stop loss with multi-tiered stepped trailing profit ratchet and 15:15 EOD square-off."
+  },
+  "NIFTY_ORB_BULLISH_5M_ITM": {
+    "timeframe": "5-Minute",
+    "index": "NSE NIFTY 50 (Lot Size: 65)",
+    "strikeMode": "Delta-Optimized ITM Call (CE)",
+    "profile": "5-Minute Momentum Alpha",
+    "indicators": [
+      "Opening Range Breakout (09:15-09:25)",
+      "Volume Breakout"
+    ],
+    "summary": "High-probability algorithmic 5-Minute execution model on NSE NIFTY 50 (Lot Size: 65) trading Delta-Optimized ITM Call (CE).",
+    "overview": "Monitors real-time price discovery and volatility structure using Opening Range Breakout (09:15-09:25) with disciplined profit trailing and strict invalidation stops.",
+    "riskProfile": "Strict per-trade stop loss with multi-tiered stepped trailing profit ratchet and 15:15 EOD square-off."
+  },
+  "NIFTY_RESISTANCE_REJECTION_5M_ITM": {
+    "timeframe": "5-Minute",
+    "index": "NSE NIFTY 50 (Lot Size: 65)",
+    "strikeMode": "Delta-Optimized ITM Call (CE)",
+    "profile": "5-Minute Momentum Alpha",
+    "indicators": [
+      "Dynamic EMA Resistance",
+      "Trend Continuation Rejection"
+    ],
+    "summary": "High-probability algorithmic 5-Minute execution model on NSE NIFTY 50 (Lot Size: 65) trading Delta-Optimized ITM Call (CE).",
+    "overview": "Monitors real-time price discovery and volatility structure using Dynamic EMA Resistance with disciplined profit trailing and strict invalidation stops.",
+    "riskProfile": "Strict per-trade stop loss with multi-tiered stepped trailing profit ratchet and 15:15 EOD square-off."
+  },
+  "NIFTY_HEIKIN_ASHI_BEARISH_5M_ITM": {
+    "timeframe": "5-Minute",
+    "index": "NSE NIFTY 50 (Lot Size: 65)",
+    "strikeMode": "Delta-Optimized ITM Put (PE)",
+    "profile": "5-Minute Momentum Alpha",
+    "indicators": [
+      "Heikin-Ashi Trend Color",
+      "Directional Momentum Filter"
+    ],
+    "summary": "High-probability algorithmic 5-Minute execution model on NSE NIFTY 50 (Lot Size: 65) trading Delta-Optimized ITM Put (PE).",
+    "overview": "Monitors real-time price discovery and volatility structure using Heikin-Ashi Trend Color with disciplined profit trailing and strict invalidation stops.",
+    "riskProfile": "Strict per-trade stop loss with multi-tiered stepped trailing profit ratchet and 15:15 EOD square-off."
+  },
+  "NIFTY_ORB_BEARISH_5M_ITM": {
+    "timeframe": "5-Minute",
+    "index": "NSE NIFTY 50 (Lot Size: 65)",
+    "strikeMode": "Delta-Optimized ITM Put (PE)",
+    "profile": "5-Minute Momentum Alpha",
+    "indicators": [
+      "Opening Range Breakout (09:15-09:25)",
+      "Volume Breakout"
+    ],
+    "summary": "High-probability algorithmic 5-Minute execution model on NSE NIFTY 50 (Lot Size: 65) trading Delta-Optimized ITM Put (PE).",
+    "overview": "Monitors real-time price discovery and volatility structure using Opening Range Breakout (09:15-09:25) with disciplined profit trailing and strict invalidation stops.",
+    "riskProfile": "Strict per-trade stop loss with multi-tiered stepped trailing profit ratchet and 15:15 EOD square-off."
+  },
+  "NIFTY_VWAP_POC_PULLBACK_CE": {
+    "timeframe": "1-Minute",
+    "index": "NSE NIFTY 50 (Lot Size: 65)",
+    "strikeMode": "Delta-Optimized ATM Call (CE)",
+    "profile": "1-Minute Momentum Alpha",
+    "indicators": [
+      "Intraday VWAP",
+      "POC / Liquidity S/R"
+    ],
+    "summary": "High-probability algorithmic 1-Minute execution model on NSE NIFTY 50 (Lot Size: 65) trading Delta-Optimized ATM Call (CE).",
+    "overview": "Monitors real-time price discovery and volatility structure using Intraday VWAP with disciplined profit trailing and strict invalidation stops.",
+    "riskProfile": "Strict per-trade stop loss with multi-tiered stepped trailing profit ratchet and 15:15 EOD square-off."
+  },
+  "NIFTY_VWAP_POC_BREAKDOWN_PE": {
+    "timeframe": "1-Minute",
+    "index": "NSE NIFTY 50 (Lot Size: 65)",
+    "strikeMode": "Delta-Optimized ATM Put (PE)",
+    "profile": "1-Minute Momentum Alpha",
+    "indicators": [
+      "Intraday VWAP",
+      "POC / Liquidity S/R"
+    ],
+    "summary": "High-probability algorithmic 1-Minute execution model on NSE NIFTY 50 (Lot Size: 65) trading Delta-Optimized ATM Put (PE).",
+    "overview": "Monitors real-time price discovery and volatility structure using Intraday VWAP with disciplined profit trailing and strict invalidation stops.",
+    "riskProfile": "Strict per-trade stop loss with multi-tiered stepped trailing profit ratchet and 15:15 EOD square-off."
+  },
+  "NIFTY_SUPERTREND_CMF_BULLISH_CE": {
+    "timeframe": "1-Minute",
+    "index": "NSE NIFTY 50 (Lot Size: 65)",
+    "strikeMode": "Delta-Optimized ATM Call (CE)",
+    "profile": "1-Minute Momentum Alpha",
+    "indicators": [
+      "Dual Supertrend (10,3 / 7,2)",
+      "Chaikin Money Flow (CMF)"
+    ],
+    "summary": "High-probability algorithmic 1-Minute execution model on NSE NIFTY 50 (Lot Size: 65) trading Delta-Optimized ATM Call (CE).",
+    "overview": "Monitors real-time price discovery and volatility structure using Dual Supertrend (10,3 / 7,2) with disciplined profit trailing and strict invalidation stops.",
+    "riskProfile": "Strict per-trade stop loss with multi-tiered stepped trailing profit ratchet and 15:15 EOD square-off."
+  },
+  "NIFTY_SUPERTREND_CMF_BEARISH_PE": {
+    "timeframe": "1-Minute",
+    "index": "NSE NIFTY 50 (Lot Size: 65)",
+    "strikeMode": "Delta-Optimized ATM Put (PE)",
+    "profile": "1-Minute Momentum Alpha",
+    "indicators": [
+      "Dual Supertrend (10,3 / 7,2)",
+      "Chaikin Money Flow (CMF)"
+    ],
+    "summary": "High-probability algorithmic 1-Minute execution model on NSE NIFTY 50 (Lot Size: 65) trading Delta-Optimized ATM Put (PE).",
+    "overview": "Monitors real-time price discovery and volatility structure using Dual Supertrend (10,3 / 7,2) with disciplined profit trailing and strict invalidation stops.",
+    "riskProfile": "Strict per-trade stop loss with multi-tiered stepped trailing profit ratchet and 15:15 EOD square-off."
+  },
+  "SENSEX_MACD_BULLISH_1M_ATM": {
+    "timeframe": "1-Minute",
+    "index": "BSE SENSEX (Lot Size: 20)",
+    "strikeMode": "Delta-Optimized ATM Call (CE)",
+    "profile": "1-Minute Momentum Alpha",
+    "indicators": [
+      "MACD Histogram",
+      "Signal Line Cross"
+    ],
+    "summary": "High-probability algorithmic 1-Minute execution model on BSE SENSEX (Lot Size: 20) trading Delta-Optimized ATM Call (CE).",
+    "overview": "Monitors real-time price discovery and volatility structure using MACD Histogram with disciplined profit trailing and strict invalidation stops.",
+    "riskProfile": "Strict per-trade stop loss with multi-tiered stepped trailing profit ratchet and 15:15 EOD square-off."
+  },
+  "SENSEX_SUPPORT_BOUNCE_1M_ATM": {
+    "timeframe": "1-Minute",
+    "index": "BSE SENSEX (Lot Size: 20)",
+    "strikeMode": "Delta-Optimized ATM Call (CE)",
+    "profile": "1-Minute Momentum Alpha",
+    "indicators": [
+      "Dynamic EMA Support",
+      "Mean-Reversion Rebound"
+    ],
+    "summary": "High-probability algorithmic 1-Minute execution model on BSE SENSEX (Lot Size: 20) trading Delta-Optimized ATM Call (CE).",
+    "overview": "Monitors real-time price discovery and volatility structure using Dynamic EMA Support with disciplined profit trailing and strict invalidation stops.",
+    "riskProfile": "Strict per-trade stop loss with multi-tiered stepped trailing profit ratchet and 15:15 EOD square-off."
+  },
+  "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM": {
+    "timeframe": "1-Minute",
+    "index": "BSE SENSEX (Lot Size: 20)",
+    "strikeMode": "Delta-Optimized ATM Put (PE)",
+    "profile": "1-Minute Momentum Alpha",
+    "indicators": [
+      "Heikin-Ashi Trend Color",
+      "Directional Momentum Filter"
+    ],
+    "summary": "High-probability algorithmic 1-Minute execution model on BSE SENSEX (Lot Size: 20) trading Delta-Optimized ATM Put (PE).",
+    "overview": "Monitors real-time price discovery and volatility structure using Heikin-Ashi Trend Color with disciplined profit trailing and strict invalidation stops.",
+    "riskProfile": "Strict per-trade stop loss with multi-tiered stepped trailing profit ratchet and 15:15 EOD square-off."
+  },
+  "SENSEX_MACD_BEARISH_1M_ATM": {
+    "timeframe": "1-Minute",
+    "index": "BSE SENSEX (Lot Size: 20)",
+    "strikeMode": "Delta-Optimized ATM Put (PE)",
+    "profile": "1-Minute Momentum Alpha",
+    "indicators": [
+      "MACD Histogram",
+      "Signal Line Cross"
+    ],
+    "summary": "High-probability algorithmic 1-Minute execution model on BSE SENSEX (Lot Size: 20) trading Delta-Optimized ATM Put (PE).",
+    "overview": "Monitors real-time price discovery and volatility structure using MACD Histogram with disciplined profit trailing and strict invalidation stops.",
+    "riskProfile": "Strict per-trade stop loss with multi-tiered stepped trailing profit ratchet and 15:15 EOD square-off."
+  },
+  "SENSEX_ORB_BEARISH_1M_ATM": {
+    "timeframe": "1-Minute",
+    "index": "BSE SENSEX (Lot Size: 20)",
+    "strikeMode": "Delta-Optimized ATM Put (PE)",
+    "profile": "1-Minute Momentum Alpha",
+    "indicators": [
+      "Opening Range Breakout (09:15-09:25)",
+      "Volume Breakout"
+    ],
+    "summary": "High-probability algorithmic 1-Minute execution model on BSE SENSEX (Lot Size: 20) trading Delta-Optimized ATM Put (PE).",
+    "overview": "Monitors real-time price discovery and volatility structure using Opening Range Breakout (09:15-09:25) with disciplined profit trailing and strict invalidation stops.",
+    "riskProfile": "Strict per-trade stop loss with multi-tiered stepped trailing profit ratchet and 15:15 EOD square-off."
+  },
+  "SENSEX_SUPPORT_BOUNCE_5M_ITM": {
+    "timeframe": "5-Minute",
+    "index": "BSE SENSEX (Lot Size: 20)",
+    "strikeMode": "Delta-Optimized ITM Call (CE)",
+    "profile": "5-Minute Momentum Alpha",
+    "indicators": [
+      "Dynamic EMA Support",
+      "Mean-Reversion Rebound"
+    ],
+    "summary": "High-probability algorithmic 5-Minute execution model on BSE SENSEX (Lot Size: 20) trading Delta-Optimized ITM Call (CE).",
+    "overview": "Monitors real-time price discovery and volatility structure using Dynamic EMA Support with disciplined profit trailing and strict invalidation stops.",
+    "riskProfile": "Strict per-trade stop loss with multi-tiered stepped trailing profit ratchet and 15:15 EOD square-off."
+  },
+  "SENSEX_HEIKIN_ASHI_BULLISH_5M_ITM": {
+    "timeframe": "5-Minute",
+    "index": "BSE SENSEX (Lot Size: 20)",
+    "strikeMode": "Delta-Optimized ITM Call (CE)",
+    "profile": "5-Minute Momentum Alpha",
+    "indicators": [
+      "Heikin-Ashi Trend Color",
+      "Directional Momentum Filter"
+    ],
+    "summary": "High-probability algorithmic 5-Minute execution model on BSE SENSEX (Lot Size: 20) trading Delta-Optimized ITM Call (CE).",
+    "overview": "Monitors real-time price discovery and volatility structure using Heikin-Ashi Trend Color with disciplined profit trailing and strict invalidation stops.",
+    "riskProfile": "Strict per-trade stop loss with multi-tiered stepped trailing profit ratchet and 15:15 EOD square-off."
+  },
+  "SENSEX_ORB_BULLISH_5M_ITM": {
+    "timeframe": "5-Minute",
+    "index": "BSE SENSEX (Lot Size: 20)",
+    "strikeMode": "Delta-Optimized ITM Call (CE)",
+    "profile": "5-Minute Momentum Alpha",
+    "indicators": [
+      "Opening Range Breakout (09:15-09:25)",
+      "Volume Breakout"
+    ],
+    "summary": "High-probability algorithmic 5-Minute execution model on BSE SENSEX (Lot Size: 20) trading Delta-Optimized ITM Call (CE).",
+    "overview": "Monitors real-time price discovery and volatility structure using Opening Range Breakout (09:15-09:25) with disciplined profit trailing and strict invalidation stops.",
+    "riskProfile": "Strict per-trade stop loss with multi-tiered stepped trailing profit ratchet and 15:15 EOD square-off."
+  },
+  "SENSEX_RESISTANCE_REJECTION_5M_ITM": {
+    "timeframe": "5-Minute",
+    "index": "BSE SENSEX (Lot Size: 20)",
+    "strikeMode": "Delta-Optimized ITM Call (CE)",
+    "profile": "5-Minute Momentum Alpha",
+    "indicators": [
+      "Dynamic EMA Resistance",
+      "Trend Continuation Rejection"
+    ],
+    "summary": "High-probability algorithmic 5-Minute execution model on BSE SENSEX (Lot Size: 20) trading Delta-Optimized ITM Call (CE).",
+    "overview": "Monitors real-time price discovery and volatility structure using Dynamic EMA Resistance with disciplined profit trailing and strict invalidation stops.",
+    "riskProfile": "Strict per-trade stop loss with multi-tiered stepped trailing profit ratchet and 15:15 EOD square-off."
+  },
+  "SENSEX_HEIKIN_ASHI_BEARISH_5M_ITM": {
+    "timeframe": "5-Minute",
+    "index": "BSE SENSEX (Lot Size: 20)",
+    "strikeMode": "Delta-Optimized ITM Put (PE)",
+    "profile": "5-Minute Momentum Alpha",
+    "indicators": [
+      "Heikin-Ashi Trend Color",
+      "Directional Momentum Filter"
+    ],
+    "summary": "High-probability algorithmic 5-Minute execution model on BSE SENSEX (Lot Size: 20) trading Delta-Optimized ITM Put (PE).",
+    "overview": "Monitors real-time price discovery and volatility structure using Heikin-Ashi Trend Color with disciplined profit trailing and strict invalidation stops.",
+    "riskProfile": "Strict per-trade stop loss with multi-tiered stepped trailing profit ratchet and 15:15 EOD square-off."
+  },
+  "SENSEX_ORB_BEARISH_5M_ITM": {
+    "timeframe": "5-Minute",
+    "index": "BSE SENSEX (Lot Size: 20)",
+    "strikeMode": "Delta-Optimized ITM Put (PE)",
+    "profile": "5-Minute Momentum Alpha",
+    "indicators": [
+      "Opening Range Breakout (09:15-09:25)",
+      "Volume Breakout"
+    ],
+    "summary": "High-probability algorithmic 5-Minute execution model on BSE SENSEX (Lot Size: 20) trading Delta-Optimized ITM Put (PE).",
+    "overview": "Monitors real-time price discovery and volatility structure using Opening Range Breakout (09:15-09:25) with disciplined profit trailing and strict invalidation stops.",
+    "riskProfile": "Strict per-trade stop loss with multi-tiered stepped trailing profit ratchet and 15:15 EOD square-off."
+  },
+  "SENSEX_BB_SQUEEZE_EXPLOSION_CE": {
+    "timeframe": "1-Minute",
+    "index": "BSE SENSEX (Lot Size: 20)",
+    "strikeMode": "Delta-Optimized ATM Call (CE)",
+    "profile": "1-Minute Momentum Alpha",
+    "indicators": [
+      "Bollinger Bands Squeeze",
+      "Volatility Expansion Band"
+    ],
+    "summary": "High-probability algorithmic 1-Minute execution model on BSE SENSEX (Lot Size: 20) trading Delta-Optimized ATM Call (CE).",
+    "overview": "Monitors real-time price discovery and volatility structure using Bollinger Bands Squeeze with disciplined profit trailing and strict invalidation stops.",
+    "riskProfile": "Strict per-trade stop loss with multi-tiered stepped trailing profit ratchet and 15:15 EOD square-off."
+  },
+  "SENSEX_BB_SQUEEZE_EXPLOSION_PE": {
+    "timeframe": "1-Minute",
+    "index": "BSE SENSEX (Lot Size: 20)",
+    "strikeMode": "Delta-Optimized ATM Call (CE)",
+    "profile": "1-Minute Momentum Alpha",
+    "indicators": [
+      "Bollinger Bands Squeeze",
+      "Volatility Expansion Band"
+    ],
+    "summary": "High-probability algorithmic 1-Minute execution model on BSE SENSEX (Lot Size: 20) trading Delta-Optimized ATM Call (CE).",
+    "overview": "Monitors real-time price discovery and volatility structure using Bollinger Bands Squeeze with disciplined profit trailing and strict invalidation stops.",
+    "riskProfile": "Strict per-trade stop loss with multi-tiered stepped trailing profit ratchet and 15:15 EOD square-off."
+  },
+  "SENSEX_OI_SHORT_SQUEEZE_CE": {
+    "timeframe": "1-Minute",
+    "index": "BSE SENSEX (Lot Size: 20)",
+    "strikeMode": "Delta-Optimized ATM Call (CE)",
+    "profile": "1-Minute Momentum Alpha",
+    "indicators": [
+      "Bollinger Bands Squeeze",
+      "Volatility Expansion Band",
+      "Strike OI Momentum",
+      "Open Interest Shift / Squeeze"
+    ],
+    "summary": "High-probability algorithmic 1-Minute execution model on BSE SENSEX (Lot Size: 20) trading Delta-Optimized ATM Call (CE).",
+    "overview": "Monitors real-time price discovery and volatility structure using Bollinger Bands Squeeze with disciplined profit trailing and strict invalidation stops.",
+    "riskProfile": "Strict per-trade stop loss with multi-tiered stepped trailing profit ratchet and 15:15 EOD square-off."
+  },
+  "SENSEX_OI_LONG_UNWINDING_PE": {
+    "timeframe": "1-Minute",
+    "index": "BSE SENSEX (Lot Size: 20)",
+    "strikeMode": "Delta-Optimized ATM Put (PE)",
+    "profile": "1-Minute Momentum Alpha",
+    "indicators": [
+      "Strike OI Momentum",
+      "Open Interest Shift / Squeeze"
+    ],
+    "summary": "High-probability algorithmic 1-Minute execution model on BSE SENSEX (Lot Size: 20) trading Delta-Optimized ATM Put (PE).",
+    "overview": "Monitors real-time price discovery and volatility structure using Strike OI Momentum with disciplined profit trailing and strict invalidation stops.",
+    "riskProfile": "Strict per-trade stop loss with multi-tiered stepped trailing profit ratchet and 15:15 EOD square-off."
+  },
+  "BANKNIFTY_MACD_BULLISH_1M_ATM": {
+    "timeframe": "1-Minute",
+    "index": "NSE BANKNIFTY (Lot Size: 30)",
+    "strikeMode": "Delta-Optimized ATM Call (CE)",
+    "profile": "1-Minute Momentum Alpha",
+    "indicators": [
+      "MACD Histogram",
+      "Signal Line Cross"
+    ],
+    "summary": "High-probability algorithmic 1-Minute execution model on NSE BANKNIFTY (Lot Size: 30) trading Delta-Optimized ATM Call (CE).",
+    "overview": "Monitors real-time price discovery and volatility structure using MACD Histogram with disciplined profit trailing and strict invalidation stops.",
+    "riskProfile": "Strict per-trade stop loss with multi-tiered stepped trailing profit ratchet and 15:15 EOD square-off."
+  },
+  "BANKNIFTY_SUPPORT_BOUNCE_1M_ATM": {
+    "timeframe": "1-Minute",
+    "index": "NSE BANKNIFTY (Lot Size: 30)",
+    "strikeMode": "Delta-Optimized ATM Call (CE)",
+    "profile": "1-Minute Momentum Alpha",
+    "indicators": [
+      "Dynamic EMA Support",
+      "Mean-Reversion Rebound"
+    ],
+    "summary": "High-probability algorithmic 1-Minute execution model on NSE BANKNIFTY (Lot Size: 30) trading Delta-Optimized ATM Call (CE).",
+    "overview": "Monitors real-time price discovery and volatility structure using Dynamic EMA Support with disciplined profit trailing and strict invalidation stops.",
+    "riskProfile": "Strict per-trade stop loss with multi-tiered stepped trailing profit ratchet and 15:15 EOD square-off."
+  },
+  "BANKNIFTY_HEIKIN_ASHI_BEARISH_1M_ATM": {
+    "timeframe": "1-Minute",
+    "index": "NSE BANKNIFTY (Lot Size: 30)",
+    "strikeMode": "Delta-Optimized ATM Put (PE)",
+    "profile": "1-Minute Momentum Alpha",
+    "indicators": [
+      "Heikin-Ashi Trend Color",
+      "Directional Momentum Filter"
+    ],
+    "summary": "High-probability algorithmic 1-Minute execution model on NSE BANKNIFTY (Lot Size: 30) trading Delta-Optimized ATM Put (PE).",
+    "overview": "Monitors real-time price discovery and volatility structure using Heikin-Ashi Trend Color with disciplined profit trailing and strict invalidation stops.",
+    "riskProfile": "Strict per-trade stop loss with multi-tiered stepped trailing profit ratchet and 15:15 EOD square-off."
+  },
+  "BANKNIFTY_MACD_BEARISH_1M_ATM": {
+    "timeframe": "1-Minute",
+    "index": "NSE BANKNIFTY (Lot Size: 30)",
+    "strikeMode": "Delta-Optimized ATM Put (PE)",
+    "profile": "1-Minute Momentum Alpha",
+    "indicators": [
+      "MACD Histogram",
+      "Signal Line Cross"
+    ],
+    "summary": "High-probability algorithmic 1-Minute execution model on NSE BANKNIFTY (Lot Size: 30) trading Delta-Optimized ATM Put (PE).",
+    "overview": "Monitors real-time price discovery and volatility structure using MACD Histogram with disciplined profit trailing and strict invalidation stops.",
+    "riskProfile": "Strict per-trade stop loss with multi-tiered stepped trailing profit ratchet and 15:15 EOD square-off."
+  },
+  "BANKNIFTY_ORB_BEARISH_1M_ATM": {
+    "timeframe": "1-Minute",
+    "index": "NSE BANKNIFTY (Lot Size: 30)",
+    "strikeMode": "Delta-Optimized ATM Put (PE)",
+    "profile": "1-Minute Momentum Alpha",
+    "indicators": [
+      "Opening Range Breakout (09:15-09:25)",
+      "Volume Breakout"
+    ],
+    "summary": "High-probability algorithmic 1-Minute execution model on NSE BANKNIFTY (Lot Size: 30) trading Delta-Optimized ATM Put (PE).",
+    "overview": "Monitors real-time price discovery and volatility structure using Opening Range Breakout (09:15-09:25) with disciplined profit trailing and strict invalidation stops.",
+    "riskProfile": "Strict per-trade stop loss with multi-tiered stepped trailing profit ratchet and 15:15 EOD square-off."
+  },
+  "BANKNIFTY_SUPPORT_BOUNCE_5M_ITM": {
+    "timeframe": "5-Minute",
+    "index": "NSE BANKNIFTY (Lot Size: 30)",
+    "strikeMode": "Delta-Optimized ITM Call (CE)",
+    "profile": "5-Minute Momentum Alpha",
+    "indicators": [
+      "Dynamic EMA Support",
+      "Mean-Reversion Rebound"
+    ],
+    "summary": "High-probability algorithmic 5-Minute execution model on NSE BANKNIFTY (Lot Size: 30) trading Delta-Optimized ITM Call (CE).",
+    "overview": "Monitors real-time price discovery and volatility structure using Dynamic EMA Support with disciplined profit trailing and strict invalidation stops.",
+    "riskProfile": "Strict per-trade stop loss with multi-tiered stepped trailing profit ratchet and 15:15 EOD square-off."
+  },
+  "BANKNIFTY_HEIKIN_ASHI_BULLISH_5M_ITM": {
+    "timeframe": "5-Minute",
+    "index": "NSE BANKNIFTY (Lot Size: 30)",
+    "strikeMode": "Delta-Optimized ITM Call (CE)",
+    "profile": "5-Minute Momentum Alpha",
+    "indicators": [
+      "Heikin-Ashi Trend Color",
+      "Directional Momentum Filter"
+    ],
+    "summary": "High-probability algorithmic 5-Minute execution model on NSE BANKNIFTY (Lot Size: 30) trading Delta-Optimized ITM Call (CE).",
+    "overview": "Monitors real-time price discovery and volatility structure using Heikin-Ashi Trend Color with disciplined profit trailing and strict invalidation stops.",
+    "riskProfile": "Strict per-trade stop loss with multi-tiered stepped trailing profit ratchet and 15:15 EOD square-off."
+  },
+  "BANKNIFTY_ORB_BULLISH_5M_ITM": {
+    "timeframe": "5-Minute",
+    "index": "NSE BANKNIFTY (Lot Size: 30)",
+    "strikeMode": "Delta-Optimized ITM Call (CE)",
+    "profile": "5-Minute Momentum Alpha",
+    "indicators": [
+      "Opening Range Breakout (09:15-09:25)",
+      "Volume Breakout"
+    ],
+    "summary": "High-probability algorithmic 5-Minute execution model on NSE BANKNIFTY (Lot Size: 30) trading Delta-Optimized ITM Call (CE).",
+    "overview": "Monitors real-time price discovery and volatility structure using Opening Range Breakout (09:15-09:25) with disciplined profit trailing and strict invalidation stops.",
+    "riskProfile": "Strict per-trade stop loss with multi-tiered stepped trailing profit ratchet and 15:15 EOD square-off."
+  },
+  "BANKNIFTY_RESISTANCE_REJECTION_5M_ITM": {
+    "timeframe": "5-Minute",
+    "index": "NSE BANKNIFTY (Lot Size: 30)",
+    "strikeMode": "Delta-Optimized ITM Call (CE)",
+    "profile": "5-Minute Momentum Alpha",
+    "indicators": [
+      "Dynamic EMA Resistance",
+      "Trend Continuation Rejection"
+    ],
+    "summary": "High-probability algorithmic 5-Minute execution model on NSE BANKNIFTY (Lot Size: 30) trading Delta-Optimized ITM Call (CE).",
+    "overview": "Monitors real-time price discovery and volatility structure using Dynamic EMA Resistance with disciplined profit trailing and strict invalidation stops.",
+    "riskProfile": "Strict per-trade stop loss with multi-tiered stepped trailing profit ratchet and 15:15 EOD square-off."
+  },
+  "BANKNIFTY_HEIKIN_ASHI_BEARISH_5M_ITM": {
+    "timeframe": "5-Minute",
+    "index": "NSE BANKNIFTY (Lot Size: 30)",
+    "strikeMode": "Delta-Optimized ITM Put (PE)",
+    "profile": "5-Minute Momentum Alpha",
+    "indicators": [
+      "Heikin-Ashi Trend Color",
+      "Directional Momentum Filter"
+    ],
+    "summary": "High-probability algorithmic 5-Minute execution model on NSE BANKNIFTY (Lot Size: 30) trading Delta-Optimized ITM Put (PE).",
+    "overview": "Monitors real-time price discovery and volatility structure using Heikin-Ashi Trend Color with disciplined profit trailing and strict invalidation stops.",
+    "riskProfile": "Strict per-trade stop loss with multi-tiered stepped trailing profit ratchet and 15:15 EOD square-off."
+  },
+  "BANKNIFTY_ORB_BEARISH_5M_ITM": {
+    "timeframe": "5-Minute",
+    "index": "NSE BANKNIFTY (Lot Size: 30)",
+    "strikeMode": "Delta-Optimized ITM Put (PE)",
+    "profile": "5-Minute Momentum Alpha",
+    "indicators": [
+      "Opening Range Breakout (09:15-09:25)",
+      "Volume Breakout"
+    ],
+    "summary": "High-probability algorithmic 5-Minute execution model on NSE BANKNIFTY (Lot Size: 30) trading Delta-Optimized ITM Put (PE).",
+    "overview": "Monitors real-time price discovery and volatility structure using Opening Range Breakout (09:15-09:25) with disciplined profit trailing and strict invalidation stops.",
+    "riskProfile": "Strict per-trade stop loss with multi-tiered stepped trailing profit ratchet and 15:15 EOD square-off."
+  },
+  "BANKNIFTY_DUAL_SUPERTREND_BB_CE": {
+    "timeframe": "1-Minute",
+    "index": "NSE BANKNIFTY (Lot Size: 30)",
+    "strikeMode": "Delta-Optimized ATM Call (CE)",
+    "profile": "1-Minute Momentum Alpha",
+    "indicators": [
+      "Dual Supertrend (10,3 / 7,2)",
+      "Chaikin Money Flow (CMF)",
+      "Bollinger Bands Squeeze",
+      "Volatility Expansion Band"
+    ],
+    "summary": "High-probability algorithmic 1-Minute execution model on NSE BANKNIFTY (Lot Size: 30) trading Delta-Optimized ATM Call (CE).",
+    "overview": "Monitors real-time price discovery and volatility structure using Dual Supertrend (10,3 / 7,2) with disciplined profit trailing and strict invalidation stops.",
+    "riskProfile": "Strict per-trade stop loss with multi-tiered stepped trailing profit ratchet and 15:15 EOD square-off."
+  },
+  "BANKNIFTY_DUAL_SUPERTREND_BB_PE": {
+    "timeframe": "1-Minute",
+    "index": "NSE BANKNIFTY (Lot Size: 30)",
+    "strikeMode": "Delta-Optimized ATM Put (PE)",
+    "profile": "1-Minute Momentum Alpha",
+    "indicators": [
+      "Dual Supertrend (10,3 / 7,2)",
+      "Chaikin Money Flow (CMF)",
+      "Bollinger Bands Squeeze",
+      "Volatility Expansion Band"
+    ],
+    "summary": "High-probability algorithmic 1-Minute execution model on NSE BANKNIFTY (Lot Size: 30) trading Delta-Optimized ATM Put (PE).",
+    "overview": "Monitors real-time price discovery and volatility structure using Dual Supertrend (10,3 / 7,2) with disciplined profit trailing and strict invalidation stops.",
+    "riskProfile": "Strict per-trade stop loss with multi-tiered stepped trailing profit ratchet and 15:15 EOD square-off."
+  },
+  "BANKNIFTY_VWAP_BB_LIQUIDITY_REBOUND_CE": {
+    "timeframe": "1-Minute",
+    "index": "NSE BANKNIFTY (Lot Size: 30)",
+    "strikeMode": "Delta-Optimized ATM Call (CE)",
+    "profile": "1-Minute Momentum Alpha",
+    "indicators": [
+      "Intraday VWAP",
+      "POC / Liquidity S/R",
+      "Bollinger Bands Squeeze",
+      "Volatility Expansion Band"
+    ],
+    "summary": "High-probability algorithmic 1-Minute execution model on NSE BANKNIFTY (Lot Size: 30) trading Delta-Optimized ATM Call (CE).",
+    "overview": "Monitors real-time price discovery and volatility structure using Intraday VWAP with disciplined profit trailing and strict invalidation stops.",
+    "riskProfile": "Strict per-trade stop loss with multi-tiered stepped trailing profit ratchet and 15:15 EOD square-off."
+  },
+  "BANKNIFTY_GAMMA_WALL_BREAKOUT_PE": {
+    "timeframe": "1-Minute",
+    "index": "NSE BANKNIFTY (Lot Size: 30)",
+    "strikeMode": "Delta-Optimized ATM Put (PE)",
+    "profile": "1-Minute Momentum Alpha",
+    "indicators": [
+      "Gamma Exposure (GEX) Wall",
+      "Dealer Delta Hedging Level"
+    ],
+    "summary": "High-probability algorithmic 1-Minute execution model on NSE BANKNIFTY (Lot Size: 30) trading Delta-Optimized ATM Put (PE).",
+    "overview": "Monitors real-time price discovery and volatility structure using Gamma Exposure (GEX) Wall with disciplined profit trailing and strict invalidation stops.",
+    "riskProfile": "Strict per-trade stop loss with multi-tiered stepped trailing profit ratchet and 15:15 EOD square-off."
+  }
+}

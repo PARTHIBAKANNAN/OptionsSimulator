@@ -35,58 +35,10 @@ function MiniEquityCurve({ days }) {
   );
 }
 
-const STRATEGY_SPECS = {
-  NIFTY_ORB_BULLISH_5M_ITM: {
-    timeframe: "5-Minute",
-    index: "NSE NIFTY 50 (Lot Size: 65)",
-    strikeMode: "Delta-Optimized ITM Call",
-    profile: "Opening Breakout Alpha",
-    indicators: ["Opening Range (ORB)", "Exponential Moving Average (EMA)", "Cumulative Volume Delta (CVD)"],
-    summary: "Captures morning opening range momentum following initial price discovery, filtering false breakouts with higher-timeframe trend alignment.",
-    overview: "Monitors opening volatility across primary index constituents to identify high-conviction breakout opportunities. Uses adaptive trailing risk rules to lock in profits during rapid momentum expansions.",
-    riskProfile: "Fixed percentage risk guardrail with multi-tiered stepped trailing profit ratchet.",
-  },
-  NIFTY_ORB_BEARISH_5M_ITM: {
-    timeframe: "5-Minute",
-    index: "NSE NIFTY 50 (Lot Size: 65)",
-    strikeMode: "Delta-Optimized ITM Put",
-    profile: "Opening Breakdown Alpha",
-    indicators: ["Opening Range (ORB)", "Exponential Moving Average (EMA)", "Cumulative Volume Delta (CVD)"],
-    summary: "Executes directional downside breakdowns when opening order flow velocity indicates aggressive institutional distribution.",
-    overview: "Identifies early session breakdown patterns below key price levels, riding downside momentum while enforcing strict time-based exit limits.",
-    riskProfile: "Fixed percentage risk guardrail with multi-tiered stepped trailing profit ratchet.",
-  },
-  NIFTY_EMA_BOUNCE_5M_ITM: {
-    timeframe: "5-Minute",
-    index: "NSE NIFTY 50 (Lot Size: 65)",
-    strikeMode: "Delta-Optimized ITM Call",
-    profile: "Trend Continuation Pullback",
-    indicators: ["Exponential Moving Average (EMA)", "Relative Strength Index (RSI)", "Price Action Reversals"],
-    summary: "Enters high-probability pullback entries testing institutional dynamic support levels during established uptrends.",
-    overview: "Capitalizes on short-term price pullbacks within stronger macro uptrends. Trades mean-reversion bounces back toward dominant trend direction.",
-    riskProfile: "Automated trailing profit ratchet with defined stop loss protection.",
-  },
-  NIFTY_EMA_REJECTION_5M_ITM: {
-    timeframe: "5-Minute",
-    index: "NSE NIFTY 50 (Lot Size: 65)",
-    strikeMode: "Delta-Optimized ITM Put",
-    profile: "Trend Continuation Rejection",
-    indicators: ["Exponential Moving Average (EMA)", "Relative Strength Index (RSI)", "Price Action Reversals"],
-    summary: "Capitalizes on overhead resistance rejections aligned with primary downward trend momentum.",
-    overview: "Systematically executes downside position entries when relief rallies fail at key dynamic resistance zones.",
-    riskProfile: "Automated trailing profit ratchet with defined stop loss protection.",
-  },
-  DEFAULT: {
-    timeframe: "5-Minute / 1-Minute",
-    index: "Index Derivatives (NIFTY / SENSEX / BANKNIFTY)",
-    strikeMode: "Delta-Optimized Options",
-    profile: "Systematic Quantitative Model",
-    indicators: ["Exponential Moving Average (EMA)", "Moving Average Convergence Divergence (MACD)", "Volume Delta Filter"],
-    summary: "Systematic non-discretionary algorithmic execution model engineered for Indian index options microstructure.",
-    overview: "Evaluates multi-timeframe price discovery, momentum alignment, and structural volatility parameters to execute disciplined directional trades.",
-    riskProfile: "Standard institutional risk parameters including stop loss limits, stepped profit locks, and time-decay holding caps.",
-  },
-};
+import strategySpecsData from "./strategySpecsData.json";
+
+const STRATEGY_SPECS = strategySpecsData;
+
 
 export function StrategyDetailModal({ strategy, onClose }) {
   if (!strategy) return null;
