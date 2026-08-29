@@ -5,6 +5,7 @@ import { Card } from "../components/ui/Card";
 import { DateRangePicker } from "../components/DateRangePicker";
 import { DailyPnlChart } from "../components/DailyPnlChart";
 import { PostMarketJournalCard } from "../components/PostMarketJournalCard";
+import { StrategyAnalyticsModal } from "../components/StrategyAnalyticsModal";
 
 function fmt(v) {
   if (v == null) return "—";
