@@ -1,9 +1,11 @@
 """Shared Signal type and strike-selection/pricing helpers all strategies build on."""
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, time as dtime
 from typing import Optional
 
 from src.utils.options_pricing import black_scholes_price, next_weekly_expiry_days
+
+OPENING_CUTOFF_TIME = dtime(9, 25)
 
 
 @dataclass
