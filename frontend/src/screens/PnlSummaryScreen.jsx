@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Download, Search, TrendingUp, Wallet, ShieldCheck, Zap } from "lucide-react";
+import { Download, Search, TrendingUp, Wallet, ShieldCheck, Zap, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import { fetchPnlReport, downloadPnlExport } from "../hooks/usePaperTradingSync";
 import { Card } from "../components/ui/Card";
 import { DateRangePicker } from "../components/DateRangePicker";
@@ -41,6 +41,10 @@ export function PnlSummaryScreen() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterTab, setFilterTab] = useState("all");
 
+  // Default sorting: Net P&L High to Low
+  const [sortField, setSortField] = useState("net_pnl");
+  const [sortOrder, setSortOrder] = useState("desc");
+
   const params = { range, ...(range === "custom" ? { start: customStart, end: customEnd } : {}) };
   const canQuery = range !== "custom" || (customStart && customEnd);
 
@@ -61,13 +65,46 @@ export function PnlSummaryScreen() {
     }
   }
 
+  function handleSort(field) {
+    if (sortField === field) {
+      setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
+    } else {
+      setSortField(field);
+      setSortOrder(field === "strategy" ? "asc" : "desc");
+    }
+  }
+
+  function SortHeader({ label, field, align = "left" }) {
+    const isActive = sortField === field;
+    return (
+      <th
+        onClick={() => handleSort(field)}
+        className={`py-2.5 px-3 font-semibold uppercase cursor-pointer select-none transition hover:text-primary ${
+          align === "right" ? "text-right" : "text-left"
+        } ${isActive ? "text-accent font-bold" : "text-faint"}`}
+      >
+        <div className={`flex items-center gap-1 ${align === "right" ? "justify-end" : "justify-start"}`}>
+          <span>{label}</span>
+          {isActive ? (
+            sortOrder === "asc" ? (
+              <ArrowUp className="h-3 w-3 text-accent" />
+            ) : (
+              <ArrowDown className="h-3 w-3 text-accent" />
+            )
+          ) : (
+            <ArrowUpDown className="h-3 w-3 opacity-40 hover:opacity-100" />
+          )}
+        </div>
+      </th>
+    );
+  }
+
   const allStrategies = report?.strategies ?? [];
   const filteredStrategies = useMemo(() => {
     return allStrategies.filter((s) => {
       const name = s.strategy;
       const isSensex = name.startsWith("SENSEX");
       const is5M = name.includes("_5M_");
-      const isCE = name.includes("_BULLISH") || name.includes("_SUPPORT_BOUNCE");
       const hasTrades = (s.trades || 0) > 0;
       const isProfit = (s.net_pnl || 0) > 0;
 
@@ -86,6 +123,22 @@ export function PnlSummaryScreen() {
     });
   }, [allStrategies, filterTab, searchTerm]);
 
+  const sortedStrategies = useMemo(() => {
+    return [...filteredStrategies].sort((a, b) => {
+      let valA = a[sortField];
+      let valB = b[sortField];
+
+      if (typeof valA === "string") {
+        return sortOrder === "asc" ? valA.localeCompare(valB) : valB.localeCompare(valA);
+      }
+
+      valA = valA ?? 0;
+      valB = valB ?? 0;
+
+      return sortOrder === "asc" ? valA - valB : valB - valA;
+    });
+  }, [filteredStrategies, sortField, sortOrder]);
+
   return (
     <div className="space-y-6">
       {/* Top Header Card */}
@@ -102,18 +155,19 @@ export function PnlSummaryScreen() {
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            <div className="flex rounded-lg bg-surface2 p-1 border border-subtle">
-              {["individual", "combined"].map((v) => (
-                <button
-                  key={v}
-                  onClick={() => setView(v)}
-                  className={`rounded-md px-3 py-1.5 text-xs font-semibold capitalize transition ${
-                    view === v ? "bg-accent text-white shadow-sm" : "text-muted hover:text-primary"
-                  }`}
-                >
-                  {v} View
-                </button>
-              ))}
+            <div className="flex items-center rounded-lg bg-surface2 p-1 border border-subtle text-xs font-medium">
+              <button
+                onClick={() => setView("individual")}
+                className={`rounded-md px-3 py-1 transition ${view === "individual" ? "bg-accent text-white font-semibold shadow-sm" : "text-muted hover:text-primary"}`}
+              >
+                Individual View
+              </button>
+              <button
+                onClick={() => setView("combined")}
+                className={`rounded-md px-3 py-1 transition ${view === "combined" ? "bg-accent text-white font-semibold shadow-sm" : "text-muted hover:text-primary"}`}
+              >
+                Combined View
+              </button>
             </div>
 
             <button
@@ -122,7 +176,7 @@ export function PnlSummaryScreen() {
               className="flex items-center gap-1.5 rounded-lg border border-subtle bg-surface2 px-3 py-1.5 text-xs font-semibold text-primary transition hover:bg-surface3 disabled:opacity-50"
             >
               <Download className="h-3.5 w-3.5" />
-              {exporting ? "Exporting…" : "Export to Excel"}
+              <span>{exporting ? "Exporting…" : "Export to Excel"}</span>
             </button>
           </div>
         </div>
@@ -143,10 +197,9 @@ export function PnlSummaryScreen() {
 
       {report && view === "combined" && (
         <div className="space-y-6">
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             <StatTile label="Total Trades" value={report.combined.trades} icon={Zap} />
             <StatTile label="Gross P&L" value={fmt(report.combined.gross_pnl)} valueClass={pnlClass(report.combined.gross_pnl)} icon={TrendingUp} />
-            <StatTile label="Broker Charges" value={fmt(report.combined.charges)} valueClass="text-faint" icon={ShieldCheck} />
             <StatTile label="Net P&L" value={fmt(report.combined.net_pnl)} valueClass={pnlClass(report.combined.net_pnl)} icon={TrendingUp} />
             <StatTile label="Combined Wallet" value={fmt(report.combined.wallet_balance)} valueClass="text-accent" icon={Wallet} />
           </div>
@@ -218,19 +271,19 @@ export function PnlSummaryScreen() {
             <table className="w-full text-xs">
               <thead className="bg-surface2 text-faint">
                 <tr>
-                  <th className="py-2.5 px-3 text-left font-semibold uppercase">Strategy</th>
+                  <SortHeader label="Strategy" field="strategy" align="left" />
                   <th className="py-2.5 px-3 text-left font-semibold uppercase">TF</th>
-                  <th className="py-2.5 px-3 text-left font-semibold uppercase">Trades</th>
-                  <th className="py-2.5 px-3 text-left font-semibold uppercase">Win %</th>
-                  <th className="py-2.5 px-3 text-right font-semibold uppercase">Gross P&amp;L</th>
-                  <th className="py-2.5 px-3 text-right font-semibold uppercase">Charges</th>
-                  <th className="py-2.5 px-3 text-right font-semibold uppercase">Net P&amp;L</th>
-                  <th className="py-2.5 px-3 text-right font-semibold uppercase">Wallet Balance</th>
+                  <SortHeader label="Trades" field="trades" align="left" />
+                  <SortHeader label="Win %" field="win_rate" align="left" />
+                  <SortHeader label="Gross P&L" field="gross_pnl" align="right" />
+                  <SortHeader label="Charges" field="charges" align="right" />
+                  <SortHeader label="Net P&L" field="net_pnl" align="right" />
+                  <SortHeader label="Wallet Balance" field="wallet_balance" align="right" />
                   <th className="py-2.5 px-3 text-right font-semibold uppercase">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-subtle font-mono">
-                {filteredStrategies.map((s) => {
+                {sortedStrategies.map((s) => {
                   const is5M = s.strategy.includes("_5M_");
                   const isSensex = s.strategy.startsWith("SENSEX");
 
