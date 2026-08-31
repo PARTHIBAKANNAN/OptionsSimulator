@@ -135,6 +135,13 @@ export function PnlSummaryScreen() {
       valA = valA ?? 0;
       valB = valB ?? 0;
 
+      // Push strategies with 0 trades / 0 P&L to the end of the list so active profits and losses stay grouped at the top
+      const isZeroA = valA === 0 && (a.trades || 0) === 0;
+      const isZeroB = valB === 0 && (b.trades || 0) === 0;
+
+      if (isZeroA && !isZeroB) return 1;  // Move zero-trade strategy to bottom
+      if (!isZeroA && isZeroB) return -1; // Keep active strategy at top
+
       return sortOrder === "asc" ? valA - valB : valB - valA;
     });
   }, [filteredStrategies, sortField, sortOrder]);
