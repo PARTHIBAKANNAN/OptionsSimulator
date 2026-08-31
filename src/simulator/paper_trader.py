@@ -4,7 +4,7 @@ applies stop-loss/take-profit/time-exit, and calculates realized + unrealized P&
 """
 import uuid
 from dataclasses import dataclass, field
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, timedelta, time as dtime
 from functools import cached_property
 from typing import Optional
 
@@ -303,8 +303,8 @@ class PaperTrader:
                     self._strategy_drawdown_grace_remaining[strategy] = self.drawdown_breaker_grace_trades
 
     def update_positions(self, current_prices: dict, timestamp: datetime = None,
-                          time_exit_mins: int = None) -> list[Order]:
-        """current_prices: {symbol: ltp}. Applies SL/TP/time-exit. Returns orders closed this call."""
+                          time_exit_mins: int = None, eod_square_off: bool = False) -> list[Order]:
+        """current_prices: {symbol: ltp}. Applies SL/TP/time-exit/EOD square-off. Returns orders closed this call."""
         timestamp = timestamp or datetime.now()
         closed = []
         for order in self.get_positions():
@@ -341,11 +341,6 @@ class PaperTrader:
             reason = None
             fill_price = price
             if order.stop_loss is not None and price <= order.stop_loss:
-                # Fill at the configured stop, not the (possibly gapped-through) mark: exits are
-                # only checked once per candle close, so on a fast-moving candle `price` can already
-                # be well past the stop. Marking the loss to that overshot price systematically
-                # inflates every SL loss beyond the intended stop_loss risk — see
-                # docs/ARCHITECTURE.md for the backtest analysis that surfaced this.
                 reason = "STOP_LOSS"
                 fill_price = order.stop_loss
             elif trailing_stop_price is not None and price <= trailing_stop_price:
@@ -356,6 +351,8 @@ class PaperTrader:
                 fill_price = order.take_profit
             elif time_exit_mins is not None and timestamp - order.entry_time >= timedelta(minutes=time_exit_mins):
                 reason = "TIME_EXIT"
+            elif eod_square_off and timestamp is not None and hasattr(timestamp, "time") and timestamp.time() >= dtime(15, 15):
+                reason = "EOD_SQUARE_OFF"
 
             if reason:
                 closed_order = self.close_position(order.order_id, fill_price, timestamp, reason)

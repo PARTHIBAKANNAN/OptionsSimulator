@@ -519,12 +519,26 @@ class WebLiveEngine(LiveTrader):
         return signals
 
     def _on_market_closed_tick(self) -> None:
-        # Flushes the day's last still-forming candle once (idempotent -- a no-op on every
-        # subsequent closed-tick, see DataManager.flush_current_candle) so it isn't lost/left
-        # unpersisted, mirroring TradeDashBoard's end-of-day flush_all().
+        # Flushes the day's last still-forming candle once
         for data_manager in self.data_managers.values():
             data_manager.flush_current_candle()
         self._maybe_persist_new_candles()
+
+        # Force square-off any lingering open positions when market closes (15:30 PM IST)
+        current_prices = {}
+        for data_manager in self.data_managers.values():
+            current_prices.update({sym: q.ltp for sym, q in data_manager.get_option_chain().items()})
+
+        for order in self.paper_trader.get_positions():
+            price = current_prices.get(order.symbol) or order.entry_price
+            closed_order = self.paper_trader.close_position(
+                order.order_id, price=price, timestamp=datetime.now(IST), reason="EOD_SQUARE_OFF"
+            )
+            if closed_order:
+                asyncio.create_task(self._close_position_db(closed_order))
+                if closed_order.strategy:
+                    asyncio.create_task(self._save_wallet_db(closed_order.strategy))
+
         self._publish_state()
 
     async def execute_signal(self, signal) -> None:
@@ -624,7 +638,7 @@ class WebLiveEngine(LiveTrader):
         for data_manager in self.data_managers.values():
             current_prices.update({sym: q.ltp for sym, q in data_manager.get_option_chain().items()})
         closed = self.paper_trader.update_positions(
-            current_prices, timestamp=datetime.now(IST), time_exit_mins=self.time_exit_mins)
+            current_prices, timestamp=datetime.now(IST), time_exit_mins=self.time_exit_mins, eod_square_off=True)
         for order in closed:
             asyncio.create_task(self._close_position_db(order))
             if order.strategy:
