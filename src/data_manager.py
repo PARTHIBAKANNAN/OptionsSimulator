@@ -269,9 +269,10 @@ class DataManager:
                         "low": float(ha["ha_low"].iloc[-1]), "close": float(ha["ha_close"].iloc[-1]),
                         "prev_open": float(ha["ha_open"].iloc[-2]), "prev_close": float(ha["ha_close"].iloc[-2]),
                     }
-            elif rule == "5min" and len(resampled) >= 15:
+            elif rule == "5min" and len(resampled) >= 2:
                 out["volume_ratio_5m"] = float(ind.volume_ratio(resampled["Volume"]).iloc[-1])
-                out["ema_20_5m"] = float(ind.ema(resampled["Close"], 20).iloc[-1])
+                ema20_period = min(20, len(resampled))
+                out["ema_20_5m"] = float(ind.ema(resampled["Close"], ema20_period).iloc[-1])
                 ema50_period = min(50, len(resampled))
                 out["ema_50_5m"] = float(ind.ema(resampled["Close"], ema50_period).iloc[-1])
                 macd_df_5m = ind.macd(resampled["Close"])
