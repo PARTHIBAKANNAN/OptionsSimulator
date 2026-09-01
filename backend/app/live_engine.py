@@ -442,12 +442,8 @@ class WebLiveEngine(LiveTrader):
         sqlite_cache.purge_old_candles(retention_days=5)
 
         for index, data_manager in self.data_managers.items():
-            restored = sqlite_cache.load_recent_candles(index, days=5)
-            if restored:
-                data_manager.candles = restored
-                self._last_persisted_candle_ts[index] = restored[-1].timestamp
-            elif pool:
-                # Fallback to pool once if SQLite cache is brand new
+            restored = []
+            if pool:
                 try:
                     rows = await asyncio.wait_for(
                         pool.fetch(
@@ -466,11 +462,15 @@ class WebLiveEngine(LiveTrader):
                             )
                             for row in rows
                         ]
-                        data_manager.candles = restored
-                        self._last_persisted_candle_ts[index] = restored[-1].timestamp
-                        sqlite_cache.save_candles(index, restored)
                 except Exception as e:
-                    self.logger.log_error(f"Fallback candle restore failed for {index}: {e}")
+                    self.logger.log_error(f"Pool candle restore query failed for {index}: {e}")
+
+            if not restored:
+                restored = sqlite_cache.load_recent_candles(index, days=5)
+
+            if restored:
+                data_manager.candles = restored
+                self._last_persisted_candle_ts[index] = restored[-1].timestamp
 
         self.logger.log_websocket_event(
             "candle_history_restored", {index: len(dm.candles) for index, dm in self.data_managers.items()})
@@ -485,6 +485,22 @@ class WebLiveEngine(LiveTrader):
                 continue
             self._last_persisted_candle_ts[index] = new_candles[-1].timestamp
             sqlite_cache.save_candles(index, new_candles)
+            asyncio.create_task(self._persist_candles_db(index, new_candles))
+
+    async def _persist_candles_db(self, index: str, candles: list) -> None:
+        """Persists candles locally and executes DB hooks if available."""
+        sqlite_cache.save_candles(index, candles)
+        for candle in candles:
+            midnight = candle.timestamp.replace(hour=0, minute=0, second=0, microsecond=0)
+            bucket_minute = int((candle.timestamp - midnight).total_seconds() // 60)
+            await self._db_execute(
+                """INSERT INTO options_candle_history
+                   (underlying, bucket_date, bucket_minute, open, high, low, close, volume, delta)
+                   VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+                   ON CONFLICT (underlying, bucket_date, bucket_minute) DO NOTHING""",
+                index, candle.timestamp.date(), bucket_minute,
+                candle.open, candle.high, candle.low, candle.close, candle.volume, candle.delta,
+            )
 
     async def _save_signal_db(self, signal_id: str, signal, status: str) -> None:
         await self._db_execute(

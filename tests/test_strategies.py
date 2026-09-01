@@ -310,7 +310,7 @@ def test_heikin_ashi_trend_bearish_no_signal_with_a_large_upper_wick():
 
 
 def test_heikin_ashi_trend_bearish_no_signal_on_monday_or_tuesday():
-    strategy = HeikinAshiTrendBearish()
+    strategy = HeikinAshiTrendBearish(apply_day_time_filter=True)
     good_indicators = {
         "ema_50_1h": 24100,
         "heikin_ashi_15m": {
@@ -325,7 +325,7 @@ def test_heikin_ashi_trend_bearish_no_signal_on_monday_or_tuesday():
 
 
 def test_heikin_ashi_trend_bearish_no_signal_in_the_10am_to_12pm_dead_zone():
-    strategy = HeikinAshiTrendBearish()
+    strategy = HeikinAshiTrendBearish(apply_day_time_filter=True)
     good_indicators = {
         "ema_50_1h": 24100,
         "heikin_ashi_15m": {
