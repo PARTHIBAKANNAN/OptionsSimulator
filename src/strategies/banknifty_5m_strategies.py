@@ -40,7 +40,7 @@ class BankNiftySupportBounce5MITM(BaseStrategy):
             return None
 
         ema20_5m = indicators.get("ema_20_5m")
-        ema50_1h = indicators.get("ema_50_1h")
+        ema50_1h = indicators.get("ema_50_1h") or indicators.get("ema_50_5m") or indicators.get("ema_20_5m")
         if ema20_5m is None or ema50_1h is None:
             return None
 
@@ -87,7 +87,7 @@ class BankNiftyHeikinAshiBullish5MITM(BaseStrategy):
             return None
 
         ha = indicators.get("heikin_ashi_5m")
-        ema50 = indicators.get("ema_50_1h")
+        ema50 = indicators.get("ema_50_1h") or indicators.get("ema_50_5m") or indicators.get("ema_20_5m")
         if ha is None or ema50 is None:
             return None
 
@@ -105,7 +105,7 @@ class BankNiftyHeikinAshiBullish5MITM(BaseStrategy):
         self.last_signal_time = ts
         return Signal(
             strategy=self.name, direction="CE", action="BUY", strike=symbol,
-            confidence=0.80, rationale="5m BANKNIFTY Heikin-Ashi bullish trend continuation above 1H 50-EMA",
+            confidence=0.80, rationale="5m Heikin-Ashi bullish trend continuation above 1H 50-EMA",
             entry_price=price, timestamp=ts, underlying=self.underlying,
         )
 
@@ -152,7 +152,7 @@ class BankNiftyORBBullish5MITM(BaseStrategy):
             return None
 
         indicators = data_state.get("indicators", {})
-        ema50_1h = indicators.get("ema_50_1h")
+        ema50_1h = indicators.get("ema_50_1h") or indicators.get("ema_50_5m")
 
         crossed_now = (prev.close <= self._range_high < current.close) or (prev.timestamp.time() < ORB_WINDOW_END and current.close > self._range_high)
         if crossed_now and (ema50_1h is None or current.close > ema50_1h):
@@ -192,7 +192,7 @@ class BankNiftyResistanceRejection5MITM(BaseStrategy):
             return None
 
         ema20_5m = indicators.get("ema_20_5m")
-        ema50_1h = indicators.get("ema_50_1h")
+        ema50_1h = indicators.get("ema_50_1h") or indicators.get("ema_50_5m") or indicators.get("ema_20_5m")
         if ema20_5m is None or ema50_1h is None:
             return None
 
@@ -239,7 +239,7 @@ class BankNiftyHeikinAshiBearish5MITM(BaseStrategy):
             return None
 
         ha = indicators.get("heikin_ashi_5m")
-        ema50 = indicators.get("ema_50_1h")
+        ema50 = indicators.get("ema_50_1h") or indicators.get("ema_50_5m") or indicators.get("ema_20_5m")
         if ha is None or ema50 is None:
             return None
 

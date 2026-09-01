@@ -38,7 +38,7 @@ class SensexSupportBounce5MITM(BaseStrategy):
             return None
 
         ema20 = indicators.get("ema_20_5m") or indicators.get("ema_20")
-        ema50_1h = indicators.get("ema_50_1h")
+        ema50_1h = indicators.get("ema_50_1h") or indicators.get("ema_50_5m") or indicators.get("ema_20_5m")
         if ema20 is None or ema50_1h is None:
             return None
 
@@ -85,7 +85,7 @@ class SensexHeikinAshiBullish5MITM(BaseStrategy):
             return None
 
         ha = indicators.get("heikin_ashi_5m") or indicators.get("heikin_ashi")
-        ema50 = indicators.get("ema_50_1h")
+        ema50 = indicators.get("ema_50_1h") or indicators.get("ema_50_5m") or indicators.get("ema_20_5m")
         if ha is None or ema50 is None:
             return None
 
@@ -150,7 +150,7 @@ class SensexORBBullish5MITM(BaseStrategy):
             return None
 
         indicators = data_state.get("indicators", {})
-        ema50_1h = indicators.get("ema_50_1h")
+        ema50_1h = indicators.get("ema_50_1h") or indicators.get("ema_50_5m")
 
         crossed_now = (prev.close <= self._range_high < current.close) or (prev.timestamp.time() < ORB_WINDOW_END and current.close > self._range_high)
         if crossed_now and (ema50_1h is None or current.close > ema50_1h):
@@ -190,7 +190,7 @@ class SensexResistanceRejection5MITM(BaseStrategy):
             return None
 
         ema20 = indicators.get("ema_20_5m") or indicators.get("ema_20")
-        ema50_1h = indicators.get("ema_50_1h")
+        ema50_1h = indicators.get("ema_50_1h") or indicators.get("ema_50_5m") or indicators.get("ema_20_5m")
         if ema20 is None or ema50_1h is None:
             return None
 
@@ -237,7 +237,7 @@ class SensexHeikinAshiBearish5MITM(BaseStrategy):
             return None
 
         ha = indicators.get("heikin_ashi_5m") or indicators.get("heikin_ashi")
-        ema50 = indicators.get("ema_50_1h")
+        ema50 = indicators.get("ema_50_1h") or indicators.get("ema_50_5m") or indicators.get("ema_20_5m")
         if ha is None or ema50 is None:
             return None
 

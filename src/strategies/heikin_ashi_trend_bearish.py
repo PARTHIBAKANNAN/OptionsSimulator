@@ -15,11 +15,9 @@ DEAD_ZONE_END = dtime(12, 0)
 
 class HeikinAshiTrendBearish(BaseStrategy):
     def __init__(self, name: str = "HEIKIN_ASHI_TREND_BEARISH", strike_step: int = 50, underlying: str = "NIFTY",
-                 apply_day_time_filter: bool = True):
+                 apply_day_time_filter: bool = False):
         super().__init__(name=name, direction="PE", strike_step=strike_step, underlying=underlying)
-        # The Mon/Tue + 10:00-12:00 exclusion was tuned on NIFTY's own trade-log analysis -- not
-        # assumed to transfer to a different underlying. SENSEX's variant starts with this off so
-        # it can be tested unfiltered first, same discipline as every other strategy here.
+        # By default, day/time filter is disabled so NIFTY executes on all trading days alongside SENSEX and BANKNIFTY.
         self.apply_day_time_filter = apply_day_time_filter
 
     def evaluate(self, data_state: dict):

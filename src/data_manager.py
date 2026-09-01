@@ -220,9 +220,11 @@ class DataManager:
                 # candle in it so far, not a fully-closed bar. Use everything before it.
                 resampled = resampled.iloc[:-1]
 
-            if rule == "1h" and len(resampled) >= 15:
-                out["rsi_1h"] = float(ind.rsi(resampled["Close"], 14).iloc[-1])
-                out["ema_20_1h"] = float(ind.ema(resampled["Close"], 20).iloc[-1])
+            if rule == "1h" and len(resampled) >= 2:
+                rsi_period = min(14, len(resampled))
+                out["rsi_1h"] = float(ind.rsi(resampled["Close"], rsi_period).iloc[-1])
+                ema20_period = min(20, len(resampled))
+                out["ema_20_1h"] = float(ind.ema(resampled["Close"], ema20_period).iloc[-1])
                 ema50_period = min(50, len(resampled))
                 out["ema_50_1h"] = float(ind.ema(resampled["Close"], ema50_period).iloc[-1])
                 macd_df = ind.macd(resampled["Close"])

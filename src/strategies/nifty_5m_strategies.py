@@ -37,7 +37,7 @@ class NiftySupportBounce5MITM(BaseStrategy):
             return None
 
         ema20_5m = indicators.get("ema_20_5m")
-        ema50_1h = indicators.get("ema_50_1h")
+        ema50_1h = indicators.get("ema_50_1h") or indicators.get("ema_50_5m") or indicators.get("ema_20_5m")
         if ema20_5m is None or ema50_1h is None:
             return None
 
@@ -84,7 +84,7 @@ class NiftyHeikinAshiBullish5MITM(BaseStrategy):
             return None
 
         ha = indicators.get("heikin_ashi_5m")
-        ema50 = indicators.get("ema_50_1h")
+        ema50 = indicators.get("ema_50_1h") or indicators.get("ema_50_5m") or indicators.get("ema_20_5m")
         if ha is None or ema50 is None:
             return None
 
@@ -149,7 +149,7 @@ class NiftyORBBullish5MITM(BaseStrategy):
             return None
 
         indicators = data_state.get("indicators", {})
-        ema50_1h = indicators.get("ema_50_1h")
+        ema50_1h = indicators.get("ema_50_1h") or indicators.get("ema_50_5m")
 
         crossed_now = (prev.close <= self._range_high < current.close) or (prev.timestamp.time() < ORB_WINDOW_END and current.close > self._range_high)
         if crossed_now and (ema50_1h is None or current.close > ema50_1h):
@@ -189,7 +189,7 @@ class NiftyResistanceRejection5MITM(BaseStrategy):
             return None
 
         ema20_5m = indicators.get("ema_20_5m")
-        ema50_1h = indicators.get("ema_50_1h")
+        ema50_1h = indicators.get("ema_50_1h") or indicators.get("ema_50_5m") or indicators.get("ema_20_5m")
         if ema20_5m is None or ema50_1h is None:
             return None
 
@@ -236,7 +236,7 @@ class NiftyHeikinAshiBearish5MITM(BaseStrategy):
             return None
 
         ha = indicators.get("heikin_ashi_5m")
-        ema50 = indicators.get("ema_50_1h")
+        ema50 = indicators.get("ema_50_1h") or indicators.get("ema_50_5m") or indicators.get("ema_20_5m")
         if ha is None or ema50 is None:
             return None
 
