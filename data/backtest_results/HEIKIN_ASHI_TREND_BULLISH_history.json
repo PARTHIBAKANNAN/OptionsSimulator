@@ -1,0 +1,1850 @@
+[
+  {
+    "entry_time": "2025-08-06 12:21:00+05:30",
+    "exit_time": "2025-08-06 12:51:00+05:30",
+    "realized_pnl": -1145.016599999999,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2025-08-06 13:30:00+05:30",
+    "exit_time": "2025-08-06 13:42:00+05:30",
+    "realized_pnl": -1149.0667499999997,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2025-08-07 15:02:00+05:30",
+    "exit_time": "2025-08-07 15:08:00+05:30",
+    "realized_pnl": 323.53555,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2025-08-07 15:07:00+05:30",
+    "exit_time": "2025-08-07 15:08:00+05:30",
+    "realized_pnl": -73.81724999999994,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2025-08-08 09:17:00+05:30",
+    "exit_time": "2025-08-08 09:47:00+05:30",
+    "realized_pnl": -2272.264799999998,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2025-08-08 09:22:00+05:30",
+    "exit_time": "2025-08-08 09:47:00+05:30",
+    "realized_pnl": -2257.501349999999,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2025-08-11 13:49:00+05:30",
+    "exit_time": "2025-08-11 15:28:00+05:30",
+    "realized_pnl": 1404.0487500000022,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2025-08-11 13:57:00+05:30",
+    "exit_time": "2025-08-11 15:28:00+05:30",
+    "realized_pnl": 1313.6084000000021,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2025-08-12 09:45:00+05:30",
+    "exit_time": "2025-08-12 10:14:00+05:30",
+    "realized_pnl": 275.9698499999997,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2025-08-12 09:50:00+05:30",
+    "exit_time": "2025-08-12 10:14:00+05:30",
+    "realized_pnl": 291.58545000000066,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2025-08-13 09:45:00+05:30",
+    "exit_time": "2025-08-13 10:08:00+05:30",
+    "realized_pnl": 209.88305000000025,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2025-08-13 09:50:00+05:30",
+    "exit_time": "2025-08-13 10:02:00+05:30",
+    "realized_pnl": 0.0,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2025-08-14 12:45:00+05:30",
+    "exit_time": "2025-08-14 13:18:00+05:30",
+    "realized_pnl": 537.9003500000001,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2025-08-14 12:50:00+05:30",
+    "exit_time": "2025-08-14 13:18:00+05:30",
+    "realized_pnl": 294.55724999999995,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2025-08-18 09:45:00+05:30",
+    "exit_time": "2025-08-18 11:06:00+05:30",
+    "realized_pnl": -1784.548349999999,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2025-08-18 09:50:00+05:30",
+    "exit_time": "2025-08-18 10:52:00+05:30",
+    "realized_pnl": -1871.9531999999979,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2025-08-19 11:15:00+05:30",
+    "exit_time": "2025-08-19 13:15:00+05:30",
+    "realized_pnl": 2513.1522000000004,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2025-08-19 11:20:00+05:30",
+    "exit_time": "2025-08-19 13:20:00+05:30",
+    "realized_pnl": 2029.4371500000009,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2025-08-20 09:15:00+05:30",
+    "exit_time": "2025-08-20 09:55:00+05:30",
+    "realized_pnl": 152.94695000000024,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2025-08-20 09:20:00+05:30",
+    "exit_time": "2025-08-20 09:56:00+05:30",
+    "realized_pnl": 971.3346500000005,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2025-08-21 10:15:00+05:30",
+    "exit_time": "2025-08-21 10:45:00+05:30",
+    "realized_pnl": 256.85335000000066,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2025-08-21 10:20:00+05:30",
+    "exit_time": "2025-08-21 10:45:00+05:30",
+    "realized_pnl": 157.9545500000005,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2025-08-22 12:00:00+05:30",
+    "exit_time": "2025-08-22 14:00:00+05:30",
+    "realized_pnl": -657.0232499999995,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2025-08-22 12:05:00+05:30",
+    "exit_time": "2025-08-22 14:05:00+05:30",
+    "realized_pnl": -775.9934000000011,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2025-08-25 09:45:00+05:30",
+    "exit_time": "2025-08-25 10:06:00+05:30",
+    "realized_pnl": -1507.047749999999,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2025-08-25 09:50:00+05:30",
+    "exit_time": "2025-08-25 10:16:00+05:30",
+    "realized_pnl": -1446.034199999999,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2025-09-02 09:52:00+05:30",
+    "exit_time": "2025-09-02 10:13:00+05:30",
+    "realized_pnl": 503.1175500000006,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2025-09-02 09:57:00+05:30",
+    "exit_time": "2025-09-02 10:13:00+05:30",
+    "realized_pnl": 278.6433000000004,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2025-09-03 15:02:00+05:30",
+    "exit_time": "2025-09-04 09:15:00+05:30",
+    "realized_pnl": 5974.194850000003,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2025-09-03 15:07:00+05:30",
+    "exit_time": "2025-09-04 09:15:00+05:30",
+    "realized_pnl": 5535.656750000002,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2025-09-04 09:15:00+05:30",
+    "exit_time": "2025-09-04 10:09:00+05:30",
+    "realized_pnl": 0.0,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2025-09-04 09:20:00+05:30",
+    "exit_time": "2025-09-04 10:09:00+05:30",
+    "realized_pnl": 444.10600000000045,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2025-09-05 09:45:00+05:30",
+    "exit_time": "2025-09-05 10:12:00+05:30",
+    "realized_pnl": -1848.6974999999984,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2025-09-05 09:50:00+05:30",
+    "exit_time": "2025-09-05 10:11:00+05:30",
+    "realized_pnl": -1986.7945499999978,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2025-09-08 09:45:00+05:30",
+    "exit_time": "2025-09-08 10:15:00+05:30",
+    "realized_pnl": -1212.8239499999997,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2025-09-08 09:50:00+05:30",
+    "exit_time": "2025-09-08 10:30:00+05:30",
+    "realized_pnl": -1102.4246999999991,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2025-09-09 09:45:00+05:30",
+    "exit_time": "2025-09-09 10:00:00+05:30",
+    "realized_pnl": -240.26534999999973,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2025-09-09 09:50:00+05:30",
+    "exit_time": "2025-09-09 09:56:00+05:30",
+    "realized_pnl": 0.0,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2025-09-10 09:15:00+05:30",
+    "exit_time": "2025-09-10 11:15:00+05:30",
+    "realized_pnl": 1331.2851500000006,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2025-09-10 09:20:00+05:30",
+    "exit_time": "2025-09-10 11:20:00+05:30",
+    "realized_pnl": 485.13855000000046,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2025-09-11 09:15:00+05:30",
+    "exit_time": "2025-09-11 10:09:00+05:30",
+    "realized_pnl": 0.0,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2025-09-11 09:20:00+05:30",
+    "exit_time": "2025-09-11 11:20:00+05:30",
+    "realized_pnl": -562.7277499999987,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2025-09-12 09:45:00+05:30",
+    "exit_time": "2025-09-12 11:45:00+05:30",
+    "realized_pnl": 2516.0310499999996,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2025-09-12 09:50:00+05:30",
+    "exit_time": "2025-09-12 11:50:00+05:30",
+    "realized_pnl": 2267.4613000000013,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2025-09-15 12:00:00+05:30",
+    "exit_time": "2025-09-15 13:41:00+05:30",
+    "realized_pnl": -1104.5150999999994,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2025-09-15 12:05:00+05:30",
+    "exit_time": "2025-09-15 13:42:00+05:30",
+    "realized_pnl": -1016.7182999999987,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2025-09-16 09:45:00+05:30",
+    "exit_time": "2025-09-16 10:45:00+05:30",
+    "realized_pnl": 1073.4483500000003,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2025-09-16 09:50:00+05:30",
+    "exit_time": "2025-09-16 10:45:00+05:30",
+    "realized_pnl": 901.6767500000003,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2025-09-17 09:15:00+05:30",
+    "exit_time": "2025-09-17 11:15:00+05:30",
+    "realized_pnl": 1039.3812000000012,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2025-09-17 09:20:00+05:30",
+    "exit_time": "2025-09-17 11:20:00+05:30",
+    "realized_pnl": 882.1468500000026,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2025-09-18 09:15:00+05:30",
+    "exit_time": "2025-09-18 11:15:00+05:30",
+    "realized_pnl": 218.5000999999994,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2025-09-18 09:20:00+05:30",
+    "exit_time": "2025-09-18 11:20:00+05:30",
+    "realized_pnl": 746.1915500000003,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2025-09-19 09:15:00+05:30",
+    "exit_time": "2025-09-19 09:37:00+05:30",
+    "realized_pnl": -2047.5467999999983,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2025-09-19 09:20:00+05:30",
+    "exit_time": "2025-09-19 10:00:00+05:30",
+    "realized_pnl": -1872.3451499999985,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2025-09-22 10:15:00+05:30",
+    "exit_time": "2025-09-22 11:20:00+05:30",
+    "realized_pnl": -1107.7813499999988,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2025-09-22 10:20:00+05:30",
+    "exit_time": "2025-09-22 11:21:00+05:30",
+    "realized_pnl": -1057.8730499999997,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2025-09-23 13:31:00+05:30",
+    "exit_time": "2025-09-23 13:36:00+05:30",
+    "realized_pnl": -600.0754499999999,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2025-09-23 13:47:00+05:30",
+    "exit_time": "2025-09-23 13:54:00+05:30",
+    "realized_pnl": 0.0,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2025-10-03 15:00:00+05:30",
+    "exit_time": "2025-10-06 09:15:00+05:30",
+    "realized_pnl": -1944.8558999999984,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2025-10-03 15:05:00+05:30",
+    "exit_time": "2025-10-06 09:15:00+05:30",
+    "realized_pnl": -2024.2910999999988,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2025-10-06 09:15:00+05:30",
+    "exit_time": "2025-10-06 09:21:00+05:30",
+    "realized_pnl": 0.0,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2025-10-06 09:20:00+05:30",
+    "exit_time": "2025-10-06 09:30:00+05:30",
+    "realized_pnl": -1131.428999999999,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2025-10-07 09:30:00+05:30",
+    "exit_time": "2025-10-07 10:16:00+05:30",
+    "realized_pnl": 3050.6788,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2025-10-07 09:35:00+05:30",
+    "exit_time": "2025-10-07 10:16:00+05:30",
+    "realized_pnl": 2813.1915499999996,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2025-10-08 09:45:00+05:30",
+    "exit_time": "2025-10-08 10:57:00+05:30",
+    "realized_pnl": -2355.0968999999977,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2025-10-08 09:50:00+05:30",
+    "exit_time": "2025-10-08 11:06:00+05:30",
+    "realized_pnl": -2841.1148999999987,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2025-10-09 09:45:00+05:30",
+    "exit_time": "2025-10-09 11:45:00+05:30",
+    "realized_pnl": 3389.929400000002,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2025-10-09 09:50:00+05:30",
+    "exit_time": "2025-10-09 11:50:00+05:30",
+    "realized_pnl": 3715.115950000002,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2025-10-10 09:45:00+05:30",
+    "exit_time": "2025-10-10 11:32:00+05:30",
+    "realized_pnl": 0.0,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2025-10-10 09:50:00+05:30",
+    "exit_time": "2025-10-10 11:50:00+05:30",
+    "realized_pnl": 296.81275000000187,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2025-10-13 14:30:00+05:30",
+    "exit_time": "2025-10-13 15:02:00+05:30",
+    "realized_pnl": -717.2684999999996,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2025-10-13 14:35:00+05:30",
+    "exit_time": "2025-10-13 15:03:00+05:30",
+    "realized_pnl": -700.6759499999994,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2025-10-14 13:45:00+05:30",
+    "exit_time": "2025-10-14 13:46:00+05:30",
+    "realized_pnl": -456.7523999999997,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2025-10-15 09:45:00+05:30",
+    "exit_time": "2025-10-15 11:45:00+05:30",
+    "realized_pnl": 2422.8262500000014,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2025-10-15 09:50:00+05:30",
+    "exit_time": "2025-10-15 11:50:00+05:30",
+    "realized_pnl": 3083.2600500000026,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2025-10-16 09:30:00+05:30",
+    "exit_time": "2025-10-16 11:30:00+05:30",
+    "realized_pnl": 1554.7707500000029,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2025-10-16 09:35:00+05:30",
+    "exit_time": "2025-10-16 11:35:00+05:30",
+    "realized_pnl": 641.6988500000014,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2025-10-17 10:15:00+05:30",
+    "exit_time": "2025-10-17 12:15:00+05:30",
+    "realized_pnl": 2910.4400000000005,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2025-10-17 10:20:00+05:30",
+    "exit_time": "2025-10-17 12:20:00+05:30",
+    "realized_pnl": 3525.9120000000016,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2025-10-20 09:45:00+05:30",
+    "exit_time": "2025-10-20 09:50:00+05:30",
+    "realized_pnl": -1278.4102499999992,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2025-10-20 09:50:00+05:30",
+    "exit_time": "2025-10-20 10:29:00+05:30",
+    "realized_pnl": 1150.6852499999998,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2025-10-21 13:45:00+05:30",
+    "exit_time": "2025-10-21 13:48:00+05:30",
+    "realized_pnl": -456.4910999999999,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2025-10-21 13:50:00+05:30",
+    "exit_time": "2025-10-21 13:51:00+05:30",
+    "realized_pnl": -242.74769999999972,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2025-10-23 09:45:00+05:30",
+    "exit_time": "2025-10-23 11:45:00+05:30",
+    "realized_pnl": -756.2203999999987,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2025-10-23 09:50:00+05:30",
+    "exit_time": "2025-10-23 11:50:00+05:30",
+    "realized_pnl": -233.4910499999988,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2025-10-24 12:30:00+05:30",
+    "exit_time": "2025-10-24 13:31:00+05:30",
+    "realized_pnl": -2376.0008999999973,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2025-10-24 12:35:00+05:30",
+    "exit_time": "2025-10-24 13:31:00+05:30",
+    "realized_pnl": -2370.905549999998,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2025-10-27 09:15:00+05:30",
+    "exit_time": "2025-10-27 11:15:00+05:30",
+    "realized_pnl": 3689.1029500000013,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2025-10-27 09:20:00+05:30",
+    "exit_time": "2025-10-27 11:20:00+05:30",
+    "realized_pnl": 3475.6813,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2025-10-28 09:45:00+05:30",
+    "exit_time": "2025-10-28 09:50:00+05:30",
+    "realized_pnl": -643.059299999999,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2025-10-28 09:50:00+05:30",
+    "exit_time": "2025-10-28 09:53:00+05:30",
+    "realized_pnl": -512.6705999999995,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2025-10-29 09:15:00+05:30",
+    "exit_time": "2025-10-29 11:15:00+05:30",
+    "realized_pnl": 425.3327000000013,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2025-10-29 09:20:00+05:30",
+    "exit_time": "2025-10-29 11:20:00+05:30",
+    "realized_pnl": 1066.3698500000014,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2025-10-30 11:30:00+05:30",
+    "exit_time": "2025-10-30 13:30:00+05:30",
+    "realized_pnl": -1611.728949999998,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2025-10-30 11:35:00+05:30",
+    "exit_time": "2025-10-30 13:35:00+05:30",
+    "realized_pnl": -2402.5826499999976,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2025-10-31 09:45:00+05:30",
+    "exit_time": "2025-10-31 10:16:00+05:30",
+    "realized_pnl": -2258.2852499999985,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2025-10-31 09:50:00+05:30",
+    "exit_time": "2025-10-31 10:16:00+05:30",
+    "realized_pnl": -2265.8629499999984,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2025-11-11 13:48:00+05:30",
+    "exit_time": "2025-11-11 13:55:00+05:30",
+    "realized_pnl": 38.70945000000007,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2025-11-11 13:53:00+05:30",
+    "exit_time": "2025-11-11 13:55:00+05:30",
+    "realized_pnl": -108.70079999999994,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2025-11-12 09:15:00+05:30",
+    "exit_time": "2025-11-12 11:15:00+05:30",
+    "realized_pnl": 2377.716900000001,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2025-11-12 09:20:00+05:30",
+    "exit_time": "2025-11-12 11:20:00+05:30",
+    "realized_pnl": 2207.355150000003,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2025-11-13 10:30:00+05:30",
+    "exit_time": "2025-11-13 12:30:00+05:30",
+    "realized_pnl": 2273.0142500000015,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2025-11-13 10:35:00+05:30",
+    "exit_time": "2025-11-13 12:35:00+05:30",
+    "realized_pnl": 1388.1075000000023,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2025-11-14 11:15:00+05:30",
+    "exit_time": "2025-11-14 11:42:00+05:30",
+    "realized_pnl": -1852.094399999998,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2025-11-14 11:20:00+05:30",
+    "exit_time": "2025-11-14 13:20:00+05:30",
+    "realized_pnl": -638.576899999997,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2025-11-17 09:15:00+05:30",
+    "exit_time": "2025-11-17 10:09:00+05:30",
+    "realized_pnl": 1086.6368499999999,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2025-11-17 09:20:00+05:30",
+    "exit_time": "2025-11-17 09:34:00+05:30",
+    "realized_pnl": 0.0,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2025-11-18 09:15:00+05:30",
+    "exit_time": "2025-11-18 09:30:00+05:30",
+    "realized_pnl": 298.0932500000009,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2025-11-18 09:20:00+05:30",
+    "exit_time": "2025-11-18 09:27:00+05:30",
+    "realized_pnl": 149.35115000000013,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2025-11-19 10:15:00+05:30",
+    "exit_time": "2025-11-19 12:15:00+05:30",
+    "realized_pnl": 1786.9787000000008,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2025-11-19 10:20:00+05:30",
+    "exit_time": "2025-11-19 12:20:00+05:30",
+    "realized_pnl": 995.501650000001,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2025-11-20 09:30:00+05:30",
+    "exit_time": "2025-11-20 11:30:00+05:30",
+    "realized_pnl": 969.9716000000001,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2025-11-20 09:35:00+05:30",
+    "exit_time": "2025-11-20 11:35:00+05:30",
+    "realized_pnl": 1220.1013500000004,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2025-11-21 12:30:00+05:30",
+    "exit_time": "2025-11-21 14:30:00+05:30",
+    "realized_pnl": 84.5305500000012,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2025-11-21 12:35:00+05:30",
+    "exit_time": "2025-11-21 13:14:00+05:30",
+    "realized_pnl": 0.0,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2025-11-24 10:30:00+05:30",
+    "exit_time": "2025-11-24 10:53:00+05:30",
+    "realized_pnl": 0.0,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2025-11-24 10:35:00+05:30",
+    "exit_time": "2025-11-24 11:02:00+05:30",
+    "realized_pnl": -1269.7873499999982,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2025-11-25 14:15:00+05:30",
+    "exit_time": "2025-11-25 14:18:00+05:30",
+    "realized_pnl": -392.6032499999996,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2025-11-26 09:45:00+05:30",
+    "exit_time": "2025-11-26 11:45:00+05:30",
+    "realized_pnl": 2924.0965000000015,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2025-11-26 09:50:00+05:30",
+    "exit_time": "2025-11-26 11:50:00+05:30",
+    "realized_pnl": 2157.6405500000014,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2025-11-27 09:15:00+05:30",
+    "exit_time": "2025-11-27 09:40:00+05:30",
+    "realized_pnl": 0.0,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2025-11-27 09:20:00+05:30",
+    "exit_time": "2025-11-27 09:39:00+05:30",
+    "realized_pnl": 0.0,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2025-11-28 09:15:00+05:30",
+    "exit_time": "2025-11-28 11:15:00+05:30",
+    "realized_pnl": 2508.2115500000004,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2025-11-28 09:20:00+05:30",
+    "exit_time": "2025-11-28 11:20:00+05:30",
+    "realized_pnl": 991.7310000000011,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2025-12-01 09:45:00+05:30",
+    "exit_time": "2025-12-01 10:49:00+05:30",
+    "realized_pnl": -925.3939499999989,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2025-12-01 09:50:00+05:30",
+    "exit_time": "2025-12-01 10:45:00+05:30",
+    "realized_pnl": -968.6390999999988,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2025-12-04 10:35:00+05:30",
+    "exit_time": "2025-12-04 12:20:00+05:30",
+    "realized_pnl": -2311.459799999997,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2025-12-04 10:40:00+05:30",
+    "exit_time": "2025-12-04 11:45:00+05:30",
+    "realized_pnl": -2331.449249999998,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2025-12-05 11:00:00+05:30",
+    "exit_time": "2025-12-05 13:00:00+05:30",
+    "realized_pnl": 2489.6339000000007,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2025-12-05 11:05:00+05:30",
+    "exit_time": "2025-12-05 13:05:00+05:30",
+    "realized_pnl": 1987.019450000001,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2025-12-08 09:15:00+05:30",
+    "exit_time": "2025-12-08 09:27:00+05:30",
+    "realized_pnl": 348.39414999999997,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2025-12-08 09:20:00+05:30",
+    "exit_time": "2025-12-08 09:27:00+05:30",
+    "realized_pnl": -853.9283999999996,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2025-12-12 09:15:00+05:30",
+    "exit_time": "2025-12-12 10:08:00+05:30",
+    "realized_pnl": 101.27520000000303,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2025-12-12 09:20:00+05:30",
+    "exit_time": "2025-12-12 11:20:00+05:30",
+    "realized_pnl": -441.0997499999995,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2025-12-15 09:15:00+05:30",
+    "exit_time": "2025-12-15 09:24:00+05:30",
+    "realized_pnl": -774.6238499999992,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2025-12-15 09:20:00+05:30",
+    "exit_time": "2025-12-15 09:45:00+05:30",
+    "realized_pnl": -1346.086949999999,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2025-12-18 12:45:00+05:30",
+    "exit_time": "2025-12-18 14:07:00+05:30",
+    "realized_pnl": -2361.106799999999,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2025-12-19 09:15:00+05:30",
+    "exit_time": "2025-12-19 11:15:00+05:30",
+    "realized_pnl": 1297.3473500000005,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2025-12-19 09:20:00+05:30",
+    "exit_time": "2025-12-19 11:20:00+05:30",
+    "realized_pnl": 681.9110999999997,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2025-12-22 09:45:00+05:30",
+    "exit_time": "2025-12-22 11:45:00+05:30",
+    "realized_pnl": 39.16380000000082,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2025-12-22 09:50:00+05:30",
+    "exit_time": "2025-12-22 11:50:00+05:30",
+    "realized_pnl": 930.9469000000009,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2025-12-23 11:00:00+05:30",
+    "exit_time": "2025-12-23 11:31:00+05:30",
+    "realized_pnl": 57.2208000000003,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2025-12-23 11:05:00+05:30",
+    "exit_time": "2025-12-23 11:31:00+05:30",
+    "realized_pnl": 85.19875000000015,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2025-12-24 09:45:00+05:30",
+    "exit_time": "2025-12-24 11:45:00+05:30",
+    "realized_pnl": -1174.0540499999972,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2025-12-24 09:50:00+05:30",
+    "exit_time": "2025-12-24 11:50:00+05:30",
+    "realized_pnl": -1002.9246499999998,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2025-12-29 09:30:00+05:30",
+    "exit_time": "2025-12-29 09:55:00+05:30",
+    "realized_pnl": 0.0,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2025-12-29 09:35:00+05:30",
+    "exit_time": "2025-12-29 09:59:00+05:30",
+    "realized_pnl": -861.8980499999992,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2025-12-31 09:15:00+05:30",
+    "exit_time": "2025-12-31 11:15:00+05:30",
+    "realized_pnl": 1805.2586500000023,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2025-12-31 09:20:00+05:30",
+    "exit_time": "2025-12-31 11:20:00+05:30",
+    "realized_pnl": 1411.913750000003,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2026-01-01 09:45:00+05:30",
+    "exit_time": "2026-01-01 11:45:00+05:30",
+    "realized_pnl": -795.4881999999984,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2026-01-01 09:50:00+05:30",
+    "exit_time": "2026-01-01 11:50:00+05:30",
+    "realized_pnl": -1723.1265999999976,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2026-01-02 09:45:00+05:30",
+    "exit_time": "2026-01-02 11:45:00+05:30",
+    "realized_pnl": 1396.2448500000007,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2026-01-02 09:50:00+05:30",
+    "exit_time": "2026-01-02 11:50:00+05:30",
+    "realized_pnl": 969.6258000000012,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2026-01-05 09:15:00+05:30",
+    "exit_time": "2026-01-05 09:31:00+05:30",
+    "realized_pnl": -1237.3861499999991,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2026-01-05 09:20:00+05:30",
+    "exit_time": "2026-01-05 09:31:00+05:30",
+    "realized_pnl": -1205.2462499999997,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2026-01-06 10:15:00+05:30",
+    "exit_time": "2026-01-06 10:22:00+05:30",
+    "realized_pnl": -836.2906499999997,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2026-01-06 10:20:00+05:30",
+    "exit_time": "2026-01-06 10:37:00+05:30",
+    "realized_pnl": -712.6957499999993,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2026-01-16 10:28:00+05:30",
+    "exit_time": "2026-01-16 11:45:00+05:30",
+    "realized_pnl": -1853.008949999998,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2026-01-16 10:35:00+05:30",
+    "exit_time": "2026-01-16 11:44:00+05:30",
+    "realized_pnl": -1872.7370999999991,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2026-01-28 09:16:00+05:30",
+    "exit_time": "2026-01-28 09:34:00+05:30",
+    "realized_pnl": 0.0,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2026-01-28 09:21:00+05:30",
+    "exit_time": "2026-01-28 09:56:00+05:30",
+    "realized_pnl": -2279.1892499999976,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2026-01-29 12:47:00+05:30",
+    "exit_time": "2026-01-29 14:47:00+05:30",
+    "realized_pnl": 5298.0193500000005,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2026-01-29 12:52:00+05:30",
+    "exit_time": "2026-01-29 14:52:00+05:30",
+    "realized_pnl": 4855.917300000003,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2026-01-30 12:30:00+05:30",
+    "exit_time": "2026-01-30 13:15:00+05:30",
+    "realized_pnl": -2055.124499999999,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2026-01-30 12:37:00+05:30",
+    "exit_time": "2026-01-30 13:15:00+05:30",
+    "realized_pnl": -2070.149249999999,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2026-02-01 10:30:00+05:30",
+    "exit_time": "2026-02-01 11:15:00+05:30",
+    "realized_pnl": 1081.766400000001,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2026-02-01 10:35:00+05:30",
+    "exit_time": "2026-02-01 11:15:00+05:30",
+    "realized_pnl": 568.4035500000009,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2026-02-03 09:15:00+05:30",
+    "exit_time": "2026-02-03 09:23:00+05:30",
+    "realized_pnl": 2140.1724500000005,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2026-02-03 09:20:00+05:30",
+    "exit_time": "2026-02-03 09:23:00+05:30",
+    "realized_pnl": 0.0,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2026-02-04 10:00:00+05:30",
+    "exit_time": "2026-02-04 11:24:00+05:30",
+    "realized_pnl": -2465.104199999998,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2026-02-04 10:05:00+05:30",
+    "exit_time": "2026-02-04 11:24:00+05:30",
+    "realized_pnl": -2530.951799999999,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2026-02-05 13:15:00+05:30",
+    "exit_time": "2026-02-05 15:15:00+05:30",
+    "realized_pnl": -202.89164999999798,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2026-02-05 13:20:00+05:30",
+    "exit_time": "2026-02-05 15:20:00+05:30",
+    "realized_pnl": -710.1522999999984,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2026-02-06 11:30:00+05:30",
+    "exit_time": "2026-02-06 12:08:00+05:30",
+    "realized_pnl": 380.7531000000005,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2026-02-06 11:35:00+05:30",
+    "exit_time": "2026-02-06 12:06:00+05:30",
+    "realized_pnl": 0.0,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2026-02-09 09:15:00+05:30",
+    "exit_time": "2026-02-09 09:37:00+05:30",
+    "realized_pnl": -1250.9737499999992,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2026-02-09 09:20:00+05:30",
+    "exit_time": "2026-02-09 09:33:00+05:30",
+    "realized_pnl": 0.0,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2026-02-10 09:30:00+05:30",
+    "exit_time": "2026-02-10 09:50:00+05:30",
+    "realized_pnl": 1021.3788000000002,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2026-02-10 09:35:00+05:30",
+    "exit_time": "2026-02-10 09:49:00+05:30",
+    "realized_pnl": 0.0,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2026-02-11 10:45:00+05:30",
+    "exit_time": "2026-02-11 12:45:00+05:30",
+    "realized_pnl": -2090.802349999998,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2026-02-11 10:50:00+05:30",
+    "exit_time": "2026-02-11 12:50:00+05:30",
+    "realized_pnl": -1631.4037999999987,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2026-02-12 12:45:00+05:30",
+    "exit_time": "2026-02-12 14:45:00+05:30",
+    "realized_pnl": -2014.8186499999997,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2026-02-12 12:50:00+05:30",
+    "exit_time": "2026-02-12 14:47:00+05:30",
+    "realized_pnl": -2695.962749999998,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2026-02-17 10:20:00+05:30",
+    "exit_time": "2026-02-17 10:34:00+05:30",
+    "realized_pnl": 670.1682000000004,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2026-02-17 10:26:00+05:30",
+    "exit_time": "2026-02-17 10:34:00+05:30",
+    "realized_pnl": 348.0964500000001,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2026-02-18 09:15:00+05:30",
+    "exit_time": "2026-02-18 11:15:00+05:30",
+    "realized_pnl": -610.1133999999997,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2026-02-18 09:20:00+05:30",
+    "exit_time": "2026-02-18 11:20:00+05:30",
+    "realized_pnl": -1149.4001999999975,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2026-02-19 09:15:00+05:30",
+    "exit_time": "2026-02-19 10:02:00+05:30",
+    "realized_pnl": -2698.5757499999977,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2026-02-19 09:20:00+05:30",
+    "exit_time": "2026-02-19 09:37:00+05:30",
+    "realized_pnl": -2175.9757499999982,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2026-02-23 09:45:00+05:30",
+    "exit_time": "2026-02-23 10:31:00+05:30",
+    "realized_pnl": -1276.4504999999988,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2026-02-23 09:50:00+05:30",
+    "exit_time": "2026-02-23 10:32:00+05:30",
+    "realized_pnl": -1256.9836499999983,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2026-02-25 09:26:00+05:30",
+    "exit_time": "2026-02-25 11:26:00+05:30",
+    "realized_pnl": 840.2914000000019,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2026-02-25 09:51:00+05:30",
+    "exit_time": "2026-02-25 11:42:00+05:30",
+    "realized_pnl": 135.8077500000016,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2026-03-18 09:45:00+05:30",
+    "exit_time": "2026-03-18 09:55:00+05:30",
+    "realized_pnl": 0.0,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2026-03-18 09:50:00+05:30",
+    "exit_time": "2026-03-18 09:57:00+05:30",
+    "realized_pnl": -2088.7015499999984,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2026-03-25 09:30:00+05:30",
+    "exit_time": "2026-03-25 11:30:00+05:30",
+    "realized_pnl": 6960.835700000001,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2026-03-25 09:35:00+05:30",
+    "exit_time": "2026-03-25 11:35:00+05:30",
+    "realized_pnl": 5927.408500000001,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2026-04-02 15:15:00+05:30",
+    "exit_time": "2026-04-02 15:20:00+05:30",
+    "realized_pnl": -1869.7321499999987,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2026-04-06 13:00:00+05:30",
+    "exit_time": "2026-04-06 13:03:00+05:30",
+    "realized_pnl": -957.5338499999991,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2026-04-06 13:05:00+05:30",
+    "exit_time": "2026-04-06 13:29:00+05:30",
+    "realized_pnl": 3097.0758,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2026-04-07 09:15:00+05:30",
+    "exit_time": "2026-04-07 09:16:00+05:30",
+    "realized_pnl": -247.71239999999975,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2026-04-07 09:20:00+05:30",
+    "exit_time": "2026-04-07 09:24:00+05:30",
+    "realized_pnl": 1048.554,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2026-04-08 09:15:00+05:30",
+    "exit_time": "2026-04-08 09:25:00+05:30",
+    "realized_pnl": 484.1238999999999,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2026-04-08 09:20:00+05:30",
+    "exit_time": "2026-04-08 09:58:00+05:30",
+    "realized_pnl": 0.0,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2026-04-09 11:45:00+05:30",
+    "exit_time": "2026-04-09 12:38:00+05:30",
+    "realized_pnl": 0.0,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2026-04-09 11:50:00+05:30",
+    "exit_time": "2026-04-09 13:18:00+05:30",
+    "realized_pnl": -2004.3016499999978,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2026-04-10 09:15:00+05:30",
+    "exit_time": "2026-04-10 09:26:00+05:30",
+    "realized_pnl": 819.7455500000017,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2026-04-10 09:20:00+05:30",
+    "exit_time": "2026-04-10 10:05:00+05:30",
+    "realized_pnl": 0.0,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2026-04-13 09:15:00+05:30",
+    "exit_time": "2026-04-13 09:16:00+05:30",
+    "realized_pnl": -1138.0921499999995,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2026-04-13 09:20:00+05:30",
+    "exit_time": "2026-04-13 09:36:00+05:30",
+    "realized_pnl": 359.5481500000003,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2026-04-15 09:45:00+05:30",
+    "exit_time": "2026-04-15 10:53:00+05:30",
+    "realized_pnl": 0.0,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2026-04-15 09:50:00+05:30",
+    "exit_time": "2026-04-15 10:53:00+05:30",
+    "realized_pnl": 762.0912,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2026-04-16 09:45:00+05:30",
+    "exit_time": "2026-04-16 11:45:00+05:30",
+    "realized_pnl": -2010.68725,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2026-04-16 09:50:00+05:30",
+    "exit_time": "2026-04-16 11:44:00+05:30",
+    "realized_pnl": -2444.853449999997,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2026-04-17 10:15:00+05:30",
+    "exit_time": "2026-04-17 11:58:00+05:30",
+    "realized_pnl": 0.0,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2026-04-17 10:20:00+05:30",
+    "exit_time": "2026-04-17 11:59:00+05:30",
+    "realized_pnl": 0.0,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2026-04-20 09:15:00+05:30",
+    "exit_time": "2026-04-20 09:26:00+05:30",
+    "realized_pnl": 3402.1468000000013,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2026-04-20 09:20:00+05:30",
+    "exit_time": "2026-04-20 09:26:00+05:30",
+    "realized_pnl": 746.9637499999998,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2026-04-21 09:45:00+05:30",
+    "exit_time": "2026-04-21 10:18:00+05:30",
+    "realized_pnl": 229.04895000000025,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2026-04-21 09:50:00+05:30",
+    "exit_time": "2026-04-21 09:52:00+05:30",
+    "realized_pnl": -526.7807999999997,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2026-04-22 09:15:00+05:30",
+    "exit_time": "2026-04-22 09:54:00+05:30",
+    "realized_pnl": -2395.4677499999984,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2026-04-22 09:20:00+05:30",
+    "exit_time": "2026-04-22 09:56:00+05:30",
+    "realized_pnl": -2361.106799999999,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2026-04-29 09:49:00+05:30",
+    "exit_time": "2026-04-29 11:49:00+05:30",
+    "realized_pnl": 3601.6883500000026,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2026-04-29 09:54:00+05:30",
+    "exit_time": "2026-04-29 11:54:00+05:30",
+    "realized_pnl": 3457.0906500000006,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2026-05-04 09:45:00+05:30",
+    "exit_time": "2026-05-04 09:53:00+05:30",
+    "realized_pnl": -803.7587999999993,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2026-05-04 09:50:00+05:30",
+    "exit_time": "2026-05-04 09:53:00+05:30",
+    "realized_pnl": -708.6455999999995,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2026-05-06 09:30:00+05:30",
+    "exit_time": "2026-05-06 10:06:00+05:30",
+    "realized_pnl": -2281.148999999997,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2026-05-06 09:35:00+05:30",
+    "exit_time": "2026-05-06 11:03:00+05:30",
+    "realized_pnl": -2174.5385999999985,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2026-05-07 09:15:00+05:30",
+    "exit_time": "2026-05-07 09:22:00+05:30",
+    "realized_pnl": -2101.505249999998,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2026-05-07 09:20:00+05:30",
+    "exit_time": "2026-05-07 09:53:00+05:30",
+    "realized_pnl": 885.412450000001,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2026-05-08 10:45:00+05:30",
+    "exit_time": "2026-05-08 12:44:00+05:30",
+    "realized_pnl": -2210.9899499999983,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2026-05-08 10:50:00+05:30",
+    "exit_time": "2026-05-08 12:46:00+05:30",
+    "realized_pnl": -2104.2488999999987,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2026-05-15 09:45:00+05:30",
+    "exit_time": "2026-05-15 10:01:00+05:30",
+    "realized_pnl": 0.0,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2026-05-15 09:50:00+05:30",
+    "exit_time": "2026-05-15 10:01:00+05:30",
+    "realized_pnl": 0.0,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2026-05-19 09:22:00+05:30",
+    "exit_time": "2026-05-19 09:31:00+05:30",
+    "realized_pnl": 0.0,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2026-05-19 09:27:00+05:30",
+    "exit_time": "2026-05-19 09:32:00+05:30",
+    "realized_pnl": -244.0541999999997,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2026-05-21 09:45:00+05:30",
+    "exit_time": "2026-05-21 10:59:00+05:30",
+    "realized_pnl": -2133.6451500000003,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2026-05-21 09:50:00+05:30",
+    "exit_time": "2026-05-21 11:00:00+05:30",
+    "realized_pnl": -2100.5906999999997,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2026-05-22 09:45:00+05:30",
+    "exit_time": "2026-05-22 11:30:00+05:30",
+    "realized_pnl": 0.0,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2026-05-22 09:50:00+05:30",
+    "exit_time": "2026-05-22 11:30:00+05:30",
+    "realized_pnl": 0.0,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2026-05-25 09:30:00+05:30",
+    "exit_time": "2026-05-25 09:38:00+05:30",
+    "realized_pnl": -759.9910499999999,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2026-05-25 09:35:00+05:30",
+    "exit_time": "2026-05-25 11:32:00+05:30",
+    "realized_pnl": 570.5186499999998,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2026-05-26 09:15:00+05:30",
+    "exit_time": "2026-05-26 09:35:00+05:30",
+    "realized_pnl": 1677.74425,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2026-05-26 09:20:00+05:30",
+    "exit_time": "2026-05-26 09:35:00+05:30",
+    "realized_pnl": 426.54430000000025,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2026-05-27 10:30:00+05:30",
+    "exit_time": "2026-05-27 12:30:00+05:30",
+    "realized_pnl": -1583.009349999999,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2026-05-27 10:35:00+05:30",
+    "exit_time": "2026-05-27 12:35:00+05:30",
+    "realized_pnl": -1134.465149999999,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2026-05-29 09:15:00+05:30",
+    "exit_time": "2026-05-29 09:28:00+05:30",
+    "realized_pnl": -1768.6090499999996,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2026-05-29 09:20:00+05:30",
+    "exit_time": "2026-05-29 09:28:00+05:30",
+    "realized_pnl": -1696.2289499999995,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2026-06-10 09:47:00+05:30",
+    "exit_time": "2026-06-10 11:47:00+05:30",
+    "realized_pnl": 536.9175500000013,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2026-06-10 09:55:00+05:30",
+    "exit_time": "2026-06-10 11:55:00+05:30",
+    "realized_pnl": 564.2195000000029,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2026-06-11 12:31:00+05:30",
+    "exit_time": "2026-06-11 13:21:00+05:30",
+    "realized_pnl": -2231.371349999998,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2026-06-12 09:45:00+05:30",
+    "exit_time": "2026-06-12 11:45:00+05:30",
+    "realized_pnl": 154.66360000000108,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2026-06-12 09:50:00+05:30",
+    "exit_time": "2026-06-12 11:50:00+05:30",
+    "realized_pnl": 141.3697999999991,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2026-06-15 09:15:00+05:30",
+    "exit_time": "2026-06-15 09:32:00+05:30",
+    "realized_pnl": -715.0474499999993,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2026-06-15 09:20:00+05:30",
+    "exit_time": "2026-06-15 09:58:00+05:30",
+    "realized_pnl": 0.0,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2026-06-16 09:45:00+05:30",
+    "exit_time": "2026-06-16 09:50:00+05:30",
+    "realized_pnl": 4.080700000000235,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2026-06-16 09:50:00+05:30",
+    "exit_time": "2026-06-16 10:01:00+05:30",
+    "realized_pnl": 479.9866499999997,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2026-06-17 09:45:00+05:30",
+    "exit_time": "2026-06-17 11:45:00+05:30",
+    "realized_pnl": 551.2871000000011,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2026-06-17 09:50:00+05:30",
+    "exit_time": "2026-06-17 11:50:00+05:30",
+    "realized_pnl": 441.0178500000012,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2026-06-18 09:15:00+05:30",
+    "exit_time": "2026-06-18 10:39:00+05:30",
+    "realized_pnl": 161.2643500000013,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2026-06-18 09:20:00+05:30",
+    "exit_time": "2026-06-18 10:39:00+05:30",
+    "realized_pnl": 0.0,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2026-06-19 09:15:00+05:30",
+    "exit_time": "2026-06-19 10:31:00+05:30",
+    "realized_pnl": 152.62650000000107,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2026-06-19 09:20:00+05:30",
+    "exit_time": "2026-06-19 10:26:00+05:30",
+    "realized_pnl": 0.0,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2026-06-22 09:15:00+05:30",
+    "exit_time": "2026-06-22 09:38:00+05:30",
+    "realized_pnl": 534.2096499999999,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2026-06-22 09:20:00+05:30",
+    "exit_time": "2026-06-22 11:20:00+05:30",
+    "realized_pnl": 1021.3937500000003,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2026-06-23 10:00:00+05:30",
+    "exit_time": "2026-06-23 10:27:00+05:30",
+    "realized_pnl": -652.7273999999993,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2026-06-23 10:05:00+05:30",
+    "exit_time": "2026-06-23 10:27:00+05:30",
+    "realized_pnl": -640.8382499999993,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2026-06-24 10:30:00+05:30",
+    "exit_time": "2026-06-24 12:30:00+05:30",
+    "realized_pnl": 975.4556500000006,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2026-06-24 10:35:00+05:30",
+    "exit_time": "2026-06-24 12:35:00+05:30",
+    "realized_pnl": 832.5837000000013,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2026-06-25 09:45:00+05:30",
+    "exit_time": "2026-06-25 11:45:00+05:30",
+    "realized_pnl": 1352.8904999999988,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2026-06-25 09:50:00+05:30",
+    "exit_time": "2026-06-25 11:50:00+05:30",
+    "realized_pnl": 1297.1094500000024,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2026-06-29 10:45:00+05:30",
+    "exit_time": "2026-06-29 10:50:00+05:30",
+    "realized_pnl": -1005.7436999999995,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2026-06-29 10:50:00+05:30",
+    "exit_time": "2026-06-29 11:22:00+05:30",
+    "realized_pnl": 0.0,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2026-07-01 10:23:00+05:30",
+    "exit_time": "2026-07-01 12:23:00+05:30",
+    "realized_pnl": 132.95230000000046,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2026-07-01 11:44:00+05:30",
+    "exit_time": "2026-07-01 13:44:00+05:30",
+    "realized_pnl": 625.1589500000017,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2026-07-02 09:45:00+05:30",
+    "exit_time": "2026-07-02 10:08:00+05:30",
+    "realized_pnl": -1911.0175499999987,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2026-07-02 09:50:00+05:30",
+    "exit_time": "2026-07-02 11:40:00+05:30",
+    "realized_pnl": -2537.8762499999984,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2026-07-03 09:45:00+05:30",
+    "exit_time": "2026-07-03 11:45:00+05:30",
+    "realized_pnl": -175.09505000000004,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2026-07-03 09:50:00+05:30",
+    "exit_time": "2026-07-03 11:50:00+05:30",
+    "realized_pnl": 204.04604999999862,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2026-07-06 09:45:00+05:30",
+    "exit_time": "2026-07-06 10:07:00+05:30",
+    "realized_pnl": 0.0,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2026-07-06 09:50:00+05:30",
+    "exit_time": "2026-07-06 11:50:00+05:30",
+    "realized_pnl": 1021.2598500000003,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2026-07-07 09:15:00+05:30",
+    "exit_time": "2026-07-07 09:18:00+05:30",
+    "realized_pnl": 0.0,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2026-07-07 09:20:00+05:30",
+    "exit_time": "2026-07-07 09:22:00+05:30",
+    "realized_pnl": -292.91729999999967,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2026-07-08 11:00:00+05:30",
+    "exit_time": "2026-07-08 12:16:00+05:30",
+    "realized_pnl": -2388.4126499999984,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2026-07-08 11:05:00+05:30",
+    "exit_time": "2026-07-08 12:16:00+05:30",
+    "realized_pnl": -2383.3172999999974,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2026-07-10 09:45:00+05:30",
+    "exit_time": "2026-07-10 11:45:00+05:30",
+    "realized_pnl": -1042.6097500000008,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2026-07-10 09:50:00+05:30",
+    "exit_time": "2026-07-10 11:50:00+05:30",
+    "realized_pnl": -1016.7254500000001,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2026-07-13 12:15:00+05:30",
+    "exit_time": "2026-07-13 12:57:00+05:30",
+    "realized_pnl": 1814.3293999999999,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2026-07-13 12:20:00+05:30",
+    "exit_time": "2026-07-13 12:57:00+05:30",
+    "realized_pnl": 1353.6692000000003,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2026-07-15 09:45:00+05:30",
+    "exit_time": "2026-07-15 11:45:00+05:30",
+    "realized_pnl": -652.505750000001,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2026-07-15 09:50:00+05:30",
+    "exit_time": "2026-07-15 11:50:00+05:30",
+    "realized_pnl": -731.6016499999989,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2026-07-17 09:45:00+05:30",
+    "exit_time": "2026-07-17 11:45:00+05:30",
+    "realized_pnl": 1392.322750000001,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2026-07-17 09:50:00+05:30",
+    "exit_time": "2026-07-17 11:08:00+05:30",
+    "realized_pnl": 0.0,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2026-07-20 09:15:00+05:30",
+    "exit_time": "2026-07-20 09:16:00+05:30",
+    "realized_pnl": -671.4103499999998,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2026-07-20 09:20:00+05:30",
+    "exit_time": "2026-07-20 09:25:00+05:30",
+    "realized_pnl": 0.0,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2026-07-21 13:45:00+05:30",
+    "exit_time": "2026-07-21 13:48:00+05:30",
+    "realized_pnl": -181.4728499999998,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2026-07-27 14:15:00+05:30",
+    "exit_time": "2026-07-28 09:15:00+05:30",
+    "realized_pnl": -929.9666999999997,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2026-07-27 14:20:00+05:30",
+    "exit_time": "2026-07-27 14:36:00+05:30",
+    "realized_pnl": 0.0,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2026-07-28 11:00:00+05:30",
+    "exit_time": "2026-07-28 11:11:00+05:30",
+    "realized_pnl": -633.5218499999996,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2026-07-28 11:05:00+05:30",
+    "exit_time": "2026-07-28 11:31:00+05:30",
+    "realized_pnl": -573.9454499999998,
+    "exit_reason": "STOP_LOSS"
+  },
+  {
+    "entry_time": "2026-07-29 09:30:00+05:30",
+    "exit_time": "2026-07-29 11:30:00+05:30",
+    "realized_pnl": 1734.3078999999996,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2026-07-29 09:35:00+05:30",
+    "exit_time": "2026-07-29 11:35:00+05:30",
+    "realized_pnl": 1100.8848500000017,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2026-07-30 11:30:00+05:30",
+    "exit_time": "2026-07-30 13:10:00+05:30",
+    "realized_pnl": 222.33185000000006,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2026-07-30 11:35:00+05:30",
+    "exit_time": "2026-07-30 13:10:00+05:30",
+    "realized_pnl": 30.39009999999905,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2026-07-31 09:15:00+05:30",
+    "exit_time": "2026-07-31 11:15:00+05:30",
+    "realized_pnl": 30.362150000003112,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2026-07-31 09:20:00+05:30",
+    "exit_time": "2026-07-31 11:20:00+05:30",
+    "realized_pnl": 705.4073000000016,
+    "exit_reason": "TIME_EXIT"
+  },
+  {
+    "entry_time": "2026-08-03 09:30:00+05:30",
+    "exit_time": "2026-08-03 10:35:00+05:30",
+    "realized_pnl": 250.23570000000018,
+    "exit_reason": "TRAILING_STOP"
+  },
+  {
+    "entry_time": "2026-08-03 09:35:00+05:30",
+    "exit_time": "2026-08-03 10:35:00+05:30",
+    "realized_pnl": 399.23455000000024,
+    "exit_reason": "TRAILING_STOP"
+  }
+]

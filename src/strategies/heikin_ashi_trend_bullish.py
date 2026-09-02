@@ -10,10 +10,18 @@ MAX_WICK_TO_BODY_RATIO = 0.15
 
 
 class HeikinAshiTrendBullish(BaseStrategy):
-    def __init__(self, name: str = "HEIKIN_ASHI_TREND_BULLISH", strike_step: int = 50, underlying: str = "NIFTY"):
-        super().__init__(name=name, direction="CE", strike_step=strike_step, underlying=underlying)
+    def __init__(self, name: str = "HEIKIN_ASHI_TREND_BULLISH", strike_step: int = 50, underlying: str = "NIFTY",
+                 min_cooldown_mins: int = 15):
+        super().__init__(name=name, direction="CE", strike_step=strike_step, underlying=underlying,
+                          min_cooldown_mins=min_cooldown_mins)
 
     def evaluate(self, data_state: dict):
+        timestamp = data_state.get("timestamp")
+        # See HeikinAshiTrendBearish's matching comment: this condition is a state (2 consecutive
+        # bullish HA candles + trend filter), not an edge, so it needs its own cooldown or it
+        # re-qualifies on every tick a real uptrend is intact.
+        if not self.can_trigger(timestamp):
+            return None
         indicators = data_state.get("indicators", {})
         nifty = data_state.get("nifty_price")
         if nifty is None:

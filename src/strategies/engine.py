@@ -65,7 +65,17 @@ from src.strategies.expansion_strategies import (
 
 
 def create_nifty_strategies() -> list[BaseStrategy]:
-    """Returns the 14 active NIFTY strategies (4 1M ATM + 6 5M ITM + 4 Expansion)."""
+    """Returns the 14 active NIFTY strategies (4 1M ATM + 6 5M ITM + 4 Expansion).
+
+    KNOWN ROSTER ASYMMETRY (undocumented until now, not yet re-validated): NIFTY's 1M-ATM tier
+    wires ORB_BULLISH but no ORB_BEARISH; SENSEX/BANKNIFTY's 1M-ATM tier below wire ORB_BEARISH
+    but no ORB_BULLISH. Similarly RESISTANCE_REJECTION_BEARISH (the PE mirror of SUPPORT_BOUNCE_
+    BULLISH) exists in code for all three indices but is only wired at the 5M-ITM tier, never at
+    1M-ATM. No comment or commit message explains which backtest, if any, justified excluding
+    each missing direction — it reads as a decision made once and never revisited. Left as-is for
+    now (not expanding scope while other gaps are being fixed); the re-run backtest should be used
+    to decide whether to restore symmetry or document the real reason it's asymmetric.
+    """
     return [
         ORBBullish(name="NIFTY_ORB_BULLISH_1M_ATM"),
         MACDBullish(name="NIFTY_MACD_BULLISH_1M_ATM"),

@@ -597,7 +597,10 @@ class WebLiveEngine(LiveTrader):
             return
 
         stop_loss = max(signal.entry_price * (1 - self.stop_loss_pct / 100), 0.05)
-        take_profit = signal.entry_price + self.take_profit_pts
+        # Percentage of entry premium, not a flat rupee-point target — see src/trader.py's
+        # matching comment and docs/ARCHITECTURE.md. This is the path that actually executes
+        # every live trade (WebLiveEngine.execute_signal overrides LiveTrader's).
+        take_profit = signal.entry_price * (1 + self.take_profit_pct / 100)
         lot_size = LOT_SIZE_BY_INDEX.get(signal.underlying, self.paper_trader.lot_size)
         try:
             order = self.paper_trader.place_order(

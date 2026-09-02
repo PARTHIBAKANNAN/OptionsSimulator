@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from datetime import date, datetime, timedelta
 from typing import Optional
 
+import numpy as np
 import pandas as pd
 
 from src.utils import indicators as ind
@@ -282,6 +283,12 @@ class DataManager:
                 out["macd_histogram_5m_prev"] = (
                     float(macd_df_5m["histogram"].iloc[-2]) if len(macd_df_5m) >= 2 else out["macd_histogram_5m"]
                 )
+                # Was referenced by the VWAP-POC expansion strategies but never actually computed —
+                # silently fell back to a constant 50.0 forever, making their RSI filter (>50 / <45)
+                # mathematically impossible to satisfy. See docs/ARCHITECTURE.md.
+                rsi_period_5m = min(14, len(resampled))
+                out["rsi_14_5m"] = float(ind.rsi(resampled["Close"], rsi_period_5m).iloc[-1])
+
                 if len(resampled) >= 2:
                     ha_5m = ind.heikin_ashi(resampled)
                     out["heikin_ashi_5m"] = {
@@ -289,6 +296,56 @@ class DataManager:
                         "low": float(ha_5m["ha_low"].iloc[-1]), "close": float(ha_5m["ha_close"].iloc[-1]),
                         "prev_open": float(ha_5m["ha_open"].iloc[-2]), "prev_close": float(ha_5m["ha_close"].iloc[-2]),
                     }
+
+                # Session VWAP resets each trading day -- needs the resampled bars' own calendar
+                # date, not the raw 1-min candles'.
+                session_date = pd.Series(resampled.index.date, index=resampled.index)
+                out["vwap_5m"] = float(
+                    ind.vwap(resampled["High"], resampled["Low"], resampled["Close"],
+                             resampled["Volume"], session_date).iloc[-1]
+                )
+
+                # Dual Supertrend (10,3 / 7,2) -- both period/multiplier pairs, as named in
+                # strategySpecsData.json for the Supertrend+CMF and Dual-Supertrend+BB strategies.
+                # Needs `period` closed bars before ATR is meaningful; degrades gracefully (skipped)
+                # until then rather than computing on too little data.
+                if len(resampled) >= 10:
+                    st_10_3 = ind.supertrend(resampled["High"], resampled["Low"], resampled["Close"],
+                                              period=10, multiplier=3.0)
+                    out["supertrend_10_3"] = float(st_10_3["supertrend"].iloc[-1])
+                    out["supertrend_10_3_direction"] = float(st_10_3["direction"].iloc[-1])
+                if len(resampled) >= 7:
+                    st_7_2 = ind.supertrend(resampled["High"], resampled["Low"], resampled["Close"],
+                                             period=7, multiplier=2.0)
+                    out["supertrend_7_2"] = float(st_7_2["supertrend"].iloc[-1])
+                    out["supertrend_7_2_direction"] = float(st_7_2["direction"].iloc[-1])
+
+                if len(resampled) >= 20:
+                    out["cmf_20_5m"] = float(
+                        ind.chaikin_money_flow(resampled["High"], resampled["Low"], resampled["Close"],
+                                                resampled["Volume"], period=20).iloc[-1]
+                    )
+                    bands_5m = ind.bollinger_bands(resampled["Close"], period=20)
+                    out["bb_upper_5m"] = float(bands_5m["upper"].iloc[-1])
+                    out["bb_lower_5m"] = float(bands_5m["lower"].iloc[-1])
+
+                    bandwidth = ind.bollinger_bandwidth(resampled["Close"], period=20)
+                    out["bb_bandwidth_5m"] = float(bandwidth.iloc[-1])
+                    # "Squeeze" = current bandwidth well below its own recent average (coiling);
+                    # "expansion" = bandwidth now rising sharply off a squeeze (the breakout it was
+                    # building toward). Both exposed as ratios so strategies can threshold either.
+                    # `_prev` lets a strategy confirm "WAS squeezed a moment ago, NOW expanding" —
+                    # a squeeze that's already fully unwound isn't a fresh explosion anymore.
+                    bandwidth_avg = bandwidth.rolling(20).mean()
+                    if len(bandwidth_avg.dropna()) and bandwidth_avg.iloc[-1] and bandwidth_avg.iloc[-1] > 0:
+                        squeeze_ratio = bandwidth / bandwidth_avg.replace(0, np.nan)
+                        out["bb_squeeze_ratio_5m"] = float(squeeze_ratio.iloc[-1])
+                        out["bb_squeeze_ratio_5m_prev"] = (
+                            float(squeeze_ratio.iloc[-2]) if len(squeeze_ratio) >= 2 and not pd.isna(squeeze_ratio.iloc[-2])
+                            else float(squeeze_ratio.iloc[-1])
+                        )
+                    if len(bandwidth) >= 2 and bandwidth.iloc[-2] > 0:
+                        out["bb_bandwidth_expansion_5m"] = float(bandwidth.iloc[-1] / bandwidth.iloc[-2])
 
         # Raw 1-min volume stats are cheap (last 20 candles) and update every tick, unlike the
         # resampled indicators above.

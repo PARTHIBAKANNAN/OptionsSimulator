@@ -16,6 +16,7 @@ from src.backtester.report import BacktestReport, build_report
 from src.utils.options_pricing import black_scholes_price, next_weekly_expiry_days, parse_option_symbol
 
 IRON_FLY_NAME = "IRON_FLY_HEDGE"
+LOT_SIZE_BY_INDEX = {"NIFTY": 65, "SENSEX": 20, "BANKNIFTY": 30}
 
 
 def _parse_hhmm(value: str) -> dtime:
@@ -46,11 +47,12 @@ class BacktestEngine:
 
         exits = risk_params.get("exit_rules", {})
         self.stop_loss_pct = exits.get("stop_loss_pct", 20)
-        self.take_profit_pts = exits.get("take_profit_pts", 150)
+        self.take_profit_pct = exits.get("take_profit_pct", 40)
         self.time_exit_mins = exits.get("time_exit_mins", 120)
         self.trailing_stop_enabled = exits.get("trailing_stop_enabled", False)
         self.trailing_activation_pct = exits.get("trailing_activation_pct", 10.0)
         self.trailing_stop_pct = exits.get("trailing_stop_pct", 15.0)
+        self.trailing_tiers_pct = exits.get("trailing_tiers_pct")
 
         iron_fly = risk_params.get("iron_fly", {})
         self.iron_fly_enabled = iron_fly.get("enabled", True)
@@ -73,13 +75,29 @@ class BacktestEngine:
         self.drawdown_cooldown_days = breaker.get("drawdown_cooldown_days", 3)
         self.drawdown_breaker_grace_trades = breaker.get("drawdown_breaker_grace_trades", 3)
 
-    def run(self, historical_data: pd.DataFrame) -> dict[str, BacktestReport]:
+    def run(self, historical_data: pd.DataFrame | dict[str, pd.DataFrame]) -> dict[str, BacktestReport]:
+        """`historical_data`: either a single DataFrame (back-compat — every strategy replays the
+        SAME series regardless of which index it actually trades; only ever correct if every
+        strategy passed to this run happens to share one underlying) or, correctly, a
+        {"NIFTY": df, "SENSEX": df, "BANKNIFTY": df} dict so each of the 44 strategies replays its
+        OWN index's price history. create_all_strategies() returns strategies for all three
+        indices, so a single shared df silently fed SENSEX/BANKNIFTY strategies NIFTY's price
+        series with SENSEX/BANKNIFTY strike-step rounding applied to NIFTY numbers — see
+        docs/ARCHITECTURE.md."""
         from src.strategies.engine import create_all_strategies
+
+        if isinstance(historical_data, pd.DataFrame):
+            historical_data = {"NIFTY": historical_data, "SENSEX": historical_data, "BANKNIFTY": historical_data}
 
         reports = {}
         self.trade_histories = {}  # strategy name -> closed Order list, for day-by-day reporting
         for strategy in create_all_strategies():
-            trader = self._backtest_single(strategy, historical_data)
+            df = historical_data.get(strategy.underlying)
+            if df is None:
+                if self.logger:
+                    self.logger.log_error(f"No historical data for {strategy.underlying}, skipping {strategy.name}")
+                continue
+            trader = self._backtest_single(strategy, df)
             history = trader.get_trade_history()
             self.trade_histories[strategy.name] = history
             reports[strategy.name] = build_report(
@@ -87,23 +105,26 @@ class BacktestEngine:
             )
 
         if self.iron_fly_enabled:
-            iron_fly_trades = self._backtest_iron_fly(historical_data)
+            iron_fly_trades = self._backtest_iron_fly(historical_data.get("NIFTY"))
             self.trade_histories[IRON_FLY_NAME] = iron_fly_trades
             reports[IRON_FLY_NAME] = build_report(IRON_FLY_NAME, "HEDGE", iron_fly_trades, self.initial_capital)
 
         return reports
 
     def _backtest_single(self, strategy: BaseStrategy, df: pd.DataFrame) -> PaperTrader:
-        data_manager = DataManager(window_size=3000)
+        index = strategy.underlying
+        lot_size = LOT_SIZE_BY_INDEX.get(index, self.lot_size)
+        data_manager = DataManager(window_size=3000, underlying=index)
         trader = PaperTrader(
             initial_capital=self.initial_capital,
-            lot_size=self.lot_size,
+            lot_size=lot_size,
             max_concurrent_positions=self.max_concurrent_positions,
             max_daily_loss=self.max_daily_loss,
             max_trades_per_day_per_strategy=self.max_trades_per_day_per_strategy,
             trailing_stop_enabled=self.trailing_stop_enabled,
             trailing_activation_pct=self.trailing_activation_pct,
             trailing_stop_pct=self.trailing_stop_pct,
+            trailing_tiers_pct=self.trailing_tiers_pct,
             consecutive_loss_limit=self.consecutive_loss_limit,
             consecutive_loss_cooldown_days=self.consecutive_loss_cooldown_days,
             max_drawdown_pct_of_capital=self.max_drawdown_pct_of_capital,
@@ -122,18 +143,19 @@ class BacktestEngine:
             if state["nifty_price"] is None:
                 continue
 
-            current_prices = self._mark_to_market(trader, state)
+            current_prices = self._mark_to_market(trader, state, index)
             trader.update_positions(current_prices, timestamp=state["timestamp"],
                                      time_exit_mins=self.time_exit_mins)
 
             for signal in engine.evaluate_all(state):
                 stop_loss = max(signal.entry_price * (1 - self.stop_loss_pct / 100), 0.05)
-                take_profit = signal.entry_price + self.take_profit_pts
+                # Percentage of entry premium — see src/trader.py's matching comment.
+                take_profit = signal.entry_price * (1 + self.take_profit_pct / 100)
                 try:
                     trader.place_order(
                         symbol=signal.strike, side="BUY", qty=self.qty_per_signal,
                         price=signal.entry_price, stop_loss=stop_loss, take_profit=take_profit,
-                        strategy=signal.strategy, timestamp=signal.timestamp,
+                        strategy=signal.strategy, timestamp=signal.timestamp, lot_size=lot_size,
                     )
                 except RiskLimitExceeded:
                     continue
@@ -141,6 +163,8 @@ class BacktestEngine:
         return trader
 
     def _backtest_iron_fly(self, df: pd.DataFrame) -> list[IronFlyPosition]:
+        if df is None:
+            return []
         data_manager = DataManager(window_size=3000)
         iron_fly = IronFlyHedge(**self.iron_fly_params)
         closed: list[IronFlyPosition] = []
@@ -162,17 +186,21 @@ class BacktestEngine:
 
         return closed
 
-    def _mark_to_market(self, trader: PaperTrader, state: dict) -> dict:
+    def _mark_to_market(self, trader: PaperTrader, state: dict, index: str) -> dict:
+        """`index` selects the expiry-day rule for THIS strategy's own underlying (NIFTY/SENSEX/
+        BANKNIFTY each have different weekly expiry weekdays — see options_pricing.py) rather than
+        the engine-wide `self.index` default, which was always "NIFTY" regardless of which index
+        was actually being backtested."""
         prices = {}
-        nifty_price = state["nifty_price"]
+        spot_price = state["nifty_price"]  # DataManager.get_state() always uses this generic key
         timestamp = state["timestamp"]
-        days_to_expiry = next_weekly_expiry_days(timestamp, index=self.index)
+        days_to_expiry = next_weekly_expiry_days(timestamp, index=index)
         for order in trader.get_positions():
             strike, option_type = parse_option_symbol(order.symbol)
             if strike is None:
                 continue
             prices[order.symbol] = black_scholes_price(
-                spot=nifty_price, strike=strike, days_to_expiry=days_to_expiry, option_type=option_type
+                spot=spot_price, strike=strike, days_to_expiry=days_to_expiry, option_type=option_type
             )
         return prices
 

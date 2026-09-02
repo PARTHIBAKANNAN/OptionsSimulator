@@ -149,17 +149,23 @@ class NiftyORBBullish5MITM(BaseStrategy):
             return None
 
         indicators = data_state.get("indicators", {})
-        ema50_1h = indicators.get("ema_50_1h") or indicators.get("ema_50_5m")
+        ema50_1h = indicators.get("ema_50_1h") or indicators.get("ema_50_5m") or indicators.get("ema_20_5m")
+        avg_volume = indicators.get("avg_volume")
 
         crossed_now = (prev.close <= self._range_high < current.close) or (prev.timestamp.time() < ORB_WINDOW_END and current.close > self._range_high)
-        if crossed_now and (ema50_1h is None or current.close > ema50_1h):
+        # Volume confirmation matches the 1M-ATM ORB variant (see orb_bullish.py) — a breakout on
+        # below-average volume is exactly the false-breakout case volume confirmation exists to
+        # catch, and this ITM tier trades a larger, more expensive contract than 1M-ATM does, so
+        # it should be at least as filtered, not less.
+        volume_confirmed = avg_volume is None or current.volume > avg_volume
+        if crossed_now and volume_confirmed and (ema50_1h is None or current.close > ema50_1h):
             spot = current.close
             symbol, strike = self.select_strike(spot, "CE", timestamp=ts)
             price = self.get_option_price(symbol, strike, spot, "CE", data_state)
             self.last_signal_time = ts
             return Signal(
                 strategy=self.name, direction="CE", action="BUY", strike=symbol,
-                confidence=0.85, rationale=f"5m ORB breakout above morning high {self._range_high:.1f}",
+                confidence=0.85, rationale=f"5m ORB breakout above morning high {self._range_high:.1f} on volume",
                 entry_price=price, timestamp=ts, underlying=self.underlying,
             )
         return None
@@ -301,10 +307,16 @@ class NiftyORBBearish5MITM(BaseStrategy):
             return None
 
         indicators = data_state.get("indicators", {})
-        ema50_1h = indicators.get("ema_50_1h")
+        # Fallback chain matches the Bullish mirror exactly (nifty_5m_strategies.py's
+        # NiftyORBBullish5MITM) — previously this only read ema_50_1h with no fallback at all,
+        # an asymmetry between two otherwise-mirrored strategies that silently blocked this one
+        # for longer than its Bullish sibling whenever ema_50_1h was still warming up.
+        ema50_1h = indicators.get("ema_50_1h") or indicators.get("ema_50_5m") or indicators.get("ema_20_5m")
+        avg_volume = indicators.get("avg_volume")
 
         crossed_now = (prev.close >= self._range_low > current.close) or (prev.timestamp.time() < ORB_WINDOW_END and current.close < self._range_low)
-        if crossed_now and (ema50_1h is None or current.close < ema50_1h):
+        volume_confirmed = avg_volume is None or current.volume > avg_volume
+        if crossed_now and volume_confirmed and (ema50_1h is None or current.close < ema50_1h):
             spot = current.close
             symbol, strike = self.select_strike(spot, "PE", timestamp=ts)
             price = self.get_option_price(symbol, strike, spot, "PE", data_state)

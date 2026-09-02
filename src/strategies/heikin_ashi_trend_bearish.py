@@ -15,14 +15,24 @@ DEAD_ZONE_END = dtime(12, 0)
 
 class HeikinAshiTrendBearish(BaseStrategy):
     def __init__(self, name: str = "HEIKIN_ASHI_TREND_BEARISH", strike_step: int = 50, underlying: str = "NIFTY",
-                 apply_day_time_filter: bool = False):
-        super().__init__(name=name, direction="PE", strike_step=strike_step, underlying=underlying)
+                 apply_day_time_filter: bool = False, min_cooldown_mins: int = 15):
+        super().__init__(name=name, direction="PE", strike_step=strike_step, underlying=underlying,
+                          min_cooldown_mins=min_cooldown_mins)
         # By default, day/time filter is disabled so NIFTY executes on all trading days alongside SENSEX and BANKNIFTY.
         self.apply_day_time_filter = apply_day_time_filter
 
     def evaluate(self, data_state: dict):
         timestamp = data_state.get("timestamp")
         if timestamp is None:
+            return None
+        # This strategy's own condition (2 consecutive bearish HA candles + trend filter) is a
+        # STATE, not an edge -- it stays true for many consecutive bars in a real downtrend. Unlike
+        # every 5M-ITM strategy, this one previously never called can_trigger() at all, so it had
+        # no cooldown of its own beyond the portfolio-level daily trade cap -- meaning the exact
+        # same still-qualifying setup would re-fire on literally every tick once the cap allowed
+        # it, rather than requiring a fresh setup. min_cooldown_mins=15 (matching its 5M-ITM
+        # sibling) now enforces that.
+        if not self.can_trigger(timestamp):
             return None
         if self.apply_day_time_filter:
             if timestamp.weekday() in EXCLUDED_WEEKDAYS:

@@ -111,15 +111,19 @@ def test_trailing_stop_arms_after_activation_and_exits_on_pullback():
                           trailing_activation_pct=10, trailing_stop_pct=15)
     trader.place_order("NIFTY24500CE", "BUY", qty=1, price=100.0, take_profit=1000.0)
 
-    # +20% run, past the 10% activation threshold — trailing arms, peak=120, floor=120*0.85=102.
+    # +20% run, past the 10% activation threshold AND the default tiers' 20%-gain rung (locks at
+    # entry*1.05=105) — trailing arms, peak=120, dynamic floor=120*0.85=102, stepped floor=105,
+    # trailing_stop_price=max(105,102)=105. Tiers are % of entry premium, not flat rupee points
+    # (a flat-point tier meant this ratchet barely applied to low-premium contracts and
+    # hair-triggered high-premium ones — see docs/ARCHITECTURE.md).
     closed = trader.update_positions({"NIFTY24500CE": 120.0})
     assert closed == []
 
     # Pulls back below the trailing floor without ever hitting stop_loss/take_profit.
-    closed = trader.update_positions({"NIFTY24500CE": 101.0})
+    closed = trader.update_positions({"NIFTY24500CE": 104.0})
     assert len(closed) == 1
     assert closed[0].exit_reason == "TRAILING_STOP"
-    assert closed[0].exit_price == pytest.approx(102.0)
+    assert closed[0].exit_price == pytest.approx(105.0)
 
 
 def test_trailing_stop_never_exits_below_breakeven_right_after_arming():

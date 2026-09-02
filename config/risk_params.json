@@ -8,11 +8,16 @@
   },
   "exit_rules": {
     "stop_loss_pct": 20,
-    "take_profit_pts": 150,
+    "take_profit_pct": 40,
     "time_exit_mins": 120,
     "trailing_stop_enabled": true,
     "trailing_activation_pct": 10,
-    "trailing_stop_pct": 15
+    "trailing_stop_pct": 15,
+    "trailing_tiers_pct": [
+      {"gain_pct": 10, "lock_pct": 0},
+      {"gain_pct": 20, "lock_pct": 5},
+      {"gain_pct": 30, "lock_pct": 10}
+    ]
   },
   "strike_selection": {
     "preference": "ATM_or_50pts_OTM",

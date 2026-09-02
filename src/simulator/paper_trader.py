@@ -56,11 +56,20 @@ class RiskLimitExceeded(Exception):
 
 
 class PaperTrader:
+    # Default stepped trailing tiers, as % of entry premium rather than flat rupee points — see
+    # update_positions() below for why. First-pass values pending validation against the re-run
+    # backtest, same as take_profit_pct; not a final tuned answer.
+    DEFAULT_TRAILING_TIERS_PCT = [
+        {"gain_pct": 10.0, "lock_pct": 0.0},
+        {"gain_pct": 20.0, "lock_pct": 5.0},
+        {"gain_pct": 30.0, "lock_pct": 10.0},
+    ]
+
     def __init__(self, initial_capital: float = 1_000_000, slippage_pct: float = 0.1,
                  lot_size: int = 65, max_concurrent_positions: int = 5,
                  max_daily_loss: float = 5000, max_trades_per_day_per_strategy: int = 2,
                  trailing_stop_enabled: bool = False, trailing_activation_pct: float = 10.0,
-                 trailing_stop_pct: float = 15.0,
+                 trailing_stop_pct: float = 15.0, trailing_tiers_pct: list = None,
                  consecutive_loss_limit: int = None, consecutive_loss_cooldown_days: int = 1,
                  max_drawdown_pct_of_capital: float = None, drawdown_cooldown_days: int = 3,
                  drawdown_breaker_grace_trades: int = 3,
@@ -79,6 +88,10 @@ class PaperTrader:
         self.trailing_stop_enabled = trailing_stop_enabled
         self.trailing_activation_pct = trailing_activation_pct
         self.trailing_stop_pct = trailing_stop_pct
+        # Sorted descending by gain_pct once, here, so update_positions() can just take the first
+        # tier whose threshold is met rather than re-sorting on every single price update.
+        tiers = trailing_tiers_pct if trailing_tiers_pct is not None else self.DEFAULT_TRAILING_TIERS_PCT
+        self.trailing_tiers_pct = sorted(tiers, key=lambda t: t["gain_pct"], reverse=True)
         # Circuit breakers: pause NEW entries for a strategy (existing open positions still get
         # managed normally) after either K losses in a row, or its cumulative drawdown from peak
         # P&L eats too much of the capital actually allocated to it. Both are None/disabled by
@@ -313,23 +326,26 @@ class PaperTrader:
                 continue
 
             trailing_stop_price = None
-            if self.trailing_stop_enabled:
+            if self.trailing_stop_enabled and order.entry_price:
                 order.peak_price = max(order.peak_price, price)
-                gain_pts = order.peak_price - order.entry_price
+                gain_pct = (order.peak_price - order.entry_price) / order.entry_price * 100
                 dynamic_price = order.peak_price * (1 - self.trailing_stop_pct / 100)
 
-                # Realistic Stepped Trailing Stop-Loss (20-35 pt steps)
-                if gain_pts >= 50.0:
-                    order.trailing_active = True
-                    stepped_price = order.entry_price + 30.0
-                    trailing_stop_price = max(stepped_price, dynamic_price)
-                elif gain_pts >= 35.0:
-                    order.trailing_active = True
-                    stepped_price = order.entry_price + 15.0
-                    trailing_stop_price = max(stepped_price, dynamic_price)
-                elif gain_pts >= 20.0:
-                    order.trailing_active = True
-                    stepped_price = order.entry_price
+                # Stepped trailing stop-loss, as % of entry premium (see DEFAULT_TRAILING_TIERS_PCT
+                # and its comment) rather than flat rupee points — a 20-point gain is a completely
+                # different fraction of premium on a Rs.30 NIFTY 1M-ATM contract vs a Rs.600 ITM
+                # BankNifty one, so flat points meant this ratchet was effectively disabled for
+                # low-premium contracts and hair-triggered for high-premium ones. Tiers are
+                # pre-sorted descending by gain_pct in __init__, so the first match is the highest
+                # tier reached.
+                stepped_price = None
+                for tier in self.trailing_tiers_pct:
+                    if gain_pct >= tier["gain_pct"]:
+                        order.trailing_active = True
+                        stepped_price = order.entry_price * (1 + tier["lock_pct"] / 100)
+                        break
+
+                if stepped_price is not None:
                     trailing_stop_price = max(stepped_price, dynamic_price)
                 elif not order.trailing_active and order.peak_price >= order.entry_price * (
                         1 + self.trailing_activation_pct / 100):

@@ -92,6 +92,7 @@ class LiveTrader:
             trailing_stop_enabled=exits.get("trailing_stop_enabled", False),
             trailing_activation_pct=exits.get("trailing_activation_pct", 10.0),
             trailing_stop_pct=exits.get("trailing_stop_pct", 15.0),
+            trailing_tiers_pct=exits.get("trailing_tiers_pct"),
             consecutive_loss_limit=breaker.get("consecutive_loss_limit"),
             consecutive_loss_cooldown_days=breaker.get("consecutive_loss_cooldown_days", 1),
             max_drawdown_pct_of_capital=breaker.get("max_drawdown_pct_of_capital"),
@@ -104,7 +105,7 @@ class LiveTrader:
         )
         self.qty_per_signal = sizing.get("qty_per_signal", 1)
         self.stop_loss_pct = exits.get("stop_loss_pct", 20)
-        self.take_profit_pts = exits.get("take_profit_pts", 150)
+        self.take_profit_pct = exits.get("take_profit_pct", 40)
         self.time_exit_mins = exits.get("time_exit_mins", 120)
         self.poll_interval = config.risk_params.get("polling", {}).get("option_chain_interval_secs", 10)
         self.auto_mode = config.risk_params.get("live_mode", {}).get("auto_approve", True)
@@ -313,7 +314,11 @@ class LiveTrader:
                 return
 
         stop_loss = max(signal.entry_price * (1 - self.stop_loss_pct / 100), 0.05)
-        take_profit = signal.entry_price + self.take_profit_pts
+        # Percentage of entry premium, not a flat rupee-point target -- a flat number treats a
+        # Rs.30 NIFTY 1M-ATM premium and a Rs.600 BankNifty ITM premium identically, which made
+        # the target nearly unreachable for the former and too easy for the latter. See
+        # docs/ARCHITECTURE.md.
+        take_profit = signal.entry_price * (1 + self.take_profit_pct / 100)
         lot_size = LOT_SIZE_BY_INDEX.get(signal.underlying, self.paper_trader.lot_size)
         try:
             order = self.paper_trader.place_order(
