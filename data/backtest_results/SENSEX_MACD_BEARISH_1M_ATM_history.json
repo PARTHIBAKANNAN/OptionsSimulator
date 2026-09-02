@@ -22,6 +22,17 @@
     "qty": 1
   },
   {
+    "symbol": "SENSEX82300PE",
+    "strategy": "SENSEX_MACD_BEARISH_1M_ATM",
+    "entry_price": 327.24692,
+    "entry_time": "2025-10-14T11:00:00+05:30",
+    "exit_price": 391.17,
+    "exit_time": "2025-10-14T13:00:00+05:30",
+    "exit_reason": "TIME_EXIT",
+    "realized_pnl": 1278.4616000000005,
+    "qty": 1
+  },
+  {
     "symbol": "SENSEX83900PE",
     "strategy": "SENSEX_MACD_BEARISH_1M_ATM",
     "entry_price": 348.35801,
@@ -103,10 +114,21 @@
     "strategy": "SENSEX_MACD_BEARISH_1M_ATM",
     "entry_price": 115.12500999999999,
     "entry_time": "2026-01-08T10:00:00+05:30",
-    "exit_price": 220.91,
-    "exit_time": "2026-01-08T12:00:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 2115.6998000000003,
+    "exit_price": 161.014,
+    "exit_time": "2026-01-08T11:15:00+05:30",
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 917.7798000000005,
+    "qty": 1
+  },
+  {
+    "symbol": "SENSEX83700PE",
+    "strategy": "SENSEX_MACD_BEARISH_1M_ATM",
+    "entry_price": 128.26813999999996,
+    "entry_time": "2026-02-05T10:30:00+05:30",
+    "exit_price": 179.39599999999996,
+    "exit_time": "2026-02-05T12:00:00+05:30",
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 1022.5572,
     "qty": 1
   },
   {
@@ -136,10 +158,10 @@
     "strategy": "SENSEX_MACD_BEARISH_1M_ATM",
     "entry_price": 494.31381999999996,
     "entry_time": "2026-03-13T09:30:00+05:30",
-    "exit_price": 643.8199999999999,
+    "exit_price": 644.03,
     "exit_time": "2026-03-13T11:30:00+05:30",
-    "exit_reason": "TAKE_PROFIT",
-    "realized_pnl": 2990.1235999999994,
+    "exit_reason": "TIME_EXIT",
+    "realized_pnl": 2994.3236,
     "qty": 1
   },
   {
@@ -169,10 +191,10 @@
     "strategy": "SENSEX_MACD_BEARISH_1M_ATM",
     "entry_price": 506.95644999999996,
     "entry_time": "2026-05-29T10:15:00+05:30",
-    "exit_price": 656.45,
-    "exit_time": "2026-05-29T11:45:00+05:30",
+    "exit_price": 709.03,
+    "exit_time": "2026-05-29T12:15:00+05:30",
     "exit_reason": "TAKE_PROFIT",
-    "realized_pnl": 2989.871000000002,
+    "realized_pnl": 4041.4710000000005,
     "qty": 1
   },
   {
@@ -180,10 +202,10 @@
     "strategy": "SENSEX_MACD_BEARISH_1M_ATM",
     "entry_price": 340.77043,
     "entry_time": "2026-06-01T12:15:00+05:30",
-    "exit_price": 490.43,
-    "exit_time": "2026-06-01T14:15:00+05:30",
+    "exit_price": 476.602,
+    "exit_time": "2026-06-01T14:00:00+05:30",
     "exit_reason": "TAKE_PROFIT",
-    "realized_pnl": 2993.1914000000006,
+    "realized_pnl": 2716.6314,
     "qty": 1
   },
   {
@@ -217,6 +239,17 @@
     "exit_time": "2026-07-14T11:30:00+05:30",
     "exit_reason": "TIME_EXIT",
     "realized_pnl": 746.5402000000006,
+    "qty": 1
+  },
+  {
+    "symbol": "SENSEX78800PE",
+    "strategy": "SENSEX_MACD_BEARISH_1M_ATM",
+    "entry_price": 214.31409999999997,
+    "entry_time": "2026-08-05T12:15:00+05:30",
+    "exit_price": 297.92,
+    "exit_time": "2026-08-05T14:15:00+05:30",
+    "exit_reason": "TIME_EXIT",
+    "realized_pnl": 1672.1180000000008,
     "qty": 1
   },
   {

@@ -26,10 +26,10 @@
     "strategy": "SENSEX_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 234.88465,
     "entry_time": "2025-08-26T12:15:00+05:30",
-    "exit_price": 384.65,
-    "exit_time": "2025-08-26T14:00:00+05:30",
+    "exit_price": 328.51,
+    "exit_time": "2025-08-26T13:30:00+05:30",
     "exit_reason": "TAKE_PROFIT",
-    "realized_pnl": 2995.307,
+    "realized_pnl": 1872.507,
     "qty": 1
   },
   {
@@ -70,10 +70,10 @@
     "strategy": "SENSEX_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 217.81759999999997,
     "entry_time": "2025-09-04T13:00:00+05:30",
-    "exit_price": 367.6,
-    "exit_time": "2025-09-04T14:30:00+05:30",
+    "exit_price": 304.64,
+    "exit_time": "2025-09-04T14:00:00+05:30",
     "exit_reason": "TAKE_PROFIT",
-    "realized_pnl": 2995.648000000001,
+    "realized_pnl": 1736.4480000000003,
     "qty": 1
   },
   {
@@ -147,10 +147,10 @@
     "strategy": "SENSEX_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 247.72747999999996,
     "entry_time": "2025-09-25T12:15:00+05:30",
-    "exit_price": 370.53,
-    "exit_time": "2025-09-25T14:15:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 2456.0504,
+    "exit_price": 346.472,
+    "exit_time": "2025-09-25T14:00:00+05:30",
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 1974.8904000000005,
     "qty": 1
   },
   {
@@ -235,10 +235,10 @@
     "strategy": "SENSEX_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 213.46325,
     "entry_time": "2025-10-23T12:45:00+05:30",
-    "exit_price": 363.25,
-    "exit_time": "2025-10-23T14:30:00+05:30",
+    "exit_price": 298.54999999999995,
+    "exit_time": "2025-10-23T14:00:00+05:30",
     "exit_reason": "TAKE_PROFIT",
-    "realized_pnl": 2995.735,
+    "realized_pnl": 1701.7349999999992,
     "qty": 1
   },
   {
@@ -257,10 +257,10 @@
     "strategy": "SENSEX_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 240.73048999999997,
     "entry_time": "2025-10-30T12:15:00+05:30",
-    "exit_price": 337.36,
+    "exit_price": 336.686,
     "exit_time": "2025-10-30T14:15:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 1932.5902000000008,
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 1919.1102,
     "qty": 1
   },
   {
@@ -312,10 +312,10 @@
     "strategy": "SENSEX_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 219.44922999999997,
     "entry_time": "2025-11-13T15:00:00+05:30",
-    "exit_price": 369.23,
+    "exit_price": 306.92199999999997,
     "exit_time": "2025-11-14T09:30:00+05:30",
     "exit_reason": "TAKE_PROFIT",
-    "realized_pnl": 2995.615400000001,
+    "realized_pnl": 1749.4553999999998,
     "qty": 1
   },
   {
@@ -543,10 +543,10 @@
     "strategy": "SENSEX_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 205.61540999999997,
     "entry_time": "2026-01-01T14:30:00+05:30",
-    "exit_price": 355.40999999999997,
+    "exit_price": 287.57399999999996,
     "exit_time": "2026-01-02T09:30:00+05:30",
     "exit_reason": "TAKE_PROFIT",
-    "realized_pnl": 2995.8918,
+    "realized_pnl": 1639.1717999999996,
     "qty": 1
   },
   {
@@ -576,10 +576,10 @@
     "strategy": "SENSEX_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 239.15891999999997,
     "entry_time": "2026-01-08T12:15:00+05:30",
-    "exit_price": 388.91999999999996,
-    "exit_time": "2026-01-08T14:00:00+05:30",
+    "exit_price": 334.48799999999994,
+    "exit_time": "2026-01-08T13:30:00+05:30",
     "exit_reason": "TAKE_PROFIT",
-    "realized_pnl": 2995.2216,
+    "realized_pnl": 1906.5815999999995,
     "qty": 1
   },
   {
@@ -631,10 +631,10 @@
     "strategy": "SENSEX_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 436.85641999999996,
     "entry_time": "2026-01-20T12:15:00+05:30",
-    "exit_price": 586.4200000000001,
-    "exit_time": "2026-01-20T13:45:00+05:30",
+    "exit_price": 610.9879999999999,
+    "exit_time": "2026-01-20T14:00:00+05:30",
     "exit_reason": "TAKE_PROFIT",
-    "realized_pnl": 2991.2716000000023,
+    "realized_pnl": 3482.6315999999997,
     "qty": 1
   },
   {
@@ -642,10 +642,10 @@
     "strategy": "SENSEX_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 181.67148999999998,
     "entry_time": "2026-01-22T14:45:00+05:30",
-    "exit_price": 331.49,
+    "exit_price": 254.08599999999998,
     "exit_time": "2026-01-23T09:30:00+05:30",
     "exit_reason": "TAKE_PROFIT",
-    "realized_pnl": 2996.3702000000008,
+    "realized_pnl": 1448.2902000000001,
     "qty": 1
   },
   {
@@ -675,10 +675,10 @@
     "strategy": "SENSEX_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 456.6662099999999,
     "entry_time": "2026-02-03T14:00:00+05:30",
-    "exit_price": 606.21,
-    "exit_time": "2026-02-03T15:00:00+05:30",
+    "exit_price": 638.694,
+    "exit_time": "2026-02-03T15:15:00+05:30",
     "exit_reason": "TAKE_PROFIT",
-    "realized_pnl": 2990.8758000000025,
+    "realized_pnl": 3640.555800000001,
     "qty": 1
   },
   {
@@ -686,10 +686,10 @@
     "strategy": "SENSEX_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 251.37112,
     "entry_time": "2026-02-05T10:15:00+05:30",
-    "exit_price": 367.29,
+    "exit_price": 351.568,
     "exit_time": "2026-02-05T12:15:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 2318.3776000000007,
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 2003.9375999999997,
     "qty": 1
   },
   {
@@ -697,10 +697,10 @@
     "strategy": "SENSEX_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 193.48328999999998,
     "entry_time": "2026-02-05T12:15:00+05:30",
-    "exit_price": 311.93,
-    "exit_time": "2026-02-05T14:15:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 2368.9342000000006,
+    "exit_price": 270.606,
+    "exit_time": "2026-02-05T13:45:00+05:30",
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 1542.4542000000001,
     "qty": 1
   },
   {
@@ -730,10 +730,10 @@
     "strategy": "SENSEX_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 265.4652,
     "entry_time": "2026-02-19T10:30:00+05:30",
-    "exit_price": 415.2,
+    "exit_price": 371.28,
     "exit_time": "2026-02-19T11:15:00+05:30",
     "exit_reason": "TAKE_PROFIT",
-    "realized_pnl": 2994.696,
+    "realized_pnl": 2116.296,
     "qty": 1
   },
   {
@@ -741,10 +741,10 @@
     "strategy": "SENSEX_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 194.58438999999996,
     "entry_time": "2026-02-19T12:15:00+05:30",
-    "exit_price": 344.39,
-    "exit_time": "2026-02-19T13:00:00+05:30",
+    "exit_price": 272.14599999999996,
+    "exit_time": "2026-02-19T12:45:00+05:30",
     "exit_reason": "TAKE_PROFIT",
-    "realized_pnl": 2996.1122000000005,
+    "realized_pnl": 1551.2322,
     "qty": 1
   },
   {
@@ -752,10 +752,10 @@
     "strategy": "SENSEX_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 410.71029999999996,
     "entry_time": "2026-02-24T12:15:00+05:30",
-    "exit_price": 560.3,
+    "exit_price": 574.42,
     "exit_time": "2026-02-24T14:15:00+05:30",
     "exit_reason": "TAKE_PROFIT",
-    "realized_pnl": 2991.794,
+    "realized_pnl": 3274.194,
     "qty": 1
   },
   {
@@ -796,10 +796,10 @@
     "strategy": "SENSEX_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 665.6950299999999,
     "entry_time": "2026-02-27T12:15:00+05:30",
-    "exit_price": 815.03,
-    "exit_time": "2026-02-27T14:00:00+05:30",
-    "exit_reason": "TAKE_PROFIT",
-    "realized_pnl": 2986.6994000000022,
+    "exit_price": 845.25,
+    "exit_time": "2026-02-27T14:15:00+05:30",
+    "exit_reason": "TIME_EXIT",
+    "realized_pnl": 3591.099400000003,
     "qty": 1
   },
   {
@@ -818,10 +818,10 @@
     "strategy": "SENSEX_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 345.10475999999994,
     "entry_time": "2026-03-11T09:30:00+05:30",
-    "exit_price": 494.76,
+    "exit_price": 482.66399999999993,
     "exit_time": "2026-03-11T10:30:00+05:30",
     "exit_reason": "TAKE_PROFIT",
-    "realized_pnl": 2993.104800000001,
+    "realized_pnl": 2751.1848,
     "qty": 1
   },
   {
@@ -829,10 +829,10 @@
     "strategy": "SENSEX_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 363.19282999999996,
     "entry_time": "2026-03-11T12:15:00+05:30",
-    "exit_price": 512.8299999999999,
+    "exit_price": 507.96199999999993,
     "exit_time": "2026-03-11T13:15:00+05:30",
     "exit_reason": "TAKE_PROFIT",
-    "realized_pnl": 2992.7433999999994,
+    "realized_pnl": 2895.3833999999997,
     "qty": 1
   },
   {
@@ -840,10 +840,10 @@
     "strategy": "SENSEX_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 214.94472999999996,
     "entry_time": "2026-03-12T12:15:00+05:30",
-    "exit_price": 309.27,
+    "exit_price": 300.62199999999996,
     "exit_time": "2026-03-12T14:15:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 1886.5054000000005,
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 1713.5454,
     "qty": 1
   },
   {
@@ -851,10 +851,10 @@
     "strategy": "SENSEX_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 594.57398,
     "entry_time": "2026-03-13T12:15:00+05:30",
-    "exit_price": 743.98,
+    "exit_price": 761.77,
     "exit_time": "2026-03-13T14:15:00+05:30",
-    "exit_reason": "TAKE_PROFIT",
-    "realized_pnl": 2988.1204000000002,
+    "exit_reason": "TIME_EXIT",
+    "realized_pnl": 3343.9203999999995,
     "qty": 1
   },
   {
@@ -862,10 +862,10 @@
     "strategy": "SENSEX_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 233.32308999999998,
     "entry_time": "2026-03-19T12:15:00+05:30",
-    "exit_price": 383.09000000000003,
-    "exit_time": "2026-03-19T14:15:00+05:30",
+    "exit_price": 326.32599999999996,
+    "exit_time": "2026-03-19T13:30:00+05:30",
     "exit_reason": "TAKE_PROFIT",
-    "realized_pnl": 2995.338200000001,
+    "realized_pnl": 1860.0581999999997,
     "qty": 1
   },
   {
@@ -884,10 +884,10 @@
     "strategy": "SENSEX_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 447.57712999999995,
     "entry_time": "2026-03-23T12:15:00+05:30",
-    "exit_price": 597.13,
-    "exit_time": "2026-03-23T13:45:00+05:30",
+    "exit_price": 625.982,
+    "exit_time": "2026-03-23T14:00:00+05:30",
     "exit_reason": "TAKE_PROFIT",
-    "realized_pnl": 2991.0574000000006,
+    "realized_pnl": 3568.0974000000006,
     "qty": 1
   },
   {
@@ -895,10 +895,10 @@
     "strategy": "SENSEX_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 573.8833099999999,
     "entry_time": "2026-03-27T12:15:00+05:30",
-    "exit_price": 723.31,
-    "exit_time": "2026-03-27T13:30:00+05:30",
+    "exit_price": 802.6339999999999,
+    "exit_time": "2026-03-27T14:15:00+05:30",
     "exit_reason": "TAKE_PROFIT",
-    "realized_pnl": 2988.5338,
+    "realized_pnl": 4575.013799999999,
     "qty": 1
   },
   {
@@ -917,10 +917,10 @@
     "strategy": "SENSEX_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 343.03268999999995,
     "entry_time": "2026-04-01T14:00:00+05:30",
-    "exit_price": 492.69,
+    "exit_price": 479.76599999999996,
     "exit_time": "2026-04-02T09:30:00+05:30",
     "exit_reason": "TAKE_PROFIT",
-    "realized_pnl": 2993.146200000001,
+    "realized_pnl": 2734.6662000000006,
     "qty": 1
   },
   {
@@ -928,10 +928,10 @@
     "strategy": "SENSEX_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 209.04883999999998,
     "entry_time": "2026-04-09T10:00:00+05:30",
-    "exit_price": 358.84000000000003,
-    "exit_time": "2026-04-09T11:45:00+05:30",
+    "exit_price": 292.376,
+    "exit_time": "2026-04-09T11:00:00+05:30",
     "exit_reason": "TAKE_PROFIT",
-    "realized_pnl": 2995.8232000000007,
+    "realized_pnl": 1666.5431999999998,
     "qty": 1
   },
   {
@@ -939,10 +939,10 @@
     "strategy": "SENSEX_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 237.85761999999997,
     "entry_time": "2026-04-09T12:15:00+05:30",
-    "exit_price": 387.62,
-    "exit_time": "2026-04-09T13:45:00+05:30",
+    "exit_price": 332.668,
+    "exit_time": "2026-04-09T13:15:00+05:30",
     "exit_reason": "TAKE_PROFIT",
-    "realized_pnl": 2995.2476000000006,
+    "realized_pnl": 1896.2076000000006,
     "qty": 1
   },
   {
@@ -950,10 +950,10 @@
     "strategy": "SENSEX_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 212.38216999999997,
     "entry_time": "2026-04-16T12:30:00+05:30",
-    "exit_price": 362.16999999999996,
-    "exit_time": "2026-04-16T14:00:00+05:30",
+    "exit_price": 297.03799999999995,
+    "exit_time": "2026-04-16T13:30:00+05:30",
     "exit_reason": "TAKE_PROFIT",
-    "realized_pnl": 2995.7565999999997,
+    "realized_pnl": 1693.1165999999996,
     "qty": 1
   },
   {
@@ -983,10 +983,10 @@
     "strategy": "SENSEX_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 198.33813999999995,
     "entry_time": "2026-04-23T12:15:00+05:30",
-    "exit_price": 282.64,
+    "exit_price": 277.39599999999996,
     "exit_time": "2026-04-23T14:15:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 1686.0372000000007,
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 1581.1572,
     "qty": 1
   },
   {
@@ -994,10 +994,10 @@
     "strategy": "SENSEX_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 624.2836599999999,
     "entry_time": "2026-04-24T12:15:00+05:30",
-    "exit_price": 773.66,
+    "exit_price": 780.69,
     "exit_time": "2026-04-24T14:15:00+05:30",
-    "exit_reason": "TAKE_PROFIT",
-    "realized_pnl": 2987.5268000000005,
+    "exit_reason": "TIME_EXIT",
+    "realized_pnl": 3128.1268000000023,
     "qty": 1
   },
   {
@@ -1038,10 +1038,10 @@
     "strategy": "SENSEX_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 257.14689,
     "entry_time": "2026-05-07T12:45:00+05:30",
-    "exit_price": 406.89,
-    "exit_time": "2026-05-07T14:45:00+05:30",
+    "exit_price": 359.64599999999996,
+    "exit_time": "2026-05-07T14:15:00+05:30",
     "exit_reason": "TAKE_PROFIT",
-    "realized_pnl": 2994.8622,
+    "realized_pnl": 2049.9821999999995,
     "qty": 1
   },
   {
@@ -1049,10 +1049,10 @@
     "strategy": "SENSEX_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 390.47007999999994,
     "entry_time": "2026-05-12T12:15:00+05:30",
-    "exit_price": 540.0799999999999,
+    "exit_price": 546.112,
     "exit_time": "2026-05-12T13:45:00+05:30",
     "exit_reason": "TAKE_PROFIT",
-    "realized_pnl": 2992.1983999999998,
+    "realized_pnl": 3112.8384000000005,
     "qty": 1
   },
   {
@@ -1082,10 +1082,10 @@
     "strategy": "SENSEX_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 185.50531999999998,
     "entry_time": "2026-05-21T12:30:00+05:30",
-    "exit_price": 335.32,
-    "exit_time": "2026-05-21T14:30:00+05:30",
+    "exit_price": 259.448,
+    "exit_time": "2026-05-21T13:45:00+05:30",
     "exit_reason": "TAKE_PROFIT",
-    "realized_pnl": 2996.2936,
+    "realized_pnl": 1478.8536,
     "qty": 1
   },
   {
@@ -1115,10 +1115,10 @@
     "strategy": "SENSEX_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 609.2786699999999,
     "entry_time": "2026-05-29T09:45:00+05:30",
-    "exit_price": 758.67,
-    "exit_time": "2026-05-29T11:15:00+05:30",
-    "exit_reason": "TAKE_PROFIT",
-    "realized_pnl": 2987.826600000001,
+    "exit_price": 847.65,
+    "exit_time": "2026-05-29T11:45:00+05:30",
+    "exit_reason": "TIME_EXIT",
+    "realized_pnl": 4767.426600000001,
     "qty": 1
   },
   {
@@ -1126,10 +1126,10 @@
     "strategy": "SENSEX_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 608.86826,
     "entry_time": "2026-05-29T12:15:00+05:30",
-    "exit_price": 758.26,
-    "exit_time": "2026-05-29T13:45:00+05:30",
-    "exit_reason": "TAKE_PROFIT",
-    "realized_pnl": 2987.8348000000005,
+    "exit_price": 848.17,
+    "exit_time": "2026-05-29T14:15:00+05:30",
+    "exit_reason": "TIME_EXIT",
+    "realized_pnl": 4786.034799999999,
     "qty": 1
   },
   {
@@ -1137,10 +1137,10 @@
     "strategy": "SENSEX_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 485.57508999999993,
     "entry_time": "2026-06-01T09:30:00+05:30",
-    "exit_price": 635.0899999999999,
-    "exit_time": "2026-06-01T11:15:00+05:30",
+    "exit_price": 679.126,
+    "exit_time": "2026-06-01T11:30:00+05:30",
     "exit_reason": "TAKE_PROFIT",
-    "realized_pnl": 2990.2981999999997,
+    "realized_pnl": 3871.018200000001,
     "qty": 1
   },
   {
@@ -1148,10 +1148,10 @@
     "strategy": "SENSEX_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 443.15270999999996,
     "entry_time": "2026-06-01T12:15:00+05:30",
-    "exit_price": 592.71,
-    "exit_time": "2026-06-01T14:00:00+05:30",
+    "exit_price": 619.794,
+    "exit_time": "2026-06-01T14:15:00+05:30",
     "exit_reason": "TAKE_PROFIT",
-    "realized_pnl": 2991.1458000000016,
+    "realized_pnl": 3532.8258000000005,
     "qty": 1
   },
   {
@@ -1203,10 +1203,10 @@
     "strategy": "SENSEX_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 385.16477999999995,
     "entry_time": "2026-06-23T12:15:00+05:30",
-    "exit_price": 534.78,
+    "exit_price": 538.6919999999999,
     "exit_time": "2026-06-23T14:00:00+05:30",
     "exit_reason": "TAKE_PROFIT",
-    "realized_pnl": 2992.3044000000004,
+    "realized_pnl": 3070.544399999999,
     "qty": 1
   },
   {
@@ -1214,10 +1214,10 @@
     "strategy": "SENSEX_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 241.01076999999998,
     "entry_time": "2026-06-25T14:00:00+05:30",
-    "exit_price": 390.77,
+    "exit_price": 337.078,
     "exit_time": "2026-06-29T09:30:00+05:30",
     "exit_reason": "TAKE_PROFIT",
-    "realized_pnl": 2995.1846,
+    "realized_pnl": 1921.3446,
     "qty": 1
   },
   {
@@ -1269,10 +1269,10 @@
     "strategy": "SENSEX_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 356.4460899999999,
     "entry_time": "2026-07-08T12:15:00+05:30",
-    "exit_price": 506.09,
+    "exit_price": 498.52599999999995,
     "exit_time": "2026-07-08T13:15:00+05:30",
     "exit_reason": "TAKE_PROFIT",
-    "realized_pnl": 2992.878200000001,
+    "realized_pnl": 2841.598200000001,
     "qty": 1
   },
   {
@@ -1324,10 +1324,10 @@
     "strategy": "SENSEX_RESISTANCE_REJECTION_5M_ITM",
     "entry_price": 349.69935,
     "entry_time": "2026-07-22T12:15:00+05:30",
-    "exit_price": 498.87,
+    "exit_price": 489.09,
     "exit_time": "2026-07-22T14:15:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 2983.4130000000005,
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 2787.813,
     "qty": 1
   },
   {

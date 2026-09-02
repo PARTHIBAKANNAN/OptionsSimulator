@@ -44,17 +44,6 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY24950PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 115.36524999999999,
-    "entry_time": "2025-08-25T12:22:00+05:30",
-    "exit_price": 112.47,
-    "exit_time": "2025-08-25T14:22:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -188.19124999999934,
-    "qty": 1
-  },
-  {
     "symbol": "NIFTY24900PE",
     "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
     "entry_price": 101.01090999999998,
@@ -81,21 +70,21 @@
     "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
     "entry_price": 40.6406,
     "entry_time": "2025-08-28T09:25:00+05:30",
-    "exit_price": 77.91,
-    "exit_time": "2025-08-28T11:25:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 2422.511,
+    "exit_price": 56.839999999999996,
+    "exit_time": "2025-08-28T10:26:00+05:30",
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 1052.9609999999998,
     "qty": 1
   },
   {
     "symbol": "NIFTY24650PE",
     "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 41.511469999999996,
-    "entry_time": "2025-08-28T11:25:00+05:30",
-    "exit_price": 85.36,
-    "exit_time": "2025-08-28T13:25:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 2850.1544500000005,
+    "entry_price": 28.478449999999995,
+    "entry_time": "2025-08-28T10:26:00+05:30",
+    "exit_price": 39.83,
+    "exit_time": "2025-08-28T11:19:00+05:30",
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 737.8507500000002,
     "qty": 1
   },
   {
@@ -121,17 +110,6 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY24550PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 80.03995999999998,
-    "entry_time": "2025-09-01T12:23:00+05:30",
-    "exit_price": 63.967999999999996,
-    "exit_time": "2025-09-01T13:26:00+05:30",
-    "exit_reason": "STOP_LOSS",
-    "realized_pnl": -1044.677399999999,
-    "qty": 1
-  },
-  {
     "symbol": "NIFTY24650PE",
     "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
     "entry_price": 37.537499999999994,
@@ -151,17 +129,6 @@
     "exit_time": "2025-09-02T14:11:00+05:30",
     "exit_reason": "TIME_EXIT",
     "realized_pnl": 70.31245000000025,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY24650PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 155.43527999999998,
-    "entry_time": "2025-09-03T12:22:00+05:30",
-    "exit_price": 141.29,
-    "exit_time": "2025-09-03T14:22:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -919.443199999999,
     "qty": 1
   },
   {
@@ -231,58 +198,25 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY24850PE",
+    "symbol": "NIFTY25000PE",
     "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 18.65864,
-    "entry_time": "2025-09-09T12:22:00+05:30",
-    "exit_price": 14.912,
-    "exit_time": "2025-09-09T13:12:00+05:30",
-    "exit_reason": "STOP_LOSS",
-    "realized_pnl": -243.53159999999983,
+    "entry_price": 172.02184999999997,
+    "entry_time": "2025-09-10T11:11:00+05:30",
+    "exit_price": 174.65,
+    "exit_time": "2025-09-10T13:11:00+05:30",
+    "exit_reason": "TIME_EXIT",
+    "realized_pnl": 170.82975000000218,
     "qty": 1
   },
   {
     "symbol": "NIFTY25000PE",
     "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 169.60943999999998,
-    "entry_time": "2025-09-10T09:26:00+05:30",
-    "exit_price": 172.2,
-    "exit_time": "2025-09-10T11:26:00+05:30",
+    "entry_price": 174.82465,
+    "entry_time": "2025-09-10T13:11:00+05:30",
+    "exit_price": 177.47,
+    "exit_time": "2025-09-10T15:11:00+05:30",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 168.3864000000007,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY25000PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 172.37219999999996,
-    "entry_time": "2025-09-10T11:26:00+05:30",
-    "exit_price": 175.0,
-    "exit_time": "2025-09-10T13:26:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 170.80700000000235,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY25000PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 163.61344999999997,
-    "entry_time": "2025-09-11T12:23:00+05:30",
-    "exit_price": 154.07,
-    "exit_time": "2025-09-11T14:23:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -620.3242499999986,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY25100PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 140.19004999999999,
-    "entry_time": "2025-09-12T12:22:00+05:30",
-    "exit_price": 134.01,
-    "exit_time": "2025-09-12T14:22:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -401.7032499999996,
+    "realized_pnl": 171.9477500000005,
     "qty": 1
   },
   {
@@ -308,47 +242,25 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY25150PE",
+    "symbol": "NIFTY25450PE",
     "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 22.98296,
-    "entry_time": "2025-09-16T12:23:00+05:30",
-    "exit_price": 18.368000000000002,
-    "exit_time": "2025-09-16T12:41:00+05:30",
-    "exit_reason": "STOP_LOSS",
-    "realized_pnl": -299.97239999999977,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY25300PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 165.37520999999998,
-    "entry_time": "2025-09-17T12:23:00+05:30",
-    "exit_price": 157.29,
-    "exit_time": "2025-09-17T14:23:00+05:30",
+    "entry_price": 161.41125,
+    "entry_time": "2025-09-18T11:10:00+05:30",
+    "exit_price": 163.99,
+    "exit_time": "2025-09-18T13:10:00+05:30",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": -525.5386499999993,
+    "realized_pnl": 167.6187500000009,
     "qty": 1
   },
   {
     "symbol": "NIFTY25450PE",
     "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 159.04888999999997,
-    "entry_time": "2025-09-18T09:26:00+05:30",
-    "exit_price": 161.61,
-    "exit_time": "2025-09-18T11:26:00+05:30",
+    "entry_price": 164.15399,
+    "entry_time": "2025-09-18T13:10:00+05:30",
+    "exit_price": 166.76,
+    "exit_time": "2025-09-18T15:10:00+05:30",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 166.47215000000273,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY25450PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 161.77161,
-    "entry_time": "2025-09-18T11:26:00+05:30",
-    "exit_price": 164.36,
-    "exit_time": "2025-09-18T13:26:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 168.24535000000026,
+    "realized_pnl": 169.39064999999985,
     "qty": 1
   },
   {
@@ -528,39 +440,6 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY24750PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 173.52334999999997,
-    "entry_time": "2025-10-01T12:23:00+05:30",
-    "exit_price": 141.59,
-    "exit_time": "2025-10-01T14:23:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -2075.6677499999973,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY25000PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 72.20212999999998,
-    "entry_time": "2025-10-06T12:22:00+05:30",
-    "exit_price": 57.704,
-    "exit_time": "2025-10-06T13:35:00+05:30",
-    "exit_reason": "STOP_LOSS",
-    "realized_pnl": -942.3784499999988,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY25100PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 27.747719999999997,
-    "entry_time": "2025-10-07T12:23:00+05:30",
-    "exit_price": 22.176000000000002,
-    "exit_time": "2025-10-07T13:16:00+05:30",
-    "exit_reason": "STOP_LOSS",
-    "realized_pnl": -362.1617999999997,
-    "qty": 1
-  },
-  {
     "symbol": "NIFTY25100PE",
     "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
     "entry_price": 175.90572999999998,
@@ -583,102 +462,25 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY25150PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 163.34318,
-    "entry_time": "2025-10-09T12:22:00+05:30",
-    "exit_price": 146.69,
-    "exit_time": "2025-10-09T14:22:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -1082.4566999999995,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY25250PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 149.57943,
-    "entry_time": "2025-10-10T12:23:00+05:30",
-    "exit_price": 131.27,
-    "exit_time": "2025-10-10T14:23:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -1190.1129499999995,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY25200PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 70.15007999999999,
-    "entry_time": "2025-10-13T12:23:00+05:30",
-    "exit_price": 62.6,
-    "exit_time": "2025-10-13T14:23:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -490.75519999999915,
-    "qty": 1
-  },
-  {
     "symbol": "NIFTY25250PE",
     "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
     "entry_price": 29.779749999999996,
     "entry_time": "2025-10-14T10:04:00+05:30",
-    "exit_price": 46.39,
-    "exit_time": "2025-10-14T12:04:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 1079.6662500000002,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY25200PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 19.58957,
-    "entry_time": "2025-10-14T12:04:00+05:30",
-    "exit_price": 32.63,
-    "exit_time": "2025-10-14T14:04:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 847.6279500000003,
+    "exit_price": 41.65,
+    "exit_time": "2025-10-14T11:36:00+05:30",
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 771.5662500000002,
     "qty": 1
   },
   {
     "symbol": "NIFTY25250PE",
     "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 165.25509,
-    "entry_time": "2025-10-15T12:23:00+05:30",
-    "exit_price": 144.72,
-    "exit_time": "2025-10-15T14:23:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -1334.7808499999999,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY25500PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 159.31915999999998,
-    "entry_time": "2025-10-16T12:23:00+05:30",
-    "exit_price": 131.47,
-    "exit_time": "2025-10-16T14:23:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -1810.195399999999,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY25650PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 150.77061999999998,
-    "entry_time": "2025-10-17T12:23:00+05:30",
-    "exit_price": 125.99,
-    "exit_time": "2025-10-17T14:23:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -1610.740299999999,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY25850PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 81.31123,
-    "entry_time": "2025-10-20T12:23:00+05:30",
-    "exit_price": 78.16,
-    "exit_time": "2025-10-20T14:23:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -204.82994999999988,
+    "entry_price": 41.73168999999999,
+    "entry_time": "2025-10-14T11:36:00+05:30",
+    "exit_price": 58.36599999999999,
+    "exit_time": "2025-10-14T13:03:00+05:30",
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 1081.2301499999999,
     "qty": 1
   },
   {
@@ -748,17 +550,6 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY25900PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 70.93086,
-    "entry_time": "2025-10-27T12:23:00+05:30",
-    "exit_price": 56.688,
-    "exit_time": "2025-10-27T14:01:00+05:30",
-    "exit_reason": "STOP_LOSS",
-    "realized_pnl": -925.7858999999995,
-    "qty": 1
-  },
-  {
     "symbol": "NIFTY25950PE",
     "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
     "entry_price": 42.832789999999996,
@@ -778,17 +569,6 @@
     "exit_time": "2025-10-28T13:19:00+05:30",
     "exit_reason": "STOP_LOSS",
     "realized_pnl": -481.05329999999975,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY26000PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 163.26309999999998,
-    "entry_time": "2025-10-29T12:23:00+05:30",
-    "exit_price": 152.82,
-    "exit_time": "2025-10-29T14:23:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -678.8014999999991,
     "qty": 1
   },
   {
@@ -838,34 +618,23 @@
   {
     "symbol": "NIFTY25750PE",
     "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 83.04295999999998,
-    "entry_time": "2025-11-03T12:22:00+05:30",
-    "exit_price": 72.13,
-    "exit_time": "2025-11-03T14:22:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -709.342399999999,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY25750PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
     "entry_price": 42.03199,
     "entry_time": "2025-11-04T09:25:00+05:30",
-    "exit_price": 66.38,
-    "exit_time": "2025-11-04T11:25:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 1582.6206499999996,
+    "exit_price": 58.786,
+    "exit_time": "2025-11-04T10:54:00+05:30",
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 1089.0106500000002,
     "qty": 1
   },
   {
     "symbol": "NIFTY25700PE",
     "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 33.87384,
-    "entry_time": "2025-11-04T11:25:00+05:30",
-    "exit_price": 58.14,
-    "exit_time": "2025-11-04T13:25:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 1577.3003999999999,
+    "entry_price": 29.659629999999996,
+    "entry_time": "2025-11-04T10:54:00+05:30",
+    "exit_price": 41.482,
+    "exit_time": "2025-11-04T12:12:00+05:30",
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 768.4540500000002,
     "qty": 1
   },
   {
@@ -888,50 +657,6 @@
     "exit_time": "2025-11-06T13:25:00+05:30",
     "exit_reason": "TIME_EXIT",
     "realized_pnl": 815.2092000000009,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY25450PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 133.20306999999997,
-    "entry_time": "2025-11-07T12:22:00+05:30",
-    "exit_price": 124.58,
-    "exit_time": "2025-11-07T14:22:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -560.4995499999981,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY25550PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 77.7777,
-    "entry_time": "2025-11-10T12:23:00+05:30",
-    "exit_price": 66.63,
-    "exit_time": "2025-11-10T14:23:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -724.6005,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY25650PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 23.94392,
-    "entry_time": "2025-11-11T12:22:00+05:30",
-    "exit_price": 19.136000000000003,
-    "exit_time": "2025-11-11T12:52:00+05:30",
-    "exit_reason": "STOP_LOSS",
-    "realized_pnl": -312.5147999999997,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY25850PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 168.26809999999998,
-    "entry_time": "2025-11-12T12:23:00+05:30",
-    "exit_price": 161.96,
-    "exit_time": "2025-11-12T14:23:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -410.0264999999979,
     "qty": 1
   },
   {
@@ -959,17 +684,6 @@
   {
     "symbol": "NIFTY26000PE",
     "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 83.36327999999999,
-    "entry_time": "2025-11-17T12:22:00+05:30",
-    "exit_price": 72.68,
-    "exit_time": "2025-11-17T14:22:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -694.4131999999988,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY26000PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
     "entry_price": 30.250219999999995,
     "entry_time": "2025-11-18T09:40:00+05:30",
     "exit_price": 41.84,
@@ -983,32 +697,10 @@
     "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
     "entry_price": 41.88184,
     "entry_time": "2025-11-18T11:40:00+05:30",
-    "exit_price": 60.73,
-    "exit_time": "2025-11-18T13:40:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 1225.1304,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY26000PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 178.65847999999997,
-    "entry_time": "2025-11-19T12:22:00+05:30",
-    "exit_price": 158.41,
-    "exit_time": "2025-11-19T14:22:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -1316.1511999999982,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY26150PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 153.10294999999996,
-    "entry_time": "2025-11-20T12:22:00+05:30",
-    "exit_price": 144.22,
-    "exit_time": "2025-11-20T14:22:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -577.3917499999977,
+    "exit_price": 58.576,
+    "exit_time": "2025-11-18T13:30:00+05:30",
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 1085.1204000000002,
     "qty": 1
   },
   {
@@ -1071,10 +763,10 @@
     "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
     "entry_price": 28.958929999999995,
     "entry_time": "2025-11-25T11:54:00+05:30",
-    "exit_price": 42.61,
-    "exit_time": "2025-11-25T13:54:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 887.3195500000003,
+    "exit_price": 40.501999999999995,
+    "exit_time": "2025-11-25T13:41:00+05:30",
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 750.29955,
     "qty": 1
   },
   {
@@ -1188,36 +880,25 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY26000PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 154.13397999999998,
-    "entry_time": "2025-12-04T12:23:00+05:30",
-    "exit_price": 146.35,
-    "exit_time": "2025-12-04T14:23:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -505.95869999999906,
-    "qty": 1
-  },
-  {
     "symbol": "NIFTY26150PE",
     "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
     "entry_price": 71.8718,
     "entry_time": "2025-12-08T09:25:00+05:30",
-    "exit_price": 106.64,
-    "exit_time": "2025-12-08T11:25:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 2259.9330000000004,
+    "exit_price": 100.52,
+    "exit_time": "2025-12-08T11:06:00+05:30",
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 1862.1330000000003,
     "qty": 1
   },
   {
     "symbol": "NIFTY26100PE",
     "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 78.60852999999999,
-    "entry_time": "2025-12-08T11:25:00+05:30",
-    "exit_price": 115.21,
-    "exit_time": "2025-12-08T13:25:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 2379.0955500000005,
+    "entry_price": 73.56348999999999,
+    "entry_time": "2025-12-08T11:06:00+05:30",
+    "exit_price": 102.88599999999998,
+    "exit_time": "2025-12-08T12:48:00+05:30",
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 1905.9631499999996,
     "qty": 1
   },
   {
@@ -1265,39 +946,6 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY25850PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 164.18402,
-    "entry_time": "2025-12-11T12:22:00+05:30",
-    "exit_price": 144.91,
-    "exit_time": "2025-12-11T14:22:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -1252.8113000000005,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY26000PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 138.05791999999997,
-    "entry_time": "2025-12-12T12:22:00+05:30",
-    "exit_price": 126.88,
-    "exit_time": "2025-12-12T14:22:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -726.5647999999982,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY26000PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 84.50442,
-    "entry_time": "2025-12-15T12:22:00+05:30",
-    "exit_price": 68.81,
-    "exit_time": "2025-12-15T14:22:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -1020.1372999999996,
-    "qty": 1
-  },
-  {
     "symbol": "NIFTY25950PE",
     "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
     "entry_price": 38.06803,
@@ -1339,28 +987,6 @@
     "exit_time": "2025-12-17T14:05:00+05:30",
     "exit_reason": "TIME_EXIT",
     "realized_pnl": 812.2484500000014,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY25800PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 161.31115,
-    "entry_time": "2025-12-18T12:23:00+05:30",
-    "exit_price": 153.4,
-    "exit_time": "2025-12-18T14:23:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -514.2247499999995,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY25950PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 147.39724999999999,
-    "entry_time": "2025-12-19T12:22:00+05:30",
-    "exit_price": 138.82,
-    "exit_time": "2025-12-19T14:22:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -557.5212499999996,
     "qty": 1
   },
   {
@@ -1474,17 +1100,6 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY26050PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 171.65147999999996,
-    "entry_time": "2025-12-31T12:23:00+05:30",
-    "exit_price": 148.66,
-    "exit_time": "2025-12-31T14:23:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -1494.4461999999978,
-    "qty": 1
-  },
-  {
     "symbol": "NIFTY26150PE",
     "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
     "entry_price": 150.79063999999997,
@@ -1504,17 +1119,6 @@
     "exit_time": "2026-01-01T14:41:00+05:30",
     "exit_reason": "TIME_EXIT",
     "realized_pnl": 251.90100000000086,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY26250PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 147.63748999999999,
-    "entry_time": "2026-01-02T12:22:00+05:30",
-    "exit_price": 122.12,
-    "exit_time": "2026-01-02T14:22:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -1658.6368499999987,
     "qty": 1
   },
   {
@@ -1628,58 +1232,25 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY25750PE",
+    "symbol": "NIFTY25850PE",
     "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 83.2832,
-    "entry_time": "2026-01-12T12:22:00+05:30",
-    "exit_price": 66.56,
-    "exit_time": "2026-01-12T14:06:00+05:30",
-    "exit_reason": "STOP_LOSS",
-    "realized_pnl": -1087.0079999999994,
+    "entry_price": 25.605579999999996,
+    "entry_time": "2026-01-13T10:16:00+05:30",
+    "exit_price": 35.812,
+    "exit_time": "2026-01-13T11:25:00+05:30",
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 663.4173000000001,
     "qty": 1
   },
   {
     "symbol": "NIFTY25850PE",
     "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 25.605579999999996,
-    "entry_time": "2026-01-13T10:16:00+05:30",
-    "exit_price": 46.52,
-    "exit_time": "2026-01-13T12:16:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 1359.4373000000005,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY25800PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 19.579559999999997,
-    "entry_time": "2026-01-13T12:16:00+05:30",
-    "exit_price": 40.17,
-    "exit_time": "2026-01-13T14:16:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 1338.3786000000002,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY25650PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 166.03587,
-    "entry_time": "2026-01-14T12:23:00+05:30",
-    "exit_price": 163.34,
-    "exit_time": "2026-01-14T14:23:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -175.23154999999903,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY25700PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 142.61246999999997,
-    "entry_time": "2026-01-16T09:27:00+05:30",
-    "exit_price": 142.73,
-    "exit_time": "2026-01-16T11:27:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 7.639450000001062,
+    "entry_price": 36.00597,
+    "entry_time": "2026-01-13T11:25:00+05:30",
+    "exit_price": 50.358,
+    "exit_time": "2026-01-13T12:32:00+05:30",
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 932.88195,
     "qty": 1
   },
   {
@@ -1691,6 +1262,17 @@
     "exit_time": "2026-01-16T13:35:00+05:30",
     "exit_reason": "TIME_EXIT",
     "realized_pnl": 7.621250000000828,
+    "qty": 1
+  },
+  {
+    "symbol": "NIFTY25700PE",
+    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
+    "entry_price": 143.15300999999997,
+    "entry_time": "2026-01-16T13:35:00+05:30",
+    "exit_price": 114.408,
+    "exit_time": "2026-01-19T09:25:00+05:30",
+    "exit_reason": "STOP_LOSS",
+    "realized_pnl": -1868.4256499999976,
     "qty": 1
   },
   {
@@ -1720,65 +1302,43 @@
     "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
     "entry_price": 27.567539999999997,
     "entry_time": "2026-01-20T09:25:00+05:30",
-    "exit_price": 94.41,
-    "exit_time": "2026-01-20T11:25:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 4344.7599,
+    "exit_price": 38.556,
+    "exit_time": "2026-01-20T09:55:00+05:30",
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 714.2499,
     "qty": 1
   },
   {
-    "symbol": "NIFTY25450PE",
+    "symbol": "NIFTY25550PE",
     "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 25.87585,
-    "entry_time": "2026-01-20T11:25:00+05:30",
-    "exit_price": 102.45,
-    "exit_time": "2026-01-20T13:25:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 4977.319750000001,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY25150PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 170.12995999999998,
-    "entry_time": "2026-01-21T09:25:00+05:30",
-    "exit_price": 167.44,
-    "exit_time": "2026-01-21T11:25:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -174.84739999999903,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY25150PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 166.41625,
-    "entry_time": "2026-01-21T12:22:00+05:30",
-    "exit_price": 163.77,
-    "exit_time": "2026-01-21T14:22:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -172.00624999999874,
+    "entry_price": 39.00897,
+    "entry_time": "2026-01-20T09:55:00+05:30",
+    "exit_price": 54.55799999999999,
+    "exit_time": "2026-01-20T10:27:00+05:30",
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 1010.6869499999997,
     "qty": 1
   },
   {
     "symbol": "NIFTY25350PE",
     "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 157.40724999999998,
-    "entry_time": "2026-01-22T09:25:00+05:30",
-    "exit_price": 165.76,
-    "exit_time": "2026-01-22T11:25:00+05:30",
+    "entry_price": 163.69352999999998,
+    "entry_time": "2026-01-22T10:54:00+05:30",
+    "exit_price": 172.26,
+    "exit_time": "2026-01-22T12:54:00+05:30",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 542.928750000001,
+    "realized_pnl": 556.8205500000006,
     "qty": 1
   },
   {
-    "symbol": "NIFTY25350PE",
+    "symbol": "NIFTY25300PE",
     "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 165.92575999999997,
-    "entry_time": "2026-01-22T11:25:00+05:30",
-    "exit_price": 174.55,
-    "exit_time": "2026-01-22T13:25:00+05:30",
+    "entry_price": 147.82768,
+    "entry_time": "2026-01-22T12:54:00+05:30",
+    "exit_price": 155.85,
+    "exit_time": "2026-01-22T14:54:00+05:30",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 560.5756000000029,
+    "realized_pnl": 521.4508000000005,
     "qty": 1
   },
   {
@@ -1804,91 +1364,25 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY25100PE",
+    "symbol": "NIFTY26150PE",
     "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 17.72771,
-    "entry_time": "2026-01-27T12:22:00+05:30",
-    "exit_price": 14.168000000000001,
-    "exit_time": "2026-01-27T12:43:00+05:30",
-    "exit_reason": "STOP_LOSS",
-    "realized_pnl": -231.38114999999982,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY25300PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 166.67650999999998,
-    "entry_time": "2026-01-28T12:22:00+05:30",
-    "exit_price": 154.17,
-    "exit_time": "2026-01-28T14:22:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -812.9231499999994,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY25400PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 162.93277,
-    "entry_time": "2026-01-29T12:22:00+05:30",
-    "exit_price": 151.41,
-    "exit_time": "2026-01-29T14:22:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -748.9800500000006,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY25300PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 146.12597999999997,
-    "entry_time": "2026-01-30T12:23:00+05:30",
-    "exit_price": 134.71,
-    "exit_time": "2026-01-30T14:23:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -742.0386999999976,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY24950PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 74.38431,
-    "entry_time": "2026-02-02T12:22:00+05:30",
-    "exit_price": 59.44800000000001,
-    "exit_time": "2026-02-02T13:03:00+05:30",
-    "exit_reason": "STOP_LOSS",
-    "realized_pnl": -970.8601499999995,
+    "entry_price": 23.55353,
+    "entry_time": "2026-02-03T10:42:00+05:30",
+    "exit_price": 32.942,
+    "exit_time": "2026-02-03T10:57:00+05:30",
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 610.2505500000001,
     "qty": 1
   },
   {
     "symbol": "NIFTY26150PE",
     "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 23.55353,
-    "entry_time": "2026-02-03T10:42:00+05:30",
-    "exit_price": 162.79,
-    "exit_time": "2026-02-03T12:42:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 9050.37055,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY26000PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 32.80277,
-    "entry_time": "2026-02-03T12:42:00+05:30",
-    "exit_price": 182.77,
-    "exit_time": "2026-02-03T14:32:00+05:30",
+    "entry_price": 32.98295,
+    "entry_time": "2026-02-03T10:57:00+05:30",
+    "exit_price": 46.13,
+    "exit_time": "2026-02-03T11:14:00+05:30",
     "exit_reason": "TAKE_PROFIT",
-    "realized_pnl": 9747.86995,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY25750PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 181.82163999999997,
-    "entry_time": "2026-02-04T12:22:00+05:30",
-    "exit_price": 166.15,
-    "exit_time": "2026-02-04T14:22:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -1018.656599999998,
+    "realized_pnl": 854.55825,
     "qty": 1
   },
   {
@@ -1914,47 +1408,25 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY25650PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 140.54039999999998,
-    "entry_time": "2026-02-06T12:22:00+05:30",
-    "exit_price": 127.39,
-    "exit_time": "2026-02-06T14:22:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -854.7759999999985,
-    "qty": 1
-  },
-  {
     "symbol": "NIFTY25900PE",
     "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 79.29921999999999,
-    "entry_time": "2026-02-09T09:26:00+05:30",
-    "exit_price": 82.8,
-    "exit_time": "2026-02-09T11:26:00+05:30",
+    "entry_price": 82.67259,
+    "entry_time": "2026-02-09T11:19:00+05:30",
+    "exit_price": 86.25,
+    "exit_time": "2026-02-09T13:19:00+05:30",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 227.5507000000004,
+    "realized_pnl": 232.53165,
     "qty": 1
   },
   {
-    "symbol": "NIFTY25900PE",
+    "symbol": "NIFTY25850PE",
     "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 82.88279999999999,
-    "entry_time": "2026-02-09T11:26:00+05:30",
-    "exit_price": 86.47,
-    "exit_time": "2026-02-09T13:26:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 233.16800000000063,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY25950PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 38.77874,
-    "entry_time": "2026-02-10T12:23:00+05:30",
-    "exit_price": 30.992000000000004,
-    "exit_time": "2026-02-10T13:43:00+05:30",
+    "entry_price": 61.741679999999995,
+    "entry_time": "2026-02-09T13:19:00+05:30",
+    "exit_price": 49.344,
+    "exit_time": "2026-02-10T09:25:00+05:30",
     "exit_reason": "STOP_LOSS",
-    "realized_pnl": -506.13809999999967,
+    "realized_pnl": -805.8491999999997,
     "qty": 1
   },
   {
@@ -2024,80 +1496,25 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY25550PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 70.80073,
-    "entry_time": "2026-02-16T12:22:00+05:30",
-    "exit_price": 56.584,
-    "exit_time": "2026-02-16T13:08:00+05:30",
-    "exit_reason": "STOP_LOSS",
-    "realized_pnl": -924.0874499999999,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY25700PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 36.92688999999999,
-    "entry_time": "2026-02-17T12:22:00+05:30",
-    "exit_price": 29.512,
-    "exit_time": "2026-02-17T12:58:00+05:30",
-    "exit_reason": "STOP_LOSS",
-    "realized_pnl": -481.96784999999954,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY25800PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 177.03686,
-    "entry_time": "2026-02-18T12:22:00+05:30",
-    "exit_price": 166.73,
-    "exit_time": "2026-02-18T14:22:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -669.9459,
-    "qty": 1
-  },
-  {
     "symbol": "NIFTY25850PE",
     "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
     "entry_price": 160.79062999999996,
     "entry_time": "2026-02-19T09:43:00+05:30",
-    "exit_price": 233.78,
-    "exit_time": "2026-02-19T11:43:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 4744.309050000003,
+    "exit_price": 224.88199999999998,
+    "exit_time": "2026-02-19T11:30:00+05:30",
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 4165.939050000001,
     "qty": 1
   },
   {
     "symbol": "NIFTY25700PE",
     "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 152.50234999999998,
-    "entry_time": "2026-02-19T11:43:00+05:30",
-    "exit_price": 223.58,
-    "exit_time": "2026-02-19T13:43:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 4620.047250000002,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY25500PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 144.7446,
-    "entry_time": "2026-02-20T12:23:00+05:30",
-    "exit_price": 120.32,
-    "exit_time": "2026-02-20T14:23:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -1587.599,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY25700PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 74.8748,
-    "entry_time": "2026-02-23T12:22:00+05:30",
-    "exit_price": 69.42,
-    "exit_time": "2026-02-23T14:22:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -354.56199999999944,
+    "entry_price": 145.79565,
+    "entry_time": "2026-02-19T11:30:00+05:30",
+    "exit_price": 203.91,
+    "exit_time": "2026-02-19T13:13:00+05:30",
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 3777.43275,
     "qty": 1
   },
   {
@@ -2105,43 +1522,43 @@
     "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
     "entry_price": 44.514469999999996,
     "entry_time": "2026-02-24T09:25:00+05:30",
-    "exit_price": 88.47,
-    "exit_time": "2026-02-24T11:25:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 2857.1094500000004,
+    "exit_price": 62.257999999999996,
+    "exit_time": "2026-02-24T10:22:00+05:30",
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 1153.32945,
     "qty": 1
   },
   {
-    "symbol": "NIFTY25550PE",
+    "symbol": "NIFTY25600PE",
     "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 23.022999999999996,
-    "entry_time": "2026-02-24T11:25:00+05:30",
-    "exit_price": 57.87,
-    "exit_time": "2026-02-24T13:25:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 2265.0550000000003,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY25500PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 162.88271999999998,
-    "entry_time": "2026-02-25T09:25:00+05:30",
-    "exit_price": 167.2,
-    "exit_time": "2026-02-25T11:25:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 280.6232000000007,
+    "entry_price": 32.70267,
+    "entry_time": "2026-02-24T10:22:00+05:30",
+    "exit_price": 45.738,
+    "exit_time": "2026-02-24T11:12:00+05:30",
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 847.2964500000002,
     "qty": 1
   },
   {
     "symbol": "NIFTY25500PE",
     "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 167.36719999999997,
-    "entry_time": "2026-02-25T11:25:00+05:30",
-    "exit_price": 171.77,
-    "exit_time": "2026-02-25T13:25:00+05:30",
+    "entry_price": 165.89572999999996,
+    "entry_time": "2026-02-25T10:46:00+05:30",
+    "exit_price": 170.28,
+    "exit_time": "2026-02-25T12:46:00+05:30",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 286.18200000000274,
+    "realized_pnl": 284.9775500000028,
+    "qty": 1
+  },
+  {
+    "symbol": "NIFTY25500PE",
+    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
+    "entry_price": 170.45028,
+    "entry_time": "2026-02-25T12:46:00+05:30",
+    "exit_price": 174.9,
+    "exit_time": "2026-02-25T14:46:00+05:30",
+    "exit_reason": "TIME_EXIT",
+    "realized_pnl": 289.2318000000009,
     "qty": 1
   },
   {
@@ -2189,28 +1606,6 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY24750PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 63.893829999999994,
-    "entry_time": "2026-03-02T12:23:00+05:30",
-    "exit_price": 51.064,
-    "exit_time": "2026-03-02T13:18:00+05:30",
-    "exit_reason": "STOP_LOSS",
-    "realized_pnl": -833.9389499999996,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY24450PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 168.65849,
-    "entry_time": "2026-03-04T12:23:00+05:30",
-    "exit_price": 154.63,
-    "exit_time": "2026-03-04T14:23:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -911.8518500000004,
-    "qty": 1
-  },
-  {
     "symbol": "NIFTY24650PE",
     "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
     "entry_price": 134.52438999999998,
@@ -2233,28 +1628,6 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY23950PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 68.75868999999999,
-    "entry_time": "2026-03-09T12:22:00+05:30",
-    "exit_price": 54.952,
-    "exit_time": "2026-03-09T13:33:00+05:30",
-    "exit_reason": "STOP_LOSS",
-    "realized_pnl": -897.4348499999993,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY24300PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 45.79575,
-    "entry_time": "2026-03-10T09:27:00+05:30",
-    "exit_price": 43.48,
-    "exit_time": "2026-03-10T11:27:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -150.5237500000001,
-    "qty": 1
-  },
-  {
     "symbol": "NIFTY24250PE",
     "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
     "entry_price": 18.378359999999997,
@@ -2263,6 +1636,17 @@
     "exit_time": "2026-03-10T12:54:00+05:30",
     "exit_reason": "STOP_LOSS",
     "realized_pnl": -239.87339999999978,
+    "qty": 1
+  },
+  {
+    "symbol": "NIFTY24250PE",
+    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
+    "entry_price": 14.684669999999999,
+    "entry_time": "2026-03-10T12:54:00+05:30",
+    "exit_price": 11.736,
+    "exit_time": "2026-03-10T13:46:00+05:30",
+    "exit_reason": "STOP_LOSS",
+    "realized_pnl": -191.66354999999987,
     "qty": 1
   },
   {
@@ -2314,54 +1698,21 @@
     "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
     "entry_price": 126.40627999999998,
     "entry_time": "2026-03-13T09:25:00+05:30",
-    "exit_price": 179.16,
-    "exit_time": "2026-03-13T11:25:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 3428.991800000001,
+    "exit_price": 176.792,
+    "exit_time": "2026-03-13T11:21:00+05:30",
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 3275.0718000000015,
     "qty": 1
   },
   {
     "symbol": "NIFTY23350PE",
     "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 125.81568999999999,
-    "entry_time": "2026-03-13T11:25:00+05:30",
-    "exit_price": 178.59,
-    "exit_time": "2026-03-13T13:25:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 3430.3301500000007,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY23250PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 59.91985999999999,
-    "entry_time": "2026-03-16T12:22:00+05:30",
-    "exit_price": 47.888000000000005,
-    "exit_time": "2026-03-16T12:58:00+05:30",
-    "exit_reason": "STOP_LOSS",
-    "realized_pnl": -782.0708999999991,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY23550PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 31.501469999999994,
-    "entry_time": "2026-03-17T12:22:00+05:30",
-    "exit_price": 25.176000000000002,
-    "exit_time": "2026-03-17T12:54:00+05:30",
-    "exit_reason": "STOP_LOSS",
-    "realized_pnl": -411.1555499999995,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY23700PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 153.80364999999998,
-    "entry_time": "2026-03-18T12:23:00+05:30",
-    "exit_price": 133.01,
-    "exit_time": "2026-03-18T14:23:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -1351.5872499999991,
+    "entry_price": 124.24412,
+    "entry_time": "2026-03-13T11:21:00+05:30",
+    "exit_price": 173.768,
+    "exit_time": "2026-03-13T13:16:00+05:30",
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 3219.0522000000005,
     "qty": 1
   },
   {
@@ -2387,58 +1738,25 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY23100PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 120.67054999999998,
-    "entry_time": "2026-03-20T12:23:00+05:30",
-    "exit_price": 119.91,
-    "exit_time": "2026-03-20T14:23:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -49.43574999999875,
-    "qty": 1
-  },
-  {
     "symbol": "NIFTY22800PE",
     "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
     "entry_price": 57.02696999999999,
     "entry_time": "2026-03-23T09:25:00+05:30",
-    "exit_price": 113.78,
-    "exit_time": "2026-03-23T11:25:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 3688.9469500000005,
+    "exit_price": 79.758,
+    "exit_time": "2026-03-23T10:20:00+05:30",
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 1477.5169500000002,
     "qty": 1
   },
   {
-    "symbol": "NIFTY22700PE",
+    "symbol": "NIFTY22750PE",
     "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 56.756699999999995,
-    "entry_time": "2026-03-23T11:25:00+05:30",
-    "exit_price": 113.54,
-    "exit_time": "2026-03-23T13:25:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 3690.9145000000008,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY22900PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 26.266239999999996,
-    "entry_time": "2026-03-24T12:22:00+05:30",
-    "exit_price": 20.992,
-    "exit_time": "2026-03-24T13:09:00+05:30",
-    "exit_reason": "STOP_LOSS",
-    "realized_pnl": -342.8255999999997,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY23200PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 159.84968999999998,
-    "entry_time": "2026-03-25T12:23:00+05:30",
-    "exit_price": 127.75200000000001,
-    "exit_time": "2026-03-25T14:13:00+05:30",
-    "exit_reason": "STOP_LOSS",
-    "realized_pnl": -2086.3498499999982,
+    "entry_price": 55.03497999999999,
+    "entry_time": "2026-03-23T10:20:00+05:30",
+    "exit_price": 76.972,
+    "exit_time": "2026-03-23T11:14:00+05:30",
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 1425.9063000000003,
     "qty": 1
   },
   {
@@ -2446,21 +1764,21 @@
     "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
     "entry_price": 120.14001999999998,
     "entry_time": "2026-03-27T09:25:00+05:30",
-    "exit_price": 179.79,
-    "exit_time": "2026-03-27T11:25:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 3877.248700000001,
+    "exit_price": 168.028,
+    "exit_time": "2026-03-27T11:04:00+05:30",
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 3112.718700000001,
     "qty": 1
   },
   {
     "symbol": "NIFTY23050PE",
     "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 125.94581999999998,
-    "entry_time": "2026-03-27T11:25:00+05:30",
-    "exit_price": 187.42,
-    "exit_time": "2026-03-27T13:25:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 3995.8217000000004,
+    "entry_price": 116.71659999999999,
+    "entry_time": "2026-03-27T11:04:00+05:30",
+    "exit_price": 163.23999999999998,
+    "exit_time": "2026-03-27T12:42:00+05:30",
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 3024.0209999999997,
     "qty": 1
   },
   {
@@ -2468,21 +1786,21 @@
     "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
     "entry_price": 66.90684,
     "entry_time": "2026-03-30T09:25:00+05:30",
-    "exit_price": 107.9,
-    "exit_time": "2026-03-30T11:25:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 2664.5554,
+    "exit_price": 93.576,
+    "exit_time": "2026-03-30T10:47:00+05:30",
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 1733.4953999999993,
     "qty": 1
   },
   {
-    "symbol": "NIFTY22450PE",
+    "symbol": "NIFTY22500PE",
     "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 52.622569999999996,
-    "entry_time": "2026-03-30T11:25:00+05:30",
-    "exit_price": 88.65,
-    "exit_time": "2026-03-30T13:25:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 2341.7829500000007,
+    "entry_price": 65.69563,
+    "entry_time": "2026-03-30T10:47:00+05:30",
+    "exit_price": 91.88199999999999,
+    "exit_time": "2026-03-30T12:09:00+05:30",
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 1702.1140499999997,
     "qty": 1
   },
   {
@@ -2508,39 +1826,6 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY22550PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 137.74761,
-    "entry_time": "2026-04-02T12:22:00+05:30",
-    "exit_price": 110.08800000000002,
-    "exit_time": "2026-04-02T13:33:00+05:30",
-    "exit_reason": "STOP_LOSS",
-    "realized_pnl": -1797.874649999999,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY22850PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 53.523469999999996,
-    "entry_time": "2026-04-06T12:22:00+05:30",
-    "exit_price": 42.776,
-    "exit_time": "2026-04-06T13:16:00+05:30",
-    "exit_reason": "STOP_LOSS",
-    "realized_pnl": -698.5855499999996,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY23000PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 34.534499999999994,
-    "entry_time": "2026-04-07T12:22:00+05:30",
-    "exit_price": 27.6,
-    "exit_time": "2026-04-07T12:36:00+05:30",
-    "exit_reason": "STOP_LOSS",
-    "realized_pnl": -450.74249999999955,
-    "qty": 1
-  },
-  {
     "symbol": "NIFTY23900PE",
     "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
     "entry_price": 142.5424,
@@ -2563,28 +1848,6 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY23700PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 59.209149999999994,
-    "entry_time": "2026-04-13T12:23:00+05:30",
-    "exit_price": 47.32,
-    "exit_time": "2026-04-13T13:05:00+05:30",
-    "exit_reason": "STOP_LOSS",
-    "realized_pnl": -772.7947499999996,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY24200PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 160.86069999999998,
-    "entry_time": "2026-04-15T12:23:00+05:30",
-    "exit_price": 150.67,
-    "exit_time": "2026-04-15T14:23:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -662.3954999999995,
-    "qty": 1
-  },
-  {
     "symbol": "NIFTY24350PE",
     "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
     "entry_price": 146.68653999999998,
@@ -2604,17 +1867,6 @@
     "exit_time": "2026-04-16T14:20:00+05:30",
     "exit_reason": "TIME_EXIT",
     "realized_pnl": 2001.270050000002,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY24250PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 128.17804999999998,
-    "entry_time": "2026-04-17T12:22:00+05:30",
-    "exit_price": 102.44000000000001,
-    "exit_time": "2026-04-17T14:20:00+05:30",
-    "exit_reason": "STOP_LOSS",
-    "realized_pnl": -1672.9732499999982,
     "qty": 1
   },
   {
@@ -2706,17 +1958,6 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY24000PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 58.85879999999999,
-    "entry_time": "2026-04-27T12:23:00+05:30",
-    "exit_price": 47.04,
-    "exit_time": "2026-04-27T13:36:00+05:30",
-    "exit_reason": "STOP_LOSS",
-    "realized_pnl": -768.2219999999993,
-    "qty": 1
-  },
-  {
     "symbol": "NIFTY24050PE",
     "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
     "entry_price": 35.62559,
@@ -2736,17 +1977,6 @@
     "exit_time": "2026-04-28T13:25:00+05:30",
     "exit_reason": "TIME_EXIT",
     "realized_pnl": 288.01695,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY24150PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 165.42525999999998,
-    "entry_time": "2026-04-29T12:23:00+05:30",
-    "exit_price": 153.07,
-    "exit_time": "2026-04-29T14:23:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -803.0918999999992,
     "qty": 1
   },
   {
@@ -2772,17 +2002,6 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY24100PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 72.43235999999999,
-    "entry_time": "2026-05-04T12:23:00+05:30",
-    "exit_price": 63.64,
-    "exit_time": "2026-05-04T14:23:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -571.5033999999993,
-    "qty": 1
-  },
-  {
     "symbol": "NIFTY24050PE",
     "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
     "entry_price": 33.8338,
@@ -2802,17 +2021,6 @@
     "exit_time": "2026-05-05T13:25:00+05:30",
     "exit_reason": "TIME_EXIT",
     "realized_pnl": -297.7506999999998,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY24250PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 159.66950999999997,
-    "entry_time": "2026-05-06T12:22:00+05:30",
-    "exit_price": 136.58,
-    "exit_time": "2026-05-06T14:22:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -1500.8181499999976,
     "qty": 1
   },
   {
@@ -2864,21 +2072,21 @@
     "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
     "entry_price": 60.29022999999999,
     "entry_time": "2026-05-11T09:25:00+05:30",
-    "exit_price": 85.37,
-    "exit_time": "2026-05-11T11:25:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 1630.1850500000012,
+    "exit_price": 84.32199999999999,
+    "exit_time": "2026-05-11T11:21:00+05:30",
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 1562.0650500000002,
     "qty": 1
   },
   {
     "symbol": "NIFTY23900PE",
     "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 59.91985999999999,
-    "entry_time": "2026-05-11T11:25:00+05:30",
-    "exit_price": 84.95,
-    "exit_time": "2026-05-11T13:25:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 1626.9591000000007,
+    "entry_price": 59.17911999999999,
+    "entry_time": "2026-05-11T11:21:00+05:30",
+    "exit_price": 82.76799999999999,
+    "exit_time": "2026-05-11T13:16:00+05:30",
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 1533.2771999999998,
     "qty": 1
   },
   {
@@ -2886,43 +2094,21 @@
     "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
     "entry_price": 28.108079999999994,
     "entry_time": "2026-05-12T09:25:00+05:30",
-    "exit_price": 98.85,
-    "exit_time": "2026-05-12T11:25:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 4598.2248,
+    "exit_price": 39.312,
+    "exit_time": "2026-05-12T09:53:00+05:30",
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 728.2548000000003,
     "qty": 1
   },
   {
-    "symbol": "NIFTY23600PE",
+    "symbol": "NIFTY23700PE",
     "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 26.46644,
-    "entry_time": "2026-05-12T11:25:00+05:30",
-    "exit_price": 106.65,
-    "exit_time": "2026-05-12T13:25:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 5211.9314,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY23400PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 160.40024,
-    "entry_time": "2026-05-13T12:23:00+05:30",
-    "exit_price": 152.6,
-    "exit_time": "2026-05-13T14:23:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -507.0156000000002,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY23600PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 138.64851,
-    "entry_time": "2026-05-14T12:22:00+05:30",
-    "exit_price": 116.16,
-    "exit_time": "2026-05-14T14:22:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -1461.7531499999993,
+    "entry_price": 39.43939999999999,
+    "entry_time": "2026-05-12T09:53:00+05:30",
+    "exit_price": 55.16,
+    "exit_time": "2026-05-12T10:24:00+05:30",
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 1021.8390000000003,
     "qty": 1
   },
   {
@@ -2948,17 +2134,6 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY23550PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 59.11906,
-    "entry_time": "2026-05-18T12:22:00+05:30",
-    "exit_price": 47.248000000000005,
-    "exit_time": "2026-05-18T13:25:00+05:30",
-    "exit_reason": "STOP_LOSS",
-    "realized_pnl": -771.6188999999995,
-    "qty": 1
-  },
-  {
     "symbol": "NIFTY23650PE",
     "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
     "entry_price": 24.524499999999996,
@@ -2981,17 +2156,6 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY23550PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 151.70155,
-    "entry_time": "2026-05-20T12:22:00+05:30",
-    "exit_price": 123.52,
-    "exit_time": "2026-05-20T14:22:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -1831.80075,
-    "qty": 1
-  },
-  {
     "symbol": "NIFTY23800PE",
     "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
     "entry_price": 145.82567999999998,
@@ -3011,28 +2175,6 @@
     "exit_time": "2026-05-21T14:25:00+05:30",
     "exit_reason": "TIME_EXIT",
     "realized_pnl": 1860.4053000000024,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY23700PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 131.96183,
-    "entry_time": "2026-05-22T12:23:00+05:30",
-    "exit_price": 124.54,
-    "exit_time": "2026-05-22T14:23:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -482.4189499999991,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY24000PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 74.89481999999998,
-    "entry_time": "2026-05-25T12:23:00+05:30",
-    "exit_price": 60.56,
-    "exit_time": "2026-05-25T14:23:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -931.7632999999987,
     "qty": 1
   },
   {
@@ -3060,34 +2202,23 @@
   {
     "symbol": "NIFTY23900PE",
     "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 160.74058,
-    "entry_time": "2026-05-27T12:23:00+05:30",
-    "exit_price": 156.52,
-    "exit_time": "2026-05-27T14:23:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -274.33769999999896,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY23900PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
     "entry_price": 134.36422999999996,
     "entry_time": "2026-05-29T09:25:00+05:30",
-    "exit_price": 196.67,
-    "exit_time": "2026-05-29T11:25:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 4049.8750500000015,
+    "exit_price": 187.92199999999997,
+    "exit_time": "2026-05-29T11:10:00+05:30",
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 3481.25505,
     "qty": 1
   },
   {
     "symbol": "NIFTY23800PE",
     "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 140.58043999999998,
-    "entry_time": "2026-05-29T11:25:00+05:30",
-    "exit_price": 204.67,
-    "exit_time": "2026-05-29T13:25:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 4165.821400000001,
+    "entry_price": 133.57343999999998,
+    "entry_time": "2026-05-29T11:10:00+05:30",
+    "exit_price": 186.81599999999997,
+    "exit_time": "2026-05-29T12:55:00+05:30",
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 3460.7664,
     "qty": 1
   },
   {
@@ -3095,32 +2226,21 @@
     "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
     "entry_price": 56.07602,
     "entry_time": "2026-06-01T09:58:00+05:30",
-    "exit_price": 102.68,
-    "exit_time": "2026-06-01T11:58:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 3029.2587000000003,
+    "exit_price": 78.428,
+    "exit_time": "2026-06-01T11:02:00+05:30",
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 1452.8786999999998,
     "qty": 1
   },
   {
-    "symbol": "NIFTY23550PE",
+    "symbol": "NIFTY23600PE",
     "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 73.74367,
-    "entry_time": "2026-06-01T11:58:00+05:30",
-    "exit_price": 127.62,
-    "exit_time": "2026-06-01T13:58:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 3501.9614500000007,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY23350PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 21.00098,
-    "entry_time": "2026-06-02T12:23:00+05:30",
-    "exit_price": 16.784000000000002,
-    "exit_time": "2026-06-02T12:35:00+05:30",
-    "exit_reason": "STOP_LOSS",
-    "realized_pnl": -274.1036999999997,
+    "entry_price": 78.81873999999999,
+    "entry_time": "2026-06-01T11:02:00+05:30",
+    "exit_price": 110.23599999999999,
+    "exit_time": "2026-06-01T12:15:00+05:30",
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 2042.1218999999999,
     "qty": 1
   },
   {
@@ -3143,17 +2263,6 @@
     "exit_time": "2026-06-03T13:25:00+05:30",
     "exit_reason": "TIME_EXIT",
     "realized_pnl": 89.79034999999882,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY23350PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 141.84169999999997,
-    "entry_time": "2026-06-04T12:23:00+05:30",
-    "exit_price": 122.28,
-    "exit_time": "2026-06-04T14:23:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -1271.5104999999983,
     "qty": 1
   },
   {
@@ -3190,36 +2299,25 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY23100PE",
+    "symbol": "NIFTY23250PE",
     "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 64.44438,
-    "entry_time": "2026-06-08T12:23:00+05:30",
-    "exit_price": 58.03,
-    "exit_time": "2026-06-08T14:23:00+05:30",
+    "entry_price": 26.486459999999997,
+    "entry_time": "2026-06-09T11:15:00+05:30",
+    "exit_price": 21.52,
+    "exit_time": "2026-06-09T13:15:00+05:30",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": -416.9346999999996,
+    "realized_pnl": -322.81989999999985,
     "qty": 1
   },
   {
     "symbol": "NIFTY23250PE",
     "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 29.589559999999995,
-    "entry_time": "2026-06-09T09:26:00+05:30",
-    "exit_price": 26.09,
-    "exit_time": "2026-06-09T11:26:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -227.4713999999997,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY23250PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 26.116089999999996,
-    "entry_time": "2026-06-09T11:26:00+05:30",
-    "exit_price": 20.93,
-    "exit_time": "2026-06-09T13:26:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -337.09584999999976,
+    "entry_price": 21.54152,
+    "entry_time": "2026-06-09T13:15:00+05:30",
+    "exit_price": 17.216,
+    "exit_time": "2026-06-09T14:22:00+05:30",
+    "exit_reason": "STOP_LOSS",
+    "realized_pnl": -281.1587999999998,
     "qty": 1
   },
   {
@@ -3245,80 +2343,25 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY23150PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 148.69854999999998,
-    "entry_time": "2026-06-11T12:23:00+05:30",
-    "exit_price": 139.71,
-    "exit_time": "2026-06-11T14:23:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -584.2557499999984,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY23500PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 120.38025999999999,
-    "entry_time": "2026-06-12T12:22:00+05:30",
-    "exit_price": 96.20800000000001,
-    "exit_time": "2026-06-12T14:04:00+05:30",
-    "exit_reason": "STOP_LOSS",
-    "realized_pnl": -1571.1968999999988,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY24000PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 77.45737999999999,
-    "entry_time": "2026-06-15T09:25:00+05:30",
-    "exit_price": 101.64,
-    "exit_time": "2026-06-15T11:25:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 1571.870300000001,
-    "qty": 1
-  },
-  {
     "symbol": "NIFTY23950PE",
     "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 73.14306999999998,
-    "entry_time": "2026-06-15T11:25:00+05:30",
-    "exit_price": 96.59,
-    "exit_time": "2026-06-15T13:25:00+05:30",
+    "entry_price": 67.02695999999999,
+    "entry_time": "2026-06-15T10:50:00+05:30",
+    "exit_price": 89.32,
+    "exit_time": "2026-06-15T12:50:00+05:30",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 1524.0504500000015,
+    "realized_pnl": 1449.0476000000003,
     "qty": 1
   },
   {
-    "symbol": "NIFTY23950PE",
+    "symbol": "NIFTY23900PE",
     "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 21.921899999999997,
-    "entry_time": "2026-06-16T12:22:00+05:30",
-    "exit_price": 17.52,
-    "exit_time": "2026-06-16T12:53:00+05:30",
-    "exit_reason": "STOP_LOSS",
-    "realized_pnl": -286.12349999999986,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY24050PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 151.79163999999997,
-    "entry_time": "2026-06-17T12:22:00+05:30",
-    "exit_price": 145.68,
-    "exit_time": "2026-06-17T14:22:00+05:30",
+    "entry_price": 63.09302999999999,
+    "entry_time": "2026-06-15T12:50:00+05:30",
+    "exit_price": 84.63,
+    "exit_time": "2026-06-15T14:50:00+05:30",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": -397.2565999999978,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY24100PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 136.64650999999998,
-    "entry_time": "2026-06-18T12:22:00+05:30",
-    "exit_price": 123.29,
-    "exit_time": "2026-06-18T14:22:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -868.1731499999981,
+    "realized_pnl": 1399.9030500000003,
     "qty": 1
   },
   {
@@ -3333,28 +2376,6 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY24000PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 130.37024,
-    "entry_time": "2026-06-19T12:22:00+05:30",
-    "exit_price": 126.94,
-    "exit_time": "2026-06-19T14:22:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -222.96559999999985,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY24100PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 65.11505,
-    "entry_time": "2026-06-22T09:28:00+05:30",
-    "exit_price": 65.62,
-    "exit_time": "2026-06-22T11:28:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 32.82175000000052,
-    "qty": 1
-  },
-  {
     "symbol": "NIFTY24100PE",
     "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
     "entry_price": 65.75568999999999,
@@ -3366,36 +2387,36 @@
     "qty": 1
   },
   {
+    "symbol": "NIFTY24100PE",
+    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
+    "entry_price": 66.32626,
+    "entry_time": "2026-06-22T13:44:00+05:30",
+    "exit_price": 55.1,
+    "exit_time": "2026-06-23T09:25:00+05:30",
+    "exit_reason": "TIME_EXIT",
+    "realized_pnl": -729.7069000000002,
+    "qty": 1
+  },
+  {
     "symbol": "NIFTY24050PE",
     "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
     "entry_price": 28.068039999999996,
     "entry_time": "2026-06-23T09:25:00+05:30",
-    "exit_price": 71.41,
-    "exit_time": "2026-06-23T11:25:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 2817.2274,
+    "exit_price": 39.25599999999999,
+    "exit_time": "2026-06-23T10:06:00+05:30",
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 727.2173999999998,
     "qty": 1
   },
   {
-    "symbol": "NIFTY24000PE",
+    "symbol": "NIFTY24050PE",
     "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 36.406369999999995,
-    "entry_time": "2026-06-23T11:25:00+05:30",
-    "exit_price": 94.26,
-    "exit_time": "2026-06-23T13:25:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 3760.4859500000007,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY23900PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 153.45329999999998,
-    "entry_time": "2026-06-24T12:23:00+05:30",
-    "exit_price": 122.64000000000001,
-    "exit_time": "2026-06-24T14:22:00+05:30",
-    "exit_reason": "STOP_LOSS",
-    "realized_pnl": -2002.864499999998,
+    "entry_price": 39.37934,
+    "entry_time": "2026-06-23T10:06:00+05:30",
+    "exit_price": 55.076,
+    "exit_time": "2026-06-23T10:50:00+05:30",
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 1020.2829,
     "qty": 1
   },
   {
@@ -3447,43 +2468,21 @@
     "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
     "entry_price": 28.518489999999996,
     "entry_time": "2026-06-30T10:07:00+05:30",
-    "exit_price": 53.8,
-    "exit_time": "2026-06-30T12:07:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 1643.29815,
+    "exit_price": 39.885999999999996,
+    "exit_time": "2026-06-30T11:11:00+05:30",
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 738.88815,
     "qty": 1
   },
   {
-    "symbol": "NIFTY23950PE",
+    "symbol": "NIFTY24000PE",
     "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 23.3233,
-    "entry_time": "2026-06-30T12:07:00+05:30",
-    "exit_price": 50.25,
-    "exit_time": "2026-06-30T14:07:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 1750.2355,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY23950PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 157.17702,
-    "entry_time": "2026-07-01T12:23:00+05:30",
-    "exit_price": 141.3,
-    "exit_time": "2026-07-01T14:23:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -1032.006299999999,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY24100PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 137.39726,
-    "entry_time": "2026-07-02T12:23:00+05:30",
-    "exit_price": 121.38,
-    "exit_time": "2026-07-02T14:23:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -1041.1218999999996,
+    "entry_price": 40.070029999999996,
+    "entry_time": "2026-06-30T11:11:00+05:30",
+    "exit_price": 56.041999999999994,
+    "exit_time": "2026-06-30T12:15:00+05:30",
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 1038.17805,
     "qty": 1
   },
   {
@@ -3506,17 +2505,6 @@
     "exit_time": "2026-07-03T14:41:00+05:30",
     "exit_reason": "TIME_EXIT",
     "realized_pnl": 1029.9549000000002,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY24350PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 60.09002999999999,
-    "entry_time": "2026-07-06T12:23:00+05:30",
-    "exit_price": 48.024,
-    "exit_time": "2026-07-06T13:51:00+05:30",
-    "exit_reason": "STOP_LOSS",
-    "realized_pnl": -784.2919499999994,
     "qty": 1
   },
   {
@@ -3564,39 +2552,6 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY23950PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 147.33719,
-    "entry_time": "2026-07-09T12:23:00+05:30",
-    "exit_price": 142.06,
-    "exit_time": "2026-07-09T14:23:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -343.0173499999994,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY24150PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 124.72459999999998,
-    "entry_time": "2026-07-10T12:23:00+05:30",
-    "exit_price": 112.9,
-    "exit_time": "2026-07-10T14:23:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -768.5989999999983,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY24150PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 80.93084999999999,
-    "entry_time": "2026-07-13T12:23:00+05:30",
-    "exit_price": 64.67999999999999,
-    "exit_time": "2026-07-13T13:33:00+05:30",
-    "exit_reason": "STOP_LOSS",
-    "realized_pnl": -1056.30525,
-    "qty": 1
-  },
-  {
     "symbol": "NIFTY24050PE",
     "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
     "entry_price": 26.856829999999995,
@@ -3621,23 +2576,23 @@
   {
     "symbol": "NIFTY24100PE",
     "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 165.98581999999996,
-    "entry_time": "2026-07-15T09:25:00+05:30",
-    "exit_price": 166.97,
-    "exit_time": "2026-07-15T11:25:00+05:30",
+    "entry_price": 166.90673999999999,
+    "entry_time": "2026-07-15T11:01:00+05:30",
+    "exit_price": 167.89,
+    "exit_time": "2026-07-15T13:01:00+05:30",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 63.97170000000244,
+    "realized_pnl": 63.91190000000009,
     "qty": 1
   },
   {
     "symbol": "NIFTY24100PE",
     "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 167.13697,
-    "entry_time": "2026-07-15T11:25:00+05:30",
-    "exit_price": 168.11,
-    "exit_time": "2026-07-15T13:25:00+05:30",
+    "entry_price": 168.05788999999996,
+    "entry_time": "2026-07-15T13:01:00+05:30",
+    "exit_price": 169.04,
+    "exit_time": "2026-07-15T15:01:00+05:30",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 63.246950000001476,
+    "realized_pnl": 63.837150000002225,
     "qty": 1
   },
   {
@@ -3660,17 +2615,6 @@
     "exit_time": "2026-07-16T14:23:00+05:30",
     "exit_reason": "TIME_EXIT",
     "realized_pnl": 681.0193000000011,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY24200PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 61.7617,
-    "entry_time": "2026-07-20T12:22:00+05:30",
-    "exit_price": 54.88,
-    "exit_time": "2026-07-20T14:22:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -447.3104999999997,
     "qty": 1
   },
   {
@@ -3740,83 +2684,6 @@
     "qty": 1
   },
   {
-    "symbol": "NIFTY23700PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 121.85172999999999,
-    "entry_time": "2026-07-24T12:22:00+05:30",
-    "exit_price": 107.51,
-    "exit_time": "2026-07-24T14:22:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -932.212449999999,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY23950PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 62.02195999999999,
-    "entry_time": "2026-07-27T12:22:00+05:30",
-    "exit_price": 52.51,
-    "exit_time": "2026-07-27T14:22:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -618.2773999999997,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY24000PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 37.22718999999999,
-    "entry_time": "2026-07-28T12:23:00+05:30",
-    "exit_price": 29.752,
-    "exit_time": "2026-07-28T13:42:00+05:30",
-    "exit_reason": "STOP_LOSS",
-    "realized_pnl": -485.8873499999996,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY24200PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 153.55339999999998,
-    "entry_time": "2026-07-29T12:22:00+05:30",
-    "exit_price": 142.83,
-    "exit_time": "2026-07-29T14:22:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -697.020999999998,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY24300PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 155.57541999999998,
-    "entry_time": "2026-07-30T12:22:00+05:30",
-    "exit_price": 145.02,
-    "exit_time": "2026-07-30T14:22:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -686.102299999998,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY24350PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 122.85273,
-    "entry_time": "2026-07-31T12:22:00+05:30",
-    "exit_price": 119.55,
-    "exit_time": "2026-07-31T14:22:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -214.6774499999998,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY24650PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 58.908849999999994,
-    "entry_time": "2026-08-03T12:22:00+05:30",
-    "exit_price": 47.080000000000005,
-    "exit_time": "2026-08-03T13:16:00+05:30",
-    "exit_reason": "STOP_LOSS",
-    "realized_pnl": -768.8752499999993,
-    "qty": 1
-  },
-  {
     "symbol": "NIFTY24700PE",
     "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
     "entry_price": 35.04500999999999,
@@ -3863,45 +2730,23 @@
   {
     "symbol": "NIFTY24650PE",
     "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 154.03387999999998,
-    "entry_time": "2026-08-06T09:25:00+05:30",
-    "exit_price": 154.66,
-    "exit_time": "2026-08-06T11:25:00+05:30",
+    "entry_price": 154.57441999999998,
+    "entry_time": "2026-08-06T10:48:00+05:30",
+    "exit_price": 155.2,
+    "exit_time": "2026-08-06T12:48:00+05:30",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 40.69780000000094,
+    "realized_pnl": 40.66270000000088,
     "qty": 1
   },
   {
     "symbol": "NIFTY24650PE",
     "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 154.81465999999998,
-    "entry_time": "2026-08-06T11:25:00+05:30",
-    "exit_price": 155.44,
-    "exit_time": "2026-08-06T13:25:00+05:30",
+    "entry_price": 155.35519999999997,
+    "entry_time": "2026-08-06T12:48:00+05:30",
+    "exit_price": 155.98,
+    "exit_time": "2026-08-06T14:48:00+05:30",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 40.64710000000147,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY24550PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 132.10197,
-    "entry_time": "2026-08-07T12:23:00+05:30",
-    "exit_price": 127.23,
-    "exit_time": "2026-08-07T14:23:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -316.67804999999936,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY24600PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 78.51843999999998,
-    "entry_time": "2026-08-10T12:22:00+05:30",
-    "exit_price": 78.01,
-    "exit_time": "2026-08-10T14:22:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -33.04859999999863,
+    "realized_pnl": 40.612000000001416,
     "qty": 1
   },
   {
@@ -3920,10 +2765,10 @@
     "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
     "entry_price": 34.92489,
     "entry_time": "2026-08-11T11:25:00+05:30",
-    "exit_price": 49.72,
-    "exit_time": "2026-08-11T13:25:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 961.6821500000001,
+    "exit_price": 48.846,
+    "exit_time": "2026-08-11T13:20:00+05:30",
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 904.8721499999999,
     "qty": 1
   },
   {
@@ -3979,17 +2824,6 @@
     "exit_time": "2026-08-14T11:25:00+05:30",
     "exit_reason": "TIME_EXIT",
     "realized_pnl": -47.93944999999951,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY24350PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 126.76663999999998,
-    "entry_time": "2026-08-14T12:22:00+05:30",
-    "exit_price": 126.03,
-    "exit_time": "2026-08-14T14:22:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -47.8815999999987,
     "qty": 1
   },
   {
@@ -4056,17 +2890,6 @@
     "exit_time": "2026-08-19T13:25:00+05:30",
     "exit_reason": "TIME_EXIT",
     "realized_pnl": 763.707100000003,
-    "qty": 1
-  },
-  {
-    "symbol": "NIFTY24250PE",
-    "strategy": "NIFTY_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 157.58742999999998,
-    "entry_time": "2026-08-20T12:22:00+05:30",
-    "exit_price": 156.42,
-    "exit_time": "2026-08-20T14:22:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -75.88294999999974,
     "qty": 1
   }
 ]

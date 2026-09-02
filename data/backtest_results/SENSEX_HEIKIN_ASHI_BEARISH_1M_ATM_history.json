@@ -1,16 +1,5 @@
 [
   {
-    "symbol": "SENSEX82200PE",
-    "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 511.19067999999993,
-    "entry_time": "2025-08-21T10:30:00+05:30",
-    "exit_price": 546.7,
-    "exit_time": "2025-08-21T12:30:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 710.1864000000023,
-    "qty": 1
-  },
-  {
     "symbol": "SENSEX81900PE",
     "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
     "entry_price": 436.73629999999997,
@@ -37,21 +26,21 @@
     "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
     "entry_price": 142.00186,
     "entry_time": "2025-08-26T09:30:00+05:30",
-    "exit_price": 262.09,
-    "exit_time": "2025-08-26T11:30:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 2401.7627999999995,
+    "exit_price": 198.604,
+    "exit_time": "2025-08-26T10:45:00+05:30",
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 1132.0428000000004,
     "qty": 1
   },
   {
     "symbol": "SENSEX81200PE",
     "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 119.20908999999999,
-    "entry_time": "2025-08-26T11:30:00+05:30",
-    "exit_price": 246.14,
-    "exit_time": "2025-08-26T13:30:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 2538.6182,
+    "entry_price": 90.14004999999999,
+    "entry_time": "2025-08-26T10:45:00+05:30",
+    "exit_price": 126.07,
+    "exit_time": "2025-08-26T11:45:00+05:30",
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 718.5990000000002,
     "qty": 1
   },
   {
@@ -99,17 +88,6 @@
     "qty": 1
   },
   {
-    "symbol": "SENSEX80500PE",
-    "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 330.18985999999995,
-    "entry_time": "2025-09-02T10:00:00+05:30",
-    "exit_price": 393.14,
-    "exit_time": "2025-09-02T12:00:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 1259.0028000000007,
-    "qty": 1
-  },
-  {
     "symbol": "SENSEX80300PE",
     "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
     "entry_price": 335.02468999999996,
@@ -121,47 +99,25 @@
     "qty": 1
   },
   {
-    "symbol": "SENSEX80400PE",
-    "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 212.40218999999996,
-    "entry_time": "2025-09-03T12:15:00+05:30",
-    "exit_price": 172.68,
-    "exit_time": "2025-09-03T14:15:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -794.4437999999991,
-    "qty": 1
-  },
-  {
-    "symbol": "SENSEX81300PE",
-    "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 105.60549999999999,
-    "entry_time": "2025-09-04T10:30:00+05:30",
-    "exit_price": 254.6,
-    "exit_time": "2025-09-04T12:30:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 2979.8900000000003,
-    "qty": 1
-  },
-  {
     "symbol": "SENSEX80800PE",
     "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
     "entry_price": 52.542489999999994,
     "entry_time": "2025-09-04T14:45:00+05:30",
-    "exit_price": 202.49,
-    "exit_time": "2025-09-05T09:30:00+05:30",
+    "exit_price": 73.486,
+    "exit_time": "2025-09-04T15:15:00+05:30",
     "exit_reason": "TAKE_PROFIT",
-    "realized_pnl": 2998.9502,
+    "realized_pnl": 418.8702000000002,
     "qty": 1
   },
   {
-    "symbol": "SENSEX81000PE",
+    "symbol": "SENSEX80700PE",
     "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 552.88233,
-    "entry_time": "2025-09-05T10:15:00+05:30",
-    "exit_price": 602.11,
-    "exit_time": "2025-09-05T12:15:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 984.5533999999998,
+    "entry_price": 16.096079999999997,
+    "entry_time": "2025-09-04T15:15:00+05:30",
+    "exit_price": 22.511999999999997,
+    "exit_time": "2025-09-05T09:30:00+05:30",
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 128.3184,
     "qty": 1
   },
   {
@@ -176,69 +132,36 @@
     "qty": 1
   },
   {
-    "symbol": "SENSEX80900PE",
+    "symbol": "SENSEX80700PE",
     "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 396.7363399999999,
-    "entry_time": "2025-09-08T10:30:00+05:30",
-    "exit_price": 415.65,
-    "exit_time": "2025-09-08T12:30:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 378.273200000001,
+    "entry_price": 516.1156,
+    "entry_time": "2025-09-05T14:45:00+05:30",
+    "exit_price": 412.48,
+    "exit_time": "2025-09-08T09:30:00+05:30",
+    "exit_reason": "STOP_LOSS",
+    "realized_pnl": -2072.711999999999,
     "qty": 1
   },
   {
     "symbol": "SENSEX80800PE",
     "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 367.24688,
-    "entry_time": "2025-09-08T12:30:00+05:30",
-    "exit_price": 385.27,
-    "exit_time": "2025-09-08T14:30:00+05:30",
+    "entry_price": 369.5191499999999,
+    "entry_time": "2025-09-08T12:45:00+05:30",
+    "exit_price": 387.61,
+    "exit_time": "2025-09-08T14:45:00+05:30",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 360.4624000000001,
+    "realized_pnl": 361.81700000000205,
     "qty": 1
   },
   {
-    "symbol": "SENSEX81100PE",
+    "symbol": "SENSEX80800PE",
     "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 310.54023,
-    "entry_time": "2025-09-09T11:15:00+05:30",
-    "exit_price": 314.73,
-    "exit_time": "2025-09-09T13:15:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 83.7954000000002,
-    "qty": 1
-  },
-  {
-    "symbol": "SENSEX81100PE",
-    "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 315.04472999999996,
-    "entry_time": "2025-09-09T13:15:00+05:30",
-    "exit_price": 319.27,
-    "exit_time": "2025-09-09T15:15:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 84.50540000000046,
-    "qty": 1
-  },
-  {
-    "symbol": "SENSEX81500PE",
-    "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 238.35811999999999,
-    "entry_time": "2025-09-10T10:45:00+05:30",
-    "exit_price": 251.51,
-    "exit_time": "2025-09-10T12:45:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 263.0376000000001,
-    "qty": 1
-  },
-  {
-    "symbol": "SENSEX81500PE",
-    "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 251.76150999999996,
-    "entry_time": "2025-09-10T12:45:00+05:30",
-    "exit_price": 265.37,
-    "exit_time": "2025-09-10T14:45:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 272.1698000000009,
+    "entry_price": 387.99760999999995,
+    "entry_time": "2025-09-08T14:45:00+05:30",
+    "exit_price": 310.088,
+    "exit_time": "2025-09-09T09:30:00+05:30",
+    "exit_reason": "STOP_LOSS",
+    "realized_pnl": -1558.1921999999986,
     "qty": 1
   },
   {
@@ -250,39 +173,6 @@
     "exit_time": "2025-09-11T10:15:00+05:30",
     "exit_reason": "STOP_LOSS",
     "realized_pnl": -410.16059999999953,
-    "qty": 1
-  },
-  {
-    "symbol": "SENSEX81900PE",
-    "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 387.99760999999995,
-    "entry_time": "2025-09-15T10:00:00+05:30",
-    "exit_price": 410.22,
-    "exit_time": "2025-09-15T12:00:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 444.4478000000015,
-    "qty": 1
-  },
-  {
-    "symbol": "SENSEX83100PE",
-    "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 114.11399999999999,
-    "entry_time": "2025-09-18T10:45:00+05:30",
-    "exit_price": 106.45,
-    "exit_time": "2025-09-18T12:45:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -153.27999999999975,
-    "qty": 1
-  },
-  {
-    "symbol": "SENSEX83000PE",
-    "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 53.18313,
-    "entry_time": "2025-09-18T13:15:00+05:30",
-    "exit_price": 42.504000000000005,
-    "exit_time": "2025-09-18T14:15:00+05:30",
-    "exit_reason": "STOP_LOSS",
-    "realized_pnl": -213.58259999999987,
     "qty": 1
   },
   {
@@ -301,10 +191,10 @@
     "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
     "entry_price": 536.9163799999999,
     "entry_time": "2025-09-19T13:30:00+05:30",
-    "exit_price": 686.38,
+    "exit_price": 714.71,
     "exit_time": "2025-09-22T09:30:00+05:30",
-    "exit_reason": "TAKE_PROFIT",
-    "realized_pnl": 2989.272400000002,
+    "exit_reason": "TIME_EXIT",
+    "realized_pnl": 3555.872400000003,
     "qty": 1
   },
   {
@@ -378,21 +268,21 @@
     "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
     "entry_price": 139.91977999999997,
     "entry_time": "2025-09-25T09:30:00+05:30",
-    "exit_price": 211.54,
-    "exit_time": "2025-09-25T11:30:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 1432.4044000000004,
+    "exit_price": 195.69199999999998,
+    "exit_time": "2025-09-25T11:15:00+05:30",
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 1115.4444,
     "qty": 1
   },
   {
     "symbol": "SENSEX81400PE",
     "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 86.90681999999998,
-    "entry_time": "2025-09-25T11:30:00+05:30",
-    "exit_price": 143.25,
-    "exit_time": "2025-09-25T13:30:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 1126.8636000000004,
+    "entry_price": 82.01192999999999,
+    "entry_time": "2025-09-25T11:15:00+05:30",
+    "exit_price": 114.702,
+    "exit_time": "2025-09-25T12:45:00+05:30",
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 653.8014000000001,
     "qty": 1
   },
   {
@@ -453,12 +343,12 @@
   {
     "symbol": "SENSEX80400PE",
     "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 315.19487999999996,
-    "entry_time": "2025-09-30T12:15:00+05:30",
-    "exit_price": 360.83,
-    "exit_time": "2025-09-30T14:15:00+05:30",
+    "entry_price": 320.73041,
+    "entry_time": "2025-09-30T12:30:00+05:30",
+    "exit_price": 366.86,
+    "exit_time": "2025-09-30T14:30:00+05:30",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 912.7024000000006,
+    "realized_pnl": 922.5918000000001,
     "qty": 1
   },
   {
@@ -473,28 +363,6 @@
     "qty": 1
   },
   {
-    "symbol": "SENSEX81900PE",
-    "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 319.94962999999996,
-    "entry_time": "2025-10-07T12:30:00+05:30",
-    "exit_price": 312.83,
-    "exit_time": "2025-10-07T14:30:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -142.39259999999945,
-    "qty": 1
-  },
-  {
-    "symbol": "SENSEX81800PE",
-    "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 216.59637999999998,
-    "entry_time": "2025-10-08T12:30:00+05:30",
-    "exit_price": 236.57,
-    "exit_time": "2025-10-08T14:30:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 399.4724000000002,
-    "qty": 1
-  },
-  {
     "symbol": "SENSEX81800PE",
     "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
     "entry_price": 244.68443999999997,
@@ -503,17 +371,6 @@
     "exit_time": "2025-10-09T09:30:00+05:30",
     "exit_reason": "STOP_LOSS",
     "realized_pnl": -982.6487999999989,
-    "qty": 1
-  },
-  {
-    "symbol": "SENSEX82000PE",
-    "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 70.52045,
-    "entry_time": "2025-10-09T12:15:00+05:30",
-    "exit_price": 56.36000000000001,
-    "exit_time": "2025-10-09T12:45:00+05:30",
-    "exit_reason": "STOP_LOSS",
-    "realized_pnl": -283.20899999999983,
     "qty": 1
   },
   {
@@ -528,17 +385,6 @@
     "qty": 1
   },
   {
-    "symbol": "SENSEX82400PE",
-    "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 346.22587999999996,
-    "entry_time": "2025-10-14T10:00:00+05:30",
-    "exit_price": 412.32,
-    "exit_time": "2025-10-14T12:00:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 1321.8824000000006,
-    "qty": 1
-  },
-  {
     "symbol": "SENSEX82200PE",
     "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
     "entry_price": 308.92861999999997,
@@ -550,47 +396,14 @@
     "qty": 1
   },
   {
-    "symbol": "SENSEX84300PE",
+    "symbol": "SENSEX82100PE",
     "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 393.68329,
-    "entry_time": "2025-10-20T12:30:00+05:30",
-    "exit_price": 378.68,
-    "exit_time": "2025-10-20T14:30:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -300.06579999999985,
-    "qty": 1
-  },
-  {
-    "symbol": "SENSEX84500PE",
-    "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 347.1167699999999,
-    "entry_time": "2025-10-21T10:30:00+05:30",
-    "exit_price": 356.49,
-    "exit_time": "2025-10-21T12:30:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 187.46460000000184,
-    "qty": 1
-  },
-  {
-    "symbol": "SENSEX84500PE",
-    "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 356.84648999999996,
-    "entry_time": "2025-10-21T12:30:00+05:30",
-    "exit_price": 366.39,
-    "exit_time": "2025-10-21T14:30:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 190.87020000000052,
-    "qty": 1
-  },
-  {
-    "symbol": "SENSEX85000PE",
-    "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 97.78768999999998,
-    "entry_time": "2025-10-23T10:30:00+05:30",
-    "exit_price": 195.87,
-    "exit_time": "2025-10-23T12:30:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 1961.6462000000004,
+    "entry_price": 320.31999999999994,
+    "entry_time": "2025-10-14T14:00:00+05:30",
+    "exit_price": 256.0,
+    "exit_time": "2025-10-15T09:30:00+05:30",
+    "exit_reason": "STOP_LOSS",
+    "realized_pnl": -1286.3999999999987,
     "qty": 1
   },
   {
@@ -598,43 +411,32 @@
     "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
     "entry_price": 40.490449999999996,
     "entry_time": "2025-10-23T14:45:00+05:30",
-    "exit_price": 190.45,
+    "exit_price": 56.63,
     "exit_time": "2025-10-24T09:30:00+05:30",
     "exit_reason": "TAKE_PROFIT",
-    "realized_pnl": 2999.191,
+    "realized_pnl": 322.79100000000017,
     "qty": 1
   },
   {
     "symbol": "SENSEX84600PE",
     "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 544.9243799999999,
-    "entry_time": "2025-10-24T09:45:00+05:30",
-    "exit_price": 617.7,
-    "exit_time": "2025-10-24T11:45:00+05:30",
+    "entry_price": 553.76321,
+    "entry_time": "2025-10-24T10:00:00+05:30",
+    "exit_price": 627.29,
+    "exit_time": "2025-10-24T12:00:00+05:30",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 1455.5124000000023,
+    "realized_pnl": 1470.5358,
     "qty": 1
   },
   {
     "symbol": "SENSEX84500PE",
     "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 568.6180499999999,
-    "entry_time": "2025-10-24T11:45:00+05:30",
-    "exit_price": 643.45,
-    "exit_time": "2025-10-24T13:45:00+05:30",
+    "entry_price": 577.7271499999999,
+    "entry_time": "2025-10-24T12:00:00+05:30",
+    "exit_price": 653.3,
+    "exit_time": "2025-10-24T14:00:00+05:30",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 1496.6390000000024,
-    "qty": 1
-  },
-  {
-    "symbol": "SENSEX84600PE",
-    "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 321.19086999999996,
-    "entry_time": "2025-10-28T12:15:00+05:30",
-    "exit_price": 320.48,
-    "exit_time": "2025-10-28T14:15:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -14.217399999998861,
+    "realized_pnl": 1511.4570000000003,
     "qty": 1
   },
   {
@@ -653,10 +455,10 @@
     "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
     "entry_price": 89.66957999999998,
     "entry_time": "2025-10-30T11:30:00+05:30",
-    "exit_price": 127.39,
+    "exit_price": 125.41199999999999,
     "exit_time": "2025-10-30T13:30:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 754.4084000000004,
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 714.8484000000002,
     "qty": 1
   },
   {
@@ -770,50 +572,6 @@
     "qty": 1
   },
   {
-    "symbol": "SENSEX83400PE",
-    "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 408.28788,
-    "entry_time": "2025-11-10T12:30:00+05:30",
-    "exit_price": 355.57,
-    "exit_time": "2025-11-10T14:30:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -1054.3575999999996,
-    "qty": 1
-  },
-  {
-    "symbol": "SENSEX83800PE",
-    "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 344.90455999999995,
-    "entry_time": "2025-11-11T12:15:00+05:30",
-    "exit_price": 312.52,
-    "exit_time": "2025-11-11T14:15:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -647.6911999999993,
-    "qty": 1
-  },
-  {
-    "symbol": "SENSEX84500PE",
-    "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 103.41331,
-    "entry_time": "2025-11-13T10:30:00+05:30",
-    "exit_price": 86.17,
-    "exit_time": "2025-11-13T12:30:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -344.8661999999999,
-    "qty": 1
-  },
-  {
-    "symbol": "SENSEX84500PE",
-    "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 86.25617,
-    "entry_time": "2025-11-13T12:30:00+05:30",
-    "exit_price": 68.936,
-    "exit_time": "2025-11-13T14:00:00+05:30",
-    "exit_reason": "STOP_LOSS",
-    "realized_pnl": -346.4033999999998,
-    "qty": 1
-  },
-  {
     "symbol": "SENSEX84100PE",
     "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
     "entry_price": 564.2737099999999,
@@ -825,25 +583,14 @@
     "qty": 1
   },
   {
-    "symbol": "SENSEX85000PE",
-    "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 337.46712999999994,
-    "entry_time": "2025-11-18T10:00:00+05:30",
-    "exit_price": 400.26,
-    "exit_time": "2025-11-18T12:00:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 1255.857400000001,
-    "qty": 1
-  },
-  {
     "symbol": "SENSEX84800PE",
     "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
     "entry_price": 344.23389,
     "entry_time": "2025-11-18T13:30:00+05:30",
-    "exit_price": 310.77,
+    "exit_price": 344.23389,
     "exit_time": "2025-11-19T09:30:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -669.2777999999998,
+    "exit_reason": "TRAILING_STOP",
+    "realized_pnl": 0.0,
     "qty": 1
   },
   {
@@ -855,17 +602,6 @@
     "exit_time": "2025-11-19T10:45:00+05:30",
     "exit_reason": "STOP_LOSS",
     "realized_pnl": -1030.406399999999,
-    "qty": 1
-  },
-  {
-    "symbol": "SENSEX85600PE",
-    "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 116.98687,
-    "entry_time": "2025-11-20T12:15:00+05:30",
-    "exit_price": 93.49600000000001,
-    "exit_time": "2025-11-20T13:15:00+05:30",
-    "exit_reason": "STOP_LOSS",
-    "realized_pnl": -469.81739999999974,
     "qty": 1
   },
   {
@@ -946,58 +682,14 @@
     "qty": 1
   },
   {
-    "symbol": "SENSEX85700PE",
-    "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 89.35926999999998,
-    "entry_time": "2025-11-27T11:00:00+05:30",
-    "exit_price": 71.416,
-    "exit_time": "2025-11-27T12:45:00+05:30",
-    "exit_reason": "STOP_LOSS",
-    "realized_pnl": -358.8653999999997,
-    "qty": 1
-  },
-  {
-    "symbol": "SENSEX85800PE",
-    "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 577.2566799999998,
-    "entry_time": "2025-11-28T10:15:00+05:30",
-    "exit_price": 590.27,
-    "exit_time": "2025-11-28T12:15:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 260.2664000000027,
-    "qty": 1
-  },
-  {
-    "symbol": "SENSEX85700PE",
-    "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 544.6641199999999,
-    "entry_time": "2025-11-28T12:30:00+05:30",
-    "exit_price": 557.21,
-    "exit_time": "2025-11-28T14:30:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 250.9176000000025,
-    "qty": 1
-  },
-  {
-    "symbol": "SENSEX86000PE",
-    "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 413.74332999999996,
-    "entry_time": "2025-12-01T10:15:00+05:30",
-    "exit_price": 484.98,
-    "exit_time": "2025-12-01T12:15:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 1424.7334000000012,
-    "qty": 1
-  },
-  {
     "symbol": "SENSEX85800PE",
     "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
     "entry_price": 427.24681999999996,
     "entry_time": "2025-12-01T13:30:00+05:30",
-    "exit_price": 576.8199999999999,
+    "exit_price": 597.548,
     "exit_time": "2025-12-02T09:30:00+05:30",
     "exit_reason": "TAKE_PROFIT",
-    "realized_pnl": 2991.4635999999996,
+    "realized_pnl": 3406.023600000001,
     "qty": 1
   },
   {
@@ -1093,10 +785,10 @@
     "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
     "entry_price": 391.89149999999995,
     "entry_time": "2025-12-08T13:45:00+05:30",
-    "exit_price": 541.5,
+    "exit_price": 548.0999999999999,
     "exit_time": "2025-12-09T09:30:00+05:30",
     "exit_reason": "TAKE_PROFIT",
-    "realized_pnl": 2992.170000000001,
+    "realized_pnl": 3124.169999999999,
     "qty": 1
   },
   {
@@ -1141,17 +833,6 @@
     "exit_time": "2025-12-10T13:30:00+05:30",
     "exit_reason": "TIME_EXIT",
     "realized_pnl": 708.0736000000002,
-    "qty": 1
-  },
-  {
-    "symbol": "SENSEX84600PE",
-    "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 72.65257999999999,
-    "entry_time": "2025-12-11T12:15:00+05:30",
-    "exit_price": 58.064,
-    "exit_time": "2025-12-11T12:45:00+05:30",
-    "exit_reason": "STOP_LOSS",
-    "realized_pnl": -291.7715999999997,
     "qty": 1
   },
   {
@@ -1232,58 +913,25 @@
     "qty": 1
   },
   {
-    "symbol": "SENSEX84900PE",
-    "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 584.3637799999999,
-    "entry_time": "2025-12-19T12:30:00+05:30",
-    "exit_price": 556.37,
-    "exit_time": "2025-12-19T14:30:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -559.875599999998,
-    "qty": 1
-  },
-  {
-    "symbol": "SENSEX85700PE",
-    "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 356.81645999999995,
-    "entry_time": "2025-12-23T10:15:00+05:30",
-    "exit_price": 384.68,
-    "exit_time": "2025-12-23T12:15:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 557.2708000000011,
-    "qty": 1
-  },
-  {
-    "symbol": "SENSEX85600PE",
-    "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 341.0507099999999,
-    "entry_time": "2025-12-23T12:45:00+05:30",
-    "exit_price": 368.16,
-    "exit_time": "2025-12-23T14:45:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 542.185800000002,
-    "qty": 1
-  },
-  {
     "symbol": "SENSEX85500PE",
     "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 259.17892,
-    "entry_time": "2025-12-24T12:30:00+05:30",
-    "exit_price": 280.62,
-    "exit_time": "2025-12-24T14:30:00+05:30",
+    "entry_price": 261.83156999999994,
+    "entry_time": "2025-12-24T12:45:00+05:30",
+    "exit_price": 283.4,
+    "exit_time": "2025-12-24T14:45:00+05:30",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 428.8216,
+    "realized_pnl": 431.3686000000007,
     "qty": 1
   },
   {
     "symbol": "SENSEX85400PE",
     "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 230.10987999999998,
-    "entry_time": "2025-12-24T14:30:00+05:30",
-    "exit_price": 379.88,
+    "entry_price": 232.57233999999997,
+    "entry_time": "2025-12-24T14:45:00+05:30",
+    "exit_price": 325.276,
     "exit_time": "2025-12-26T09:30:00+05:30",
     "exit_reason": "TAKE_PROFIT",
-    "realized_pnl": 2995.4024000000004,
+    "realized_pnl": 1854.0732000000007,
     "qty": 1
   },
   {
@@ -1342,47 +990,14 @@
     "qty": 1
   },
   {
-    "symbol": "SENSEX85200PE",
-    "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 94.20410999999999,
-    "entry_time": "2026-01-01T10:15:00+05:30",
-    "exit_price": 80.04,
-    "exit_time": "2026-01-01T12:15:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -283.2821999999996,
-    "qty": 1
-  },
-  {
-    "symbol": "SENSEX85200PE",
-    "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 77.89781999999998,
-    "entry_time": "2026-01-01T12:30:00+05:30",
-    "exit_price": 62.256,
-    "exit_time": "2026-01-01T14:00:00+05:30",
-    "exit_reason": "STOP_LOSS",
-    "realized_pnl": -312.8363999999996,
-    "qty": 1
-  },
-  {
     "symbol": "SENSEX85500PE",
     "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 394.14374999999995,
-    "entry_time": "2026-01-05T12:30:00+05:30",
-    "exit_price": 425.83,
-    "exit_time": "2026-01-05T14:30:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 633.7250000000006,
-    "qty": 1
-  },
-  {
-    "symbol": "SENSEX85500PE",
-    "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 426.25582999999995,
-    "entry_time": "2026-01-05T14:30:00+05:30",
+    "entry_price": 422.15173,
+    "entry_time": "2026-01-05T14:15:00+05:30",
     "exit_price": 431.54,
     "exit_time": "2026-01-06T09:30:00+05:30",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 105.68340000000148,
+    "realized_pnl": 187.76540000000068,
     "qty": 1
   },
   {
@@ -1423,21 +1038,21 @@
     "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
     "entry_price": 146.62648,
     "entry_time": "2026-01-08T09:30:00+05:30",
-    "exit_price": 265.93,
-    "exit_time": "2026-01-08T11:30:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 2386.0704000000005,
+    "exit_price": 205.07199999999997,
+    "exit_time": "2026-01-08T10:45:00+05:30",
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 1168.9103999999998,
     "qty": 1
   },
   {
     "symbol": "SENSEX84600PE",
     "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 124.11398999999999,
-    "entry_time": "2026-01-08T11:30:00+05:30",
-    "exit_price": 250.66,
-    "exit_time": "2026-01-08T13:30:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 2530.9202,
+    "entry_price": 94.89479999999999,
+    "entry_time": "2026-01-08T10:45:00+05:30",
+    "exit_price": 132.72,
+    "exit_time": "2026-01-08T11:45:00+05:30",
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 756.5040000000001,
     "qty": 1
   },
   {
@@ -1485,17 +1100,6 @@
     "qty": 1
   },
   {
-    "symbol": "SENSEX84000PE",
-    "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 320.74042,
-    "entry_time": "2026-01-13T10:00:00+05:30",
-    "exit_price": 396.77,
-    "exit_time": "2026-01-13T12:00:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 1520.5916000000002,
-    "qty": 1
-  },
-  {
     "symbol": "SENSEX83900PE",
     "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
     "entry_price": 344.8445,
@@ -1504,6 +1108,17 @@
     "exit_time": "2026-01-13T14:00:00+05:30",
     "exit_reason": "TIME_EXIT",
     "realized_pnl": 1590.1100000000008,
+    "qty": 1
+  },
+  {
+    "symbol": "SENSEX83700PE",
+    "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
+    "entry_price": 320.06974999999994,
+    "entry_time": "2026-01-13T14:00:00+05:30",
+    "exit_price": 439.88,
+    "exit_time": "2026-01-14T09:30:00+05:30",
+    "exit_reason": "TIME_EXIT",
+    "realized_pnl": 2396.205000000001,
     "qty": 1
   },
   {
@@ -1526,17 +1141,6 @@
     "exit_time": "2026-01-14T14:30:00+05:30",
     "exit_reason": "TIME_EXIT",
     "realized_pnl": -86.3997999999998,
-    "qty": 1
-  },
-  {
-    "symbol": "SENSEX83600PE",
-    "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 530.75022,
-    "entry_time": "2026-01-16T10:45:00+05:30",
-    "exit_price": 545.73,
-    "exit_time": "2026-01-16T12:45:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 299.5956000000001,
     "qty": 1
   },
   {
@@ -1577,21 +1181,21 @@
     "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
     "entry_price": 345.93558999999993,
     "entry_time": "2026-01-20T09:30:00+05:30",
-    "exit_price": 495.59,
-    "exit_time": "2026-01-20T11:15:00+05:30",
+    "exit_price": 483.8259999999999,
+    "exit_time": "2026-01-20T11:00:00+05:30",
     "exit_reason": "TAKE_PROFIT",
-    "realized_pnl": 2993.088200000001,
+    "realized_pnl": 2757.8081999999995,
     "qty": 1
   },
   {
     "symbol": "SENSEX82900PE",
     "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 344.50416,
-    "entry_time": "2026-01-20T11:15:00+05:30",
-    "exit_price": 494.16,
-    "exit_time": "2026-01-20T13:00:00+05:30",
+    "entry_price": 323.54322,
+    "entry_time": "2026-01-20T11:00:00+05:30",
+    "exit_price": 452.508,
+    "exit_time": "2026-01-20T12:30:00+05:30",
     "exit_reason": "TAKE_PROFIT",
-    "realized_pnl": 2993.1168000000002,
+    "realized_pnl": 2579.2955999999995,
     "qty": 1
   },
   {
@@ -1617,25 +1221,25 @@
     "qty": 1
   },
   {
-    "symbol": "SENSEX82400PE",
+    "symbol": "SENSEX82300PE",
     "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 95.37527999999999,
-    "entry_time": "2026-01-22T10:45:00+05:30",
-    "exit_price": 95.94,
-    "exit_time": "2026-01-22T12:45:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 11.294400000000167,
+    "entry_price": 36.80677,
+    "entry_time": "2026-01-22T14:30:00+05:30",
+    "exit_price": 29.416000000000004,
+    "exit_time": "2026-01-22T15:00:00+05:30",
+    "exit_reason": "STOP_LOSS",
+    "realized_pnl": -147.81539999999993,
     "qty": 1
   },
   {
-    "symbol": "SENSEX82400PE",
+    "symbol": "SENSEX82300PE",
     "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 96.03593999999998,
-    "entry_time": "2026-01-22T12:45:00+05:30",
-    "exit_price": 93.57,
-    "exit_time": "2026-01-22T14:45:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -49.31879999999978,
+    "entry_price": 28.188159999999996,
+    "entry_time": "2026-01-22T15:00:00+05:30",
+    "exit_price": 22.528000000000002,
+    "exit_time": "2026-01-22T15:15:00+05:30",
+    "exit_reason": "STOP_LOSS",
+    "realized_pnl": -113.20319999999988,
     "qty": 1
   },
   {
@@ -1672,17 +1276,6 @@
     "qty": 1
   },
   {
-    "symbol": "SENSEX82500PE",
-    "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 104.75465,
-    "entry_time": "2026-01-29T12:15:00+05:30",
-    "exit_price": 83.72000000000001,
-    "exit_time": "2026-01-29T13:00:00+05:30",
-    "exit_reason": "STOP_LOSS",
-    "realized_pnl": -420.6929999999997,
-    "qty": 1
-  },
-  {
     "symbol": "SENSEX82000PE",
     "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
     "entry_price": 560.14959,
@@ -1705,17 +1298,6 @@
     "qty": 1
   },
   {
-    "symbol": "SENSEX85000PE",
-    "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 338.92858999999993,
-    "entry_time": "2026-02-03T10:30:00+05:30",
-    "exit_price": 488.59,
-    "exit_time": "2026-02-03T11:45:00+05:30",
-    "exit_reason": "TAKE_PROFIT",
-    "realized_pnl": 2993.228200000001,
-    "qty": 1
-  },
-  {
     "symbol": "SENSEX83300PE",
     "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
     "entry_price": 247.92767999999998,
@@ -1731,21 +1313,21 @@
     "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
     "entry_price": 116.74662999999998,
     "entry_time": "2026-02-05T12:00:00+05:30",
-    "exit_price": 200.24,
-    "exit_time": "2026-02-05T14:00:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 1669.8674000000005,
+    "exit_price": 163.28199999999998,
+    "exit_time": "2026-02-05T13:30:00+05:30",
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 930.7074,
     "qty": 1
   },
   {
     "symbol": "SENSEX83400PE",
     "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 57.407349999999994,
-    "entry_time": "2026-02-05T14:00:00+05:30",
-    "exit_price": 207.35,
-    "exit_time": "2026-02-06T09:30:00+05:30",
+    "entry_price": 50.37031999999999,
+    "entry_time": "2026-02-05T13:30:00+05:30",
+    "exit_price": 70.448,
+    "exit_time": "2026-02-05T14:45:00+05:30",
     "exit_reason": "TAKE_PROFIT",
-    "realized_pnl": 2998.853,
+    "realized_pnl": 401.5536,
     "qty": 1
   },
   {
@@ -1768,39 +1350,6 @@
     "exit_time": "2026-02-06T14:15:00+05:30",
     "exit_reason": "TIME_EXIT",
     "realized_pnl": -1009.2633999999975,
-    "qty": 1
-  },
-  {
-    "symbol": "SENSEX84100PE",
-    "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 381.19080999999994,
-    "entry_time": "2026-02-09T11:00:00+05:30",
-    "exit_price": 398.31,
-    "exit_time": "2026-02-09T13:00:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 342.3838000000012,
-    "qty": 1
-  },
-  {
-    "symbol": "SENSEX84200PE",
-    "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 311.34102999999993,
-    "entry_time": "2026-02-10T12:30:00+05:30",
-    "exit_price": 301.27,
-    "exit_time": "2026-02-10T14:30:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -201.420599999999,
-    "qty": 1
-  },
-  {
-    "symbol": "SENSEX84300PE",
-    "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 228.27804999999998,
-    "entry_time": "2026-02-11T10:15:00+05:30",
-    "exit_price": 245.12,
-    "exit_time": "2026-02-11T12:15:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 336.8390000000005,
     "qty": 1
   },
   {
@@ -1859,36 +1408,25 @@
     "qty": 1
   },
   {
-    "symbol": "SENSEX83600PE",
-    "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 215.84562999999997,
-    "entry_time": "2026-02-18T12:15:00+05:30",
-    "exit_price": 189.13,
-    "exit_time": "2026-02-18T14:15:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -534.3125999999995,
-    "qty": 1
-  },
-  {
-    "symbol": "SENSEX83800PE",
-    "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 96.24615,
-    "entry_time": "2026-02-19T09:45:00+05:30",
-    "exit_price": 246.15,
-    "exit_time": "2026-02-19T11:00:00+05:30",
-    "exit_reason": "TAKE_PROFIT",
-    "realized_pnl": 2998.077,
-    "qty": 1
-  },
-  {
     "symbol": "SENSEX83500PE",
     "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
     "entry_price": 85.44536,
     "entry_time": "2026-02-19T11:00:00+05:30",
-    "exit_price": 235.36,
-    "exit_time": "2026-02-19T12:15:00+05:30",
+    "exit_price": 119.50399999999999,
+    "exit_time": "2026-02-19T11:30:00+05:30",
     "exit_reason": "TAKE_PROFIT",
-    "realized_pnl": 2998.2928,
+    "realized_pnl": 681.1727999999999,
+    "qty": 1
+  },
+  {
+    "symbol": "SENSEX83400PE",
+    "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
+    "entry_price": 89.66957999999998,
+    "entry_time": "2026-02-19T11:30:00+05:30",
+    "exit_price": 125.41199999999999,
+    "exit_time": "2026-02-19T12:00:00+05:30",
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 714.8484000000002,
     "qty": 1
   },
   {
@@ -1907,21 +1445,21 @@
     "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
     "entry_price": 319.04873,
     "entry_time": "2026-02-24T09:30:00+05:30",
-    "exit_price": 467.11,
-    "exit_time": "2026-02-24T11:30:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 2961.2254000000007,
+    "exit_price": 446.222,
+    "exit_time": "2026-02-24T11:15:00+05:30",
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 2543.4654,
     "qty": 1
   },
   {
-    "symbol": "SENSEX82700PE",
+    "symbol": "SENSEX82800PE",
     "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 306.38607999999994,
-    "entry_time": "2026-02-24T11:30:00+05:30",
-    "exit_price": 451.39,
-    "exit_time": "2026-02-24T13:30:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 2900.0784000000012,
+    "entry_price": 338.18784999999997,
+    "entry_time": "2026-02-24T11:15:00+05:30",
+    "exit_price": 472.99,
+    "exit_time": "2026-02-24T13:15:00+05:30",
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 2696.0430000000006,
     "qty": 1
   },
   {
@@ -1960,12 +1498,12 @@
   {
     "symbol": "SENSEX82300PE",
     "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 71.86179,
-    "entry_time": "2026-02-26T12:15:00+05:30",
-    "exit_price": 66.72,
-    "exit_time": "2026-02-26T14:15:00+05:30",
+    "entry_price": 71.31123999999998,
+    "entry_time": "2026-02-26T12:45:00+05:30",
+    "exit_price": 63.38,
+    "exit_time": "2026-02-26T14:45:00+05:30",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": -102.8358,
+    "realized_pnl": -158.62479999999962,
     "qty": 1
   },
   {
@@ -1973,10 +1511,10 @@
     "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
     "entry_price": 551.49094,
     "entry_time": "2026-02-27T09:30:00+05:30",
-    "exit_price": 700.94,
+    "exit_price": 712.06,
     "exit_time": "2026-02-27T11:30:00+05:30",
-    "exit_reason": "TAKE_PROFIT",
-    "realized_pnl": 2988.9812000000006,
+    "exit_reason": "TIME_EXIT",
+    "realized_pnl": 3211.3811999999984,
     "qty": 1
   },
   {
@@ -1984,10 +1522,10 @@
     "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
     "entry_price": 554.8142599999999,
     "entry_time": "2026-02-27T11:30:00+05:30",
-    "exit_price": 704.26,
+    "exit_price": 716.36,
     "exit_time": "2026-02-27T13:30:00+05:30",
-    "exit_reason": "TAKE_PROFIT",
-    "realized_pnl": 2988.9148000000023,
+    "exit_reason": "TIME_EXIT",
+    "realized_pnl": 3230.9148000000027,
     "qty": 1
   },
   {
@@ -2068,25 +1606,14 @@
     "qty": 1
   },
   {
-    "symbol": "SENSEX78300PE",
+    "symbol": "SENSEX78200PE",
     "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 293.34305,
-    "entry_time": "2026-03-10T10:45:00+05:30",
-    "exit_price": 320.25,
-    "exit_time": "2026-03-10T12:45:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 538.1389999999999,
-    "qty": 1
-  },
-  {
-    "symbol": "SENSEX78300PE",
-    "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 324.0837599999999,
-    "entry_time": "2026-03-10T13:00:00+05:30",
-    "exit_price": 352.73,
-    "exit_time": "2026-03-10T15:00:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 572.9248000000018,
+    "entry_price": 302.5122099999999,
+    "entry_time": "2026-03-10T15:00:00+05:30",
+    "exit_price": 241.768,
+    "exit_time": "2026-03-11T09:30:00+05:30",
+    "exit_reason": "STOP_LOSS",
+    "realized_pnl": -1214.8841999999986,
     "qty": 1
   },
   {
@@ -2094,21 +1621,21 @@
     "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
     "entry_price": 230.49025999999998,
     "entry_time": "2026-03-11T09:30:00+05:30",
-    "exit_price": 380.26,
-    "exit_time": "2026-03-11T10:45:00+05:30",
+    "exit_price": 322.364,
+    "exit_time": "2026-03-11T10:15:00+05:30",
     "exit_reason": "TAKE_PROFIT",
-    "realized_pnl": 2995.3948,
+    "realized_pnl": 1837.4748,
     "qty": 1
   },
   {
-    "symbol": "SENSEX77900PE",
+    "symbol": "SENSEX78000PE",
     "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 222.94271999999998,
-    "entry_time": "2026-03-11T10:45:00+05:30",
-    "exit_price": 372.72,
-    "exit_time": "2026-03-11T12:00:00+05:30",
+    "entry_price": 216.11589999999998,
+    "entry_time": "2026-03-11T10:15:00+05:30",
+    "exit_price": 302.26,
+    "exit_time": "2026-03-11T11:00:00+05:30",
     "exit_reason": "TAKE_PROFIT",
-    "realized_pnl": 2995.545600000001,
+    "realized_pnl": 1722.882,
     "qty": 1
   },
   {
@@ -2116,10 +1643,10 @@
     "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
     "entry_price": 133.27313999999998,
     "entry_time": "2026-03-12T09:30:00+05:30",
-    "exit_price": 187.77,
+    "exit_price": 186.39599999999996,
     "exit_time": "2026-03-12T11:30:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 1089.9372000000005,
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 1062.4571999999994,
     "qty": 1
   },
   {
@@ -2127,10 +1654,10 @@
     "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
     "entry_price": 69.72966,
     "entry_time": "2026-03-12T11:30:00+05:30",
-    "exit_price": 102.98,
-    "exit_time": "2026-03-12T13:30:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 665.0068000000001,
+    "exit_price": 97.52399999999999,
+    "exit_time": "2026-03-12T13:15:00+05:30",
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 555.8867999999998,
     "qty": 1
   },
   {
@@ -2138,10 +1665,10 @@
     "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
     "entry_price": 494.31381999999996,
     "entry_time": "2026-03-13T09:30:00+05:30",
-    "exit_price": 643.8199999999999,
+    "exit_price": 644.03,
     "exit_time": "2026-03-13T11:30:00+05:30",
-    "exit_reason": "TAKE_PROFIT",
-    "realized_pnl": 2990.1235999999994,
+    "exit_reason": "TIME_EXIT",
+    "realized_pnl": 2994.3236,
     "qty": 1
   },
   {
@@ -2167,36 +1694,25 @@
     "qty": 1
   },
   {
-    "symbol": "SENSEX75900PE",
-    "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 276.71644,
-    "entry_time": "2026-03-17T12:15:00+05:30",
-    "exit_price": 240.78,
-    "exit_time": "2026-03-17T14:15:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -718.7287999999995,
-    "qty": 1
-  },
-  {
     "symbol": "SENSEX74700PE",
     "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
     "entry_price": 94.11401999999998,
     "entry_time": "2026-03-19T09:30:00+05:30",
-    "exit_price": 183.87,
-    "exit_time": "2026-03-19T11:30:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 1795.1196000000004,
+    "exit_price": 131.628,
+    "exit_time": "2026-03-19T10:30:00+05:30",
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 750.2796000000001,
     "qty": 1
   },
   {
-    "symbol": "SENSEX74500PE",
+    "symbol": "SENSEX74600PE",
     "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 66.47640999999999,
-    "entry_time": "2026-03-19T11:30:00+05:30",
-    "exit_price": 150.47,
-    "exit_time": "2026-03-19T13:30:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 1679.8718000000003,
+    "entry_price": 80.64056,
+    "entry_time": "2026-03-19T10:30:00+05:30",
+    "exit_price": 112.78399999999999,
+    "exit_time": "2026-03-19T11:30:00+05:30",
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 642.8688,
     "qty": 1
   },
   {
@@ -2226,10 +1742,10 @@
     "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
     "entry_price": 357.71736,
     "entry_time": "2026-03-23T09:30:00+05:30",
-    "exit_price": 507.36,
+    "exit_price": 500.304,
     "exit_time": "2026-03-23T11:15:00+05:30",
     "exit_reason": "TAKE_PROFIT",
-    "realized_pnl": 2992.8528000000006,
+    "realized_pnl": 2851.7327999999998,
     "qty": 1
   },
   {
@@ -2237,43 +1753,10 @@
     "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
     "entry_price": 357.36700999999994,
     "entry_time": "2026-03-23T11:15:00+05:30",
-    "exit_price": 507.01,
+    "exit_price": 499.81399999999996,
     "exit_time": "2026-03-23T13:00:00+05:30",
     "exit_reason": "TAKE_PROFIT",
-    "realized_pnl": 2992.859800000001,
-    "qty": 1
-  },
-  {
-    "symbol": "SENSEX74200PE",
-    "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 307.49719,
-    "entry_time": "2026-03-24T11:00:00+05:30",
-    "exit_price": 331.72,
-    "exit_time": "2026-03-24T13:00:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 484.45620000000076,
-    "qty": 1
-  },
-  {
-    "symbol": "SENSEX74100PE",
-    "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 284.69441,
-    "entry_time": "2026-03-24T13:15:00+05:30",
-    "exit_price": 307.8,
-    "exit_time": "2026-03-24T15:15:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 462.11180000000013,
-    "qty": 1
-  },
-  {
-    "symbol": "SENSEX75000PE",
-    "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 217.93771999999998,
-    "entry_time": "2026-03-25T12:30:00+05:30",
-    "exit_price": 174.17600000000002,
-    "exit_time": "2026-03-25T13:30:00+05:30",
-    "exit_reason": "STOP_LOSS",
-    "realized_pnl": -875.2343999999994,
+    "realized_pnl": 2848.9398000000006,
     "qty": 1
   },
   {
@@ -2281,21 +1764,21 @@
     "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
     "entry_price": 486.5560699999999,
     "entry_time": "2026-03-27T10:30:00+05:30",
-    "exit_price": 636.0699999999999,
-    "exit_time": "2026-03-27T12:00:00+05:30",
+    "exit_price": 680.4979999999999,
+    "exit_time": "2026-03-27T12:15:00+05:30",
     "exit_reason": "TAKE_PROFIT",
-    "realized_pnl": 2990.2786000000006,
+    "realized_pnl": 3878.8386,
     "qty": 1
   },
   {
-    "symbol": "SENSEX74300PE",
+    "symbol": "SENSEX74200PE",
     "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 496.42592999999994,
-    "entry_time": "2026-03-27T12:00:00+05:30",
-    "exit_price": 645.9300000000001,
-    "exit_time": "2026-03-27T13:30:00+05:30",
+    "entry_price": 499.7592599999999,
+    "entry_time": "2026-03-27T12:30:00+05:30",
+    "exit_price": 698.9639999999999,
+    "exit_time": "2026-03-27T14:15:00+05:30",
     "exit_reason": "TAKE_PROFIT",
-    "realized_pnl": 2990.0814000000028,
+    "realized_pnl": 3984.0948000000003,
     "qty": 1
   },
   {
@@ -2321,25 +1804,14 @@
     "qty": 1
   },
   {
-    "symbol": "SENSEX73600PE",
-    "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 205.73552999999998,
-    "entry_time": "2026-04-01T10:45:00+05:30",
-    "exit_price": 322.99,
-    "exit_time": "2026-04-01T12:45:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 2345.0894000000008,
-    "qty": 1
-  },
-  {
     "symbol": "SENSEX73200PE",
     "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
     "entry_price": 188.73855,
     "entry_time": "2026-04-01T14:15:00+05:30",
-    "exit_price": 338.55,
+    "exit_price": 263.97,
     "exit_time": "2026-04-02T09:30:00+05:30",
     "exit_reason": "TAKE_PROFIT",
-    "realized_pnl": 2996.2290000000003,
+    "realized_pnl": 1504.6290000000004,
     "qty": 1
   },
   {
@@ -2365,58 +1837,14 @@
     "qty": 1
   },
   {
-    "symbol": "SENSEX73800PE",
-    "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 356.84648999999996,
-    "entry_time": "2026-04-06T12:15:00+05:30",
-    "exit_price": 285.192,
-    "exit_time": "2026-04-06T14:00:00+05:30",
-    "exit_reason": "STOP_LOSS",
-    "realized_pnl": -1433.089799999999,
-    "qty": 1
-  },
-  {
-    "symbol": "SENSEX74200PE",
-    "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 305.00469999999996,
-    "entry_time": "2026-04-07T12:15:00+05:30",
-    "exit_price": 243.76,
-    "exit_time": "2026-04-07T13:15:00+05:30",
-    "exit_reason": "STOP_LOSS",
-    "realized_pnl": -1224.8939999999993,
-    "qty": 1
-  },
-  {
-    "symbol": "SENSEX77400PE",
-    "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 206.29609,
-    "entry_time": "2026-04-08T12:15:00+05:30",
-    "exit_price": 166.37,
-    "exit_time": "2026-04-08T14:15:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -798.5217999999998,
-    "qty": 1
-  },
-  {
     "symbol": "SENSEX76600PE",
     "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
     "entry_price": 10.40039,
     "entry_time": "2026-04-09T15:15:00+05:30",
-    "exit_price": 160.39,
+    "exit_price": 14.546,
     "exit_time": "2026-04-10T09:30:00+05:30",
     "exit_reason": "TAKE_PROFIT",
-    "realized_pnl": 2999.7922,
-    "qty": 1
-  },
-  {
-    "symbol": "SENSEX77300PE",
-    "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 493.79329999999993,
-    "entry_time": "2026-04-10T12:15:00+05:30",
-    "exit_price": 430.31,
-    "exit_time": "2026-04-10T14:15:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -1269.6659999999986,
+    "realized_pnl": 82.91219999999998,
     "qty": 1
   },
   {
@@ -2431,25 +1859,14 @@
     "qty": 1
   },
   {
-    "symbol": "SENSEX78600PE",
-    "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 125.39526999999998,
-    "entry_time": "2026-04-16T10:15:00+05:30",
-    "exit_price": 275.27,
-    "exit_time": "2026-04-16T12:15:00+05:30",
-    "exit_reason": "TAKE_PROFIT",
-    "realized_pnl": 2997.4946,
-    "qty": 1
-  },
-  {
     "symbol": "SENSEX78000PE",
     "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
     "entry_price": 29.309279999999998,
     "entry_time": "2026-04-16T15:15:00+05:30",
-    "exit_price": 179.28,
+    "exit_price": 40.992,
     "exit_time": "2026-04-17T09:30:00+05:30",
     "exit_reason": "TAKE_PROFIT",
-    "realized_pnl": 2999.4144,
+    "realized_pnl": 233.6544,
     "qty": 1
   },
   {
@@ -2464,25 +1881,14 @@
     "qty": 1
   },
   {
-    "symbol": "SENSEX78600PE",
-    "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 371.54116999999997,
-    "entry_time": "2026-04-20T10:30:00+05:30",
-    "exit_price": 389.3,
-    "exit_time": "2026-04-20T12:30:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 355.1766000000009,
-    "qty": 1
-  },
-  {
     "symbol": "SENSEX78800PE",
     "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
     "entry_price": 208.37816999999995,
     "entry_time": "2026-04-22T11:30:00+05:30",
-    "exit_price": 296.11,
+    "exit_price": 291.438,
     "exit_time": "2026-04-22T13:30:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 1754.6366000000012,
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 1661.1966000000007,
     "qty": 1
   },
   {
@@ -2490,10 +1896,10 @@
     "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
     "entry_price": 241.27102999999997,
     "entry_time": "2026-04-22T13:30:00+05:30",
-    "exit_price": 391.03,
+    "exit_price": 337.442,
     "exit_time": "2026-04-23T09:30:00+05:30",
     "exit_reason": "TAKE_PROFIT",
-    "realized_pnl": 2995.1794,
+    "realized_pnl": 1923.4194000000007,
     "qty": 1
   },
   {
@@ -2512,10 +1918,10 @@
     "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
     "entry_price": 110.89077999999999,
     "entry_time": "2026-04-23T11:30:00+05:30",
-    "exit_price": 159.32,
+    "exit_price": 155.09199999999998,
     "exit_time": "2026-04-23T13:30:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 968.5844,
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 884.0243999999998,
     "qty": 1
   },
   {
@@ -2563,17 +1969,6 @@
     "qty": 1
   },
   {
-    "symbol": "SENSEX77400PE",
-    "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 228.26803999999996,
-    "entry_time": "2026-04-29T12:30:00+05:30",
-    "exit_price": 188.64,
-    "exit_time": "2026-04-29T14:30:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -792.5607999999994,
-    "qty": 1
-  },
-  {
     "symbol": "SENSEX77000PE",
     "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
     "entry_price": 105.94583999999999,
@@ -2593,17 +1988,6 @@
     "exit_time": "2026-04-30T13:30:00+05:30",
     "exit_reason": "TIME_EXIT",
     "realized_pnl": -124.45639999999969,
-    "qty": 1
-  },
-  {
-    "symbol": "SENSEX77300PE",
-    "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 387.45706999999993,
-    "entry_time": "2026-05-04T12:30:00+05:30",
-    "exit_price": 385.07,
-    "exit_time": "2026-05-04T14:30:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -47.74139999999875,
     "qty": 1
   },
   {
@@ -2629,36 +2013,14 @@
     "qty": 1
   },
   {
-    "symbol": "SENSEX77700PE",
-    "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 224.18395999999998,
-    "entry_time": "2026-05-06T12:15:00+05:30",
-    "exit_price": 179.168,
-    "exit_time": "2026-05-06T13:30:00+05:30",
-    "exit_reason": "STOP_LOSS",
-    "realized_pnl": -900.3191999999996,
-    "qty": 1
-  },
-  {
-    "symbol": "SENSEX78300PE",
-    "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 128.29816999999997,
-    "entry_time": "2026-05-07T10:15:00+05:30",
-    "exit_price": 224.43,
-    "exit_time": "2026-05-07T12:15:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 1922.6366000000007,
-    "qty": 1
-  },
-  {
     "symbol": "SENSEX77800PE",
     "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
     "entry_price": 7.417409999999999,
     "entry_time": "2026-05-07T15:15:00+05:30",
-    "exit_price": 157.41,
+    "exit_price": 10.373999999999999,
     "exit_time": "2026-05-08T09:30:00+05:30",
     "exit_reason": "TAKE_PROFIT",
-    "realized_pnl": 2999.8518000000004,
+    "realized_pnl": 59.131799999999984,
     "qty": 1
   },
   {
@@ -2710,21 +2072,21 @@
     "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
     "entry_price": 278.94867,
     "entry_time": "2026-05-12T09:30:00+05:30",
-    "exit_price": 428.67,
-    "exit_time": "2026-05-12T11:00:00+05:30",
+    "exit_price": 390.138,
+    "exit_time": "2026-05-12T10:45:00+05:30",
     "exit_reason": "TAKE_PROFIT",
-    "realized_pnl": 2994.4266000000007,
+    "realized_pnl": 2223.7865999999995,
     "qty": 1
   },
   {
     "symbol": "SENSEX75400PE",
     "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 317.94762999999995,
-    "entry_time": "2026-05-12T11:00:00+05:30",
-    "exit_price": 467.63,
-    "exit_time": "2026-05-12T12:30:00+05:30",
+    "entry_price": 294.78448999999995,
+    "entry_time": "2026-05-12T10:45:00+05:30",
+    "exit_price": 412.286,
+    "exit_time": "2026-05-12T12:00:00+05:30",
     "exit_reason": "TAKE_PROFIT",
-    "realized_pnl": 2993.6474000000007,
+    "realized_pnl": 2350.030200000001,
     "qty": 1
   },
   {
@@ -2750,25 +2112,14 @@
     "qty": 1
   },
   {
-    "symbol": "SENSEX75500PE",
+    "symbol": "SENSEX75300PE",
     "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 515.34483,
-    "entry_time": "2026-05-15T10:00:00+05:30",
-    "exit_price": 557.49,
-    "exit_time": "2026-05-15T12:00:00+05:30",
+    "entry_price": 516.4959799999999,
+    "entry_time": "2026-05-15T14:45:00+05:30",
+    "exit_price": 631.43,
+    "exit_time": "2026-05-18T09:30:00+05:30",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 842.9034000000001,
-    "qty": 1
-  },
-  {
-    "symbol": "SENSEX75400PE",
-    "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 518.5280099999999,
-    "entry_time": "2026-05-15T12:30:00+05:30",
-    "exit_price": 560.88,
-    "exit_time": "2026-05-15T14:30:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 847.0398000000023,
+    "realized_pnl": 2298.6804000000006,
     "qty": 1
   },
   {
@@ -2794,25 +2145,14 @@
     "qty": 1
   },
   {
-    "symbol": "SENSEX75400PE",
-    "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 297.13683999999995,
-    "entry_time": "2026-05-19T10:15:00+05:30",
-    "exit_price": 337.16,
-    "exit_time": "2026-05-19T12:15:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 800.4632000000015,
-    "qty": 1
-  },
-  {
     "symbol": "SENSEX75300PE",
     "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 292.02173,
-    "entry_time": "2026-05-19T12:30:00+05:30",
-    "exit_price": 331.64,
-    "exit_time": "2026-05-19T14:30:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 792.3653999999999,
+    "entry_price": 321.67134999999996,
+    "entry_time": "2026-05-19T14:00:00+05:30",
+    "exit_price": 449.89,
+    "exit_time": "2026-05-20T09:30:00+05:30",
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 2564.3730000000005,
     "qty": 1
   },
   {
@@ -2827,58 +2167,36 @@
     "qty": 1
   },
   {
-    "symbol": "SENSEX75600PE",
-    "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 82.93284999999999,
-    "entry_time": "2026-05-21T10:15:00+05:30",
-    "exit_price": 169.84,
-    "exit_time": "2026-05-21T12:15:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 1738.1430000000003,
-    "qty": 1
-  },
-  {
     "symbol": "SENSEX75300PE",
     "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
     "entry_price": 49.28924,
     "entry_time": "2026-05-21T13:45:00+05:30",
-    "exit_price": 199.24,
-    "exit_time": "2026-05-22T09:30:00+05:30",
+    "exit_price": 68.93599999999999,
+    "exit_time": "2026-05-21T14:30:00+05:30",
     "exit_reason": "TAKE_PROFIT",
-    "realized_pnl": 2999.0152,
+    "realized_pnl": 392.9351999999999,
     "qty": 1
   },
   {
     "symbol": "SENSEX75300PE",
     "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 476.5961199999999,
-    "entry_time": "2026-05-22T12:30:00+05:30",
-    "exit_price": 452.86,
-    "exit_time": "2026-05-22T14:30:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -474.7223999999983,
+    "entry_price": 72.62254999999999,
+    "entry_time": "2026-05-21T14:30:00+05:30",
+    "exit_price": 101.57,
+    "exit_time": "2026-05-21T15:15:00+05:30",
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 578.9490000000001,
     "qty": 1
   },
   {
     "symbol": "SENSEX76100PE",
     "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 296.63633999999996,
-    "entry_time": "2026-05-26T12:30:00+05:30",
-    "exit_price": 331.88,
-    "exit_time": "2026-05-26T14:30:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 704.8732000000007,
-    "qty": 1
-  },
-  {
-    "symbol": "SENSEX76000PE",
-    "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 282.77249,
-    "entry_time": "2026-05-26T14:30:00+05:30",
-    "exit_price": 247.19,
+    "entry_price": 323.07275,
+    "entry_time": "2026-05-26T14:00:00+05:30",
+    "exit_price": 304.34,
     "exit_time": "2026-05-27T09:30:00+05:30",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": -711.6498000000001,
+    "realized_pnl": -374.6550000000002,
     "qty": 1
   },
   {
@@ -2908,21 +2226,21 @@
     "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
     "entry_price": 507.10659999999996,
     "entry_time": "2026-05-29T09:45:00+05:30",
-    "exit_price": 656.6,
-    "exit_time": "2026-05-29T11:15:00+05:30",
+    "exit_price": 709.24,
+    "exit_time": "2026-05-29T11:45:00+05:30",
     "exit_reason": "TAKE_PROFIT",
-    "realized_pnl": 2989.8680000000013,
+    "realized_pnl": 4042.668000000001,
     "qty": 1
   },
   {
-    "symbol": "SENSEX75600PE",
+    "symbol": "SENSEX75500PE",
     "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 506.64613999999995,
-    "entry_time": "2026-05-29T11:15:00+05:30",
-    "exit_price": 656.14,
-    "exit_time": "2026-05-29T12:45:00+05:30",
+    "entry_price": 506.48598,
+    "entry_time": "2026-05-29T11:45:00+05:30",
+    "exit_price": 708.372,
+    "exit_time": "2026-05-29T13:45:00+05:30",
     "exit_reason": "TAKE_PROFIT",
-    "realized_pnl": 2989.877200000001,
+    "realized_pnl": 4037.7203999999992,
     "qty": 1
   },
   {
@@ -2930,21 +2248,21 @@
     "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
     "entry_price": 366.03567,
     "entry_time": "2026-06-01T10:00:00+05:30",
-    "exit_price": 515.6700000000001,
-    "exit_time": "2026-06-01T12:00:00+05:30",
+    "exit_price": 511.938,
+    "exit_time": "2026-06-01T11:45:00+05:30",
     "exit_reason": "TAKE_PROFIT",
-    "realized_pnl": 2992.686600000002,
+    "realized_pnl": 2918.0466,
     "qty": 1
   },
   {
     "symbol": "SENSEX74800PE",
     "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 370.41004,
-    "entry_time": "2026-06-01T12:00:00+05:30",
-    "exit_price": 520.04,
-    "exit_time": "2026-06-01T14:00:00+05:30",
+    "entry_price": 351.59123999999997,
+    "entry_time": "2026-06-01T11:45:00+05:30",
+    "exit_price": 491.736,
+    "exit_time": "2026-06-01T13:30:00+05:30",
     "exit_reason": "TAKE_PROFIT",
-    "realized_pnl": 2992.5991999999997,
+    "realized_pnl": 2802.8952000000004,
     "qty": 1
   },
   {
@@ -2961,23 +2279,23 @@
   {
     "symbol": "SENSEX74500PE",
     "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 227.26703999999998,
-    "entry_time": "2026-06-03T10:45:00+05:30",
-    "exit_price": 255.66,
-    "exit_time": "2026-06-03T12:45:00+05:30",
+    "entry_price": 210.43021999999996,
+    "entry_time": "2026-06-03T09:30:00+05:30",
+    "exit_price": 237.53,
+    "exit_time": "2026-06-03T11:30:00+05:30",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 567.8592000000003,
+    "realized_pnl": 541.9956000000008,
     "qty": 1
   },
   {
     "symbol": "SENSEX74400PE",
     "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 210.62040999999996,
-    "entry_time": "2026-06-03T13:15:00+05:30",
-    "exit_price": 237.76,
-    "exit_time": "2026-06-03T15:15:00+05:30",
+    "entry_price": 188.40821999999997,
+    "entry_time": "2026-06-03T11:30:00+05:30",
+    "exit_price": 213.71,
+    "exit_time": "2026-06-03T13:30:00+05:30",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 542.7918000000005,
+    "realized_pnl": 506.0356000000007,
     "qty": 1
   },
   {
@@ -2992,17 +2310,6 @@
     "qty": 1
   },
   {
-    "symbol": "SENSEX74600PE",
-    "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 509.01850999999994,
-    "entry_time": "2026-06-05T10:15:00+05:30",
-    "exit_price": 572.99,
-    "exit_time": "2026-06-05T12:15:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 1279.4298000000015,
-    "qty": 1
-  },
-  {
     "symbol": "SENSEX74400PE",
     "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
     "entry_price": 504.47396999999995,
@@ -3011,6 +2318,17 @@
     "exit_time": "2026-06-05T15:15:00+05:30",
     "exit_reason": "TIME_EXIT",
     "realized_pnl": 1274.5206000000019,
+    "qty": 1
+  },
+  {
+    "symbol": "SENSEX74200PE",
+    "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
+    "entry_price": 469.7893199999999,
+    "entry_time": "2026-06-05T15:15:00+05:30",
+    "exit_price": 657.048,
+    "exit_time": "2026-06-08T09:30:00+05:30",
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 3745.173600000002,
     "qty": 1
   },
   {
@@ -3036,39 +2354,6 @@
     "qty": 1
   },
   {
-    "symbol": "SENSEX74000PE",
-    "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 289.18889999999993,
-    "entry_time": "2026-06-09T10:45:00+05:30",
-    "exit_price": 307.95,
-    "exit_time": "2026-06-09T12:45:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 375.2220000000011,
-    "qty": 1
-  },
-  {
-    "symbol": "SENSEX74000PE",
-    "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 313.1528399999999,
-    "entry_time": "2026-06-09T13:15:00+05:30",
-    "exit_price": 332.87,
-    "exit_time": "2026-06-09T15:15:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 394.34320000000184,
-    "qty": 1
-  },
-  {
-    "symbol": "SENSEX74000PE",
-    "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 216.12590999999998,
-    "entry_time": "2026-06-10T11:15:00+05:30",
-    "exit_price": 216.76,
-    "exit_time": "2026-06-10T13:15:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 12.681800000000294,
-    "qty": 1
-  },
-  {
     "symbol": "SENSEX73600PE",
     "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
     "entry_price": 94.02393,
@@ -3088,28 +2373,6 @@
     "exit_time": "2026-06-11T13:00:00+05:30",
     "exit_reason": "STOP_LOSS",
     "realized_pnl": -240.9587999999998,
-    "qty": 1
-  },
-  {
-    "symbol": "SENSEX76600PE",
-    "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 361.69132999999994,
-    "entry_time": "2026-06-15T10:45:00+05:30",
-    "exit_price": 439.2,
-    "exit_time": "2026-06-15T12:45:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 1550.173400000001,
-    "qty": 1
-  },
-  {
-    "symbol": "SENSEX77100PE",
-    "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 209.65944999999996,
-    "entry_time": "2026-06-17T12:15:00+05:30",
-    "exit_price": 197.71,
-    "exit_time": "2026-06-17T14:15:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": -238.98899999999912,
     "qty": 1
   },
   {
@@ -3135,58 +2398,25 @@
     "qty": 1
   },
   {
-    "symbol": "SENSEX77100PE",
-    "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 349.42907999999994,
-    "entry_time": "2026-06-22T11:00:00+05:30",
-    "exit_price": 359.45,
-    "exit_time": "2026-06-22T13:00:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 200.41840000000093,
-    "qty": 1
-  },
-  {
     "symbol": "SENSEX77000PE",
     "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
     "entry_price": 280.87058999999994,
     "entry_time": "2026-06-23T09:30:00+05:30",
-    "exit_price": 430.59,
-    "exit_time": "2026-06-23T11:30:00+05:30",
+    "exit_price": 392.82599999999996,
+    "exit_time": "2026-06-23T11:00:00+05:30",
     "exit_reason": "TAKE_PROFIT",
-    "realized_pnl": 2994.388200000001,
+    "realized_pnl": 2239.1082000000006,
     "qty": 1
   },
   {
     "symbol": "SENSEX76800PE",
     "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 326.01568999999995,
-    "entry_time": "2026-06-23T11:30:00+05:30",
-    "exit_price": 475.69,
-    "exit_time": "2026-06-23T13:30:00+05:30",
+    "entry_price": 289.98969999999997,
+    "entry_time": "2026-06-23T11:00:00+05:30",
+    "exit_price": 405.58,
+    "exit_time": "2026-06-23T12:30:00+05:30",
     "exit_reason": "TAKE_PROFIT",
-    "realized_pnl": 2993.486200000001,
-    "qty": 1
-  },
-  {
-    "symbol": "SENSEX77300PE",
-    "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 87.31723,
-    "entry_time": "2026-06-25T10:30:00+05:30",
-    "exit_price": 116.21,
-    "exit_time": "2026-06-25T12:30:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 577.8553999999999,
-    "qty": 1
-  },
-  {
-    "symbol": "SENSEX77200PE",
-    "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 63.37331,
-    "entry_time": "2026-06-25T12:30:00+05:30",
-    "exit_price": 83.96,
-    "exit_time": "2026-06-25T14:30:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 411.7338,
+    "realized_pnl": 2311.8060000000005,
     "qty": 1
   },
   {
@@ -3214,45 +2444,23 @@
   {
     "symbol": "SENSEX76900PE",
     "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 284.86457999999993,
-    "entry_time": "2026-06-30T10:00:00+05:30",
-    "exit_price": 373.66,
-    "exit_time": "2026-06-30T12:00:00+05:30",
+    "entry_price": 295.16486999999995,
+    "entry_time": "2026-06-30T10:15:00+05:30",
+    "exit_price": 385.88,
+    "exit_time": "2026-06-30T12:15:00+05:30",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 1775.9084000000018,
+    "realized_pnl": 1814.302600000001,
     "qty": 1
   },
   {
-    "symbol": "SENSEX76800PE",
+    "symbol": "SENSEX76700PE",
     "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 320.9706499999999,
-    "entry_time": "2026-06-30T12:00:00+05:30",
-    "exit_price": 416.37,
-    "exit_time": "2026-06-30T14:00:00+05:30",
+    "entry_price": 293.21292,
+    "entry_time": "2026-06-30T12:30:00+05:30",
+    "exit_price": 383.73,
+    "exit_time": "2026-06-30T14:30:00+05:30",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 1907.9870000000017,
-    "qty": 1
-  },
-  {
-    "symbol": "SENSEX78100PE",
-    "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 529.27875,
-    "entry_time": "2026-07-03T10:30:00+05:30",
-    "exit_price": 593.16,
-    "exit_time": "2026-07-03T12:30:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 1277.6250000000005,
-    "qty": 1
-  },
-  {
-    "symbol": "SENSEX78400PE",
-    "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 302.64233999999993,
-    "entry_time": "2026-07-07T10:15:00+05:30",
-    "exit_price": 348.99,
-    "exit_time": "2026-07-07T12:15:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 926.9532000000015,
+    "realized_pnl": 1810.3416000000004,
     "qty": 1
   },
   {
@@ -3260,32 +2468,21 @@
     "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
     "entry_price": 239.45921999999996,
     "entry_time": "2026-07-08T09:30:00+05:30",
-    "exit_price": 389.22,
-    "exit_time": "2026-07-08T10:45:00+05:30",
+    "exit_price": 334.90799999999996,
+    "exit_time": "2026-07-08T10:30:00+05:30",
     "exit_reason": "TAKE_PROFIT",
-    "realized_pnl": 2995.2156000000014,
+    "realized_pnl": 1908.9756,
     "qty": 1
   },
   {
     "symbol": "SENSEX77500PE",
     "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 225.20497999999998,
-    "entry_time": "2026-07-08T10:45:00+05:30",
-    "exit_price": 374.98,
-    "exit_time": "2026-07-08T12:00:00+05:30",
+    "entry_price": 199.07887999999997,
+    "entry_time": "2026-07-08T10:30:00+05:30",
+    "exit_price": 278.43199999999996,
+    "exit_time": "2026-07-08T11:15:00+05:30",
     "exit_reason": "TAKE_PROFIT",
-    "realized_pnl": 2995.500400000001,
-    "qty": 1
-  },
-  {
-    "symbol": "SENSEX76600PE",
-    "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 118.83871999999998,
-    "entry_time": "2026-07-09T09:30:00+05:30",
-    "exit_price": 94.976,
-    "exit_time": "2026-07-09T10:45:00+05:30",
-    "exit_reason": "STOP_LOSS",
-    "realized_pnl": -477.25439999999963,
+    "realized_pnl": 1587.0623999999998,
     "qty": 1
   },
   {
@@ -3344,47 +2541,47 @@
     "qty": 1
   },
   {
-    "symbol": "SENSEX77400PE",
+    "symbol": "SENSEX77200PE",
     "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 128.20808,
-    "entry_time": "2026-07-16T10:15:00+05:30",
-    "exit_price": 149.76,
-    "exit_time": "2026-07-16T12:15:00+05:30",
+    "entry_price": 224.53430999999998,
+    "entry_time": "2026-07-15T13:15:00+05:30",
+    "exit_price": 225.53,
+    "exit_time": "2026-07-15T15:15:00+05:30",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 431.0383999999999,
+    "realized_pnl": 19.913800000000492,
     "qty": 1
   },
   {
     "symbol": "SENSEX77300PE",
     "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 89.77968999999999,
-    "entry_time": "2026-07-16T12:30:00+05:30",
-    "exit_price": 102.33,
-    "exit_time": "2026-07-16T14:30:00+05:30",
+    "entry_price": 93.81371999999999,
+    "entry_time": "2026-07-16T13:15:00+05:30",
+    "exit_price": 113.53,
+    "exit_time": "2026-07-16T15:15:00+05:30",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 251.0062000000002,
+    "realized_pnl": 394.32560000000024,
     "qty": 1
   },
   {
-    "symbol": "SENSEX78100PE",
+    "symbol": "SENSEX77200PE",
     "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 366.72636,
-    "entry_time": "2026-07-20T09:45:00+05:30",
-    "exit_price": 440.66,
-    "exit_time": "2026-07-20T11:45:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 1478.6728000000005,
+    "entry_price": 30.1301,
+    "entry_time": "2026-07-16T15:15:00+05:30",
+    "exit_price": 42.14,
+    "exit_time": "2026-07-17T09:30:00+05:30",
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 240.19800000000004,
     "qty": 1
   },
   {
-    "symbol": "SENSEX77900PE",
+    "symbol": "SENSEX77800PE",
     "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 376.03566,
-    "entry_time": "2026-07-20T12:45:00+05:30",
-    "exit_price": 451.25,
-    "exit_time": "2026-07-20T14:45:00+05:30",
+    "entry_price": 380.76037999999994,
+    "entry_time": "2026-07-20T14:15:00+05:30",
+    "exit_price": 389.32,
+    "exit_time": "2026-07-21T09:30:00+05:30",
     "exit_reason": "TIME_EXIT",
-    "realized_pnl": 1504.2867999999999,
+    "realized_pnl": 171.19240000000104,
     "qty": 1
   },
   {
@@ -3414,21 +2611,21 @@
     "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
     "entry_price": 239.89965999999998,
     "entry_time": "2026-07-22T09:30:00+05:30",
-    "exit_price": 363.5,
-    "exit_time": "2026-07-22T11:30:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 2472.0068,
+    "exit_price": 335.524,
+    "exit_time": "2026-07-22T11:15:00+05:30",
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 1912.4868000000004,
     "qty": 1
   },
   {
-    "symbol": "SENSEX77100PE",
+    "symbol": "SENSEX77200PE",
     "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 195.30510999999998,
-    "entry_time": "2026-07-22T11:30:00+05:30",
-    "exit_price": 305.9,
-    "exit_time": "2026-07-22T13:30:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 2211.8977999999997,
+    "entry_price": 231.00077,
+    "entry_time": "2026-07-22T11:15:00+05:30",
+    "exit_price": 323.078,
+    "exit_time": "2026-07-22T13:00:00+05:30",
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 1841.5445999999997,
     "qty": 1
   },
   {
@@ -3465,61 +2662,6 @@
     "qty": 1
   },
   {
-    "symbol": "SENSEX76800PE",
-    "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 290.72042999999996,
-    "entry_time": "2026-07-28T09:45:00+05:30",
-    "exit_price": 300.86,
-    "exit_time": "2026-07-28T11:45:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 202.79140000000098,
-    "qty": 1
-  },
-  {
-    "symbol": "SENSEX76800PE",
-    "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 305.14483999999993,
-    "entry_time": "2026-07-28T12:30:00+05:30",
-    "exit_price": 315.6,
-    "exit_time": "2026-07-28T14:30:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 209.10320000000183,
-    "qty": 1
-  },
-  {
-    "symbol": "SENSEX77800PE",
-    "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 91.22112999999999,
-    "entry_time": "2026-07-30T12:15:00+05:30",
-    "exit_price": 72.904,
-    "exit_time": "2026-07-30T12:45:00+05:30",
-    "exit_reason": "STOP_LOSS",
-    "realized_pnl": -366.34259999999983,
-    "qty": 1
-  },
-  {
-    "symbol": "SENSEX78800PE",
-    "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 366.42605999999995,
-    "entry_time": "2026-08-03T10:45:00+05:30",
-    "exit_price": 405.7,
-    "exit_time": "2026-08-03T12:45:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 785.4788000000008,
-    "qty": 1
-  },
-  {
-    "symbol": "SENSEX79000PE",
-    "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 304.43413,
-    "entry_time": "2026-08-04T10:15:00+05:30",
-    "exit_price": 429.12,
-    "exit_time": "2026-08-04T12:15:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 2493.7174000000005,
-    "qty": 1
-  },
-  {
     "symbol": "SENSEX78600PE",
     "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
     "entry_price": 294.06377,
@@ -3528,17 +2670,6 @@
     "exit_time": "2026-08-05T09:30:00+05:30",
     "exit_reason": "STOP_LOSS",
     "realized_pnl": -1180.9553999999998,
-    "qty": 1
-  },
-  {
-    "symbol": "SENSEX79000PE",
-    "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 245.53528999999997,
-    "entry_time": "2026-08-05T10:30:00+05:30",
-    "exit_price": 335.73,
-    "exit_time": "2026-08-05T12:30:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 1803.8942000000009,
     "qty": 1
   },
   {
@@ -3553,14 +2684,14 @@
     "qty": 1
   },
   {
-    "symbol": "SENSEX78900PE",
+    "symbol": "SENSEX78600PE",
     "strategy": "SENSEX_HEIKIN_ASHI_BEARISH_1M_ATM",
-    "entry_price": 100.45034999999999,
-    "entry_time": "2026-08-06T12:15:00+05:30",
-    "exit_price": 80.28,
-    "exit_time": "2026-08-06T13:00:00+05:30",
+    "entry_price": 231.93169999999995,
+    "entry_time": "2026-08-05T15:15:00+05:30",
+    "exit_price": 185.36,
+    "exit_time": "2026-08-06T09:30:00+05:30",
     "exit_reason": "STOP_LOSS",
-    "realized_pnl": -403.4069999999997,
+    "realized_pnl": -931.4339999999987,
     "qty": 1
   },
   {

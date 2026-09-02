@@ -70,10 +70,10 @@
     "strategy": "NIFTY_SUPPORT_BOUNCE_5M_ITM",
     "entry_price": 109.47936999999999,
     "entry_time": "2025-09-16T12:20:00",
-    "exit_price": 160.57,
-    "exit_time": "2025-09-16T14:20:00",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 3320.8909500000004,
+    "exit_price": 153.118,
+    "exit_time": "2025-09-16T14:05:00",
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 2836.5109500000003,
     "qty": 1
   },
   {
@@ -620,10 +620,10 @@
     "strategy": "NIFTY_SUPPORT_BOUNCE_5M_ITM",
     "entry_price": 137.6375,
     "entry_time": "2026-02-02T11:25:00",
-    "exit_price": 212.17,
-    "exit_time": "2026-02-02T13:25:00",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 4844.6125,
+    "exit_price": 192.5,
+    "exit_time": "2026-02-02T13:00:00",
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 3566.062500000001,
     "qty": 1
   },
   {
@@ -664,10 +664,10 @@
     "strategy": "NIFTY_SUPPORT_BOUNCE_5M_ITM",
     "entry_price": 146.29614999999998,
     "entry_time": "2026-02-16T10:05:00",
-    "exit_price": 212.67,
-    "exit_time": "2026-02-16T12:05:00",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 4314.30025,
+    "exit_price": 204.60999999999999,
+    "exit_time": "2026-02-16T11:55:00",
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 3790.40025,
     "qty": 1
   },
   {
@@ -675,10 +675,10 @@
     "strategy": "NIFTY_SUPPORT_BOUNCE_5M_ITM",
     "entry_price": 141.84169999999997,
     "entry_time": "2026-02-16T12:20:00",
-    "exit_price": 207.34,
-    "exit_time": "2026-02-16T14:20:00",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 4257.389500000002,
+    "exit_price": 198.37999999999997,
+    "exit_time": "2026-02-16T14:05:00",
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 3674.9894999999997,
     "qty": 1
   },
   {
@@ -785,10 +785,10 @@
     "strategy": "NIFTY_SUPPORT_BOUNCE_5M_ITM",
     "entry_price": 141.46131999999997,
     "entry_time": "2026-03-16T10:10:00",
-    "exit_price": 219.35,
-    "exit_time": "2026-03-16T12:10:00",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 5062.764200000001,
+    "exit_price": 197.84799999999998,
+    "exit_time": "2026-03-16T11:40:00",
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 3665.134200000001,
     "qty": 1
   },
   {
@@ -796,10 +796,10 @@
     "strategy": "NIFTY_SUPPORT_BOUNCE_5M_ITM",
     "entry_price": 143.03288999999998,
     "entry_time": "2026-03-16T12:20:00",
-    "exit_price": 221.05,
-    "exit_time": "2026-03-16T14:20:00",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 5071.112150000002,
+    "exit_price": 200.04599999999996,
+    "exit_time": "2026-03-16T13:50:00",
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 3705.852149999999,
     "qty": 1
   },
   {
@@ -884,10 +884,10 @@
     "strategy": "NIFTY_SUPPORT_BOUNCE_5M_ITM",
     "entry_price": 96.78669,
     "entry_time": "2026-04-07T10:20:00",
-    "exit_price": 183.3,
-    "exit_time": "2026-04-07T12:20:00",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 5623.365150000001,
+    "exit_price": 135.36599999999999,
+    "exit_time": "2026-04-07T11:20:00",
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 2507.6551499999996,
     "qty": 1
   },
   {
@@ -895,10 +895,10 @@
     "strategy": "NIFTY_SUPPORT_BOUNCE_5M_ITM",
     "entry_price": 85.78569999999999,
     "entry_time": "2026-04-07T12:20:00",
-    "exit_price": 174.34,
-    "exit_time": "2026-04-07T14:20:00",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 5756.029500000001,
+    "exit_price": 119.97999999999999,
+    "exit_time": "2026-04-07T13:10:00",
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 2222.6295,
     "qty": 1
   },
   {
@@ -928,10 +928,10 @@
     "strategy": "NIFTY_SUPPORT_BOUNCE_5M_ITM",
     "entry_price": 119.72960999999998,
     "entry_time": "2026-04-13T11:25:00",
-    "exit_price": 181.68,
-    "exit_time": "2026-04-13T13:25:00",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 4026.7753500000017,
+    "exit_price": 167.45399999999998,
+    "exit_time": "2026-04-13T13:00:00",
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 3102.08535,
     "qty": 1
   },
   {
@@ -972,10 +972,10 @@
     "strategy": "NIFTY_SUPPORT_BOUNCE_5M_ITM",
     "entry_price": 81.10101999999999,
     "entry_time": "2026-04-21T12:20:00",
-    "exit_price": 141.71,
-    "exit_time": "2026-04-21T14:20:00",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 3939.583700000001,
+    "exit_price": 113.42799999999998,
+    "exit_time": "2026-04-21T13:30:00",
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 2101.2536999999993,
     "qty": 1
   },
   {
@@ -1115,10 +1115,21 @@
     "strategy": "NIFTY_SUPPORT_BOUNCE_5M_ITM",
     "entry_price": 100.90079999999999,
     "entry_time": "2026-06-02T10:50:00",
-    "exit_price": 178.63,
-    "exit_time": "2026-06-02T12:50:00",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 5052.398,
+    "exit_price": 141.11999999999998,
+    "exit_time": "2026-06-02T11:55:00",
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 2614.247999999999,
+    "qty": 1
+  },
+  {
+    "symbol": "NIFTY23250CE",
+    "strategy": "NIFTY_SUPPORT_BOUNCE_5M_ITM",
+    "entry_price": 109.41931,
+    "entry_time": "2026-06-02T12:20:00",
+    "exit_price": 153.034,
+    "exit_time": "2026-06-02T13:30:00",
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 2834.9548499999996,
     "qty": 1
   },
   {

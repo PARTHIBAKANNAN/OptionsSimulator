@@ -26,10 +26,10 @@
     "strategy": "SENSEX_MACD_BULLISH_1M_ATM",
     "entry_price": 77.38731,
     "entry_time": "2025-09-11T12:00:00+05:30",
-    "exit_price": 108.34,
+    "exit_price": 108.234,
     "exit_time": "2025-09-11T14:00:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 619.0538000000001,
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 616.9337999999999,
     "qty": 1
   },
   {
@@ -125,10 +125,10 @@
     "strategy": "SENSEX_MACD_BULLISH_1M_ATM",
     "entry_price": 234.83459999999997,
     "entry_time": "2025-11-19T10:30:00+05:30",
-    "exit_price": 332.65,
+    "exit_price": 328.44,
     "exit_time": "2025-11-19T12:30:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 1956.3080000000002,
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 1872.1080000000006,
     "qty": 1
   },
   {
@@ -169,10 +169,10 @@
     "strategy": "SENSEX_MACD_BULLISH_1M_ATM",
     "entry_price": 255.59533999999996,
     "entry_time": "2026-02-04T13:00:00+05:30",
-    "exit_price": 363.96,
+    "exit_price": 357.476,
     "exit_time": "2026-02-04T15:00:00+05:30",
-    "exit_reason": "TIME_EXIT",
-    "realized_pnl": 2167.2932,
+    "exit_reason": "TAKE_PROFIT",
+    "realized_pnl": 2037.6132000000007,
     "qty": 1
   },
   {
@@ -191,10 +191,10 @@
     "strategy": "SENSEX_MACD_BULLISH_1M_ATM",
     "entry_price": 308.92861999999997,
     "entry_time": "2026-04-07T12:15:00+05:30",
-    "exit_price": 458.62,
-    "exit_time": "2026-04-07T14:15:00+05:30",
+    "exit_price": 432.068,
+    "exit_time": "2026-04-07T13:45:00+05:30",
     "exit_reason": "TAKE_PROFIT",
-    "realized_pnl": 2993.8276000000005,
+    "realized_pnl": 2462.7876000000006,
     "qty": 1
   },
   {

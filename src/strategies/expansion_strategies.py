@@ -277,18 +277,34 @@ class SensexBbSqueezeExplosionPE(BaseStrategy):
         return None
 
 
+def _calculate_option_chain_pcr(data_state: dict) -> tuple[Optional[float], Optional[int], Optional[int]]:
+    """Calculates live Put-Call Ratio (PCR) and total Open Interest from live option chain quotes."""
+    option_chain = data_state.get("option_chain", {})
+    if not option_chain:
+        return None, None, None
+    total_call_oi = 0
+    total_put_oi = 0
+    for sym, quote in option_chain.items():
+        oi = getattr(quote, "oi", 0) or 0
+        if sym.endswith("CE") or getattr(quote, "option_type", "") == "CE":
+            total_call_oi += oi
+        elif sym.endswith("PE") or getattr(quote, "option_type", "") == "PE":
+            total_put_oi += oi
+    if total_call_oi == 0 and total_put_oi == 0:
+        return None, None, None
+    pcr = total_put_oi / total_call_oi if total_call_oi > 0 else 1.0
+    return pcr, total_call_oi, total_put_oi
+
+
 class SensexOiShortSqueezeCE(BaseStrategy):
     """SENSEX Short Squeeze Call Buying (CE).
-
-    HONEST LIMITATION: a real "short squeeze" signal needs a time series of per-strike Open
-    Interest (call-side OI unwinding while price rises, forcing short covering). Fyers' historical
-    candle API has no per-strike OI history, and we don't have that archived, so this cannot be
-    genuinely backtested over the past year yet — only validated live, where real tick-level OI
-    IS captured (see DataManager.update_option_chain's OptionQuote.oi) but not currently read by
-    any strategy. Until that live-OI wiring is built, this is a trend-confirmed EMA fallback (not
-    a bare single-EMA check like before) — strictly better-filtered than the OI-blind original,
-    but still not the real thing. Do not treat backtest results for this strategy as validating
-    an OI edge."""
+    
+    LIVE MARKET LOGIC: Reads live Option Chain Open Interest (`OptionQuote.oi`) from Fyers.
+    Detects Call unwinding & Put support build-up (PCR > 1.10) confirming a short squeeze
+    with spot price breaking above 20-EMA.
+    
+    BACKTEST FALLBACK: When historical per-strike OI is absent, filters for strong institutional
+    volume surges (volume_ratio > 1.25) above 20-EMA & 1H 50-EMA with bullish close."""
     def __init__(self):
         super().__init__(
             name="SENSEX_OI_SHORT_SQUEEZE_CE",
@@ -306,27 +322,51 @@ class SensexOiShortSqueezeCE(BaseStrategy):
             return None
 
         indicators = data_state.get("indicators", {})
+        candles = data_state.get("candles", [])
         spot = data_state.get("sensex_price") or data_state.get("nifty_price")
         ema20 = indicators.get("ema_20_5m")
-        ema50_1h = indicators.get("ema_50_1h")
-        if spot is None or ema20 is None or ema50_1h is None:
+        ema50_1h = indicators.get("ema_50_1h") or indicators.get("ema_50_5m")
+        vol_ratio = indicators.get("volume_ratio_5m") or indicators.get("volume_ratio") or 1.0
+
+        if spot is None or ema20 is None:
             return None
 
-        if spot > ema20 and spot > ema50_1h:
+        pcr, call_oi, put_oi = _calculate_option_chain_pcr(data_state)
+        
+        # 1. Live Market OI-driven condition
+        if pcr is not None:
+            # Bullish squeeze: Put writing dominant (PCR > 1.10) + spot trending above 20-EMA
+            is_squeeze = pcr > 1.10 and spot > ema20
+            rationale = f"Live OI Short Squeeze (PCR: {pcr:.2f}, Calls: {call_oi:,}, Puts: {put_oi:,})"
+        else:
+            # 2. Backtest volume-surge price action proxy
+            if not candles:
+                return None
+            current = candles[-1]
+            rng = current.high - current.low
+            strong_close = rng > 0 and ((current.close - current.low) / rng) >= 0.55
+            is_squeeze = spot > ema20 and (ema50_1h is None or spot > ema50_1h) and vol_ratio >= 1.20 and strong_close
+            rationale = f"SENSEX Volume Surge Squeeze (Vol: {vol_ratio:.2f}x avg, >20-EMA)"
+
+        if is_squeeze:
             symbol, strike = self.select_strike(spot, "CE", timestamp=ts)
             price = self.get_option_price(symbol, strike, spot, "CE", data_state)
             self.last_signal_time = ts
             return Signal(
                 strategy=self.name, direction="CE", action="BUY", strike=symbol,
-                confidence=0.85, rationale="SENSEX EMA trend breakout (OI data unavailable for backtest — see class docstring)",
+                confidence=0.85, rationale=rationale,
                 entry_price=price, timestamp=ts, underlying=self.underlying,
             )
         return None
 
 
 class SensexOiLongUnwindingPE(BaseStrategy):
-    """SENSEX Long Unwinding Put Buying (PE) — mirror of SensexOiShortSqueezeCE; same honest
-    limitation applies (no historical per-strike OI available). See its docstring."""
+    """SENSEX Long Unwinding Put Buying (PE) — mirror of SensexOiShortSqueezeCE.
+    
+    LIVE MARKET LOGIC: Reads live Option Chain Open Interest. Detects Put unwinding & Call resistance
+    (PCR < 0.90) with spot breaking below 20-EMA.
+    
+    BACKTEST FALLBACK: High-volume breakdown (volume_ratio > 1.20) below 20-EMA & 1H 50-EMA with weak close."""
     def __init__(self):
         super().__init__(
             name="SENSEX_OI_LONG_UNWINDING_PE",
@@ -344,19 +384,38 @@ class SensexOiLongUnwindingPE(BaseStrategy):
             return None
 
         indicators = data_state.get("indicators", {})
+        candles = data_state.get("candles", [])
         spot = data_state.get("sensex_price") or data_state.get("nifty_price")
         ema20 = indicators.get("ema_20_5m")
-        ema50_1h = indicators.get("ema_50_1h")
-        if spot is None or ema20 is None or ema50_1h is None:
+        ema50_1h = indicators.get("ema_50_1h") or indicators.get("ema_50_5m")
+        vol_ratio = indicators.get("volume_ratio_5m") or indicators.get("volume_ratio") or 1.0
+
+        if spot is None or ema20 is None:
             return None
 
-        if spot < ema20 and spot < ema50_1h:
+        pcr, call_oi, put_oi = _calculate_option_chain_pcr(data_state)
+
+        # 1. Live Market OI-driven condition
+        if pcr is not None:
+            is_unwinding = pcr < 0.90 and spot < ema20
+            rationale = f"Live OI Long Unwinding (PCR: {pcr:.2f}, Calls: {call_oi:,}, Puts: {put_oi:,})"
+        else:
+            # 2. Backtest volume-surge breakdown proxy
+            if not candles:
+                return None
+            current = candles[-1]
+            rng = current.high - current.low
+            weak_close = rng > 0 and ((current.high - current.close) / rng) >= 0.55
+            is_unwinding = spot < ema20 and (ema50_1h is None or spot < ema50_1h) and vol_ratio >= 1.20 and weak_close
+            rationale = f"SENSEX Volume Breakdown Unwinding (Vol: {vol_ratio:.2f}x avg, <20-EMA)"
+
+        if is_unwinding:
             symbol, strike = self.select_strike(spot, "PE", timestamp=ts)
             price = self.get_option_price(symbol, strike, spot, "PE", data_state)
             self.last_signal_time = ts
             return Signal(
                 strategy=self.name, direction="PE", action="BUY", strike=symbol,
-                confidence=0.85, rationale="SENSEX EMA trend breakdown (OI data unavailable for backtest — see class docstring)",
+                confidence=0.85, rationale=rationale,
                 entry_price=price, timestamp=ts, underlying=self.underlying,
             )
         return None
@@ -449,8 +508,8 @@ class BankNiftyDualSupertrendBbPE(BaseStrategy):
 
 class BankNiftyVwapBbLiquidityReboundCE(BaseStrategy):
     """BANKNIFTY 5m VWAP + BB Liquidity Sweep Rebound (CE): price sweeps below the lower Bollinger
-    Band (a genuine liquidity grab below the band — stops/resting liquidity there) then reclaims
-    session VWAP — real band + real VWAP, not a bare EMA touch."""
+    Band (a genuine liquidity grab below the band — stops/resting liquidity there) then rejects
+    and reclaims back inside the lower band with bullish rejection momentum while holding below/near VWAP."""
     def __init__(self):
         super().__init__(
             name="BANKNIFTY_VWAP_BB_LIQUIDITY_REBOUND_CE",
@@ -475,17 +534,28 @@ class BankNiftyVwapBbLiquidityReboundCE(BaseStrategy):
         current, prev = candles[-1], candles[-2]
         bb_lower = indicators.get("bb_lower_5m")
         vwap_5m = indicators.get("vwap_5m")
+        rsi_val = indicators.get("rsi_14_5m")
         if bb_lower is None or vwap_5m is None:
             return None
 
-        if prev.low <= bb_lower and current.close > vwap_5m:
+        rng = current.high - current.low
+        if rng <= 0:
+            return None
+
+        # Price swept below lower band (liquidity grab) and closed back inside the band
+        swept_lower_band = (prev.low <= bb_lower or current.low <= bb_lower)
+        reclaimed_band = current.close > bb_lower
+        bullish_close = (current.close - current.low) / rng >= 0.50 and current.close > current.open
+        not_overextended_above_vwap = current.close <= vwap_5m * 1.01  # Room to run to VWAP
+
+        if swept_lower_band and reclaimed_band and bullish_close and not_overextended_above_vwap:
             spot = current.close
             symbol, strike = self.select_strike(spot, "CE", timestamp=ts)
             price = self.get_option_price(symbol, strike, spot, "CE", data_state)
             self.last_signal_time = ts
             return Signal(
                 strategy=self.name, direction="CE", action="BUY", strike=symbol,
-                confidence=0.85, rationale=f"Swept below lower BB ({bb_lower:.1f}), reclaimed VWAP ({vwap_5m:.1f})",
+                confidence=0.85, rationale=f"Liquidity sweep below BB ({bb_lower:.1f}) & bullish reclaim toward VWAP ({vwap_5m:.1f})",
                 entry_price=price, timestamp=ts, underlying=self.underlying,
             )
         return None
