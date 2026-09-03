@@ -165,7 +165,7 @@ class BacktestEngine:
         self.trailing_tiers_pct = exits.get("trailing_tiers_pct")
 
         iron_fly = risk_params.get("iron_fly", {})
-        self.iron_fly_enabled = iron_fly.get("enabled", False)
+        self.iron_fly_enabled = iron_fly.get("enabled", True)
         self.iron_fly_params = dict(
             wing_width_pts=iron_fly.get("wing_width_pts", 200),
             strike_step=iron_fly.get("strike_step", 100),
@@ -184,6 +184,56 @@ class BacktestEngine:
         self.max_drawdown_pct_of_capital = breaker.get("max_drawdown_pct_of_capital")
         self.drawdown_cooldown_days = breaker.get("drawdown_cooldown_days", 3)
         self.drawdown_breaker_grace_trades = breaker.get("drawdown_breaker_grace_trades", 3)
+
+    def _backtest_single(self, strategy: BaseStrategy, df: pd.DataFrame) -> PaperTrader:
+        index = strategy.underlying
+        lot_size = LOT_SIZE_BY_INDEX.get(index, self.lot_size)
+        data_manager = DataManager(window_size=3000, underlying=index)
+        trader = PaperTrader(
+            initial_capital=self.initial_capital,
+            lot_size=lot_size,
+            max_concurrent_positions=self.max_concurrent_positions,
+            max_daily_loss=self.max_daily_loss,
+            max_trades_per_day_per_strategy=self.max_trades_per_day_per_strategy,
+            trailing_stop_enabled=self.trailing_stop_enabled,
+            trailing_activation_pct=self.trailing_activation_pct,
+            trailing_stop_pct=self.trailing_stop_pct,
+            trailing_tiers_pct=self.trailing_tiers_pct,
+            consecutive_loss_limit=self.consecutive_loss_limit,
+            consecutive_loss_cooldown_days=self.consecutive_loss_cooldown_days,
+            max_drawdown_pct_of_capital=self.max_drawdown_pct_of_capital,
+            drawdown_cooldown_days=self.drawdown_cooldown_days,
+            drawdown_breaker_grace_trades=self.drawdown_breaker_grace_trades,
+            capital_by_strategy=self.capital_by_strategy,
+            logger=self.logger,
+        )
+        engine = StrategyEngine(strategies=[strategy], logger=self.logger)
+
+        for row in df.itertuples(index=False):
+            candle = Candle(timestamp=row.Timestamp, open=row.Open, high=row.High,
+                             low=row.Low, close=row.Close, volume=int(row.Volume))
+            data_manager.replay_candle(candle)
+            state = data_manager.get_state()
+            if state["nifty_price"] is None:
+                continue
+
+            current_prices = self._mark_to_market(trader, state, index)
+            trader.update_positions(current_prices, timestamp=state["timestamp"],
+                                     time_exit_mins=self.time_exit_mins)
+
+            for signal in engine.evaluate_all(state):
+                stop_loss = max(signal.entry_price * (1 - self.stop_loss_pct / 100), 0.05)
+                take_profit = signal.entry_price * (1 + self.take_profit_pct / 100)
+                try:
+                    trader.place_order(
+                        symbol=signal.strike, side="BUY", qty=self.qty_per_signal,
+                        price=signal.entry_price, stop_loss=stop_loss, take_profit=take_profit,
+                        strategy=signal.strategy, timestamp=signal.timestamp, lot_size=lot_size,
+                    )
+                except RiskLimitExceeded:
+                    continue
+
+        return trader
 
     def _get_worker_params(self) -> dict:
         return {
