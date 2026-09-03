@@ -147,7 +147,16 @@ class SensexORBBullish5MITM(BaseStrategy):
             return None
 
         if self._range_high is None:
-            return None
+            # Reconstruct morning range from today's historical candles if starting/restarted mid-session
+            morning_candles = [
+                c for c in candles
+                if c.timestamp.date() == day and ORB_WINDOW_START <= c.timestamp.time() < ORB_WINDOW_END
+            ]
+            if morning_candles:
+                self._range_high = max(c.high for c in morning_candles)
+                self._range_low = min(c.low for c in morning_candles)
+            else:
+                return None
 
         indicators = data_state.get("indicators", {})
         ema50_1h = indicators.get("ema_50_1h") or indicators.get("ema_50_5m") or indicators.get("ema_20_5m")
@@ -301,7 +310,16 @@ class SensexORBBearish5MITM(BaseStrategy):
             return None
 
         if self._range_low is None:
-            return None
+            # Reconstruct morning range from today's historical candles if starting/restarted mid-session
+            morning_candles = [
+                c for c in candles
+                if c.timestamp.date() == day and ORB_WINDOW_START <= c.timestamp.time() < ORB_WINDOW_END
+            ]
+            if morning_candles:
+                self._range_high = max(c.high for c in morning_candles)
+                self._range_low = min(c.low for c in morning_candles)
+            else:
+                return None
 
         indicators = data_state.get("indicators", {})
         ema50_1h = indicators.get("ema_50_1h") or indicators.get("ema_50_5m") or indicators.get("ema_20_5m")

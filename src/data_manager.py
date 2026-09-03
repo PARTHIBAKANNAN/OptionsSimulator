@@ -126,12 +126,29 @@ class DataManager:
 
     # ---- Historical seeding (backtest) -------------------------------------
 
-    def load_historical(self, df: pd.DataFrame) -> None:
+    def load_historical(self, df: pd.DataFrame | list) -> None:
         """df columns: Timestamp, Open, High, Low, Close, Volume. Preserves delta on any
         timestamp that already has a candle in memory (e.g. today's candles just restored from
         options_candle_history) -- a fresh REST OHLCV pull has no tick-level delta of its own, so
         overwriting unconditionally would silently erase real intraday delta history on every
         daily historical-seed refresh. See docs/ARCHITECTURE.md."""
+        if isinstance(df, list):
+            if not df:
+                return
+            if isinstance(df[0], dict):
+                df = pd.DataFrame(df)
+            elif isinstance(df[0], (list, tuple)):
+                cols = ["Timestamp", "Open", "High", "Low", "Close", "Volume"][:len(df[0])]
+                df = pd.DataFrame(df, columns=cols)
+            elif hasattr(df[0], "timestamp"):
+                df = pd.DataFrame([{
+                    "Timestamp": getattr(c, "timestamp", None), "Open": getattr(c, "open", 0),
+                    "High": getattr(c, "high", 0), "Low": getattr(c, "low", 0),
+                    "Close": getattr(c, "close", 0), "Volume": getattr(c, "volume", 0),
+                } for c in df])
+            else:
+                df = pd.DataFrame(df)
+
         existing_delta = {c.timestamp: c.delta for c in self.candles}
         candles = [
             Candle(timestamp=row.Timestamp, open=row.Open, high=row.High,

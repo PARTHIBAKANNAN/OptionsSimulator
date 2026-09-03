@@ -39,16 +39,27 @@ class ORBBullish(BaseStrategy):
             return None
 
         if self._range_high is None:
-            return None  # this day's opening range was never captured (e.g. cold start mid-session)
+            # Reconstruct morning range from today's historical candles if starting/restarted mid-session
+            morning_candles = [
+                c for c in candles
+                if c.timestamp.date() == day and ORB_WINDOW_START <= c.timestamp.time() < ORB_WINDOW_END
+            ]
+            if morning_candles:
+                self._range_high = max(c.high for c in morning_candles)
+                self._range_low = min(c.low for c in morning_candles)
+            else:
+                return None
 
         avg_volume = indicators.get("avg_volume")
         if avg_volume is None:
             return None
 
-        if prev.close <= self._range_high < current.close and current.volume > avg_volume:
+        crossed_now = (prev.close <= self._range_high < current.close) or (prev.timestamp.time() < ORB_WINDOW_END and current.close > self._range_high)
+        if crossed_now and current.volume > avg_volume:
             nifty = current.close
-            symbol, strike = self.select_strike(nifty, "CE")
+            symbol, strike = self.select_strike(nifty, "CE", timestamp=data_state["timestamp"])
             price = self.get_option_price(symbol, strike, nifty, "CE", data_state)
+            self.last_signal_time = data_state["timestamp"]
             return Signal(
                 strategy=self.name,
                 direction="CE",
