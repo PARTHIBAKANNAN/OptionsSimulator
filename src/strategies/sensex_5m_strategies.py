@@ -15,7 +15,7 @@ SENSEX_STRIKE_STEP = 100
 
 
 class SensexSupportBounce5MITM(BaseStrategy):
-    """5-min pullback to 20-EMA/50-EMA in 1H uptrend with strong bullish close (CE)."""
+    """5-min pullback to 20-EMA in 1H uptrend with strong bullish close (CE)."""
     def __init__(self):
         super().__init__(
             name="SENSEX_SUPPORT_BOUNCE_5M_ITM",
@@ -29,7 +29,7 @@ class SensexSupportBounce5MITM(BaseStrategy):
 
     def evaluate(self, data_state: dict) -> Optional[Signal]:
         ts = data_state.get("timestamp")
-        if not self.can_trigger(ts):
+        if ts is None or not self.can_trigger(ts):
             return None
 
         indicators = data_state.get("indicators", {})
@@ -37,18 +37,21 @@ class SensexSupportBounce5MITM(BaseStrategy):
         if len(candles) < 2:
             return None
 
-        ema20 = indicators.get("ema_20_5m") or indicators.get("ema_20")
+        ema20 = indicators.get("ema_20_5m")
         ema50_1h = indicators.get("ema_50_1h") or indicators.get("ema_50_5m") or indicators.get("ema_20_5m")
+        avg_volume = indicators.get("avg_volume")
         if ema20 is None or ema50_1h is None:
             return None
 
         current, prev = candles[-1], candles[-2]
         rng = current.high - current.low
-        if rng <= 0:
+        if rng <= 0 or current.close <= 0:
             return None
 
         closes_strong = (current.close - current.low) / rng >= 0.60
-        if prev.low <= ema20 and current.close > ema20 and current.close > ema50_1h and closes_strong:
+        volume_confirmed = avg_volume is None or current.volume > avg_volume
+
+        if prev.low <= ema20 and current.close > ema20 and current.close > ema50_1h and closes_strong and volume_confirmed:
             spot = current.close
             symbol, strike = self.select_strike(spot, "CE", timestamp=ts)
             price = self.get_option_price(symbol, strike, spot, "CE", data_state)
@@ -76,12 +79,13 @@ class SensexHeikinAshiBullish5MITM(BaseStrategy):
 
     def evaluate(self, data_state: dict) -> Optional[Signal]:
         ts = data_state.get("timestamp")
-        if not self.can_trigger(ts):
+        if ts is None or not self.can_trigger(ts):
             return None
 
         indicators = data_state.get("indicators", {})
-        spot = data_state.get("sensex_price") or data_state.get("nifty_price")
-        if spot is None:
+        candles = data_state.get("candles", [])
+        spot = data_state.get("sensex_price") or data_state.get("nifty_price") or (candles[-1].close if candles else None)
+        if spot is None or spot <= 0:
             return None
 
         ha = indicators.get("heikin_ashi_5m") or indicators.get("heikin_ashi")
@@ -95,7 +99,7 @@ class SensexHeikinAshiBullish5MITM(BaseStrategy):
             return None
 
         lower_wick = ha["open"] - ha["low"]
-        if lower_wick > 0.15 * body:
+        if lower_wick > 0.30 * body:
             return None
 
         symbol, strike = self.select_strike(spot, "CE", timestamp=ts)
@@ -127,7 +131,7 @@ class SensexORBBullish5MITM(BaseStrategy):
     def evaluate(self, data_state: dict) -> Optional[Signal]:
         ts = data_state.get("timestamp")
         candles = data_state.get("candles", [])
-        if len(candles) < 2 or not self.can_trigger(ts):
+        if ts is None or len(candles) < 2 or not self.can_trigger(ts):
             return None
 
         current, prev = candles[-1], candles[-2]
@@ -147,7 +151,6 @@ class SensexORBBullish5MITM(BaseStrategy):
             return None
 
         if self._range_high is None:
-            # Reconstruct morning range from today's historical candles if starting/restarted mid-session
             morning_candles = [
                 c for c in candles
                 if c.timestamp.date() == day and ORB_WINDOW_START <= c.timestamp.time() < ORB_WINDOW_END
@@ -159,12 +162,12 @@ class SensexORBBullish5MITM(BaseStrategy):
                 return None
 
         indicators = data_state.get("indicators", {})
-        ema50_1h = indicators.get("ema_50_1h") or indicators.get("ema_50_5m") or indicators.get("ema_20_5m")
+        ema50 = indicators.get("ema_50_1h") or indicators.get("ema_50_5m") or indicators.get("ema_20_5m")
         avg_volume = indicators.get("avg_volume")
 
         crossed_now = (prev.close <= self._range_high < current.close) or (prev.timestamp.time() < ORB_WINDOW_END and current.close > self._range_high)
         volume_confirmed = avg_volume is None or current.volume > avg_volume
-        if crossed_now and volume_confirmed and (ema50_1h is None or current.close > ema50_1h):
+        if crossed_now and volume_confirmed and (ema50 is not None and current.close > ema50):
             spot = current.close
             symbol, strike = self.select_strike(spot, "CE", timestamp=ts)
             price = self.get_option_price(symbol, strike, spot, "CE", data_state)
@@ -192,7 +195,7 @@ class SensexResistanceRejection5MITM(BaseStrategy):
 
     def evaluate(self, data_state: dict) -> Optional[Signal]:
         ts = data_state.get("timestamp")
-        if not self.can_trigger(ts):
+        if ts is None or not self.can_trigger(ts):
             return None
 
         indicators = data_state.get("indicators", {})
@@ -200,18 +203,20 @@ class SensexResistanceRejection5MITM(BaseStrategy):
         if len(candles) < 2:
             return None
 
-        ema20 = indicators.get("ema_20_5m") or indicators.get("ema_20")
+        ema20 = indicators.get("ema_20_5m")
         ema50_1h = indicators.get("ema_50_1h") or indicators.get("ema_50_5m") or indicators.get("ema_20_5m")
+        avg_volume = indicators.get("avg_volume")
         if ema20 is None or ema50_1h is None:
             return None
 
         current, prev = candles[-1], candles[-2]
         rng = current.high - current.low
-        if rng <= 0:
+        if rng <= 0 or current.close <= 0:
             return None
 
         closes_weak = (current.high - current.close) / rng >= 0.60
-        if prev.high >= ema20 and current.close < ema20 and current.close < ema50_1h and closes_weak:
+        volume_confirmed = avg_volume is None or current.volume > avg_volume
+        if prev.high >= ema20 and current.close < ema20 and current.close < ema50_1h and closes_weak and volume_confirmed:
             spot = current.close
             symbol, strike = self.select_strike(spot, "PE", timestamp=ts)
             price = self.get_option_price(symbol, strike, spot, "PE", data_state)
@@ -239,12 +244,13 @@ class SensexHeikinAshiBearish5MITM(BaseStrategy):
 
     def evaluate(self, data_state: dict) -> Optional[Signal]:
         ts = data_state.get("timestamp")
-        if not self.can_trigger(ts):
+        if ts is None or not self.can_trigger(ts):
             return None
 
         indicators = data_state.get("indicators", {})
-        spot = data_state.get("sensex_price") or data_state.get("nifty_price")
-        if spot is None:
+        candles = data_state.get("candles", [])
+        spot = data_state.get("sensex_price") or data_state.get("nifty_price") or (candles[-1].close if candles else None)
+        if spot is None or spot <= 0:
             return None
 
         ha = indicators.get("heikin_ashi_5m") or indicators.get("heikin_ashi")
@@ -258,7 +264,7 @@ class SensexHeikinAshiBearish5MITM(BaseStrategy):
             return None
 
         upper_wick = ha["high"] - ha["open"]
-        if upper_wick > 0.15 * body:
+        if upper_wick > 0.30 * body:
             return None
 
         symbol, strike = self.select_strike(spot, "PE", timestamp=ts)
@@ -290,7 +296,7 @@ class SensexORBBearish5MITM(BaseStrategy):
     def evaluate(self, data_state: dict) -> Optional[Signal]:
         ts = data_state.get("timestamp")
         candles = data_state.get("candles", [])
-        if len(candles) < 2 or not self.can_trigger(ts):
+        if ts is None or len(candles) < 2 or not self.can_trigger(ts):
             return None
 
         current, prev = candles[-1], candles[-2]
@@ -310,7 +316,6 @@ class SensexORBBearish5MITM(BaseStrategy):
             return None
 
         if self._range_low is None:
-            # Reconstruct morning range from today's historical candles if starting/restarted mid-session
             morning_candles = [
                 c for c in candles
                 if c.timestamp.date() == day and ORB_WINDOW_START <= c.timestamp.time() < ORB_WINDOW_END
@@ -322,12 +327,12 @@ class SensexORBBearish5MITM(BaseStrategy):
                 return None
 
         indicators = data_state.get("indicators", {})
-        ema50_1h = indicators.get("ema_50_1h") or indicators.get("ema_50_5m") or indicators.get("ema_20_5m")
+        ema50 = indicators.get("ema_50_1h") or indicators.get("ema_50_5m") or indicators.get("ema_20_5m")
         avg_volume = indicators.get("avg_volume")
 
         crossed_now = (prev.close >= self._range_low > current.close) or (prev.timestamp.time() < ORB_WINDOW_END and current.close < self._range_low)
         volume_confirmed = avg_volume is None or current.volume > avg_volume
-        if crossed_now and volume_confirmed and (ema50_1h is None or current.close < ema50_1h):
+        if crossed_now and volume_confirmed and (ema50 is not None and current.close < ema50):
             spot = current.close
             symbol, strike = self.select_strike(spot, "PE", timestamp=ts)
             price = self.get_option_price(symbol, strike, spot, "PE", data_state)

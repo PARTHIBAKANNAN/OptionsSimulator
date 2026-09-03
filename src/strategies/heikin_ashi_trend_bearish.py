@@ -1,13 +1,12 @@
 """Mirror of HeikinAshiTrendBullish: two consecutive bearish 15m Heikin Ashi candles, the latest
 with little/no upper wick, confirmed by the 1H 50-EMA trend being down."""
 from datetime import time as dtime
+from typing import Optional
 
 from src.strategies.base_strategy import BaseStrategy, Signal
 
-MAX_WICK_TO_BODY_RATIO = 0.15
+MAX_WICK_TO_BODY_RATIO = 0.30  # Calibrated for realistic market noise
 
-# Trade-log analysis (Quantman full-year backtest) showed Monday+Tuesday and the 10:00-12:00
-# window are net losers while every other day/time is profitable -- excluded rather than tuned.
 EXCLUDED_WEEKDAYS = {0, 1}  # Monday, Tuesday
 DEAD_ZONE_START = dtime(10, 0)
 DEAD_ZONE_END = dtime(12, 0)
@@ -17,59 +16,50 @@ class HeikinAshiTrendBearish(BaseStrategy):
     def __init__(self, name: str = "HEIKIN_ASHI_TREND_BEARISH", strike_step: int = 50, underlying: str = "NIFTY",
                  apply_day_time_filter: bool = False, min_cooldown_mins: int = 15):
         super().__init__(name=name, direction="PE", strike_step=strike_step, underlying=underlying,
-                          min_cooldown_mins=min_cooldown_mins)
-        # By default, day/time filter is disabled so NIFTY executes on all trading days alongside SENSEX and BANKNIFTY.
+                         min_cooldown_mins=min_cooldown_mins)
         self.apply_day_time_filter = apply_day_time_filter
 
-    def evaluate(self, data_state: dict):
-        timestamp = data_state.get("timestamp")
-        if timestamp is None:
-            return None
-        # This strategy's own condition (2 consecutive bearish HA candles + trend filter) is a
-        # STATE, not an edge -- it stays true for many consecutive bars in a real downtrend. Unlike
-        # every 5M-ITM strategy, this one previously never called can_trigger() at all, so it had
-        # no cooldown of its own beyond the portfolio-level daily trade cap -- meaning the exact
-        # same still-qualifying setup would re-fire on literally every tick once the cap allowed
-        # it, rather than requiring a fresh setup. min_cooldown_mins=15 (matching its 5M-ITM
-        # sibling) now enforces that.
-        if not self.can_trigger(timestamp):
+    def evaluate(self, data_state: dict) -> Optional[Signal]:
+        ts = data_state.get("timestamp")
+        if ts is None or not self.can_trigger(ts):
             return None
         if self.apply_day_time_filter:
-            if timestamp.weekday() in EXCLUDED_WEEKDAYS:
+            if ts.weekday() in EXCLUDED_WEEKDAYS:
                 return None
-            if DEAD_ZONE_START <= timestamp.time() < DEAD_ZONE_END:
+            if DEAD_ZONE_START <= ts.time() < DEAD_ZONE_END:
                 return None
 
         indicators = data_state.get("indicators", {})
-        nifty = data_state.get("nifty_price")
-        if nifty is None:
+        spot = data_state.get(f"{self.underlying.lower()}_price") or data_state.get("nifty_price")
+        if spot is None or spot <= 0:
             return None
 
-        ha = indicators.get("heikin_ashi_15m")
-        ema50 = indicators.get("ema_50_1h")
+        ha = indicators.get("heikin_ashi_15m") or indicators.get("heikin_ashi_5m") or indicators.get("heikin_ashi")
+        ema50 = indicators.get("ema_50_1h") or indicators.get("ema_50_5m") or indicators.get("ema_20_5m")
         if ha is None or ema50 is None:
             return None
 
         body = ha["open"] - ha["close"]
         current_bearish = body > 0
-        prev_bearish = ha["prev_close"] < ha["prev_open"]
-        if not (current_bearish and prev_bearish and nifty < ema50):
+        prev_bearish = ha["prev_open"] > ha["prev_close"]
+        if not (current_bearish and prev_bearish and spot < ema50):
             return None
 
         upper_wick = ha["high"] - ha["open"]
         if upper_wick > MAX_WICK_TO_BODY_RATIO * body:
             return None
 
-        symbol, strike = self.select_strike(nifty, "PE")
-        price = self.get_option_price(symbol, strike, nifty, "PE", data_state)
+        symbol, strike = self.select_strike(spot, "PE", timestamp=ts)
+        price = self.get_option_price(symbol, strike, spot, "PE", data_state)
+        self.last_signal_time = ts
         return Signal(
             strategy=self.name,
             direction="PE",
             action="BUY",
             strike=symbol,
             confidence=0.70,
-            rationale="Heikin Ashi bearish, no upper wick, price below 50-EMA",
+            rationale="Heikin Ashi bearish, low upper wick, price below 50-EMA",
             entry_price=price,
-            timestamp=data_state["timestamp"],
+            timestamp=ts,
             underlying=self.underlying,
         )

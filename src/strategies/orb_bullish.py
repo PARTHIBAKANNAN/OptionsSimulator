@@ -2,6 +2,7 @@
 the day's range; a close breaking back above that range's high, on volume, signals a bullish
 continuation for the rest of the day."""
 from datetime import time as dtime
+from typing import Optional
 
 from src.strategies.base_strategy import BaseStrategy, Signal
 
@@ -16,10 +17,10 @@ class ORBBullish(BaseStrategy):
         self._range_high = None
         self._range_low = None
 
-    def evaluate(self, data_state: dict):
-        indicators = data_state.get("indicators", {})
+    def evaluate(self, data_state: dict) -> Optional[Signal]:
+        ts = data_state.get("timestamp")
         candles = data_state.get("candles", [])
-        if len(candles) < 2:
+        if ts is None or len(candles) < 2 or not self.can_trigger(ts):
             return None
 
         current, prev = candles[-1], candles[-2]
@@ -50,16 +51,19 @@ class ORBBullish(BaseStrategy):
             else:
                 return None
 
+        indicators = data_state.get("indicators", {})
         avg_volume = indicators.get("avg_volume")
         if avg_volume is None:
             return None
 
         crossed_now = (prev.close <= self._range_high < current.close) or (prev.timestamp.time() < ORB_WINDOW_END and current.close > self._range_high)
         if crossed_now and current.volume > avg_volume:
-            nifty = current.close
-            symbol, strike = self.select_strike(nifty, "CE", timestamp=data_state["timestamp"])
-            price = self.get_option_price(symbol, strike, nifty, "CE", data_state)
-            self.last_signal_time = data_state["timestamp"]
+            spot = current.close
+            if spot <= 0:
+                return None
+            symbol, strike = self.select_strike(spot, "CE", timestamp=ts)
+            price = self.get_option_price(symbol, strike, spot, "CE", data_state)
+            self.last_signal_time = ts
             return Signal(
                 strategy=self.name,
                 direction="CE",
@@ -68,7 +72,7 @@ class ORBBullish(BaseStrategy):
                 confidence=0.70,
                 rationale=f"ORB breakout above opening range high {self._range_high:.1f}",
                 entry_price=price,
-                timestamp=data_state["timestamp"],
+                timestamp=ts,
                 underlying=self.underlying,
             )
         return None

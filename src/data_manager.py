@@ -38,9 +38,9 @@ class OptionQuote:
 
 
 class DataManager:
-    def __init__(self, window_size: int = 3000, underlying: str = "NIFTY"):
-        # ~7-8 trading days of 1-min candles (390 min/day) — enough to accumulate
-        # 15+ hourly candles for RSI(14)/EMA(50)/MACD(26) on the 1H timeframe.
+    def __init__(self, window_size: int = 5000, underlying: str = "NIFTY"):
+        # ~12-13 trading days of 1-min candles (375 min/day) — enough to accumulate
+        # 60+ hourly candles for RSI(14)/EMA(50)/MACD(26) on the 1H timeframe.
         self.window_size = window_size
         self.underlying = underlying  # 'NIFTY' or 'SENSEX' -- selects update_option_chain's key prefix
         self.candles: list[Candle] = []
@@ -425,8 +425,11 @@ class DataManager:
 
     def get_state(self) -> dict:
         current = self.get_current_candle()
+        price = current.close if current else None
+        key = f"{self.underlying.lower()}_price"
         return {
-            "nifty_price": current.close if current else None,
+            "nifty_price": price,  # back-compat
+            key: price,
             "timestamp": current.timestamp if current else datetime.now(),
             "indicators": self.calculate_indicators(),
             "option_chain": self.get_option_chain(),

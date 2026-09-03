@@ -55,7 +55,7 @@ class BacktestEngine:
         self.trailing_tiers_pct = exits.get("trailing_tiers_pct")
 
         iron_fly = risk_params.get("iron_fly", {})
-        self.iron_fly_enabled = iron_fly.get("enabled", True)
+        self.iron_fly_enabled = iron_fly.get("enabled", False)
         self.iron_fly_params = dict(
             wing_width_pts=iron_fly.get("wing_width_pts", 200),
             strike_step=iron_fly.get("strike_step", 100),
@@ -165,7 +165,7 @@ class BacktestEngine:
         self.trailing_tiers_pct = exits.get("trailing_tiers_pct")
 
         iron_fly = risk_params.get("iron_fly", {})
-        self.iron_fly_enabled = iron_fly.get("enabled", True)
+        self.iron_fly_enabled = iron_fly.get("enabled", False)
         self.iron_fly_params = dict(
             wing_width_pts=iron_fly.get("wing_width_pts", 200),
             strike_step=iron_fly.get("strike_step", 100),

@@ -134,8 +134,10 @@ class IronFlyHedge:
         return self.position
 
     def _leg_prices(self, data_state: dict) -> dict:
-        nifty = data_state["nifty_price"]
-        timestamp = data_state["timestamp"]
+        nifty = data_state.get("nifty_price")
+        timestamp = data_state.get("timestamp")
+        if nifty is None or timestamp is None or self.position is None:
+            return {}
         return {leg.symbol: self._price(nifty, leg.strike, leg.option_type, timestamp)
                 for leg in self.position.legs}
 
