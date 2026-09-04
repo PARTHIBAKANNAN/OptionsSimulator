@@ -15,6 +15,7 @@ data/historical/*.csv
 data/positions.json
 data/trade_history.csv
 data/daily_summary.json
+data/*.sqlite*
 fyers_token_cache.json
 *.egg-info/
 .vscode/
