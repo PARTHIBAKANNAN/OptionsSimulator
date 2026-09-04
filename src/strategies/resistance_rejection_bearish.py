@@ -31,7 +31,7 @@ class ResistanceRejectionBearish(BaseStrategy):
             return None
 
         closes_strong = (current.high - current.close) / candle_range >= 0.60
-        volume_confirmed = avg_volume is None or current.volume > avg_volume
+        volume_confirmed = avg_volume is None or avg_volume == 0 or current.volume > avg_volume
 
         if (prev.high >= ema20 and current.close < ema20 and current.close < ema50
                 and volume_confirmed and closes_strong):

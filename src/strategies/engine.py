@@ -158,6 +158,10 @@ class StrategyEngine:
 
         signals = []
         for strategy in self.strategies:
+            prev_signal_time = strategy.last_signal_time
+            if prev_signal_time and ts and (ts - prev_signal_time) < self.signal_cooldown:
+                continue
+
             try:
                 signal = strategy.evaluate(data_state)
             except Exception as e:
@@ -166,9 +170,6 @@ class StrategyEngine:
                 continue
 
             if signal is None:
-                continue
-
-            if strategy.last_signal_time and signal.timestamp - strategy.last_signal_time < self.signal_cooldown:
                 continue
 
             strategy.last_signal_time = signal.timestamp

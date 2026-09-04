@@ -57,7 +57,8 @@ class ORBBullish(BaseStrategy):
             return None
 
         crossed_now = (prev.close <= self._range_high < current.close) or (prev.timestamp.time() < ORB_WINDOW_END and current.close > self._range_high)
-        if crossed_now and current.volume > avg_volume:
+        volume_confirmed = avg_volume is None or avg_volume == 0 or current.volume > avg_volume
+        if crossed_now and volume_confirmed:
             spot = current.close
             if spot <= 0:
                 return None

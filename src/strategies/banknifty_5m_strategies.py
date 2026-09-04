@@ -51,7 +51,7 @@ class BankNiftySupportBounce5MITM(BaseStrategy):
             return None
 
         closes_strong = (current.close - current.low) / rng >= 0.60
-        volume_confirmed = avg_volume is None or current.volume > avg_volume
+        volume_confirmed = avg_volume is None or avg_volume == 0 or current.volume > avg_volume
 
         if prev.low <= ema20_5m and current.close > ema20_5m and current.close > ema50_1h and closes_strong and volume_confirmed:
             spot = current.close
@@ -168,7 +168,7 @@ class BankNiftyORBBullish5MITM(BaseStrategy):
         avg_volume = indicators.get("avg_volume")
 
         crossed_now = (prev.close <= self._range_high < current.close) or (prev.timestamp.time() < ORB_WINDOW_END and current.close > self._range_high)
-        volume_confirmed = avg_volume is None or current.volume > avg_volume
+        volume_confirmed = avg_volume is None or avg_volume == 0 or current.volume > avg_volume
         if crossed_now and volume_confirmed and (ema50 is not None and current.close > ema50):
             spot = current.close
             symbol, strike = self.select_strike(spot, "CE", timestamp=ts)
@@ -217,7 +217,7 @@ class BankNiftyResistanceRejection5MITM(BaseStrategy):
             return None
 
         closes_weak = (current.high - current.close) / rng >= 0.60
-        volume_confirmed = avg_volume is None or current.volume > avg_volume
+        volume_confirmed = avg_volume is None or avg_volume == 0 or current.volume > avg_volume
         if prev.high >= ema20_5m and current.close < ema20_5m and current.close < ema50_1h and closes_weak and volume_confirmed:
             spot = current.close
             symbol, strike = self.select_strike(spot, "PE", timestamp=ts)
@@ -333,7 +333,7 @@ class BankNiftyORBBearish5MITM(BaseStrategy):
         avg_volume = indicators.get("avg_volume")
 
         crossed_now = (prev.close >= self._range_low > current.close) or (prev.timestamp.time() < ORB_WINDOW_END and current.close < self._range_low)
-        volume_confirmed = avg_volume is None or current.volume > avg_volume
+        volume_confirmed = avg_volume is None or avg_volume == 0 or current.volume > avg_volume
         if crossed_now and volume_confirmed and (ema50 is not None and current.close < ema50):
             spot = current.close
             symbol, strike = self.select_strike(spot, "PE", timestamp=ts)
