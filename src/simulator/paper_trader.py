@@ -40,6 +40,8 @@ class Order:
     def underlying(self) -> str:
         """Derived from the symbol itself rather than a stored field/DB column -- avoids a
         migration and avoids handling NULL on pre-migration rows. See docs/ARCHITECTURE.md."""
+        if "BANKNIFTY" in self.symbol:
+            return "BANKNIFTY"
         return "SENSEX" if self.symbol.startswith("SENSEX") else "NIFTY"
 
     @property
