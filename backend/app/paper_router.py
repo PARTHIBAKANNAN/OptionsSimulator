@@ -348,6 +348,10 @@ async def refresh_postmarket_intelligence(request: Request):
     try:
         POSTMARKET_CACHE_PATH.parent.mkdir(parents=True, exist_ok=True)
         POSTMARKET_CACHE_PATH.write_text(json.dumps(journal, indent=2))
+    except Exception:
+        pass
+    return _sanitize(journal)
+
 
 @router.get("/analytics/overview")
 async def get_analytics_overview(request: Request):
