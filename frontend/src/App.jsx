@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { ThemeProvider, useTheme } from "./contexts/ThemeContext";
 import { Login } from "./components/Login";
 import { TopNavbar } from "./components/TopNavbar";
+import { ExecutiveDashboardScreen } from "./screens/ExecutiveDashboardScreen";
 import { LiveDashboardScreen } from "./screens/LiveDashboardScreen";
 import { BacktestReportScreen } from "./screens/BacktestReportScreen";
 import { PnlSummaryScreen } from "./screens/PnlSummaryScreen";
@@ -13,6 +14,7 @@ import { api } from "./hooks/usePaperTradingSync";
 import { supabase } from "./lib/supabaseClient";
 
 const TABS = [
+  { key: "dashboard", label: "Dashboard", Component: ExecutiveDashboardScreen },
   { key: "live", label: "Live", Component: LiveDashboardScreen },
   { key: "pnl", label: "P&L Summary", Component: PnlSummaryScreen },
   { key: "backtest", label: "Backtest", Component: BacktestReportScreen },

@@ -2,6 +2,7 @@
   "position_sizing": {
     "qty_per_signal": 1,
     "lot_size": 65,
+    "min_entry_premium": 60.0,
     "max_concurrent_positions": null,
     "max_daily_loss": null,
     "max_trades_per_day_per_strategy": 2
@@ -17,7 +18,35 @@
       {"gain_pct": 10, "lock_pct": 0},
       {"gain_pct": 20, "lock_pct": 5},
       {"gain_pct": 30, "lock_pct": 10}
-    ]
+    ],
+    "tiered_trailing_enabled": true,
+    "tiered_rules": {
+      "tier1": {
+        "max_entry_price": 200.0,
+        "stop_loss_pct": 20.0,
+        "cost_lock_pts": 15.0,
+        "step_pts": 15.0,
+        "step_lock_pts": 15.0,
+        "target_pts": 60.0
+      },
+      "tier2": {
+        "min_entry_price": 200.0,
+        "max_entry_price": 600.0,
+        "stop_loss_pct": 20.0,
+        "cost_lock_pts": 20.0,
+        "step_pts": 15.0,
+        "step_lock_pts": 15.0,
+        "target_pts": 120.0
+      },
+      "tier3": {
+        "min_entry_price": 600.0,
+        "stop_loss_pct": 15.0,
+        "cost_lock_pts": 20.0,
+        "step_pts": 15.0,
+        "step_lock_pts": 15.0,
+        "target_pts": 150.0
+      }
+    }
   },
   "strike_selection": {
     "preference": "ATM_or_50pts_OTM",

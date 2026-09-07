@@ -596,11 +596,23 @@ class WebLiveEngine(LiveTrader):
         if decision != "approve":
             return
 
-        stop_loss = max(signal.entry_price * (1 - self.stop_loss_pct / 100), 0.05)
-        # Percentage of entry premium, not a flat rupee-point target — see src/trader.py's
-        # matching comment and docs/ARCHITECTURE.md. This is the path that actually executes
-        # every live trade (WebLiveEngine.execute_signal overrides LiveTrader's).
-        take_profit = signal.entry_price * (1 + self.take_profit_pct / 100)
+        ep = signal.entry_price
+        if getattr(self.paper_trader, "tiered_trailing_enabled", False):
+            if ep < 200.0:
+                sl_pct = 20.0
+                tp_pts = 60.0
+            elif ep <= 600.0:
+                sl_pct = 20.0
+                tp_pts = 120.0
+            else:
+                sl_pct = 15.0  # Tier 3 capital protection
+                tp_pts = 150.0
+            stop_loss = max(ep * (1 - sl_pct / 100.0), 0.05)
+            take_profit = ep + tp_pts
+        else:
+            stop_loss = max(ep * (1 - self.stop_loss_pct / 100.0), 0.05)
+            take_profit = ep * (1 + self.take_profit_pct / 100.0)
+
         lot_size = LOT_SIZE_BY_INDEX.get(signal.underlying, self.paper_trader.lot_size)
         try:
             order = self.paper_trader.place_order(

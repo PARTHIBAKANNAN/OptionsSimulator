@@ -215,6 +215,90 @@ export function PnlSummaryScreen() {
             <h3 className="text-sm font-semibold uppercase tracking-wider text-faint mb-3">Live Equity Curve</h3>
             <DailyPnlChart daily={report.daily_net_pnl} />
           </div>
+
+          {/* Combined Individual Executed Trades List */}
+          <div className="rounded-xl border border-subtle bg-surface p-4 sm:p-5 space-y-4">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h3 className="text-sm font-bold text-primary">Executed Trades Log ({(report.trades || []).length})</h3>
+                <p className="text-xs text-faint">Complete list of executed live paper trades in the selected period</p>
+              </div>
+              <div className="relative w-full sm:w-64">
+                <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-faint" />
+                <input
+                  type="text"
+                  placeholder="Filter strategy or symbol..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full rounded-lg border border-subtle bg-surface2 py-1.5 pl-8 pr-3 text-xs text-primary placeholder-faint focus:border-accent focus:outline-none"
+                />
+              </div>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left font-mono text-xs">
+                <thead>
+                  <tr className="border-b border-subtle text-[11px] font-semibold text-faint">
+                    <th className="pb-2">Exit Time (IST)</th>
+                    <th className="pb-2">Strategy</th>
+                    <th className="pb-2">Symbol</th>
+                    <th className="pb-2 text-right">Entry</th>
+                    <th className="pb-2 text-right">Exit</th>
+                    <th className="pb-2 text-center">Reason</th>
+                    <th className="pb-2 text-right">Charges</th>
+                    <th className="pb-2 text-right">Net P&L</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-subtle/50">
+                  {((report.trades || []).filter((t) => {
+                    if (!searchTerm) return true;
+                    const q = searchTerm.toLowerCase();
+                    return (t.strategy || "").toLowerCase().includes(q) || (t.symbol || "").toLowerCase().includes(q);
+                  })).length === 0 ? (
+                    <tr>
+                      <td colSpan={8} className="py-8 text-center text-xs text-faint">
+                        No closed trades found matching your search.
+                      </td>
+                    </tr>
+                  ) : (
+                    (report.trades || [])
+                      .filter((t) => {
+                        if (!searchTerm) return true;
+                        const q = searchTerm.toLowerCase();
+                        return (t.strategy || "").toLowerCase().includes(q) || (t.symbol || "").toLowerCase().includes(q);
+                      })
+                      .map((t, idx) => {
+                        const net = (t.realized_pnl || 0) - (t.entry_charges || 0) - (t.exit_charges || 0);
+                        const charges = (t.entry_charges || 0) + (t.exit_charges || 0);
+                        const exitTimeStr = t.exit_time ? new Date(t.exit_time).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", second: "2-digit" }) : "—";
+                        return (
+                          <tr key={t.order_id || idx} className="hover:bg-surface2/50 transition">
+                            <td className="py-2.5 text-faint">{exitTimeStr}</td>
+                            <td className="py-2.5 font-sans font-semibold text-primary">{t.strategy}</td>
+                            <td className="py-2.5 font-bold text-accent">{t.symbol}</td>
+                            <td className="py-2.5 text-right text-faint">₹{Number(t.entry_price || 0).toFixed(2)}</td>
+                            <td className="py-2.5 text-right font-medium text-primary">₹{Number(t.exit_price || 0).toFixed(2)}</td>
+                            <td className="py-2.5 text-center">
+                              <span className={`inline-block rounded px-1.5 py-0.5 text-[10px] font-bold ${
+                                t.exit_reason === "TAKE_PROFIT" ? "bg-bull/15 text-bull" :
+                                t.exit_reason === "TRAILING_STOP" ? "bg-cyan-500/15 text-cyan-400" :
+                                t.exit_reason === "STOP_LOSS" ? "bg-bear/15 text-bear" : "bg-surface3 text-faint"
+                              }`}>
+                                {t.exit_reason || "MANUAL"}
+                              </span>
+                            </td>
+                            <td className="py-2.5 text-right text-faint">₹{charges.toFixed(2)}</td>
+                            <td className={`py-2.5 text-right font-bold tabular-nums ${pnlClass(net)}`}>
+                              {net >= 0 ? `+Rs.${net.toLocaleString("en-IN", { maximumFractionDigits: 2 })}` : `Rs.${net.toLocaleString("en-IN", { maximumFractionDigits: 2 })}`}
+                            </td>
+                          </tr>
+                        );
+                      })
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       )}
 

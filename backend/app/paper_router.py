@@ -348,8 +348,129 @@ async def refresh_postmarket_intelligence(request: Request):
     try:
         POSTMARKET_CACHE_PATH.parent.mkdir(parents=True, exist_ok=True)
         POSTMARKET_CACHE_PATH.write_text(json.dumps(journal, indent=2))
-    except Exception:
-        pass
-    return _sanitize(journal)
+
+@router.get("/analytics/overview")
+async def get_analytics_overview(request: Request):
+    """Institutional All-Time & Live Telemetry Overview derived strictly from live DB executions."""
+    engine = _get_engine(request)
+    wallets = engine.paper_trader.get_all_wallets()
+    total_allocated = sum(w.get("allocated_capital", 0.0) for w in wallets.values()) if wallets else 0.0
+    total_wallet_balance = sum(w.get("balance", 0.0) for w in wallets.values()) if wallets else 0.0
+
+    if not getattr(request.app.state, "db_available", False):
+        return {
+            "all_time_net_pnl": round(total_wallet_balance - total_allocated, 2),
+            "all_time_gross_pnl": round(total_wallet_balance - total_allocated, 2),
+            "all_time_charges": 0.0,
+            "all_time_trades": 0,
+            "all_time_win_rate": 0.0,
+            "total_allocated_capital": total_allocated,
+            "total_wallet_balance": total_wallet_balance,
+            "top_performers": [],
+            "laggards": [],
+            "index_breakdown": {
+                "NIFTY": {"trades": 0, "wins": 0, "win_rate": 0.0, "net_pnl": 0.0},
+                "BANKNIFTY": {"trades": 0, "wins": 0, "win_rate": 0.0, "net_pnl": 0.0},
+                "SENSEX": {"trades": 0, "wins": 0, "win_rate": 0.0, "net_pnl": 0.0},
+            },
+            "equity_curve": []
+        }
+
+    pool = db.get_pool()
+    # 1. All-time aggregate numbers
+    agg_row = await pool.fetchrow(
+        """SELECT COUNT(*) AS trades,
+                  SUM(CASE WHEN realized_pnl > 0 THEN 1 ELSE 0 END) AS wins,
+                  COALESCE(SUM(realized_pnl), 0) AS gross_pnl,
+                  COALESCE(SUM(entry_charges + exit_charges), 0) AS charges,
+                  COALESCE(SUM(realized_pnl - entry_charges - exit_charges), 0) AS net_pnl
+           FROM options_positions
+           WHERE status = 'CLOSED'"""
+    )
+    all_time_trades = agg_row["trades"] or 0
+    all_time_wins = agg_row["wins"] or 0
+    all_time_gross = float(agg_row["gross_pnl"] or 0)
+    all_time_charges = float(agg_row["charges"] or 0)
+    all_time_net = float(agg_row["net_pnl"] or 0)
+    all_time_wr = round(all_time_wins / all_time_trades * 100, 2) if all_time_trades > 0 else 0.0
+
+    # 2. Per-strategy rankings
+    strat_rows = await pool.fetch(
+        """SELECT strategy, COUNT(*) AS trades,
+                  SUM(CASE WHEN realized_pnl > 0 THEN 1 ELSE 0 END) AS wins,
+                  COALESCE(SUM(realized_pnl), 0) AS gross_pnl,
+                  COALESCE(SUM(entry_charges + exit_charges), 0) AS charges,
+                  COALESCE(SUM(realized_pnl - entry_charges - exit_charges), 0) AS net_pnl
+           FROM options_positions
+           WHERE status = 'CLOSED' AND strategy IS NOT NULL
+           GROUP BY strategy
+           ORDER BY net_pnl DESC"""
+    )
+    strat_list = []
+    for r in strat_rows:
+        t = r["trades"]
+        w = r["wins"]
+        net = float(r["net_pnl"])
+        strat_list.append({
+            "strategy": r["strategy"],
+            "trades": t,
+            "wins": w,
+            "win_rate": round(w / t * 100, 2) if t > 0 else 0.0,
+            "net_pnl": round(net, 2),
+            "gross_pnl": round(float(r["gross_pnl"]), 2),
+            "charges": round(float(r["charges"]), 2),
+        })
+
+    top_performers = strat_list[:5]
+    laggards = sorted(strat_list, key=lambda s: s["net_pnl"])[:5]
+
+    # 3. Index breakdown
+    index_breakdown = {
+        "NIFTY": {"trades": 0, "wins": 0, "win_rate": 0.0, "net_pnl": 0.0},
+        "BANKNIFTY": {"trades": 0, "wins": 0, "win_rate": 0.0, "net_pnl": 0.0},
+        "SENSEX": {"trades": 0, "wins": 0, "win_rate": 0.0, "net_pnl": 0.0},
+    }
+    for s in strat_list:
+        name = s["strategy"].upper()
+        idx = "BANKNIFTY" if "BANKNIFTY" in name else ("SENSEX" if "SENSEX" in name else "NIFTY")
+        index_breakdown[idx]["trades"] += s["trades"]
+        index_breakdown[idx]["wins"] += s["wins"]
+        index_breakdown[idx]["net_pnl"] = round(index_breakdown[idx]["net_pnl"] + s["net_pnl"], 2)
+
+    for idx, data in index_breakdown.items():
+        data["win_rate"] = round(data["wins"] / data["trades"] * 100, 2) if data["trades"] > 0 else 0.0
+
+    # 4. Daily equity progression
+    daily_rows = await pool.fetch(
+        """SELECT exit_time::date AS day,
+                  COALESCE(SUM(realized_pnl - entry_charges - exit_charges), 0) AS day_net
+           FROM options_positions
+           WHERE status = 'CLOSED'
+           GROUP BY exit_time::date
+           ORDER BY day ASC"""
+    )
+    cum = 0.0
+    equity_curve = []
+    for dr in daily_rows:
+        cum += float(dr["day_net"])
+        equity_curve.append({
+            "date": dr["day"].isoformat(),
+            "daily_net": round(float(dr["day_net"]), 2),
+            "cumulative_pnl": round(cum, 2),
+        })
+
+    return {
+        "all_time_net_pnl": round(all_time_net, 2),
+        "all_time_gross_pnl": round(all_time_gross, 2),
+        "all_time_charges": round(all_time_charges, 2),
+        "all_time_trades": all_time_trades,
+        "all_time_win_rate": all_time_wr,
+        "total_allocated_capital": total_allocated,
+        "total_wallet_balance": total_wallet_balance,
+        "top_performers": top_performers,
+        "laggards": laggards,
+        "index_breakdown": index_breakdown,
+        "equity_curve": equity_curve,
+    }
 
 

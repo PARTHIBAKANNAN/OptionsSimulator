@@ -58,6 +58,10 @@ export async function fetchPnlReport(params) {
   return api(`/api/paper/pnl/report?${qs}`);
 }
 
+export async function fetchLiveAnalyticsOverview() {
+  return api("/api/paper/analytics/overview");
+}
+
 export async function downloadPnlExport(params) {
   const qs = new URLSearchParams(params).toString();
   const res = await fetch(`${API_BASE}/api/paper/pnl/export?${qs}`, { credentials: "include" });

@@ -86,6 +86,7 @@ class LiveTrader:
         capital_by_strategy = load_capital_by_strategy(CAPITAL_REQUIREMENTS_PATH)
         self.paper_trader = PaperTrader(
             lot_size=sizing.get("lot_size", 65),
+            min_entry_premium=sizing.get("min_entry_premium", 60.0),
             max_concurrent_positions=sizing.get("max_concurrent_positions", 5),
             max_daily_loss=sizing.get("max_daily_loss", 5000),
             max_trades_per_day_per_strategy=sizing.get("max_trades_per_day_per_strategy", 2),
@@ -93,6 +94,8 @@ class LiveTrader:
             trailing_activation_pct=exits.get("trailing_activation_pct", 10.0),
             trailing_stop_pct=exits.get("trailing_stop_pct", 15.0),
             trailing_tiers_pct=exits.get("trailing_tiers_pct"),
+            tiered_trailing_enabled=exits.get("tiered_trailing_enabled", True),
+            tiered_rules=exits.get("tiered_rules"),
             consecutive_loss_limit=breaker.get("consecutive_loss_limit"),
             consecutive_loss_cooldown_days=breaker.get("consecutive_loss_cooldown_days", 1),
             max_drawdown_pct_of_capital=breaker.get("max_drawdown_pct_of_capital"),
@@ -106,6 +109,7 @@ class LiveTrader:
         self.qty_per_signal = sizing.get("qty_per_signal", 1)
         self.stop_loss_pct = exits.get("stop_loss_pct", 20)
         self.take_profit_pct = exits.get("take_profit_pct", 40)
+        self.tiered_rules = exits.get("tiered_rules", {})
         self.time_exit_mins = exits.get("time_exit_mins", 120)
         self.poll_interval = config.risk_params.get("polling", {}).get("option_chain_interval_secs", 10)
         self.auto_mode = config.risk_params.get("live_mode", {}).get("auto_approve", True)
@@ -313,12 +317,23 @@ class LiveTrader:
             if decision != "approve":
                 return
 
-        stop_loss = max(signal.entry_price * (1 - self.stop_loss_pct / 100), 0.05)
-        # Percentage of entry premium, not a flat rupee-point target -- a flat number treats a
-        # Rs.30 NIFTY 1M-ATM premium and a Rs.600 BankNifty ITM premium identically, which made
-        # the target nearly unreachable for the former and too easy for the latter. See
-        # docs/ARCHITECTURE.md.
-        take_profit = signal.entry_price * (1 + self.take_profit_pct / 100)
+        ep = signal.entry_price
+        if getattr(self.paper_trader, "tiered_trailing_enabled", False):
+            if ep < 200.0:
+                sl_pct = 20.0
+                tp_pts = 60.0
+            elif ep <= 600.0:
+                sl_pct = 20.0
+                tp_pts = 120.0
+            else:
+                sl_pct = 15.0  # Tier 3 capital protection
+                tp_pts = 150.0
+            stop_loss = max(ep * (1 - sl_pct / 100.0), 0.05)
+            take_profit = ep + tp_pts
+        else:
+            stop_loss = max(ep * (1 - self.stop_loss_pct / 100.0), 0.05)
+            take_profit = ep * (1 + self.take_profit_pct / 100.0)
+
         lot_size = LOT_SIZE_BY_INDEX.get(signal.underlying, self.paper_trader.lot_size)
         try:
             order = self.paper_trader.place_order(

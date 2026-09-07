@@ -64,36 +64,90 @@ function SteppedTslProgressGauge({ entryPrice, ltp, stopLoss, takeProfit, closed
   const deltaPts = ltp - entryPrice;
   const isProfit = deltaPts >= 0;
 
-  // Compute active milestone state
-  let currentStep = 0;
-  let stepLabel = "Initial Hard SL (-20%)";
-  let lockedPoints = 0;
-  let nextMilestonePts = 20;
+  // Determine tier based on entry price
+  const isTier1 = entryPrice < 200;
+  const isTier3 = entryPrice > 600;
+  const slLabel = isTier3 ? "Initial Hard SL (-15%)" : "Initial Hard SL (-20%)";
 
-  if (deltaPts >= 80) {
-    currentStep = 4;
-    lockedPoints = deltaPts - 20;
-    stepLabel = `Step 4: Dynamic Trailing (+${lockedPoints.toFixed(0)} pts)`;
-    nextMilestonePts = takeProfit ? takeProfit - entryPrice : 150;
-  } else if (deltaPts >= 60) {
-    currentStep = 3;
-    lockedPoints = 40;
-    stepLabel = "Step 3: +40 pts Locked";
-    nextMilestonePts = 80;
-  } else if (deltaPts >= 40) {
-    currentStep = 2;
-    lockedPoints = 20;
-    stepLabel = "Step 2: +20 pts Locked";
-    nextMilestonePts = 60;
-  } else if (deltaPts >= 20) {
-    currentStep = 1;
-    lockedPoints = 0;
-    stepLabel = "Step 1: Cost Locked (Break-Even)";
-    nextMilestonePts = 40;
+  let currentStep = 0;
+  let stepLabel = slLabel;
+  let lockedPoints = 0;
+  let nextMilestonePts = isTier1 ? 15 : 20;
+
+  if (isTier1) {
+    // Tier 1 (Rs. 60 - Rs. 200): +15 (Cost), +30 (+15), +45 (+30), +60 (Target)
+    if (deltaPts >= 60) {
+      currentStep = 4;
+      lockedPoints = 45;
+      stepLabel = "Step 4: Target Reached (+60 pts)";
+      nextMilestonePts = takeProfit ? takeProfit - entryPrice : 60;
+    } else if (deltaPts >= 45) {
+      currentStep = 3;
+      lockedPoints = 30;
+      stepLabel = "Step 3: +30 pts Locked";
+      nextMilestonePts = 60;
+    } else if (deltaPts >= 30) {
+      currentStep = 2;
+      lockedPoints = 15;
+      stepLabel = "Step 2: +15 pts Locked";
+      nextMilestonePts = 45;
+    } else if (deltaPts >= 15) {
+      currentStep = 1;
+      lockedPoints = 0;
+      stepLabel = "Step 1: Cost Locked (Break-Even)";
+      nextMilestonePts = 30;
+    }
+  } else if (isTier3) {
+    // Tier 3 (> Rs. 600): +20 (Cost), +35 (+15), +50 (+30), +75 (+50)
+    if (deltaPts >= 75) {
+      currentStep = 4;
+      lockedPoints = 50;
+      stepLabel = `Step 4: Dynamic Trailing (+50 pts locked)`;
+      nextMilestonePts = takeProfit ? takeProfit - entryPrice : 150;
+    } else if (deltaPts >= 50) {
+      currentStep = 3;
+      lockedPoints = 30;
+      stepLabel = "Step 3: +30 pts Locked";
+      nextMilestonePts = 75;
+    } else if (deltaPts >= 35) {
+      currentStep = 2;
+      lockedPoints = 15;
+      stepLabel = "Step 2: +15 pts Locked";
+      nextMilestonePts = 50;
+    } else if (deltaPts >= 20) {
+      currentStep = 1;
+      lockedPoints = 0;
+      stepLabel = "Step 1: Cost Locked (Break-Even)";
+      nextMilestonePts = 35;
+    }
+  } else {
+    // Tier 2 (Rs. 200 - Rs. 600): +20 (Cost), +35 (+15), +50 (+30), +70 (+50)
+    if (deltaPts >= 70) {
+      currentStep = 4;
+      lockedPoints = 50;
+      stepLabel = `Step 4: Dynamic Trailing (+50 pts locked)`;
+      nextMilestonePts = takeProfit ? takeProfit - entryPrice : 120;
+    } else if (deltaPts >= 50) {
+      currentStep = 3;
+      lockedPoints = 30;
+      stepLabel = "Step 3: +30 pts Locked";
+      nextMilestonePts = 70;
+    } else if (deltaPts >= 35) {
+      currentStep = 2;
+      lockedPoints = 15;
+      stepLabel = "Step 2: +15 pts Locked";
+      nextMilestonePts = 50;
+    } else if (deltaPts >= 20) {
+      currentStep = 1;
+      lockedPoints = 0;
+      stepLabel = "Step 1: Cost Locked (Break-Even)";
+      nextMilestonePts = 35;
+    }
   }
 
   const ptsToNext = Math.max(0, nextMilestonePts - deltaPts);
-  const progressPct = Math.min(100, Math.max(5, (Math.max(0, deltaPts) / 100) * 100));
+  const targetMax = isTier1 ? 60 : (isTier3 ? 150 : 120);
+  const progressPct = Math.min(100, Math.max(5, (Math.max(0, deltaPts) / targetMax) * 100));
 
   return (
     <div className="mt-3 rounded-xl border border-subtle/80 bg-surface/80 p-2.5 font-mono text-xs">
@@ -126,10 +180,28 @@ function SteppedTslProgressGauge({ entryPrice, ltp, stopLoss, takeProfit, closed
 
       {/* Milestone Points */}
       <div className="mt-2 flex items-center justify-between text-[10px] text-gray-400">
-        <span className={currentStep >= 1 ? "text-emerald-400 font-bold" : ""}>+20pt (Cost)</span>
-        <span className={currentStep >= 2 ? "text-emerald-400 font-bold" : ""}>+40pt (+20)</span>
-        <span className={currentStep >= 3 ? "text-cyan-400 font-bold" : ""}>+60pt (+40)</span>
-        <span className={currentStep >= 4 ? "text-indigo-400 font-bold" : ""}>+80pt+ (Trail)</span>
+        {isTier1 ? (
+          <>
+            <span className={currentStep >= 1 ? "text-emerald-400 font-bold" : ""}>+15pt (Cost)</span>
+            <span className={currentStep >= 2 ? "text-emerald-400 font-bold" : ""}>+30pt (+15)</span>
+            <span className={currentStep >= 3 ? "text-cyan-400 font-bold" : ""}>+45pt (+30)</span>
+            <span className={currentStep >= 4 ? "text-indigo-400 font-bold" : ""}>+60pt (Target)</span>
+          </>
+        ) : isTier3 ? (
+          <>
+            <span className={currentStep >= 1 ? "text-emerald-400 font-bold" : ""}>+20pt (Cost)</span>
+            <span className={currentStep >= 2 ? "text-emerald-400 font-bold" : ""}>+35pt (+15)</span>
+            <span className={currentStep >= 3 ? "text-cyan-400 font-bold" : ""}>+50pt (+30)</span>
+            <span className={currentStep >= 4 ? "text-indigo-400 font-bold" : ""}>+75pt+ (Trail)</span>
+          </>
+        ) : (
+          <>
+            <span className={currentStep >= 1 ? "text-emerald-400 font-bold" : ""}>+20pt (Cost)</span>
+            <span className={currentStep >= 2 ? "text-emerald-400 font-bold" : ""}>+35pt (+15)</span>
+            <span className={currentStep >= 3 ? "text-cyan-400 font-bold" : ""}>+50pt (+30)</span>
+            <span className={currentStep >= 4 ? "text-indigo-400 font-bold" : ""}>+70pt+ (Trail)</span>
+          </>
+        )}
       </div>
 
       {!closed && ptsToNext > 0 && (

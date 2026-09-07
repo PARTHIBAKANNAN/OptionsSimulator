@@ -76,13 +76,22 @@ class PaperTrader:
                  max_drawdown_pct_of_capital: float = None, drawdown_cooldown_days: int = 3,
                  drawdown_breaker_grace_trades: int = 3,
                  capital_by_strategy: dict = None, charges_rates: dict = None,
-                 enable_wallets: bool = False, post_loss_cooldown_mins: int = 0, logger=None):
+                 enable_wallets: bool = False, post_loss_cooldown_mins: int = 0,
+                 min_entry_premium: float = None, tiered_trailing_enabled: bool = False,
+                 tiered_rules: dict = None, logger=None):
         self.initial_capital = initial_capital
         self.slippage_pct = slippage_pct
         self.lot_size = lot_size
         self.max_concurrent_positions = max_concurrent_positions
         self.max_daily_loss = max_daily_loss
         self.max_trades_per_day_per_strategy = max_trades_per_day_per_strategy
+        self.min_entry_premium = min_entry_premium
+        self.tiered_trailing_enabled = tiered_trailing_enabled
+        self.tiered_rules = tiered_rules or {
+            "tier1": {"max_entry_price": 200.0, "stop_loss_pct": 20.0, "cost_lock_pts": 15.0, "step_pts": 15.0, "step_lock_pts": 15.0, "target_pts": 60.0},
+            "tier2": {"min_entry_price": 200.0, "max_entry_price": 600.0, "stop_loss_pct": 20.0, "cost_lock_pts": 20.0, "step_pts": 15.0, "step_lock_pts": 15.0, "target_pts": 120.0},
+            "tier3": {"min_entry_price": 600.0, "stop_loss_pct": 15.0, "cost_lock_pts": 20.0, "step_pts": 15.0, "step_lock_pts": 15.0, "target_pts": 150.0},
+        }
         # Trailing stop only arms once a position is up trailing_activation_pct from entry — before
         # that it would just clamp tightly to entry-price noise and shake out trades early. Once
         # armed, it ratchets up to stay trailing_stop_pct below the peak premium seen so far,
@@ -106,13 +115,6 @@ class PaperTrader:
         self.consecutive_loss_cooldown_days = consecutive_loss_cooldown_days
         self.max_drawdown_pct_of_capital = max_drawdown_pct_of_capital
         self.drawdown_cooldown_days = drawdown_cooldown_days
-        # Drawdown is measured from the strategy's ALL-TIME peak P&L, which only improves on a new
-        # high — so without this grace window, resuming from a pause and then closing even one
-        # trade that isn't a strong enough win to set a new high would immediately re-trigger
-        # another pause. A backtest showed this trap effectively locked strategies out of most of
-        # their future good trades. This grants drawdown_breaker_grace_trades trades of breathing
-        # room after each drawdown-triggered pause before the breaker can fire again. See
-        # docs/ARCHITECTURE.md.
         self.drawdown_breaker_grace_trades = drawdown_breaker_grace_trades
         self.capital_by_strategy = capital_by_strategy or {}
         self.charges_rates = charges_rates
@@ -191,6 +193,10 @@ class PaperTrader:
                     if timestamp < cooldown_expiry:
                         raise RiskLimitExceeded(
                             f"Strategy '{strategy}' in {self.post_loss_cooldown_mins}-min post-loss cooldown until {cooldown_expiry.strftime('%H:%M:%S')}")
+
+        if self.min_entry_premium is not None and price < self.min_entry_premium:
+            raise RiskLimitExceeded(
+                f"Entry premium Rs.{price:.2f} is below minimum allowed floor Rs.{self.min_entry_premium:.2f}")
 
         fill_price = price * (1 + self.slippage_pct / 100) if side == "BUY" else price * (1 - self.slippage_pct / 100)
         order_value = fill_price * qty * lot_size
@@ -330,22 +336,61 @@ class PaperTrader:
             trailing_stop_price = None
             if self.trailing_stop_enabled and order.entry_price:
                 order.peak_price = max(order.peak_price, price)
-                gain_pct = (order.peak_price - order.entry_price) / order.entry_price * 100
+                peak_gain_pts = order.peak_price - order.entry_price
                 dynamic_price = order.peak_price * (1 - self.trailing_stop_pct / 100)
 
-                # Stepped trailing stop-loss, as % of entry premium (see DEFAULT_TRAILING_TIERS_PCT
-                # and its comment) rather than flat rupee points — a 20-point gain is a completely
-                # different fraction of premium on a Rs.30 NIFTY 1M-ATM contract vs a Rs.600 ITM
-                # BankNifty one, so flat points meant this ratchet was effectively disabled for
-                # low-premium contracts and hair-triggered for high-premium ones. Tiers are
-                # pre-sorted descending by gain_pct in __init__, so the first match is the highest
-                # tier reached.
                 stepped_price = None
-                for tier in self.trailing_tiers_pct:
-                    if gain_pct >= tier["gain_pct"]:
-                        order.trailing_active = True
-                        stepped_price = order.entry_price * (1 + tier["lock_pct"] / 100)
-                        break
+
+                if self.tiered_trailing_enabled:
+                    # 3-Tier Dynamic TSL Framework
+                    ep = order.entry_price
+                    if ep < 200.0:
+                        # Tier 1 (Rs. 60 - Rs. 200): Cost lock at +15 pts, step +15 pts
+                        if peak_gain_pts >= 45.0:
+                            order.trailing_active = True
+                            stepped_price = ep + 30.0
+                        elif peak_gain_pts >= 30.0:
+                            order.trailing_active = True
+                            stepped_price = ep + 15.0
+                        elif peak_gain_pts >= 15.0:
+                            order.trailing_active = True
+                            stepped_price = ep  # Cost lock
+                    elif ep <= 600.0:
+                        # Tier 2 (Rs. 200 - Rs. 600): Cost lock at +20 pts, step +15 pts
+                        if peak_gain_pts >= 70.0:
+                            order.trailing_active = True
+                            stepped_price = ep + 50.0
+                        elif peak_gain_pts >= 50.0:
+                            order.trailing_active = True
+                            stepped_price = ep + 30.0
+                        elif peak_gain_pts >= 35.0:
+                            order.trailing_active = True
+                            stepped_price = ep + 15.0
+                        elif peak_gain_pts >= 20.0:
+                            order.trailing_active = True
+                            stepped_price = ep  # Cost lock
+                    else:
+                        # Tier 3 (> Rs. 600): Cost lock at +20 pts, step +15 pts
+                        if peak_gain_pts >= 75.0:
+                            order.trailing_active = True
+                            stepped_price = ep + 50.0
+                        elif peak_gain_pts >= 50.0:
+                            order.trailing_active = True
+                            stepped_price = ep + 30.0
+                        elif peak_gain_pts >= 35.0:
+                            order.trailing_active = True
+                            stepped_price = ep + 15.0
+                        elif peak_gain_pts >= 20.0:
+                            order.trailing_active = True
+                            stepped_price = ep  # Cost lock
+                else:
+                    # Legacy percentage tiers fallback
+                    gain_pct = (order.peak_price - order.entry_price) / order.entry_price * 100
+                    for tier in self.trailing_tiers_pct:
+                        if gain_pct >= tier["gain_pct"]:
+                            order.trailing_active = True
+                            stepped_price = order.entry_price * (1 + tier["lock_pct"] / 100)
+                            break
 
                 if stepped_price is not None:
                     trailing_stop_price = max(stepped_price, dynamic_price)
