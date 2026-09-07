@@ -216,7 +216,7 @@ class LiveTrader:
                         f"🎯 <b>Expected Open:</b> {intel.get('expected_gap', 'NIFTY')}\n"
                         f"💡 <i>{intel.get('summary', '')}</i>"
                     )
-                    self.telegram.send_alert(summary_msg)
+                    asyncio.create_task(self.telegram.send_alert(summary_msg))
             except Exception as e:
                 self.logger.log_error(f"Pre-market intelligence generation at 08:50 AM failed: {e}")
 

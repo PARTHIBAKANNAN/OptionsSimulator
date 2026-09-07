@@ -50,6 +50,15 @@ class TelegramAlertsManager:
         self._decisions[signal_id] = action
         await query.edit_message_reply_markup(reply_markup=None)
 
+    async def send_alert(self, text: str) -> None:
+        if not self.bot_token or not self.chat_id:
+            return
+        try:
+            await self.bot.send_message(chat_id=self.chat_id, text=text, parse_mode="HTML")
+        except Exception as e:
+            if self.logger:
+                self.logger.log_error(f"Telegram send_alert failed: {e}")
+
     async def send_signal_alert(self, signal) -> str:
         if not self.bot_token or not self.chat_id:
             return ""

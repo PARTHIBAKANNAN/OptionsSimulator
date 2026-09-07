@@ -305,8 +305,10 @@ def generate_live_postmarket_journal(trades_today: list = None, daily_pnl: float
         except Exception:
             pass
 
-    best_trade = max(trades_today, key=lambda t: (t.get("net_pnl") or t.get("pnl") or 0), default=None)
-    worst_trade = min(trades_today, key=lambda t: (t.get("net_pnl") or t.get("pnl") or 0), default=None)
+    wins = [t for t in (trades_today or []) if (t.get("net_pnl") or t.get("pnl") or t.get("realized_pnl") or 0) > 0]
+    losses = [t for t in (trades_today or []) if (t.get("net_pnl") or t.get("pnl") or t.get("realized_pnl") or 0) <= 0]
+    best_trade = max(trades_today, key=lambda t: (t.get("net_pnl") or t.get("pnl") or t.get("realized_pnl") or 0), default=None) if trades_today else None
+    worst_trade = min(trades_today, key=lambda t: (t.get("net_pnl") or t.get("pnl") or t.get("realized_pnl") or 0), default=None) if trades_today else None
 
     # Determine default algorithmic grade
     if daily_pnl > 3000 and win_rate >= 70:
