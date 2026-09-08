@@ -699,7 +699,7 @@ export function LandingScreen({ onLoginClick }) {
         </div>
       </section>
 
-      {/* 21-Strategy Fleet Overview (With Search Bar & Category Filters) */}
+      {/* 44-Strategy Fleet Overview (With Search Bar & Category Filters) */}
       <section id="strategies" className="py-16 px-4 sm:px-8 max-w-7xl mx-auto space-y-8">
         <div className="text-center space-y-3">
           <div className="inline-flex items-center gap-1.5 rounded-full bg-accent/10 px-3.5 py-1 text-xs font-bold text-accent border border-accent/20">

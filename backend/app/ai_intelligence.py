@@ -87,25 +87,30 @@ def _fetch_ticker_quote(symbol_encoded: str, default_price: float, default_prev:
 
 
 def fetch_live_macro_metrics() -> dict:
-    """Fetches real-time financial market numbers via native standard library HTTP requests."""
+    """Fetches real-time financial market numbers across NIFTY, BANKNIFTY, SENSEX, Nasdaq, Crude, VIX, and DXY."""
     nasdaq = _fetch_ticker_quote("%5EIXIC", 26180.46, 26067.17)
-    crude = _fetch_ticker_quote("BZ%3DF", 93.87, 93.78)
-    vix = _fetch_ticker_quote("%5EINDIAVIX", 11.20, 11.32)
-    dxy = _fetch_ticker_quote("DX-Y.NYB", 98.84, 98.80)
+    crude = _fetch_ticker_quote("BZ%3DF", 72.85, 72.10)
+    vix = _fetch_ticker_quote("%5EINDIAVIX", 13.40, 13.12)
+    dxy = _fetch_ticker_quote("DX-Y.NYB", 101.40, 101.25)
+    nifty_spot = _fetch_ticker_quote("%5ENSEI", 24850.0, 24800.0)
+    banknifty_spot = _fetch_ticker_quote("%5ENSEBANK", 51200.0, 51100.0)
+    sensex_spot = _fetch_ticker_quote("%5EBSESN", 81400.0, 81250.0)
 
-    nifty_close = 24252.00
-    gift_nifty = 24329.00
-    gift_chg = 31.50
-    gift_pct = 0.13
-
-    gap_pts = round(gift_nifty - nifty_close, 1)
+    # Estimate GIFT Nifty based on Nasdaq + DXY delta or spot
+    gift_delta = round((nasdaq["pct"] * 25.0) - (dxy["pct"] * 15.0), 1)
+    gift_nifty = round(nifty_spot["val"] + gift_delta, 1)
+    gift_chg = round(gift_delta, 1)
+    gift_pct = round((gift_chg / nifty_spot["val"]) * 100, 2) if nifty_spot["val"] else 0.0
+    gap_pts = gift_chg
 
     raw = {
         "nasdaq": nasdaq,
         "crude": crude,
         "vix": vix,
         "dxy": dxy,
-        "nifty_close": nifty_close,
+        "nifty_spot": nifty_spot,
+        "banknifty_spot": banknifty_spot,
+        "sensex_spot": sensex_spot,
         "gift_nifty": gift_nifty,
         "gift_chg": gift_chg,
         "gift_pct": gift_pct,
@@ -131,7 +136,7 @@ def fetch_live_macro_metrics() -> dict:
                 "name": "BRENT CRUDE",
                 "value": f"${crude['val']:.2f}",
                 "change": f"{'+' if crude['chg'] >= 0 else ''}{crude['chg']:.2f} ({'+' if crude['pct'] >= 0 else ''}{crude['pct']:.2f}%)",
-                "status": "bear" if crude["val"] > 90 else "bull",
+                "status": "bear" if crude["val"] > 85 else "bull",
             },
             {
                 "name": "US DOLLAR (DXY)",
@@ -143,14 +148,14 @@ def fetch_live_macro_metrics() -> dict:
                 "name": "INDIA VIX",
                 "value": f"{vix['val']:.2f}",
                 "change": f"{'+' if vix['chg'] >= 0 else ''}{vix['chg']:.2f} ({'+' if vix['pct'] >= 0 else ''}{vix['pct']:.2f}%)",
-                "status": "bull" if vix["val"] < 14 else "bear",
+                "status": "bull" if vix["val"] < 15 else "bear",
             },
         ],
     }
 
 
 def generate_live_premarket_intel() -> dict:
-    """Combines live market numbers + multi-source global newspapers with Gemini 3.6 Flash synthesis."""
+    """Combines live market numbers + multi-source global newspapers with Gemini Flash synthesis."""
     macro_data = fetch_live_macro_metrics()
     metrics = macro_data["raw"]
     gap_pts = macro_data["gap_pts"]
@@ -168,33 +173,36 @@ def generate_live_premarket_intel() -> dict:
             flat_headlines.append(item)
     news_context = "\n".join(news_lines) if news_lines else "No breaking high-impact headlines."
 
-    api_key = os.environ.get("GEMINI_API_KEY")
+    api_key = os.environ.get("GEMINI_API_KEY", "").strip()
     ai_summary = None
     sector_biases = None
     strat_recs = None
-    market_bias = "MODERATELY_BULLISH"
-    sentiment_score = 66
+    market_bias = "MODERATELY_BULLISH" if gap_pts >= 0 else "MODERATELY_BEARISH"
+    sentiment_score = 65 if gap_pts >= 0 else 45
     source = "Live Macro Feeds + Institutional Model"
 
     if api_key:
-        try:
-            from google import genai
-            client = genai.Client(api_key=api_key)
+        for model_candidate in ["gemini-2.5-flash", "gemini-1.5-flash", "gemini-2.0-flash"]:
+            try:
+                from google import genai
+                client = genai.Client(api_key=api_key)
 
-            prompt = f"""
-You are an institutional Indian Derivatives Quant Strategist. Analyze today's pre-market opening based on these EXACT live market figures and REAL-TIME MULTI-SOURCE GLOBAL NEWSPAPER HEADLINES:
+                prompt = f"""
+You are an institutional Indian Derivatives Quant Strategist. Analyze today's pre-market opening for NIFTY, BANKNIFTY, and SENSEX based on these EXACT live figures and breaking news:
 
 LIVE GLOBAL MARKET DATA:
-- NASDAQ Composite: {metrics['nasdaq']['val']:,.2f} ({metrics['nasdaq']['pct']:+.2f}%)
-- Brent Crude Oil: ${metrics['crude']['val']:.2f}/bbl
-- India VIX: {metrics['vix']['val']:.2f} (Low volatility regime)
+- NASDAQ: {metrics['nasdaq']['val']:,.2f} ({metrics['nasdaq']['pct']:+.2f}%)
+- Brent Crude: ${metrics['crude']['val']:.2f}/bbl
+- India VIX: {metrics['vix']['val']:.2f}
 - US Dollar Index (DXY): {metrics['dxy']['val']:.2f}
-- GIFT Nifty: {metrics['gift_nifty']:,.2f} vs NIFTY 50 Prev Close: {metrics['nifty_close']:,.2f} -> Expected {gap_direction} by ~{abs(gap_pts):.0f} pts.
+- NIFTY Spot: {metrics['nifty_spot']['val']:,.2f} | Expected {gap_direction} ~{abs(gap_pts):.0f} pts
+- BANKNIFTY Spot: {metrics['banknifty_spot']['val']:,.2f}
+- SENSEX Spot: {metrics['sensex_spot']['val']:,.2f}
 
-BREAKING GLOBAL & DOMESTIC NEWSPAPER HEADLINES (LAST 24 HOURS):
+BREAKING GLOBAL & DOMESTIC HEADLINES (LAST 24 HOURS):
 {news_context}
 
-Evaluate the combined impact of global macro trends, geopolitical/oil developments, and breaking corporate/regulatory catalysts on Indian sectors (IT, Banking, Auto, Metals).
+Evaluate the impact on Indian sectors (IT & Tech, Banking & Fin, Auto, Metals) across NIFTY, BANKNIFTY, and SENSEX.
 
 Return ONLY a JSON object with this exact structure:
 {{
@@ -213,41 +221,42 @@ Return ONLY a JSON object with this exact structure:
   ]
 }}
 """
-            response = client.models.generate_content(
-                model="gemini-3.6-flash",
-                contents=prompt,
-            )
-            text = response.text.strip()
-            if "```" in text:
-                text = re.sub(r"^```json\s*|\s*```$", "", text, flags=re.MULTILINE).strip()
-            parsed = json.loads(text)
-            market_bias = parsed.get("market_bias", market_bias)
-            sentiment_score = parsed.get("sentiment_score", sentiment_score)
-            ai_summary = parsed.get("summary")
-            sector_biases = parsed.get("sector_biases")
-            strat_recs = parsed.get("recommended_strategies")
-            source = "Gemini 3.6 Flash (Global Multi-Feed)"
-        except Exception as e:
-            print(f"[PreMarketIntel] Gemini synthesis note: {e}")
+                response = client.models.generate_content(
+                    model=model_candidate,
+                    contents=prompt,
+                )
+                text = response.text.strip()
+                if "```" in text:
+                    text = re.sub(r"^```json\s*|\s*```$", "", text, flags=re.MULTILINE).strip()
+                parsed = json.loads(text)
+                market_bias = parsed.get("market_bias", market_bias)
+                sentiment_score = parsed.get("sentiment_score", sentiment_score)
+                ai_summary = parsed.get("summary")
+                sector_biases = parsed.get("sector_biases")
+                strat_recs = parsed.get("recommended_strategies")
+                source = f"Gemini ({model_candidate}) + Multi-Feed"
+                break
+            except Exception as e:
+                print(f"[PreMarketIntel] Model {model_candidate} note: {e}")
 
     # Fallback qualitative defaults if AI was unavailable
     if not ai_summary:
         ai_summary = (
-            f"GIFT Nifty at {metrics['gift_nifty']:,.1f} indicates an expected {gap_direction} of ~{abs(gap_pts):.0f} points "
-            f"tracking Nasdaq (+{metrics['nasdaq']['pct']:.2f}%) and stable crude oil at ${metrics['crude']['val']:.2f}. "
-            f"Favour buying ITM CE on 5M pullbacks; avoid chasing opening spikes."
+            f"GIFT Nifty indicates an expected {gap_direction} of ~{abs(gap_pts):.0f} points "
+            f"tracking Nasdaq ({metrics['nasdaq']['pct']:+.2f}%) and crude oil at ${metrics['crude']['val']:.2f}. "
+            f"Favour buying ITM options on 5M pullbacks; avoid chasing initial wicks."
         )
     if not sector_biases:
         sector_biases = [
-            {"sector": "IT & Tech", "bias": "BULLISH", "catalyst": "Overnight US tech rally (Nasdaq +0.43%)"},
-            {"sector": "Banking & Fin", "bias": "NEUTRAL", "catalyst": "Major bank consolidation near 20-EMA"},
-            {"sector": "Auto", "bias": "MODERATELY_BULLISH", "catalyst": "Festive season demand acceleration"},
-            {"sector": "Metals", "bias": "MODERATELY_BEARISH", "catalyst": "High energy & commodity consolidation"},
+            {"sector": "IT & Tech", "bias": "BULLISH" if metrics["nasdaq"]["pct"] >= 0 else "BEARISH", "catalyst": f"Global tech tracking Nasdaq ({metrics['nasdaq']['pct']:+.2f}%)"},
+            {"sector": "Banking & Fin", "bias": "NEUTRAL", "catalyst": "Major bank consolidation near key support"},
+            {"sector": "Auto", "bias": "MODERATELY_BULLISH", "catalyst": "Monthly registration and delivery momentum"},
+            {"sector": "Metals", "bias": "BULLISH" if metrics["crude"]["val"] < 80 else "NEUTRAL", "catalyst": "Commodity price stabilization"},
         ]
     if not strat_recs:
         strat_recs = [
-            {"name": "NIFTY_ORB_BULLISH_5M_ITM", "conviction": "HIGH", "reason": "High probability of opening range continuation above 9:25 AM high"},
-            {"name": "SENSEX_SUPPORT_BOUNCE_5M_ITM", "conviction": "HIGH", "reason": "Strong support bounce on morning dips towards 20-EMA"},
+            {"name": "NIFTY_ORB_BULLISH_5M_ITM", "conviction": "HIGH", "reason": "Opening range continuation above 9:25 AM high"},
+            {"name": "SENSEX_SUPPORT_BOUNCE_5M_ITM", "conviction": "HIGH", "reason": "Support bounce on morning dips towards 20-EMA"},
         ]
 
     return {
@@ -268,50 +277,38 @@ POSTMARKET_CACHE_PATH = Path(__file__).resolve().parent.parent.parent / "data" /
 
 
 def generate_live_postmarket_journal(trades_today: list = None, daily_pnl: float = None) -> dict:
-    """Generates an institutional post-market AI trade audit & performance journal at 15:35 IST."""
-    if not trades_today:
+    """Generates an authentic institutional post-market trade audit & performance journal for today's session."""
+    if trades_today is None:
+        # Pull today's real trades from shared_state
         try:
-            from . import db
-            pool = db.get_pool()
-            if pool:
-                import asyncio
-                loop = asyncio.get_event_loop()
-
-                async def _fetch():
-                    return await pool.fetch(
-                        """SELECT order_id, strategy, symbol, qty, lot_size, entry_price, entry_time, exit_price, exit_time, status, exit_reason, realized_pnl, entry_charges, exit_charges
-                           FROM options_positions
-                           WHERE exit_time::date = CURRENT_DATE OR entry_time::date = CURRENT_DATE
-                           ORDER BY entry_time ASC"""
-                    )
-                if loop.is_running():
-                    # If in running loop, use fallback sync or shared_state
-                    pass
+            from .state import shared_state
+            st = shared_state.get()
+            raw_history = st.get("trade_history", [])
+            today_date = datetime.now(IST).date()
+            trades_today = [
+                t for t in raw_history
+                if t.get("exit_time") and str(t.get("exit_time"))[:10] == str(today_date)
+            ]
+            if daily_pnl is None:
+                daily_pnl = sum((t.get("net_pnl") or t.get("realized_pnl") or 0.0) for t in trades_today)
         except Exception:
-            pass
+            trades_today = []
 
-    if not trades_today:
-        try:
-            results_file = Path(__file__).resolve().parent.parent.parent / "data" / "backtest_results" / "report.json"
-            if results_file.exists():
-                rdata = json.loads(results_file.read_text())
-                active = [v for k, v in rdata.items() if isinstance(v, dict) and v.get("total_trades", 0) > 0]
-                if active:
-                    total_trades = sum(v.get("total_trades", 0) for v in active)
-                    tot_wins = sum(v.get("winning_trades", 0) for v in active)
-                    daily_pnl = sum(v.get("total_pnl", 0) for v in active)
-                    win_rate = (tot_wins / total_trades * 100) if total_trades else 0.0
-                    trades_today = active
-        except Exception:
-            pass
+    total_trades = len(trades_today or [])
+    daily_pnl = daily_pnl if daily_pnl is not None else sum((t.get("net_pnl") or t.get("realized_pnl") or 0.0) for t in (trades_today or []))
 
     wins = [t for t in (trades_today or []) if (t.get("net_pnl") or t.get("pnl") or t.get("realized_pnl") or 0) > 0]
     losses = [t for t in (trades_today or []) if (t.get("net_pnl") or t.get("pnl") or t.get("realized_pnl") or 0) <= 0]
+    win_rate = (len(wins) / total_trades * 100) if total_trades else 0.0
+
     best_trade = max(trades_today, key=lambda t: (t.get("net_pnl") or t.get("pnl") or t.get("realized_pnl") or 0), default=None) if trades_today else None
     worst_trade = min(trades_today, key=lambda t: (t.get("net_pnl") or t.get("pnl") or t.get("realized_pnl") or 0), default=None) if trades_today else None
 
     # Determine default algorithmic grade
-    if daily_pnl > 3000 and win_rate >= 70:
+    if total_trades == 0:
+        default_grade = "A"
+        discipline_score = 90
+    elif daily_pnl > 3000 and win_rate >= 70:
         default_grade = "A+"
         discipline_score = 95
     elif daily_pnl >= 0 and win_rate >= 50:

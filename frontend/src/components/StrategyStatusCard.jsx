@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { ChevronDown, ChevronRight, Search, LayoutGrid, List, RotateCcw } from "lucide-react";
+import { ChevronDown, ChevronRight, Search, LayoutGrid, List, Table, RotateCcw } from "lucide-react";
 import { Badge } from "./ui/Badge";
 import { StrategyAnalyticsModal } from "./StrategyAnalyticsModal";
 import { approveSignal, closePosition, rejectSignal, restartStrategy } from "../hooks/usePaperTradingSync";
@@ -338,7 +338,7 @@ function StrategyCard({ row, pendingSignal }) {
 
         {/* Index & TF Badges */}
         <div className="flex items-center gap-1">
-          <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${meta.index === "NIFTY" ? "bg-cyan-500/15 text-cyan-400" : "bg-purple-500/15 text-purple-400"}`}>
+          <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${meta.index === "NIFTY" ? "bg-cyan-500/15 text-cyan-400" : meta.index === "BANKNIFTY" ? "bg-purple-500/15 text-purple-400" : "bg-emerald-500/15 text-emerald-400"}`}>
             {meta.index}
           </span>
           <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-surface3 text-faint">
@@ -469,10 +469,95 @@ function StrategyCard({ row, pendingSignal }) {
   );
 }
 
+// Compact Table View Mode for Zero-Scroll 44-Strategy Monitoring
+function CompactStrategyTable({ strategies = [], pendingSignals = [] }) {
+  const [selectedStrategy, setSelectedStrategy] = useState(null);
+
+  return (
+    <div className="overflow-x-auto rounded-2xl border border-subtle bg-surface shadow-sm">
+      <table className="w-full text-left font-mono text-xs">
+        <thead className="border-b border-subtle bg-surface2/80 text-[11px] font-bold text-faint uppercase tracking-wider">
+          <tr>
+            <th className="py-3 px-4">Status</th>
+            <th className="py-3 px-4 font-sans">Strategy</th>
+            <th className="py-3 px-4">Index / TF</th>
+            <th className="py-3 px-4">Open Contract</th>
+            <th className="py-3 px-4 text-right">Entry</th>
+            <th className="py-3 px-4 text-right">LTP</th>
+            <th className="py-3 px-4 text-right">Today's P&amp;L</th>
+            <th className="py-3 px-4 text-center">Action</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-subtle/60 font-sans">
+          {strategies.map((row) => {
+            const entered = row.status === "SIGNAL_ENTERED";
+            const meta = parseStrategyMeta(row.strategy);
+            const openPos = row.open_positions?.[0] || row.entry;
+            const livePnl = openPos?.trade_pnl != null ? openPos.trade_pnl : (row.today_pnl || 0);
+
+            return (
+              <tr
+                key={row.strategy}
+                className={`transition-colors hover:bg-surface2/50 ${entered ? "bg-emerald-500/5 font-semibold" : ""}`}
+              >
+                <td className="py-2.5 px-4 font-mono">
+                  <div className="flex items-center gap-2">
+                    <StatusBeacon entered={entered} />
+                    <span className={`text-[11px] font-bold ${entered ? "text-emerald-400" : "text-amber-400"}`}>
+                      {entered ? "IN TRADE" : "IDLE"}
+                    </span>
+                  </div>
+                </td>
+                <td className="py-2.5 px-4 font-bold text-primary max-w-[220px] truncate" title={row.strategy}>
+                  {row.strategy}
+                </td>
+                <td className="py-2.5 px-4 font-mono text-[11px]">
+                  <span className={`px-1.5 py-0.5 rounded font-bold text-[10px] ${meta.index === "NIFTY" ? "bg-cyan-500/15 text-cyan-400" : meta.index === "BANKNIFTY" ? "bg-purple-500/15 text-purple-400" : "bg-emerald-500/15 text-emerald-400"}`}>
+                    {meta.index}
+                  </span>{" "}
+                  <span className="text-faint">{meta.tf} {meta.mode}</span>
+                </td>
+                <td className="py-2.5 px-4 font-mono text-xs text-primary truncate max-w-[180px]">
+                  {openPos ? openPos.contract || openPos.symbol : <span className="text-faint">—</span>}
+                </td>
+                <td className="py-2.5 px-4 text-right font-mono text-faint">
+                  {openPos?.entry_price ? `₹${Number(openPos.entry_price).toFixed(2)}` : "—"}
+                </td>
+                <td className="py-2.5 px-4 text-right font-mono font-bold text-primary">
+                  {openPos?.ltp ? `₹${Number(openPos.ltp).toFixed(2)}` : "—"}
+                </td>
+                <td className={`py-2.5 px-4 text-right font-mono font-extrabold text-sm tabular-nums ${pnlClass(row.today_pnl)}`}>
+                  {row.today_pnl != null ? fmtRupee(row.today_pnl) : "₹ 0.00"}
+                </td>
+                <td className="py-2.5 px-4 text-center">
+                  <button
+                    onClick={() => setSelectedStrategy(row.strategy)}
+                    className="rounded-lg bg-surface2 px-2.5 py-1 text-[11px] font-bold text-accent transition hover:bg-accent hover:text-white"
+                  >
+                    View
+                  </button>
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+
+      {selectedStrategy && (
+        <StrategyAnalyticsModal
+          strategy={selectedStrategy}
+          mode="live"
+          onClose={() => setSelectedStrategy(null)}
+        />
+      )}
+    </div>
+  );
+}
+
 export function StrategyStatusList({ strategies = [], pendingSignals = [] }) {
   const [filterTab, setFilterTab] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
-  const [viewMode, setViewMode] = useState("grid");
+  const [viewMode, setViewMode] = useState("grid"); // 'grid' | 'list' | 'table'
 
   const filteredStrategies = useMemo(() => {
     return strategies.filter((s) => {
@@ -599,15 +684,27 @@ export function StrategyStatusList({ strategies = [], pendingSignals = [] }) {
             >
               <List className="h-3.5 w-3.5" />
             </button>
+            <button
+              onClick={() => setViewMode("table")}
+              className={`rounded-lg p-1.5 text-xs transition ${viewMode === "table" ? "bg-surface text-primary shadow-sm" : "text-faint hover:text-primary"}`}
+              title="Compact Table View"
+            >
+              <Table className="h-3.5 w-3.5" />
+            </button>
           </div>
         </div>
       </div>
 
-      {/* Strategies List / Grid */}
+      {/* Strategies Display */}
       {filteredStrategies.length === 0 ? (
         <div className="rounded-2xl border border-subtle bg-surface py-12 text-center text-faint">
           No strategies match the selected filter.
         </div>
+      ) : viewMode === "table" ? (
+        <CompactStrategyTable
+          strategies={filteredStrategies}
+          pendingSignals={pendingSignals}
+        />
       ) : (
         <div className={viewMode === "grid" ? "grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-4" : "space-y-3"}>
           {filteredStrategies.map((row) => (
@@ -622,3 +719,4 @@ export function StrategyStatusList({ strategies = [], pendingSignals = [] }) {
     </div>
   );
 }
+

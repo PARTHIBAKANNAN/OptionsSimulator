@@ -124,7 +124,10 @@ class LiveTrader:
         )
         self.telegram = None
         if config.telegram_bot_token and config.telegram_chat_id:
-            self.telegram = TelegramAlertsManager(config.telegram_bot_token, config.telegram_chat_id, self.logger)
+            self.telegram = TelegramAlertsManager(
+                config.telegram_bot_token, config.telegram_chat_id, self.logger,
+                stats_provider=self._get_telegram_stats
+            )
 
         self.state_manager = StateManager()
         self.is_running = False
@@ -373,19 +376,65 @@ class LiveTrader:
         closed = self.paper_trader.update_positions(
             current_prices, timestamp=datetime.now(IST), time_exit_mins=self.time_exit_mins, eod_square_off=True)
         if closed:
+            remaining_symbols = {o.symbol for o in self.paper_trader.get_positions()}
             self.state_manager.save_positions(self.paper_trader.get_positions())
             for order in closed:
-                exchange = INDEX_TO_EXCHANGE.get(order.underlying, "NSE")
-                raw_sym = f"{exchange}:{order.symbol}"
-                try:
-                    self.fyers.unsubscribe_symbols([raw_sym])
-                    self._monitored_symbols.discard(raw_sym)
-                except Exception:
-                    pass
-        for order in closed:
-            self.state_manager.append_trade(order)
-        if closed:
+                # Active reference counting: only unsubscribe if zero remaining positions hold this symbol
+                if order.symbol not in remaining_symbols:
+                    exchange = INDEX_TO_EXCHANGE.get(order.underlying, "NSE")
+                    raw_sym = f"{exchange}:{order.symbol}"
+                    try:
+                        self.fyers.unsubscribe_symbols([raw_sym])
+                        self._monitored_symbols.discard(raw_sym)
+                    except Exception:
+                        pass
+                self.state_manager.append_trade(order)
+                if self.telegram:
+                    pnl = order.net_pnl if hasattr(order, "net_pnl") and order.net_pnl is not None else order.realized_pnl
+                    asyncio.create_task(self.telegram.send_position_exit(order, pnl or 0.0, order.exit_reason or "EXIT"))
+
             self.state_manager.save_positions(self.paper_trader.get_positions())
+
+    def _get_telegram_stats(self, scope: str) -> dict:
+        history = self.paper_trader.get_trade_history()
+        today_date = datetime.now(IST).date()
+        if scope == "today":
+            today_trades = [t for t in history if hasattr(t, "exit_time") and t.exit_time and t.exit_time.date() == today_date]
+            nifty_trades = [t for t in today_trades if (getattr(t, "underlying", "") == "NIFTY" or "NIFTY" in t.strategy)]
+            bn_trades = [t for t in today_trades if (getattr(t, "underlying", "") == "BANKNIFTY" or "BANKNIFTY" in t.strategy)]
+            sensex_trades = [t for t in today_trades if (getattr(t, "underlying", "") == "SENSEX" or "SENSEX" in t.strategy)]
+            nifty_pnl = sum((t.net_pnl or 0) for t in nifty_trades)
+            bn_pnl = sum((t.net_pnl or 0) for t in bn_trades)
+            sensex_pnl = sum((t.net_pnl or 0) for t in sensex_trades)
+            tot_pnl = sum((t.net_pnl or 0) for t in today_trades)
+            return {
+                "NIFTY": {"pnl": nifty_pnl, "trades": len(nifty_trades)},
+                "BANKNIFTY": {"pnl": bn_pnl, "trades": len(bn_trades)},
+                "SENSEX": {"pnl": sensex_pnl, "trades": len(sensex_trades)},
+                "total_pnl": tot_pnl,
+                "total_trades": len(today_trades),
+            }
+        elif scope == "week":
+            start_week = today_date - timedelta(days=7)
+            week_trades = [t for t in history if hasattr(t, "exit_time") and t.exit_time and t.exit_time.date() >= start_week]
+            wins = [t for t in week_trades if (t.net_pnl or 0) > 0]
+            wr = (len(wins) / len(week_trades) * 100) if week_trades else 0.0
+            tot_pnl = sum((t.net_pnl or 0) for t in week_trades)
+            return {"total_pnl": tot_pnl, "total_trades": len(week_trades), "win_rate": wr}
+        elif scope == "all":
+            tot_pnl = sum((t.net_pnl or 0) for t in history)
+            wallet = sum(self.paper_trader.wallet_balance.values()) if hasattr(self.paper_trader, "wallet_balance") and self.paper_trader.wallet_balance else 1000000.0
+            strat_pnl = {}
+            for t in history:
+                strat_pnl[t.strategy] = strat_pnl.get(t.strategy, 0) + (t.net_pnl or 0)
+            top_strat = max(strat_pnl.items(), key=lambda x: x[1])[0] if strat_pnl else "N/A"
+            return {"total_pnl": tot_pnl, "total_trades": len(history), "wallet_balance": wallet, "top_strategy": top_strat}
+        elif scope == "status":
+            return {
+                "open_positions_count": len(self.paper_trader.get_positions()),
+                "market_open": is_market_open(datetime.now(IST)),
+            }
+        return {}
 
     def _on_market_closed_tick(self) -> None:
         """Called every ~5s while the market is shut, instead of evaluate_strategies()/

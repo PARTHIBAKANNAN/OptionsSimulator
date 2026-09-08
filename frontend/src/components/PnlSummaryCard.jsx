@@ -144,7 +144,7 @@ export function PnlSummaryCard() {
           <div className="mt-1 font-mono text-xl font-bold text-primary tabular-nums">
             {trades}
           </div>
-          <div className="text-[10px] text-faint mt-0.5">Across 21 Strategies</div>
+          <div className="text-[10px] text-faint mt-0.5">Across 44 Strategies</div>
         </div>
 
         {/* 2. Gross P&L */}

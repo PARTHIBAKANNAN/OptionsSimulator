@@ -14,6 +14,8 @@ import {
 } from "lucide-react";
 import { fetchLiveAnalyticsOverview } from "../hooks/usePaperTradingSync";
 import { useMarketState } from "../hooks/useMarketStream";
+import { PnlCalendarHeatmap } from "../components/PnlCalendarHeatmap";
+import { RiskWatchdogHUD } from "../components/RiskWatchdogHUD";
 
 function fmt(v) {
   if (v == null) return "—";
@@ -114,22 +116,6 @@ export function ExecutiveDashboardScreen() {
 
   const openPositions = liveState.positions || [];
   const strategyStatusList = liveState.strategy_status || [];
-
-  // Categorize 44 strategies into NIFTY, BANKNIFTY, SENSEX
-  const categorizedStrategies = useMemo(() => {
-    const groups = { NIFTY: [], BANKNIFTY: [], SENSEX: [] };
-    strategyStatusList.forEach((s) => {
-      const name = (s.strategy || "").toUpperCase();
-      if (name.startsWith("BANKNIFTY")) {
-        groups.BANKNIFTY.push(s);
-      } else if (name.startsWith("SENSEX")) {
-        groups.SENSEX.push(s);
-      } else {
-        groups.NIFTY.push(s);
-      }
-    });
-    return groups;
-  }, [strategyStatusList]);
 
   // Live total P&L today
   const todayStrategyPnl = strategyStatusList.reduce((sum, s) => sum + (s.today_pnl || 0), 0);
@@ -256,7 +242,10 @@ export function ExecutiveDashboardScreen() {
         </div>
       </div>
 
-      {/* 3. Alpha Leaders vs Drawdown Watch Podium */}
+      {/* 3. Autonomous Risk Watchdog HUD (Deterministic & Local) */}
+      <RiskWatchdogHUD analytics={analytics} liveState={liveState} />
+
+      {/* 4. Alpha Leaders vs Drawdown Watch Podium */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Top 5 Alpha Performers */}
         <div className="rounded-xl border border-subtle bg-surface p-5 shadow-sm space-y-4">
@@ -351,7 +340,10 @@ export function ExecutiveDashboardScreen() {
         </div>
       </div>
 
-      {/* 4. Multi-Index Live Cumulative Equity Progression Curve */}
+      {/* 5. Institutional P&L Calendar Heatmap (GitHub-Style Multi-Index Tracking) */}
+      <PnlCalendarHeatmap liveHistory={liveState.trade_history || []} />
+
+      {/* 6. Multi-Index Live Cumulative Equity Progression Curve */}
       <div className="rounded-xl border border-subtle bg-surface p-5 shadow-sm space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
@@ -371,101 +363,6 @@ export function ExecutiveDashboardScreen() {
 
         <div className="w-full pt-2">
           <LivePortfolioGrowthSvgChart data={analytics?.equity_curve || []} />
-        </div>
-      </div>
-
-      {/* 5. 44-Strategy Quant Heatmap Matrix */}
-      <div className="rounded-xl border border-subtle bg-surface p-5 shadow-sm space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-          <div>
-            <h2 className="text-sm font-bold text-primary uppercase tracking-wider flex items-center gap-2">
-              <Layers className="h-4 w-4 text-cyan-400" />
-              44-Strategy Quant Heatmap & Exposure Grid
-            </h2>
-            <p className="text-xs text-faint">Real-time status, active positions, and live intraday performance matrix</p>
-          </div>
-          <div className="flex items-center gap-3 text-[10px] font-mono text-faint">
-            <span className="flex items-center gap-1"><span className="h-2.5 w-2.5 rounded bg-emerald-500" /> In Profit</span>
-            <span className="flex items-center gap-1"><span className="h-2.5 w-2.5 rounded bg-amber-500" /> Cost Locked / Flat</span>
-            <span className="flex items-center gap-1"><span className="h-2.5 w-2.5 rounded bg-rose-500" /> In Drawdown</span>
-            <span className="flex items-center gap-1"><span className="h-2.5 w-2.5 rounded bg-surface3 border border-subtle" /> Idle</span>
-          </div>
-        </div>
-
-        {/* Index Groups */}
-        <div className="space-y-4 pt-2">
-          {["NIFTY", "BANKNIFTY", "SENSEX"].map((idx) => {
-            const strats = categorizedStrategies[idx] || [];
-            const inTradeCount = strats.filter((s) => {
-              const openPos = openPositions.find((p) => p.strategy === s.strategy) || s.entry || (s.open_positions && s.open_positions.length > 0);
-              return s.status === "SIGNAL_ENTERED" || Boolean(openPos);
-            }).length;
-
-            return (
-              <div key={idx} className="rounded-xl border border-subtle bg-surface2/60 p-3.5 space-y-2.5">
-                <div className="flex items-center justify-between text-xs font-bold font-mono">
-                  <span className="text-primary">{idx} ({strats.length} Strategies)</span>
-                  <span className="text-accent text-[11px] font-bold">
-                    {inTradeCount} in trade
-                  </span>
-                </div>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
-                  {strats.map((s) => {
-                    const openPos = openPositions.find((p) => p.strategy === s.strategy) || s.entry || (s.open_positions && s.open_positions[0]);
-                    const inTrade = s.status === "SIGNAL_ENTERED" || Boolean(openPos);
-                    const livePnl = openPos?.trade_pnl != null ? openPos.trade_pnl : (s.entry?.trade_pnl != null ? s.entry.trade_pnl : (s.today_pnl || 0));
-                    const isWin = livePnl > 0;
-                    const isLoss = livePnl < 0;
-
-                    let bgStyle = "bg-surface border-subtle/80 text-faint";
-                    if (inTrade) {
-                      if (isWin) bgStyle = "bg-emerald-500/15 border-emerald-500/50 text-emerald-400 shadow-sm";
-                      else if (isLoss) bgStyle = "bg-rose-500/15 border-rose-500/50 text-rose-400 shadow-sm";
-                      else bgStyle = "bg-amber-500/15 border-amber-500/50 text-amber-400 shadow-sm";
-                    } else if (s.today_pnl && s.today_pnl !== 0) {
-                      if (s.today_pnl > 0) bgStyle = "bg-emerald-950/20 border-emerald-500/20 text-emerald-300";
-                      else bgStyle = "bg-rose-950/20 border-rose-500/20 text-rose-300";
-                    }
-
-                    return (
-                      <div
-                        key={s.strategy}
-                        className={`rounded-lg border p-2.5 font-mono text-[11px] transition hover:scale-[1.02] ${bgStyle}`}
-                      >
-                        <div className="flex items-center justify-between gap-1">
-                          <div className="truncate font-sans font-semibold text-primary" title={s.strategy}>
-                            {s.strategy.replace(`${idx}_`, "")}
-                          </div>
-                          {inTrade && (
-                            <span className="relative flex h-2 w-2">
-                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                            </span>
-                          )}
-                        </div>
-                        <div className="mt-1 flex items-center justify-between text-[10px]">
-                          <span className={inTrade ? (isWin ? "text-emerald-400 font-bold" : isLoss ? "text-rose-400 font-bold" : "text-amber-400 font-bold") : "text-faint"}>
-                            {inTrade ? "IN TRADE" : (s.today_pnl !== 0 ? (s.today_pnl > 0 ? "CLOSED (WIN)" : "CLOSED (LOSS)") : "IDLE")}
-                          </span>
-                          <span className={`font-bold tabular-nums ${inTrade ? (isWin ? "text-bull" : isLoss ? "text-bear" : "text-amber-400") : (s.today_pnl !== 0 ? pnlClass(s.today_pnl) : "text-faint")}`}>
-                            {inTrade
-                              ? (livePnl >= 0 ? `+₹${livePnl.toFixed(0)}` : `₹${livePnl.toFixed(0)}`)
-                              : (s.today_pnl !== 0 ? (s.today_pnl >= 0 ? `+₹${s.today_pnl.toFixed(0)}` : `₹${s.today_pnl.toFixed(0)}`) : "—")}
-                          </span>
-                        </div>
-                        {openPos && (
-                          <div className="mt-1 flex items-center justify-between text-[9px] text-faint border-t border-subtle/40 pt-1">
-                            <span className="truncate max-w-[65%]">{openPos.contract || openPos.symbol}</span>
-                            <span>{openPos.ltp ? `₹${openPos.ltp.toFixed(1)}` : "—"}</span>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            );
-          })}
         </div>
       </div>
     </div>

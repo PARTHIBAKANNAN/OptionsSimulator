@@ -18,7 +18,7 @@ export function ExposureMeter({ positions = [] }) {
           </div>
           <div>
             <h4 className="text-xs font-bold uppercase tracking-wider text-primary">Directional Bias &amp; Exposure</h4>
-            <p className="text-[11px] text-faint">Live portfolio directional balance across all 21 strategies</p>
+            <p className="text-[11px] text-faint">Live portfolio directional balance across all 44 systematic strategies</p>
           </div>
         </div>
         <div className="text-right">
