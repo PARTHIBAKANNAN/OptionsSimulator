@@ -17,7 +17,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from src.trader import IST, LiveTrader, LOT_SIZE_BY_INDEX, is_market_open
+from src.trader import IST, LiveTrader, LOT_SIZE_BY_INDEX, INDEX_TO_EXCHANGE, is_market_open
 from src.data_manager import Candle
 from src.simulator.paper_trader import Order, RiskLimitExceeded
 from src.utils.options_pricing import (
@@ -151,7 +151,7 @@ class WebLiveEngine(LiveTrader):
             "mode": "live" if self.data_engine_enabled else "replay",
             "signals": [self._signal_dict(s) for s in self.recent_signals],
             "pending_signals": pending_signals.list_pending(),
-            "positions": [self._order_dict(o) for o in self.paper_trader.get_positions()],
+            "positions": [self._order_dict(o, current_prices) for o in self.paper_trader.get_positions()],
             "pnl": pnl,
             "fyers_authenticated": bool(self.fyers.access_token) if self.data_engine_enabled else None,
             "strategy_status": self._strategy_status_list(current_prices),
@@ -188,7 +188,7 @@ class WebLiveEngine(LiveTrader):
             name = strategy.name
             opens = open_by_strategy.get(name, [])
             closed_today = closed_today_by_strategy.get(name, [])
-            today_pnl = sum(o.realized_pnl for o in closed_today)
+            today_pnl = sum(o.net_pnl if o.net_pnl is not None else o.realized_pnl for o in closed_today)
 
             entry = None
             last_closed = None
@@ -197,11 +197,13 @@ class WebLiveEngine(LiveTrader):
                 ltp = current_prices.get(latest.symbol)
                 trade_pnl = latest.unrealized_pnl(ltp) if ltp is not None else None
                 if trade_pnl is not None:
-                    today_pnl += trade_pnl
+                    # Subtract entry charges from running unrealized PnL
+                    today_pnl += trade_pnl - (latest.entry_charges or 0.0)
                 entry = {
                     "order_id": latest.order_id,
                     "contract": format_display_symbol(latest.symbol, next_weekly_expiry_date(latest.entry_time)),
                     "qty": latest.qty,
+                    "lot_size": latest.lot_size,
                     "entry_price": latest.entry_price,
                     "entry_time": latest.entry_time.isoformat(),
                     "ltp": ltp,
@@ -215,10 +217,13 @@ class WebLiveEngine(LiveTrader):
                     last_closed = {
                         "contract": format_display_symbol(last.symbol, next_weekly_expiry_date(last.entry_time)),
                         "qty": last.qty,
+                        "lot_size": last.lot_size,
                         "entry_price": last.entry_price,
                         "entry_time": last.entry_time.isoformat(),
                         "exit_price": last.exit_price,
                         "exit_time": last.exit_time.isoformat(),
+                        "gross_pnl": last.realized_pnl,
+                        "charges": round((last.entry_charges or 0.0) + (last.exit_charges or 0.0), 2),
                         "pnl": last.net_pnl if last.net_pnl is not None else last.realized_pnl,
                         "exit_reason": last.exit_reason,
                         "stop_loss": last.stop_loss,
@@ -230,6 +235,7 @@ class WebLiveEngine(LiveTrader):
                     "order_id": o.order_id,
                     "contract": format_display_symbol(o.symbol, next_weekly_expiry_date(o.entry_time)),
                     "qty": o.qty,
+                    "lot_size": o.lot_size,
                     "entry_price": o.entry_price,
                     "entry_time": o.entry_time.isoformat(),
                     "ltp": current_prices.get(o.symbol),
@@ -244,10 +250,13 @@ class WebLiveEngine(LiveTrader):
                 {
                     "contract": format_display_symbol(o.symbol, next_weekly_expiry_date(o.entry_time)),
                     "qty": o.qty,
+                    "lot_size": o.lot_size,
                     "entry_price": o.entry_price,
                     "entry_time": o.entry_time.isoformat(),
                     "exit_price": o.exit_price,
                     "exit_time": o.exit_time.isoformat(),
+                    "gross_pnl": o.realized_pnl,
+                    "charges": round((o.entry_charges or 0.0) + (o.exit_charges or 0.0), 2),
                     "pnl": o.net_pnl if o.net_pnl is not None else o.realized_pnl,
                     "exit_reason": o.exit_reason,
                     "stop_loss": o.stop_loss,
@@ -277,13 +286,17 @@ class WebLiveEngine(LiveTrader):
         }
 
     @staticmethod
-    def _order_dict(order) -> dict:
+    def _order_dict(order, current_prices: dict = None) -> dict:
+        ltp = current_prices.get(order.symbol) if current_prices else None
+        trade_pnl = order.unrealized_pnl(ltp) if ltp is not None else 0.0
         return {
             "order_id": order.order_id, "symbol": order.symbol, "qty": order.qty,
             "entry_price": order.entry_price, "stop_loss": order.stop_loss,
             "take_profit": order.take_profit, "strategy": order.strategy,
             "entry_time": order.entry_time.isoformat(),
             "contract": format_display_symbol(order.symbol, next_weekly_expiry_date(order.entry_time)),
+            "ltp": ltp,
+            "trade_pnl": round(trade_pnl, 2),
         }
 
     # ---- Postgres persistence (replaces StateManager's files for the web path) -----
@@ -597,21 +610,16 @@ class WebLiveEngine(LiveTrader):
             return
 
         ep = signal.entry_price
-        if getattr(self.paper_trader, "tiered_trailing_enabled", False):
-            if ep < 200.0:
-                sl_pct = 20.0
-                tp_pts = 60.0
-            elif ep <= 600.0:
-                sl_pct = 20.0
-                tp_pts = 120.0
-            else:
-                sl_pct = 15.0  # Tier 3 capital protection
-                tp_pts = 150.0
-            stop_loss = max(ep * (1 - sl_pct / 100.0), 0.05)
-            take_profit = ep + tp_pts
-        else:
-            stop_loss = max(ep * (1 - self.stop_loss_pct / 100.0), 0.05)
-            take_profit = ep * (1 + self.take_profit_pct / 100.0)
+        underlying = signal.underlying
+        multi_index = getattr(self.paper_trader, "multi_index_tsl", {})
+        index_rule = multi_index.get(underlying, multi_index.get("NIFTY", {}))
+        is_itm = "_ITM" in (signal.strategy or "") or (ep >= index_rule.get("itm", {}).get("min_entry_price", 200.0))
+        rule = index_rule.get("itm" if is_itm else "atm", {})
+
+        sl_pct = rule.get("stop_loss_pct", self.stop_loss_pct)
+        tp_pts = rule.get("target_pts", None)
+        stop_loss = max(ep * (1 - sl_pct / 100.0), 0.05)
+        take_profit = ep + tp_pts if tp_pts is not None else ep * (1 + self.take_profit_pct / 100.0)
 
         lot_size = LOT_SIZE_BY_INDEX.get(signal.underlying, self.paper_trader.lot_size)
         try:
@@ -623,6 +631,16 @@ class WebLiveEngine(LiveTrader):
         except RiskLimitExceeded as e:
             self.logger.log_error(f"Signal rejected by risk limits: {e}", {"strategy": signal.strategy})
             return
+
+        # Auto-subscribe option symbol to Fyers WebSocket for sub-second real-time tick streaming
+        if self.fyers and self.data_engine_enabled:
+            exchange = INDEX_TO_EXCHANGE.get(signal.underlying, "NSE")
+            raw_sym = f"{exchange}:{signal.strike}"
+            try:
+                self.fyers.subscribe_symbols([raw_sym])
+                self._monitored_symbols.add(raw_sym)
+            except Exception as e:
+                self.logger.log_error(f"WebSocket symbol subscription failed for {raw_sym}: {e}")
 
         await self._save_position_db(order)
         if order.strategy:
@@ -668,6 +686,15 @@ class WebLiveEngine(LiveTrader):
             asyncio.create_task(self._close_position_db(order))
             if order.strategy:
                 asyncio.create_task(self._save_wallet_db(order.strategy))
+            # Clean up WebSocket subscription for closed contract
+            if self.fyers and self.data_engine_enabled:
+                exchange = INDEX_TO_EXCHANGE.get(order.underlying, "NSE")
+                raw_sym = f"{exchange}:{order.symbol}"
+                try:
+                    self.fyers.unsubscribe_symbols([raw_sym])
+                    self._monitored_symbols.discard(raw_sym)
+                except Exception:
+                    pass
         self._publish_state()
 
     # ---- Entry point: live Fyers vs local replay -------------------------------------

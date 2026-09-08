@@ -83,19 +83,33 @@ export function ExecutiveDashboardScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Live streaming market state
+  // Live streaming market state from shared WebSocket
   const liveState = useMarketState();
 
   useEffect(() => {
-    fetchLiveAnalyticsOverview()
-      .then((data) => {
-        setAnalytics(data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        setError(err.message);
-        setLoading(false);
-      });
+    let mounted = true;
+    function loadAnalytics() {
+      fetchLiveAnalyticsOverview()
+        .then((data) => {
+          if (mounted) {
+            setAnalytics(data);
+            setLoading(false);
+          }
+        })
+        .catch((err) => {
+          if (mounted) {
+            setError(err.message);
+            setLoading(false);
+          }
+        });
+    }
+
+    loadAnalytics();
+    const interval = setInterval(loadAnalytics, 15000);
+    return () => {
+      mounted = false;
+      clearInterval(interval);
+    };
   }, []);
 
   const openPositions = liveState.positions || [];
@@ -105,7 +119,7 @@ export function ExecutiveDashboardScreen() {
   const categorizedStrategies = useMemo(() => {
     const groups = { NIFTY: [], BANKNIFTY: [], SENSEX: [] };
     strategyStatusList.forEach((s) => {
-      const name = s.strategy.toUpperCase();
+      const name = (s.strategy || "").toUpperCase();
       if (name.startsWith("BANKNIFTY")) {
         groups.BANKNIFTY.push(s);
       } else if (name.startsWith("SENSEX")) {
@@ -118,9 +132,10 @@ export function ExecutiveDashboardScreen() {
   }, [strategyStatusList]);
 
   // Live total P&L today
-  const todayRealizedPnl = liveState.pnl?.today_realized_pnl || 0;
+  const todayStrategyPnl = strategyStatusList.reduce((sum, s) => sum + (s.today_pnl || 0), 0);
+  const todayRealizedPnl = liveState.pnl?.realized_pnl_today ?? liveState.pnl?.realized_pnl ?? 0;
   const runningPnl = openPositions.reduce((sum, p) => sum + (p.trade_pnl || 0), 0);
-  const todayGrossPnl = todayRealizedPnl + runningPnl;
+  const todayGrossPnl = todayStrategyPnl !== 0 ? todayStrategyPnl : (todayRealizedPnl + runningPnl);
 
   return (
     <div className="space-y-6">
@@ -381,42 +396,69 @@ export function ExecutiveDashboardScreen() {
         <div className="space-y-4 pt-2">
           {["NIFTY", "BANKNIFTY", "SENSEX"].map((idx) => {
             const strats = categorizedStrategies[idx] || [];
+            const inTradeCount = strats.filter((s) => {
+              const openPos = openPositions.find((p) => p.strategy === s.strategy) || s.entry || (s.open_positions && s.open_positions.length > 0);
+              return s.status === "SIGNAL_ENTERED" || Boolean(openPos);
+            }).length;
+
             return (
               <div key={idx} className="rounded-xl border border-subtle bg-surface2/60 p-3.5 space-y-2.5">
                 <div className="flex items-center justify-between text-xs font-bold font-mono">
                   <span className="text-primary">{idx} ({strats.length} Strategies)</span>
-                  <span className="text-faint text-[11px]">
-                    {strats.filter((s) => s.state === "IN_TRADE").length} in trade
+                  <span className="text-accent text-[11px] font-bold">
+                    {inTradeCount} in trade
                   </span>
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
                   {strats.map((s) => {
-                    const inTrade = s.state === "IN_TRADE";
-                    const pnl = s.open_position?.trade_pnl || s.last_trade?.pnl || 0;
-                    const isWin = pnl > 0;
-                    const isLoss = pnl < 0;
+                    const openPos = openPositions.find((p) => p.strategy === s.strategy) || s.entry || (s.open_positions && s.open_positions[0]);
+                    const inTrade = s.status === "SIGNAL_ENTERED" || Boolean(openPos);
+                    const livePnl = openPos?.trade_pnl != null ? openPos.trade_pnl : (s.entry?.trade_pnl != null ? s.entry.trade_pnl : (s.today_pnl || 0));
+                    const isWin = livePnl > 0;
+                    const isLoss = livePnl < 0;
 
                     let bgStyle = "bg-surface border-subtle/80 text-faint";
                     if (inTrade) {
-                      if (isWin) bgStyle = "bg-emerald-500/15 border-emerald-500/40 text-emerald-400";
-                      else if (isLoss) bgStyle = "bg-rose-500/15 border-rose-500/40 text-rose-400";
-                      else bgStyle = "bg-amber-500/15 border-amber-500/40 text-amber-400";
+                      if (isWin) bgStyle = "bg-emerald-500/15 border-emerald-500/50 text-emerald-400 shadow-sm";
+                      else if (isLoss) bgStyle = "bg-rose-500/15 border-rose-500/50 text-rose-400 shadow-sm";
+                      else bgStyle = "bg-amber-500/15 border-amber-500/50 text-amber-400 shadow-sm";
+                    } else if (s.today_pnl && s.today_pnl !== 0) {
+                      if (s.today_pnl > 0) bgStyle = "bg-emerald-950/20 border-emerald-500/20 text-emerald-300";
+                      else bgStyle = "bg-rose-950/20 border-rose-500/20 text-rose-300";
                     }
 
                     return (
                       <div
                         key={s.strategy}
-                        className={`rounded-lg border p-2 font-mono text-[11px] transition hover:scale-[1.02] ${bgStyle}`}
+                        className={`rounded-lg border p-2.5 font-mono text-[11px] transition hover:scale-[1.02] ${bgStyle}`}
                       >
-                        <div className="truncate font-sans font-semibold text-primary" title={s.strategy}>
-                          {s.strategy.replace(`${idx}_`, "")}
+                        <div className="flex items-center justify-between gap-1">
+                          <div className="truncate font-sans font-semibold text-primary" title={s.strategy}>
+                            {s.strategy.replace(`${idx}_`, "")}
+                          </div>
+                          {inTrade && (
+                            <span className="relative flex h-2 w-2">
+                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                            </span>
+                          )}
                         </div>
                         <div className="mt-1 flex items-center justify-between text-[10px]">
-                          <span className="text-faint">{inTrade ? "IN TRADE" : "IDLE"}</span>
-                          <span className={`font-bold tabular-nums ${inTrade ? (isWin ? "text-bull" : isLoss ? "text-bear" : "text-amber-400") : "text-faint"}`}>
-                            {inTrade ? (pnl >= 0 ? `+₹${pnl.toFixed(0)}` : `₹${pnl.toFixed(0)}`) : "—"}
+                          <span className={inTrade ? (isWin ? "text-emerald-400 font-bold" : isLoss ? "text-rose-400 font-bold" : "text-amber-400 font-bold") : "text-faint"}>
+                            {inTrade ? "IN TRADE" : (s.today_pnl !== 0 ? (s.today_pnl > 0 ? "CLOSED (WIN)" : "CLOSED (LOSS)") : "IDLE")}
+                          </span>
+                          <span className={`font-bold tabular-nums ${inTrade ? (isWin ? "text-bull" : isLoss ? "text-bear" : "text-amber-400") : (s.today_pnl !== 0 ? pnlClass(s.today_pnl) : "text-faint")}`}>
+                            {inTrade
+                              ? (livePnl >= 0 ? `+₹${livePnl.toFixed(0)}` : `₹${livePnl.toFixed(0)}`)
+                              : (s.today_pnl !== 0 ? (s.today_pnl >= 0 ? `+₹${s.today_pnl.toFixed(0)}` : `₹${s.today_pnl.toFixed(0)}`) : "—")}
                           </span>
                         </div>
+                        {openPos && (
+                          <div className="mt-1 flex items-center justify-between text-[9px] text-faint border-t border-subtle/40 pt-1">
+                            <span className="truncate max-w-[65%]">{openPos.contract || openPos.symbol}</span>
+                            <span>{openPos.ltp ? `₹${openPos.ltp.toFixed(1)}` : "—"}</span>
+                          </div>
+                        )}
                       </div>
                     );
                   })}

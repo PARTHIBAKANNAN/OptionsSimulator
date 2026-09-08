@@ -58,103 +58,76 @@ function parseStrategyMeta(name) {
   };
 }
 
-// Stepped TSL Animated Progress Gauge
-function SteppedTslProgressGauge({ entryPrice, ltp, stopLoss, takeProfit, closed }) {
+// Multi-Index Expanding Dynamic TSL Progress Gauge
+function SteppedTslProgressGauge({ entryPrice, ltp, stopLoss, takeProfit, closed, strategy = "" }) {
   if (entryPrice == null || ltp == null) return null;
   const deltaPts = ltp - entryPrice;
   const isProfit = deltaPts >= 0;
 
-  // Determine tier based on entry price
-  const isTier1 = entryPrice < 200;
-  const isTier3 = entryPrice > 600;
-  const slLabel = isTier3 ? "Initial Hard SL (-15%)" : "Initial Hard SL (-20%)";
+  const stratUpper = (strategy || "").toUpperCase();
+  const isBankNifty = stratUpper.startsWith("BANKNIFTY");
+  const isSensex = stratUpper.startsWith("SENSEX");
+  const isITM = stratUpper.includes("_ITM") || (isBankNifty ? entryPrice >= 350 : isSensex ? entryPrice >= 450 : entryPrice >= 200);
 
-  let currentStep = 0;
-  let stepLabel = slLabel;
-  let lockedPoints = 0;
-  let nextMilestonePts = isTier1 ? 15 : 20;
+  // Calibrate thresholds based on Index & Moneyness
+  let costLockPts = 12;
+  let stage1Pts = 20;
+  let trail1Dist = 10;
+  let stage2Pts = 40;
+  let trail2Dist = 15;
+  let targetPts = 60;
+  let hardSlPct = 20;
 
-  if (isTier1) {
-    // Tier 1 (Rs. 60 - Rs. 200): +15 (Cost), +30 (+15), +45 (+30), +60 (Target)
-    if (deltaPts >= 60) {
-      currentStep = 4;
-      lockedPoints = 45;
-      stepLabel = "Step 4: Target Reached (+60 pts)";
-      nextMilestonePts = takeProfit ? takeProfit - entryPrice : 60;
-    } else if (deltaPts >= 45) {
-      currentStep = 3;
-      lockedPoints = 30;
-      stepLabel = "Step 3: +30 pts Locked";
-      nextMilestonePts = 60;
-    } else if (deltaPts >= 30) {
-      currentStep = 2;
-      lockedPoints = 15;
-      stepLabel = "Step 2: +15 pts Locked";
-      nextMilestonePts = 45;
-    } else if (deltaPts >= 15) {
-      currentStep = 1;
-      lockedPoints = 0;
-      stepLabel = "Step 1: Cost Locked (Break-Even)";
-      nextMilestonePts = 30;
+  if (isBankNifty) {
+    if (isITM) {
+      costLockPts = 35; stage1Pts = 60; trail1Dist = 30; stage2Pts = 120; trail2Dist = 45; targetPts = 180;
+    } else {
+      costLockPts = 25; stage1Pts = 45; trail1Dist = 22; stage2Pts = 90; trail2Dist = 32; targetPts = 120;
     }
-  } else if (isTier3) {
-    // Tier 3 (> Rs. 600): +20 (Cost), +35 (+15), +50 (+30), +75 (+50)
-    if (deltaPts >= 75) {
-      currentStep = 4;
-      lockedPoints = 50;
-      stepLabel = `Step 4: Dynamic Trailing (+50 pts locked)`;
-      nextMilestonePts = takeProfit ? takeProfit - entryPrice : 150;
-    } else if (deltaPts >= 50) {
-      currentStep = 3;
-      lockedPoints = 30;
-      stepLabel = "Step 3: +30 pts Locked";
-      nextMilestonePts = 75;
-    } else if (deltaPts >= 35) {
-      currentStep = 2;
-      lockedPoints = 15;
-      stepLabel = "Step 2: +15 pts Locked";
-      nextMilestonePts = 50;
-    } else if (deltaPts >= 20) {
-      currentStep = 1;
-      lockedPoints = 0;
-      stepLabel = "Step 1: Cost Locked (Break-Even)";
-      nextMilestonePts = 35;
+  } else if (isSensex) {
+    if (isITM) {
+      costLockPts = 40; stage1Pts = 75; trail1Dist = 36; stage2Pts = 150; trail2Dist = 55; targetPts = 220; hardSlPct = 15;
+    } else {
+      costLockPts = 30; stage1Pts = 55; trail1Dist = 28; stage2Pts = 110; trail2Dist = 40; targetPts = 150;
     }
   } else {
-    // Tier 2 (Rs. 200 - Rs. 600): +20 (Cost), +35 (+15), +50 (+30), +70 (+50)
-    if (deltaPts >= 70) {
-      currentStep = 4;
-      lockedPoints = 50;
-      stepLabel = `Step 4: Dynamic Trailing (+50 pts locked)`;
-      nextMilestonePts = takeProfit ? takeProfit - entryPrice : 120;
-    } else if (deltaPts >= 50) {
-      currentStep = 3;
-      lockedPoints = 30;
-      stepLabel = "Step 3: +30 pts Locked";
-      nextMilestonePts = 70;
-    } else if (deltaPts >= 35) {
-      currentStep = 2;
-      lockedPoints = 15;
-      stepLabel = "Step 2: +15 pts Locked";
-      nextMilestonePts = 50;
-    } else if (deltaPts >= 20) {
-      currentStep = 1;
-      lockedPoints = 0;
-      stepLabel = "Step 1: Cost Locked (Break-Even)";
-      nextMilestonePts = 35;
+    // NIFTY
+    if (isITM) {
+      costLockPts = 16; stage1Pts = 30; trail1Dist = 14; stage2Pts = 60; trail2Dist = 20; targetPts = 90;
+    } else {
+      costLockPts = 12; stage1Pts = 20; trail1Dist = 10; stage2Pts = 40; trail2Dist = 15; targetPts = 60;
     }
   }
 
+  let currentStep = 0;
+  let stepLabel = `Initial Hard SL (-${hardSlPct}%)`;
+  let nextMilestonePts = costLockPts;
+
+  if (deltaPts >= stage2Pts) {
+    currentStep = 3;
+    const locked = Math.max(0, deltaPts - trail2Dist);
+    stepLabel = `Super-Trend Trail: +${locked.toFixed(1)} pts locked (Peak - ${trail2Dist} pts)`;
+    nextMilestonePts = targetPts;
+  } else if (deltaPts >= stage1Pts) {
+    currentStep = 2;
+    const locked = Math.max(0, deltaPts - trail1Dist);
+    stepLabel = `Trend Building: +${locked.toFixed(1)} pts locked (Peak - ${trail1Dist} pts)`;
+    nextMilestonePts = stage2Pts;
+  } else if (deltaPts >= costLockPts) {
+    currentStep = 1;
+    stepLabel = "Cost Locked (Break-Even)";
+    nextMilestonePts = stage1Pts;
+  }
+
   const ptsToNext = Math.max(0, nextMilestonePts - deltaPts);
-  const targetMax = isTier1 ? 60 : (isTier3 ? 150 : 120);
-  const progressPct = Math.min(100, Math.max(5, (Math.max(0, deltaPts) / targetMax) * 100));
+  const progressPct = Math.min(100, Math.max(5, (Math.max(0, deltaPts) / targetPts) * 100));
 
   return (
     <div className="mt-3 rounded-xl border border-subtle/80 bg-surface/80 p-2.5 font-mono text-xs">
       <div className="flex items-center justify-between text-[11px] mb-1.5">
         <div className="flex items-center gap-1.5">
-          <span className="font-bold text-gray-400 font-sans">Stepped TSL:</span>
-          <span className={`font-bold ${currentStep > 0 ? "text-emerald-400" : "text-amber-400"}`}>
+          <span className="font-bold text-gray-400 font-sans">Dynamic TSL:</span>
+          <span className={`font-bold ${currentStep >= 2 ? "text-cyan-400" : currentStep === 1 ? "text-emerald-400" : "text-amber-400"}`}>
             {closed ? "Position Closed" : stepLabel}
           </span>
         </div>
@@ -166,47 +139,30 @@ function SteppedTslProgressGauge({ entryPrice, ltp, stopLoss, takeProfit, closed
       {/* Progress Track */}
       <div className="relative h-2 w-full rounded-full bg-surface3/80 overflow-hidden">
         <div
-          className={`h-full rounded-full transition-all duration-300 ${currentStep >= 3
+          className={`h-full rounded-full transition-all duration-300 ${
+            currentStep >= 3
               ? "bg-gradient-to-r from-emerald-500 via-cyan-500 to-indigo-500 shadow-[0_0_8px_rgba(59,130,246,0.6)]"
               : currentStep >= 1
                 ? "bg-gradient-to-r from-emerald-500 to-cyan-500"
                 : isProfit
                   ? "bg-emerald-500"
                   : "bg-rose-500"
-            }`}
+          }`}
           style={{ width: `${progressPct}%` }}
         />
       </div>
 
       {/* Milestone Points */}
       <div className="mt-2 flex items-center justify-between text-[10px] text-gray-400">
-        {isTier1 ? (
-          <>
-            <span className={currentStep >= 1 ? "text-emerald-400 font-bold" : ""}>+15pt (Cost)</span>
-            <span className={currentStep >= 2 ? "text-emerald-400 font-bold" : ""}>+30pt (+15)</span>
-            <span className={currentStep >= 3 ? "text-cyan-400 font-bold" : ""}>+45pt (+30)</span>
-            <span className={currentStep >= 4 ? "text-indigo-400 font-bold" : ""}>+60pt (Target)</span>
-          </>
-        ) : isTier3 ? (
-          <>
-            <span className={currentStep >= 1 ? "text-emerald-400 font-bold" : ""}>+20pt (Cost)</span>
-            <span className={currentStep >= 2 ? "text-emerald-400 font-bold" : ""}>+35pt (+15)</span>
-            <span className={currentStep >= 3 ? "text-cyan-400 font-bold" : ""}>+50pt (+30)</span>
-            <span className={currentStep >= 4 ? "text-indigo-400 font-bold" : ""}>+75pt+ (Trail)</span>
-          </>
-        ) : (
-          <>
-            <span className={currentStep >= 1 ? "text-emerald-400 font-bold" : ""}>+20pt (Cost)</span>
-            <span className={currentStep >= 2 ? "text-emerald-400 font-bold" : ""}>+35pt (+15)</span>
-            <span className={currentStep >= 3 ? "text-cyan-400 font-bold" : ""}>+50pt (+30)</span>
-            <span className={currentStep >= 4 ? "text-indigo-400 font-bold" : ""}>+70pt+ (Trail)</span>
-          </>
-        )}
+        <span className={currentStep >= 1 ? "text-emerald-400 font-bold" : ""}>+{costLockPts}pt (Cost)</span>
+        <span className={currentStep >= 2 ? "text-cyan-400 font-bold" : ""}>+{stage1Pts}pt (Trail 1)</span>
+        <span className={currentStep >= 3 ? "text-indigo-400 font-bold" : ""}>+{stage2Pts}pt (Runner)</span>
+        <span className={deltaPts >= targetPts ? "text-indigo-400 font-bold" : ""}>+{targetPts}pt (Target)</span>
       </div>
 
       {!closed && ptsToNext > 0 && (
         <div className="mt-1.5 text-[10px] text-faint font-sans text-right">
-          <span className="text-accent font-semibold">{ptsToNext.toFixed(1)} pts</span> to next profit lock
+          <span className="text-accent font-semibold">{ptsToNext.toFixed(1)} pts</span> to next expansion tier
         </div>
       )}
     </div>
@@ -214,40 +170,47 @@ function SteppedTslProgressGauge({ entryPrice, ltp, stopLoss, takeProfit, closed
 }
 
 // QuantMan exact instrument panel box
-function QuantManInstrumentBox({ contract, qty, entryTime, entryPrice, ltp, pnl, stopLoss, takeProfit, exitTime }) {
-  const pct = pctReturn(entryPrice, ltp);
+function QuantManInstrumentBox({ contract, qty, entryTime, entryPrice, ltp, pnl, grossPnl, charges, stopLoss, takeProfit, exitTime, strategy = "", lotSize = 65 }) {
+  const effectiveLotSize = lotSize || 65;
+  const investedCapital = (entryPrice || 0) * (qty || 1) * effectiveLotSize;
+  const netReturnPct = investedCapital > 0 && pnl != null ? (pnl / investedCapital) * 100 : null;
   const closed = Boolean(exitTime);
+
   return (
     <div className="rounded-xl border border-subtle/80 bg-surface2/90 p-3.5 backdrop-blur-sm shadow-inner">
       <div className="flex items-start justify-between gap-3">
         <div>
           <div className="font-mono text-sm font-bold tracking-wide text-primary">{contract}</div>
-          <div className="text-xs text-faint mt-0.5">Qty : {qty ?? 65}</div>
+          <div className="text-xs text-faint mt-0.5">Qty : {qty ?? 1} (Lot: {effectiveLotSize})</div>
         </div>
         <div className="text-right">
-          {pct != null && (
-            <div className={`font-mono text-xs font-bold ${pnlClass(pct)}`}>
-              {pct >= 0 ? "" : ""}{pct.toFixed(1)}%
-            </div>
-          )}
-          <div className={`font-mono text-base font-bold tabular-nums ${pnlClass(pnl)}`}>
-            {pnl != null && pnl > 0 ? "" : ""}{fmtRupee(pnl)}
+          <span className={`text-xs font-bold ${pnlClass(pnl)}`}>
+            {netReturnPct != null ? `${netReturnPct >= 0 ? "+" : ""}${netReturnPct.toFixed(1)}%` : ""}
+          </span>
+          <div className={`text-sm font-extrabold tabular-nums ${pnlClass(pnl)}`}>
+            {pnl < 0 ? `- ₹ ${Math.abs(pnl).toLocaleString("en-IN", { maximumFractionDigits: 2 })}` : fmtRupee(pnl)}
           </div>
         </div>
       </div>
 
-      <div className="mt-3 flex items-center justify-between border-t border-subtle/60 pt-2.5 text-xs">
-        <div className="flex items-center gap-2">
+      {/* 2. Execution Metas: Entry Price & LTP / Exit */}
+      <div className="mt-2.5 flex items-center justify-between border-t border-subtle/50 pt-2 text-[11px]">
+        <div className="flex items-center gap-1.5">
           <span className="text-faint">Entry</span>
-          <span className="rounded bg-accent/20 px-1.5 py-0.5 text-[10px] font-bold text-accent">BUY</span>
+          <span className="rounded bg-accent/15 px-1.5 py-0.5 text-[9px] font-bold text-accent">BUY</span>
           <span className="font-mono font-semibold text-primary">{fmtRupee(entryPrice)}</span>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
           <span className="text-faint">{closed ? "Exit" : "LTP"}</span>
-          <span className={`rounded px-1.5 py-0.5 text-[10px] font-bold ${closed ? "bg-bear/20 text-bear" : "bg-surface3 text-muted"}`}>
+          <span className={`rounded px-1.5 py-0.5 text-[9px] font-bold ${closed ? "bg-bear/15 text-bear" : "bg-surface3 text-faint"}`}>
             {closed ? "SELL" : "LTP"}
           </span>
           <span className="font-mono font-semibold text-primary">{fmtRupee(ltp)}</span>
+          {closed && charges != null && (
+            <span className="text-[10px] text-faint ml-1">
+              (Fees: {fmtRupee(charges)})
+            </span>
+          )}
         </div>
       </div>
 
@@ -258,6 +221,7 @@ function QuantManInstrumentBox({ contract, qty, entryTime, entryPrice, ltp, pnl,
         stopLoss={stopLoss}
         takeProfit={takeProfit}
         closed={closed}
+        strategy={strategy}
       />
     </div>
   );
@@ -426,6 +390,7 @@ function StrategyCard({ row, pendingSignal }) {
                     contract={pos.contract} qty={pos.qty} entryTime={pos.entry_time}
                     entryPrice={pos.entry_price} ltp={pos.ltp} pnl={pos.trade_pnl}
                     stopLoss={pos.stop_loss} takeProfit={pos.take_profit}
+                    strategy={row.strategy}
                   />
                 ))}
               </div>
@@ -449,6 +414,7 @@ function StrategyCard({ row, pendingSignal }) {
                     ltp={pos.exit_price} pnl={pos.pnl}
                     stopLoss={pos.stop_loss} takeProfit={pos.take_profit}
                     exitTime={pos.exit_time}
+                    strategy={row.strategy}
                   />
                 ))}
               </div>

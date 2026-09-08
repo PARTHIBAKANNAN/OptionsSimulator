@@ -423,3 +423,40 @@ def test_restore_daily_counts_does_not_affect_other_strategies():
     order = trader.place_order("NIFTY24600CE", "BUY", qty=1, price=100.0,
                                 strategy="ORB_BULLISH", timestamp=datetime(2026, 8, 6, 10, 0))
     assert order.status == "OPEN"
+
+
+# ---- Multi-Index Expanding Dynamic TSL Tests ---------------------------------
+
+def test_expanding_dynamic_tsl_nifty_atm_cost_lock_and_stage1_trail():
+    trader = PaperTrader(slippage_pct=0, trailing_stop_enabled=True, expanding_dynamic_tsl_enabled=True)
+    order = trader.place_order("NIFTY23900PE", "BUY", qty=1, price=100.0, strategy="NIFTY_ORB_BULLISH_1M_ATM")
+
+    # +12 pts: Cost Lock activates (SL -> 100.0)
+    trader.update_positions({"NIFTY23900PE": 112.0})
+    assert order.trailing_active is True
+
+    # +25 pts: Trend Building Trail (Peak 125 - 10 = 115.0 locked)
+    trader.update_positions({"NIFTY23900PE": 125.0})
+
+    # Pullback to 114 should exit at 115.0
+    closed = trader.update_positions({"NIFTY23900PE": 114.0})
+    assert len(closed) == 1
+    assert closed[0].exit_reason == "TRAILING_STOP"
+    assert closed[0].exit_price == pytest.approx(115.0)
+
+
+def test_expanding_dynamic_tsl_nifty_super_trend_runner_trail():
+    trader = PaperTrader(slippage_pct=0, trailing_stop_enabled=True, expanding_dynamic_tsl_enabled=True)
+    order = trader.place_order("NIFTY23900PE", "BUY", qty=1, price=194.89, strategy="NIFTY_RESISTANCE_REJECTION_5M_ITM")
+
+    # +45 pts run on ITM: Hits 239.89 (>= stage1_threshold 30.0) -> TSL is Peak (239.89) - 14.0 = 225.89
+    trader.update_positions({"NIFTY23900PE": 239.89})
+    assert order.trailing_active is True
+
+    # Pullback to 220 should exit at 225.89
+    closed = trader.update_positions({"NIFTY23900PE": 220.0})
+    assert len(closed) == 1
+    assert closed[0].exit_reason == "TRAILING_STOP"
+    assert closed[0].exit_price == pytest.approx(225.89)
+
+

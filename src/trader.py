@@ -94,8 +94,10 @@ class LiveTrader:
             trailing_activation_pct=exits.get("trailing_activation_pct", 10.0),
             trailing_stop_pct=exits.get("trailing_stop_pct", 15.0),
             trailing_tiers_pct=exits.get("trailing_tiers_pct"),
-            tiered_trailing_enabled=exits.get("tiered_trailing_enabled", True),
+            tiered_trailing_enabled=exits.get("tiered_trailing_enabled", False),
             tiered_rules=exits.get("tiered_rules"),
+            expanding_dynamic_tsl_enabled=exits.get("expanding_dynamic_tsl_enabled", True),
+            multi_index_tsl=exits.get("multi_index_tsl"),
             consecutive_loss_limit=breaker.get("consecutive_loss_limit"),
             consecutive_loss_cooldown_days=breaker.get("consecutive_loss_cooldown_days", 1),
             max_drawdown_pct_of_capital=breaker.get("max_drawdown_pct_of_capital"),
@@ -163,6 +165,10 @@ class LiveTrader:
         tick.update({"bid": message.get("bid_price1", 0), "ask": message.get("ask_price1", 0),
                      "oi": message.get("oi", 0)})
         self.data_managers[option_index].on_option_tick(symbol, tick)
+
+        # Instant sub-second exit check on incoming option tick
+        if self.paper_trader.get_positions():
+            self.check_exits()
 
     def _seed_historical_candles(self) -> None:
         """Warms up the 1H/15m/5m indicators before market open so day-1 strategies aren't blind,
@@ -316,23 +322,17 @@ class LiveTrader:
             decision = await self.telegram.await_decision(signal_id, timeout_secs=300)
             if decision != "approve":
                 return
-
         ep = signal.entry_price
-        if getattr(self.paper_trader, "tiered_trailing_enabled", False):
-            if ep < 200.0:
-                sl_pct = 20.0
-                tp_pts = 60.0
-            elif ep <= 600.0:
-                sl_pct = 20.0
-                tp_pts = 120.0
-            else:
-                sl_pct = 15.0  # Tier 3 capital protection
-                tp_pts = 150.0
-            stop_loss = max(ep * (1 - sl_pct / 100.0), 0.05)
-            take_profit = ep + tp_pts
-        else:
-            stop_loss = max(ep * (1 - self.stop_loss_pct / 100.0), 0.05)
-            take_profit = ep * (1 + self.take_profit_pct / 100.0)
+        underlying = signal.underlying
+        multi_index = getattr(self.paper_trader, "multi_index_tsl", {})
+        index_rule = multi_index.get(underlying, multi_index.get("NIFTY", {}))
+        is_itm = "_ITM" in (signal.strategy or "") or (ep >= index_rule.get("itm", {}).get("min_entry_price", 200.0))
+        rule = index_rule.get("itm" if is_itm else "atm", {})
+
+        sl_pct = rule.get("stop_loss_pct", self.stop_loss_pct)
+        tp_pts = rule.get("target_pts", None)
+        stop_loss = max(ep * (1 - sl_pct / 100.0), 0.05)
+        take_profit = ep + tp_pts if tp_pts is not None else ep * (1 + self.take_profit_pct / 100.0)
 
         lot_size = LOT_SIZE_BY_INDEX.get(signal.underlying, self.paper_trader.lot_size)
         try:
@@ -344,6 +344,15 @@ class LiveTrader:
         except RiskLimitExceeded as e:
             self.logger.log_error(f"Signal rejected by risk limits: {e}", {"strategy": signal.strategy})
             return
+
+        # Auto-subscribe option contract symbol to live WebSocket ticks
+        exchange = INDEX_TO_EXCHANGE.get(signal.underlying, "NSE")
+        raw_sym = f"{exchange}:{signal.strike}"
+        try:
+            self.fyers.subscribe_symbols([raw_sym])
+            self._monitored_symbols.add(raw_sym)
+        except Exception as e:
+            self.logger.log_error(f"WebSocket symbol subscription failed for {raw_sym}: {e}")
 
         self.state_manager.save_positions(self.paper_trader.get_positions())
         if self.telegram:
@@ -362,7 +371,17 @@ class LiveTrader:
         for data_manager in self.data_managers.values():
             current_prices.update({sym: q.ltp for sym, q in data_manager.get_option_chain().items()})
         closed = self.paper_trader.update_positions(
-            current_prices, timestamp=datetime.now(IST), time_exit_mins=self.time_exit_mins)
+            current_prices, timestamp=datetime.now(IST), time_exit_mins=self.time_exit_mins, eod_square_off=True)
+        if closed:
+            self.state_manager.save_positions(self.paper_trader.get_positions())
+            for order in closed:
+                exchange = INDEX_TO_EXCHANGE.get(order.underlying, "NSE")
+                raw_sym = f"{exchange}:{order.symbol}"
+                try:
+                    self.fyers.unsubscribe_symbols([raw_sym])
+                    self._monitored_symbols.discard(raw_sym)
+                except Exception:
+                    pass
         for order in closed:
             self.state_manager.append_trade(order)
         if closed:

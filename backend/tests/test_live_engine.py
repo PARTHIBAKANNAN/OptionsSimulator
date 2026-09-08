@@ -193,7 +193,7 @@ def test_strategy_status_list_reports_signal_entered_with_contract_entry_ltp_and
     assert row["entry"]["contract"] == "NIFTY04Aug202624600CE"
     assert row["entry"]["ltp"] == 125.0
     assert row["entry"]["trade_pnl"] == pytest.approx((125.0 - row["entry"]["entry_price"]) * engine.paper_trader.lot_size)
-    assert row["today_pnl"] == pytest.approx(row["entry"]["trade_pnl"])
+    assert row["today_pnl"] == pytest.approx(row["entry"]["trade_pnl"] - (engine.paper_trader.get_positions()[0].entry_charges or 0.0))
 
     # every other strategy is untouched and still waiting
     others = [r for r in rows if r["strategy"] != "NIFTY_MACD_BULLISH_1M_ATM"]
@@ -217,7 +217,7 @@ def test_strategy_status_list_includes_realized_pnl_from_trades_closed_today():
     row = next(r for r in rows if r["strategy"] == "NIFTY_MACD_BULLISH_1M_ATM")
 
     assert row["status"] == "WAITING"  # no longer open
-    assert row["today_pnl"] == pytest.approx((130.0 - order.entry_price) * engine.paper_trader.lot_size)
+    assert row["today_pnl"] == pytest.approx(order.net_pnl)
 
 
 def test_strategy_status_list_surfaces_last_closed_today_when_flat():

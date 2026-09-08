@@ -78,7 +78,8 @@ class PaperTrader:
                  capital_by_strategy: dict = None, charges_rates: dict = None,
                  enable_wallets: bool = False, post_loss_cooldown_mins: int = 0,
                  min_entry_premium: float = None, tiered_trailing_enabled: bool = False,
-                 tiered_rules: dict = None, logger=None):
+                 tiered_rules: dict = None, expanding_dynamic_tsl_enabled: bool = False,
+                 multi_index_tsl: dict = None, logger=None):
         self.initial_capital = initial_capital
         self.slippage_pct = slippage_pct
         self.lot_size = lot_size
@@ -91,6 +92,21 @@ class PaperTrader:
             "tier1": {"max_entry_price": 200.0, "stop_loss_pct": 20.0, "cost_lock_pts": 15.0, "step_pts": 15.0, "step_lock_pts": 15.0, "target_pts": 60.0},
             "tier2": {"min_entry_price": 200.0, "max_entry_price": 600.0, "stop_loss_pct": 20.0, "cost_lock_pts": 20.0, "step_pts": 15.0, "step_lock_pts": 15.0, "target_pts": 120.0},
             "tier3": {"min_entry_price": 600.0, "stop_loss_pct": 15.0, "cost_lock_pts": 20.0, "step_pts": 15.0, "step_lock_pts": 15.0, "target_pts": 150.0},
+        }
+        self.expanding_dynamic_tsl_enabled = expanding_dynamic_tsl_enabled
+        self.multi_index_tsl = multi_index_tsl or {
+            "NIFTY": {
+                "atm": {"max_entry_price": 200.0, "cost_lock_pts": 12.0, "trail_stage1_pts": 10.0, "stage1_threshold_pts": 20.0, "trail_stage2_pts": 15.0, "stage2_threshold_pts": 40.0, "target_pts": 60.0},
+                "itm": {"min_entry_price": 200.0, "cost_lock_pts": 16.0, "trail_stage1_pts": 14.0, "stage1_threshold_pts": 30.0, "trail_stage2_pts": 20.0, "stage2_threshold_pts": 60.0, "target_pts": 90.0},
+            },
+            "BANKNIFTY": {
+                "atm": {"max_entry_price": 350.0, "cost_lock_pts": 25.0, "trail_stage1_pts": 22.0, "stage1_threshold_pts": 45.0, "trail_stage2_pts": 32.0, "stage2_threshold_pts": 90.0, "target_pts": 120.0},
+                "itm": {"min_entry_price": 350.0, "cost_lock_pts": 35.0, "trail_stage1_pts": 30.0, "stage1_threshold_pts": 60.0, "trail_stage2_pts": 45.0, "stage2_threshold_pts": 120.0, "target_pts": 180.0},
+            },
+            "SENSEX": {
+                "atm": {"max_entry_price": 450.0, "cost_lock_pts": 30.0, "trail_stage1_pts": 28.0, "stage1_threshold_pts": 55.0, "trail_stage2_pts": 40.0, "stage2_threshold_pts": 110.0, "target_pts": 150.0},
+                "itm": {"min_entry_price": 450.0, "cost_lock_pts": 40.0, "trail_stage1_pts": 36.0, "stage1_threshold_pts": 75.0, "trail_stage2_pts": 55.0, "stage2_threshold_pts": 150.0, "target_pts": 220.0},
+            },
         }
         # Trailing stop only arms once a position is up trailing_activation_pct from entry — before
         # that it would just clamp tightly to entry-price noise and shake out trades early. Once
@@ -337,69 +353,93 @@ class PaperTrader:
             if self.trailing_stop_enabled and order.entry_price:
                 order.peak_price = max(order.peak_price, price)
                 peak_gain_pts = order.peak_price - order.entry_price
-                dynamic_price = order.peak_price * (1 - self.trailing_stop_pct / 100)
+                ep = order.entry_price
 
-                stepped_price = None
+                if getattr(self, "expanding_dynamic_tsl_enabled", True):
+                    # Multi-Index & Moneyness Expanding Dynamic TSL
+                    underlying = order.underlying  # "NIFTY", "BANKNIFTY", or "SENSEX"
+                    index_rules = self.multi_index_tsl.get(underlying, self.multi_index_tsl.get("NIFTY", {}))
+                    
+                    is_itm = "_ITM" in (order.strategy or "") or (ep >= index_rules.get("itm", {}).get("min_entry_price", 200.0))
+                    rule = index_rules.get("itm" if is_itm else "atm", {})
 
-                if self.tiered_trailing_enabled:
-                    # 3-Tier Dynamic TSL Framework
-                    ep = order.entry_price
+                    cost_lock = rule.get("cost_lock_pts", 12.0)
+                    stage1_thresh = rule.get("stage1_threshold_pts", 20.0)
+                    trail1 = rule.get("trail_stage1_pts", 10.0)
+                    stage2_thresh = rule.get("stage2_threshold_pts", 40.0)
+                    trail2 = rule.get("trail_stage2_pts", 15.0)
+
+                    if peak_gain_pts >= stage2_thresh:
+                        # Stage 2 Super-Trend Runner Trail (Peak - trail2)
+                        order.trailing_active = True
+                        trailing_stop_price = max(ep, order.peak_price - trail2)
+                    elif peak_gain_pts >= stage1_thresh:
+                        # Stage 1 Trend Building Trail (Peak - trail1)
+                        order.trailing_active = True
+                        trailing_stop_price = max(ep, order.peak_price - trail1)
+                    elif peak_gain_pts >= cost_lock:
+                        # Cost Lock (Break-Even)
+                        order.trailing_active = True
+                        trailing_stop_price = ep
+                elif self.tiered_trailing_enabled:
+                    # 3-Tier Dynamic TSL Framework fallback
                     if ep < 200.0:
-                        # Tier 1 (Rs. 60 - Rs. 200): Cost lock at +15 pts, step +15 pts
                         if peak_gain_pts >= 45.0:
                             order.trailing_active = True
-                            stepped_price = ep + 30.0
+                            trailing_stop_price = ep + 30.0
                         elif peak_gain_pts >= 30.0:
                             order.trailing_active = True
-                            stepped_price = ep + 15.0
+                            trailing_stop_price = ep + 15.0
                         elif peak_gain_pts >= 15.0:
                             order.trailing_active = True
-                            stepped_price = ep  # Cost lock
+                            trailing_stop_price = ep
                     elif ep <= 600.0:
-                        # Tier 2 (Rs. 200 - Rs. 600): Cost lock at +20 pts, step +15 pts
                         if peak_gain_pts >= 70.0:
                             order.trailing_active = True
-                            stepped_price = ep + 50.0
+                            trailing_stop_price = ep + 50.0
                         elif peak_gain_pts >= 50.0:
                             order.trailing_active = True
-                            stepped_price = ep + 30.0
+                            trailing_stop_price = ep + 30.0
                         elif peak_gain_pts >= 35.0:
                             order.trailing_active = True
-                            stepped_price = ep + 15.0
+                            trailing_stop_price = ep + 15.0
                         elif peak_gain_pts >= 20.0:
                             order.trailing_active = True
-                            stepped_price = ep  # Cost lock
+                            trailing_stop_price = ep
                     else:
-                        # Tier 3 (> Rs. 600): Cost lock at +20 pts, step +15 pts
                         if peak_gain_pts >= 75.0:
                             order.trailing_active = True
-                            stepped_price = ep + 50.0
+                            trailing_stop_price = ep + 50.0
                         elif peak_gain_pts >= 50.0:
                             order.trailing_active = True
-                            stepped_price = ep + 30.0
+                            trailing_stop_price = ep + 30.0
                         elif peak_gain_pts >= 35.0:
                             order.trailing_active = True
-                            stepped_price = ep + 15.0
+                            trailing_stop_price = ep + 15.0
                         elif peak_gain_pts >= 20.0:
                             order.trailing_active = True
-                            stepped_price = ep  # Cost lock
+                            trailing_stop_price = ep
                 else:
                     # Legacy percentage tiers fallback
                     gain_pct = (order.peak_price - order.entry_price) / order.entry_price * 100
+                    stepped_price = None
                     for tier in self.trailing_tiers_pct:
                         if gain_pct >= tier["gain_pct"]:
                             order.trailing_active = True
                             stepped_price = order.entry_price * (1 + tier["lock_pct"] / 100)
                             break
+                    dynamic_price = order.peak_price * (1 - self.trailing_stop_pct / 100)
+                    if stepped_price is not None:
+                        trailing_stop_price = max(stepped_price, dynamic_price)
+                    elif order.trailing_active:
+                        trailing_stop_price = max(dynamic_price, order.entry_price)
 
-                if stepped_price is not None:
-                    trailing_stop_price = max(stepped_price, dynamic_price)
-                elif not order.trailing_active and order.peak_price >= order.entry_price * (
-                        1 + self.trailing_activation_pct / 100):
-                    order.trailing_active = True
-
-                if order.trailing_active and trailing_stop_price is None:
-                    trailing_stop_price = max(dynamic_price, order.entry_price)
+                # Monotonic trailing stop escalation (never moves downward)
+                if trailing_stop_price is not None:
+                    prev_tsl = getattr(order, "_highest_trailing_stop", None)
+                    if prev_tsl is not None:
+                        trailing_stop_price = max(trailing_stop_price, prev_tsl)
+                    order._highest_trailing_stop = trailing_stop_price
 
             reason = None
             fill_price = price

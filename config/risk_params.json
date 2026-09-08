@@ -14,37 +14,73 @@
     "trailing_stop_enabled": true,
     "trailing_activation_pct": 10,
     "trailing_stop_pct": 15,
-    "trailing_tiers_pct": [
-      {"gain_pct": 10, "lock_pct": 0},
-      {"gain_pct": 20, "lock_pct": 5},
-      {"gain_pct": 30, "lock_pct": 10}
-    ],
-    "tiered_trailing_enabled": true,
-    "tiered_rules": {
-      "tier1": {
-        "max_entry_price": 200.0,
-        "stop_loss_pct": 20.0,
-        "cost_lock_pts": 15.0,
-        "step_pts": 15.0,
-        "step_lock_pts": 15.0,
-        "target_pts": 60.0
+    "expanding_dynamic_tsl_enabled": true,
+    "multi_index_tsl": {
+      "NIFTY": {
+        "atm": {
+          "max_entry_price": 200.0,
+          "stop_loss_pct": 20.0,
+          "cost_lock_pts": 12.0,
+          "trail_stage1_pts": 10.0,
+          "stage1_threshold_pts": 20.0,
+          "trail_stage2_pts": 15.0,
+          "stage2_threshold_pts": 40.0,
+          "target_pts": 60.0
+        },
+        "itm": {
+          "min_entry_price": 200.0,
+          "stop_loss_pct": 20.0,
+          "cost_lock_pts": 16.0,
+          "trail_stage1_pts": 14.0,
+          "stage1_threshold_pts": 30.0,
+          "trail_stage2_pts": 20.0,
+          "stage2_threshold_pts": 60.0,
+          "target_pts": 90.0
+        }
       },
-      "tier2": {
-        "min_entry_price": 200.0,
-        "max_entry_price": 600.0,
-        "stop_loss_pct": 20.0,
-        "cost_lock_pts": 20.0,
-        "step_pts": 15.0,
-        "step_lock_pts": 15.0,
-        "target_pts": 120.0
+      "BANKNIFTY": {
+        "atm": {
+          "max_entry_price": 350.0,
+          "stop_loss_pct": 20.0,
+          "cost_lock_pts": 25.0,
+          "trail_stage1_pts": 22.0,
+          "stage1_threshold_pts": 45.0,
+          "trail_stage2_pts": 32.0,
+          "stage2_threshold_pts": 90.0,
+          "target_pts": 120.0
+        },
+        "itm": {
+          "min_entry_price": 350.0,
+          "stop_loss_pct": 20.0,
+          "cost_lock_pts": 35.0,
+          "trail_stage1_pts": 30.0,
+          "stage1_threshold_pts": 60.0,
+          "trail_stage2_pts": 45.0,
+          "stage2_threshold_pts": 120.0,
+          "target_pts": 180.0
+        }
       },
-      "tier3": {
-        "min_entry_price": 600.0,
-        "stop_loss_pct": 15.0,
-        "cost_lock_pts": 20.0,
-        "step_pts": 15.0,
-        "step_lock_pts": 15.0,
-        "target_pts": 150.0
+      "SENSEX": {
+        "atm": {
+          "max_entry_price": 450.0,
+          "stop_loss_pct": 20.0,
+          "cost_lock_pts": 30.0,
+          "trail_stage1_pts": 28.0,
+          "stage1_threshold_pts": 55.0,
+          "trail_stage2_pts": 40.0,
+          "stage2_threshold_pts": 110.0,
+          "target_pts": 150.0
+        },
+        "itm": {
+          "min_entry_price": 450.0,
+          "stop_loss_pct": 15.0,
+          "cost_lock_pts": 40.0,
+          "trail_stage1_pts": 36.0,
+          "stage1_threshold_pts": 75.0,
+          "trail_stage2_pts": 55.0,
+          "stage2_threshold_pts": 150.0,
+          "target_pts": 220.0
+        }
       }
     }
   },
