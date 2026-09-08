@@ -341,7 +341,10 @@ export function ExecutiveDashboardScreen() {
       </div>
 
       {/* 5. Institutional P&L Calendar Heatmap (GitHub-Style Multi-Index Tracking) */}
-      <PnlCalendarHeatmap liveHistory={liveState.trade_history || []} />
+      <PnlCalendarHeatmap
+        dailyBreakdown={analytics?.daily_breakdown || {}}
+        liveHistory={liveState.trade_history || []}
+      />
 
       {/* 6. Multi-Index Live Cumulative Equity Progression Curve */}
       <div className="rounded-xl border border-subtle bg-surface p-5 shadow-sm space-y-4">

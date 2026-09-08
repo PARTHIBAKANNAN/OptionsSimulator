@@ -444,9 +444,14 @@ async def get_analytics_overview(request: Request):
     for idx, data in index_breakdown.items():
         data["win_rate"] = round(data["wins"] / data["trades"] * 100, 2) if data["trades"] > 0 else 0.0
 
-    # 4. Daily equity progression
+    # 4. Daily equity progression & calendar breakdown
     daily_rows = await pool.fetch(
         """SELECT exit_time::date AS day,
+                  COUNT(*) AS trades,
+                  SUM(CASE WHEN realized_pnl > 0 THEN 1 ELSE 0 END) AS wins,
+                  SUM(CASE WHEN realized_pnl <= 0 THEN 1 ELSE 0 END) AS losses,
+                  COALESCE(SUM(realized_pnl), 0) AS gross_pnl,
+                  COALESCE(SUM(entry_charges + exit_charges), 0) AS charges,
                   COALESCE(SUM(realized_pnl - entry_charges - exit_charges), 0) AS day_net
            FROM options_positions
            WHERE status = 'CLOSED'
@@ -455,13 +460,25 @@ async def get_analytics_overview(request: Request):
     )
     cum = 0.0
     equity_curve = []
+    daily_breakdown = {}
     for dr in daily_rows:
-        cum += float(dr["day_net"])
+        day_str = dr["day"].isoformat()
+        net = round(float(dr["day_net"]), 2)
+        cum += net
         equity_curve.append({
-            "date": dr["day"].isoformat(),
-            "daily_net": round(float(dr["day_net"]), 2),
+            "date": day_str,
+            "daily_net": net,
             "cumulative_pnl": round(cum, 2),
         })
+        daily_breakdown[day_str] = {
+            "date": day_str,
+            "pnl": net,
+            "grossPnl": round(float(dr["gross_pnl"]), 2),
+            "charges": round(float(dr["charges"]), 2),
+            "trades": dr["trades"],
+            "wins": dr["wins"],
+            "losses": dr["losses"],
+        }
 
     return {
         "all_time_net_pnl": round(all_time_net, 2),
@@ -475,6 +492,7 @@ async def get_analytics_overview(request: Request):
         "laggards": laggards,
         "index_breakdown": index_breakdown,
         "equity_curve": equity_curve,
+        "daily_breakdown": daily_breakdown,
     }
 
 
