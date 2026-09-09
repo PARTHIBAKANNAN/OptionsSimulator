@@ -4,6 +4,7 @@ Black-Scholes estimate used only when a real option price isn't available yet
 not individual option strikes — see FYERS_FEASIBILITY_REPORT.md). Live trading
 should always prefer the actual LTP from the option chain over this estimate.
 """
+import calendar
 import math
 import re
 from datetime import date, datetime, timedelta
@@ -160,11 +161,31 @@ def black_scholes_price(spot: float, strike: float, days_to_expiry: float, optio
 
 
 
+def last_tuesday_of_month(for_date: date) -> date:
+    """Calculates the last Tuesday of the given month for BANKNIFTY monthly expiry."""
+    last_day = calendar.monthrange(for_date.year, for_date.month)[1]
+    d = date(for_date.year, for_date.month, last_day)
+    while d.weekday() != 1:  # Tuesday is 1
+        d -= timedelta(days=1)
+    return d
+
+
 def next_weekly_expiry_days(from_date: datetime, index: str = "NIFTY") -> float:
-    """Weekly options expire on the applicable weekday for this index (see INDEX_EXPIRY_RULES) at
-    market close (15:30 IST). On the expiry day itself this returns the fractional day remaining
-    until that close (heavy same-day theta decay), not a flat 7 — treating any expiry weekday as
-    "next week" would overprice every option traded on the actual expiry day."""
+    """Calculates days to expiry for pricing:
+    - BANKNIFTY: Discontinued weekly options; monthly expiry on the last Tuesday of the month.
+    - SENSEX: Weekly options expire on Thursday.
+    - NIFTY: Weekly options expire on Tuesday."""
+    if index == "BANKNIFTY":
+        expiry_dt = next_weekly_expiry_date(from_date, index="BANKNIFTY")
+        diff_days = (expiry_dt - from_date.date()).days
+        if diff_days > 0:
+            return float(diff_days)
+        market_close = from_date.replace(hour=15, minute=30, second=0, microsecond=0)
+        if from_date >= market_close:
+            next_m = next_weekly_expiry_date(from_date + timedelta(days=1), index="BANKNIFTY")
+            return float((next_m - from_date.date()).days)
+        return max((market_close - from_date).total_seconds() / 86400.0, 0.0)
+
     expiry_weekday = _expiry_weekday(from_date.date(), index)
     days_ahead = (expiry_weekday - from_date.weekday()) % 7
     if days_ahead != 0:
@@ -179,13 +200,31 @@ def next_weekly_expiry_days(from_date: datetime, index: str = "NIFTY") -> float:
 def is_expiry_day(from_date: datetime, index: str = "NIFTY") -> bool:
     """True on the applicable expiry weekday for this index before the 15:30 IST close — the
     window an expiry-day strategy can act in."""
+    if index == "BANKNIFTY":
+        expiry_date = last_tuesday_of_month(from_date.date())
+        return (from_date.date() == expiry_date and from_date.time() < dtime(15, 30))
     return (from_date.weekday() == _expiry_weekday(from_date.date(), index)
             and from_date.time() < dtime(15, 30))
 
 
 def next_weekly_expiry_date(from_date: datetime, index: str = "NIFTY") -> date:
-    """Calendar date of the applicable weekly expiry — same weekday-selection rule as
-    next_weekly_expiry_days, but returning the actual date instead of a day-count (for display)."""
+    """Calendar date of the applicable expiry:
+    - BANKNIFTY: Discontinued weekly options; expires monthly on the last Tuesday of the month.
+    - SENSEX: Weekly options expire on Thursday.
+    - NIFTY: Weekly options expire on Tuesday."""
+    if index == "BANKNIFTY":
+        curr_expiry = last_tuesday_of_month(from_date.date())
+        market_close = from_date.replace(hour=15, minute=30, second=0, microsecond=0)
+        if from_date.date() < curr_expiry:
+            return curr_expiry
+        elif from_date.date() == curr_expiry and from_date < market_close:
+            return curr_expiry
+        else:
+            # Roll over to next month's last Tuesday
+            year = from_date.year + (1 if from_date.month == 12 else 0)
+            month = 1 if from_date.month == 12 else from_date.month + 1
+            return last_tuesday_of_month(date(year, month, 1))
+
     expiry_weekday = _expiry_weekday(from_date.date(), index)
     days_ahead = (expiry_weekday - from_date.weekday()) % 7
     if days_ahead != 0:
@@ -198,23 +237,36 @@ def next_weekly_expiry_date(from_date: datetime, index: str = "NIFTY") -> date:
 
 
 def format_display_symbol(symbol: str, expiry: date = None) -> str:
-    """'NIFTY24600CE' + 2026-08-11 -> 'NIFTY11Aug202624600CE'."""
+    """'BANKNIFTY56300CE' -> 'BANKNIFTY29Sep202656300CE'
+       'SENSEX75100CE'    -> 'SENSEX10Sep202675100CE'
+       'NIFTY24600CE'     -> 'NIFTY15Sep202624600CE'"""
     strike, option_type = parse_option_symbol(symbol)
     if strike is None:
         return symbol
-    prefix = "SENSEX" if symbol.startswith("SENSEX") else "NIFTY"
+    if "BANKNIFTY" in symbol:
+        prefix = "BANKNIFTY"
+    elif "SENSEX" in symbol:
+        prefix = "SENSEX"
+    else:
+        prefix = "NIFTY"
     if expiry is None:
         expiry = next_weekly_expiry_date(datetime.now(), index=prefix)
     return f"{prefix}{expiry.day:02d}{expiry.strftime('%b')}{expiry.year}{int(strike)}{option_type}"
 
 
 def format_readable_contract(symbol: str, expiry: date = None, timestamp: datetime = None) -> str:
-    """'NIFTY24600CE' -> 'NIFTY 28-AUG-2025 24600 CE'."""
+    """'BANKNIFTY56300CE' -> 'BANKNIFTY 29-SEP-2026 56300 CE'."""
     strike, option_type = parse_option_symbol(symbol)
     if strike is None:
         return symbol
-    prefix = "SENSEX" if symbol.startswith("SENSEX") else "NIFTY"
+    if "BANKNIFTY" in symbol:
+        prefix = "BANKNIFTY"
+    elif "SENSEX" in symbol:
+        prefix = "SENSEX"
+    else:
+        prefix = "NIFTY"
     if expiry is None:
         ts = timestamp or datetime.now()
         expiry = next_weekly_expiry_date(ts, index=prefix)
     return f"{prefix} {expiry.day:02d}-{expiry.strftime('%b').upper()}-{expiry.year} {int(strike)} {option_type}"
+

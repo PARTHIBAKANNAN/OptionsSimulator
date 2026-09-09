@@ -170,8 +170,9 @@ function SteppedTslProgressGauge({ entryPrice, ltp, stopLoss, takeProfit, closed
 }
 
 // QuantMan exact instrument panel box
-function QuantManInstrumentBox({ contract, qty, entryTime, entryPrice, ltp, pnl, grossPnl, charges, stopLoss, takeProfit, exitTime, strategy = "", lotSize = 65 }) {
-  const effectiveLotSize = lotSize || 65;
+function QuantManInstrumentBox({ contract, qty, entryTime, entryPrice, ltp, pnl, grossPnl, charges, stopLoss, takeProfit, exitTime, strategy = "", lotSize }) {
+  const fallbackLot = (contract?.includes("SENSEX") || strategy?.includes("SENSEX")) ? 20 : ((contract?.includes("BANKNIFTY") || strategy?.includes("BANKNIFTY")) ? 30 : 65);
+  const effectiveLotSize = lotSize || fallbackLot;
   const investedCapital = (entryPrice || 0) * (qty || 1) * effectiveLotSize;
   const netReturnPct = investedCapital > 0 && pnl != null ? (pnl / investedCapital) * 100 : null;
   const closed = Boolean(exitTime);
@@ -391,6 +392,7 @@ function StrategyCard({ row, pendingSignal }) {
                     entryPrice={pos.entry_price} ltp={pos.ltp} pnl={pos.trade_pnl}
                     stopLoss={pos.stop_loss} takeProfit={pos.take_profit}
                     strategy={row.strategy}
+                    lotSize={pos.lot_size}
                   />
                 ))}
               </div>
@@ -415,6 +417,7 @@ function StrategyCard({ row, pendingSignal }) {
                     stopLoss={pos.stop_loss} takeProfit={pos.take_profit}
                     exitTime={pos.exit_time}
                     strategy={row.strategy}
+                    lotSize={pos.lot_size}
                   />
                 ))}
               </div>
@@ -427,6 +430,8 @@ function StrategyCard({ row, pendingSignal }) {
                   contract={row.entry.contract} qty={row.entry.qty} entryTime={row.entry.entry_time}
                   entryPrice={row.entry.entry_price} ltp={row.entry.ltp} pnl={row.entry.trade_pnl}
                   stopLoss={row.entry.stop_loss} takeProfit={row.entry.take_profit}
+                  strategy={row.strategy}
+                  lotSize={row.entry.lot_size}
                 />
               ) : row.last_closed ? (
                 <QuantManInstrumentBox
@@ -435,6 +440,8 @@ function StrategyCard({ row, pendingSignal }) {
                   ltp={row.last_closed.exit_price} pnl={row.last_closed.pnl}
                   stopLoss={row.last_closed.stop_loss} takeProfit={row.last_closed.take_profit}
                   exitTime={row.last_closed.exit_time}
+                  strategy={row.strategy}
+                  lotSize={row.last_closed.lot_size}
                 />
               ) : null
             )}

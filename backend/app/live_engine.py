@@ -206,7 +206,7 @@ class WebLiveEngine(LiveTrader):
                     today_pnl += trade_pnl - (latest.entry_charges or 0.0)
                 entry = {
                     "order_id": latest.order_id,
-                    "contract": format_display_symbol(latest.symbol, next_weekly_expiry_date(latest.entry_time)),
+                    "contract": format_display_symbol(latest.symbol, next_weekly_expiry_date(latest.entry_time, index=latest.underlying)),
                     "qty": latest.qty,
                     "lot_size": latest.lot_size,
                     "entry_price": latest.entry_price,
@@ -220,7 +220,7 @@ class WebLiveEngine(LiveTrader):
                 last = last_closed_by_strategy.get(name)
                 if last is not None:
                     last_closed = {
-                        "contract": format_display_symbol(last.symbol, next_weekly_expiry_date(last.entry_time)),
+                        "contract": format_display_symbol(last.symbol, next_weekly_expiry_date(last.entry_time, index=last.underlying)),
                         "qty": last.qty,
                         "lot_size": last.lot_size,
                         "entry_price": last.entry_price,
@@ -238,7 +238,7 @@ class WebLiveEngine(LiveTrader):
             open_list = [
                 {
                     "order_id": o.order_id,
-                    "contract": format_display_symbol(o.symbol, next_weekly_expiry_date(o.entry_time)),
+                    "contract": format_display_symbol(o.symbol, next_weekly_expiry_date(o.entry_time, index=o.underlying)),
                     "qty": o.qty,
                     "lot_size": o.lot_size,
                     "entry_price": o.entry_price,
@@ -253,7 +253,7 @@ class WebLiveEngine(LiveTrader):
 
             closed_list = [
                 {
-                    "contract": format_display_symbol(o.symbol, next_weekly_expiry_date(o.entry_time)),
+                    "contract": format_display_symbol(o.symbol, next_weekly_expiry_date(o.entry_time, index=o.underlying)),
                     "qty": o.qty,
                     "lot_size": o.lot_size,
                     "entry_price": o.entry_price,
@@ -287,7 +287,7 @@ class WebLiveEngine(LiveTrader):
             "strategy": signal.strategy, "direction": signal.direction, "strike": signal.strike,
             "entry_price": signal.entry_price, "confidence": signal.confidence,
             "rationale": signal.rationale, "timestamp": signal.timestamp.isoformat(),
-            "contract": format_display_symbol(signal.strike, next_weekly_expiry_date(signal.timestamp)),
+            "contract": format_display_symbol(signal.strike, next_weekly_expiry_date(signal.timestamp, index=signal.underlying)),
         }
 
     @staticmethod
@@ -299,7 +299,7 @@ class WebLiveEngine(LiveTrader):
             "entry_price": order.entry_price, "stop_loss": order.stop_loss,
             "take_profit": order.take_profit, "strategy": order.strategy,
             "entry_time": order.entry_time.isoformat(),
-            "contract": format_display_symbol(order.symbol, next_weekly_expiry_date(order.entry_time)),
+            "contract": format_display_symbol(order.symbol, next_weekly_expiry_date(order.entry_time, index=order.underlying)),
             "ltp": ltp,
             "trade_pnl": round(trade_pnl, 2),
         }

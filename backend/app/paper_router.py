@@ -50,8 +50,9 @@ async def get_trade_history(request: Request, limit: int = 100, offset: int = 0)
         trade = dict(row)
         # asyncpg returns timestamptz columns aware in UTC — must convert to IST before deriving
         # the expiry weekday/date, or a late-UTC-evening entry can resolve to the wrong calendar day.
+        underlying = "BANKNIFTY" if "BANKNIFTY" in trade["symbol"] else ("SENSEX" if "SENSEX" in trade["symbol"] else "NIFTY")
         trade["contract"] = format_display_symbol(
-            trade["symbol"], next_weekly_expiry_date(trade["entry_time"].astimezone(IST)))
+            trade["symbol"], next_weekly_expiry_date(trade["entry_time"].astimezone(IST), index=underlying))
         result.append(trade)
     return result
 
@@ -151,8 +152,9 @@ async def get_strategy_orders(name: str, request: Request):
         )
         for row in rows:
             trade = dict(row)
+            underlying = "BANKNIFTY" if "BANKNIFTY" in trade["symbol"] else ("SENSEX" if "SENSEX" in trade["symbol"] else "NIFTY")
             trade["contract"] = format_display_symbol(
-                trade["symbol"], next_weekly_expiry_date(trade["entry_time"].astimezone(IST)))
+                trade["symbol"], next_weekly_expiry_date(trade["entry_time"].astimezone(IST), index=underlying))
             gross = trade["realized_pnl"]
             trade["net_pnl"] = (
                 round(float(gross) - float(trade["entry_charges"] or 0) - float(trade["exit_charges"] or 0), 2)

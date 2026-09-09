@@ -142,3 +142,19 @@ def test_sensex_expiry_regime_boundaries_are_exact():
 
 def test_format_display_symbol_uses_sensex_prefix():
     assert format_display_symbol("SENSEX81500CE", date(2026, 8, 13)) == "SENSEX13Aug202681500CE"
+
+
+def test_format_display_symbol_uses_banknifty_prefix():
+    assert format_display_symbol("BANKNIFTY56300PE", date(2026, 9, 29)) == "BANKNIFTY29Sep202656300PE"
+    assert format_display_symbol("BANKNIFTY56800CE", date(2026, 9, 29)) == "BANKNIFTY29Sep202656800CE"
+
+
+def test_banknifty_monthly_expiry_resolves_to_last_tuesday_of_month():
+    # On Wednesday Sep 9, 2026, next BANKNIFTY expiry is the last Tuesday of Sept (Sep 29, 2026)
+    wed = datetime(2026, 9, 9, 10, 0)
+    assert next_weekly_expiry_date(wed, index="BANKNIFTY") == date(2026, 9, 29)
+    # SENSEX expires tomorrow on Thursday Sep 10, 2026
+    assert next_weekly_expiry_date(wed, index="SENSEX") == date(2026, 9, 10)
+    # NIFTY expires on Tuesday Sep 15, 2026
+    assert next_weekly_expiry_date(wed, index="NIFTY") == date(2026, 9, 15)
+
