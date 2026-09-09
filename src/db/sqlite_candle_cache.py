@@ -88,8 +88,10 @@ def save_candles(underlying: str, candles: list[Candle]) -> None:
         logger.log_error(f"Failed to save candles to SQLite cache ({underlying}): {e}")
 
 
-def load_recent_candles(underlying: str, days: int = 5) -> list[Candle]:
-    """Loads the last N trading days of 1-minute candles for the given index."""
+def load_recent_candles(underlying: str, days: int = 14) -> list[Candle]:
+    """Loads the last N trading days of 1-minute candles for the given index.
+    Defaults to 14 calendar days (~10 trading days = ~62.5 market hours), providing
+    more than enough hourly bars for a rock-solid 50-period 1-Hour EMA."""
     try:
         conn = _get_connection()
         cutoff_date = (datetime.now(IST) - timedelta(days=days)).date().isoformat()
@@ -125,8 +127,9 @@ def load_recent_candles(underlying: str, days: int = 5) -> list[Candle]:
         return []
 
 
-def purge_old_candles(retention_days: int = 5) -> int:
-    """Deletes candles older than `retention_days` to prevent disk growth."""
+def purge_old_candles(retention_days: int = 14) -> int:
+    """Deletes candles older than `retention_days` (14 days) to prevent disk growth while
+    guaranteeing at least 10 trading days of historical data for higher-timeframe EMAs."""
     try:
         conn = _get_connection()
         cutoff_date = (datetime.now(IST) - timedelta(days=retention_days)).date().isoformat()

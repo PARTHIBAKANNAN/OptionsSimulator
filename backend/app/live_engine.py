@@ -97,10 +97,11 @@ class WebLiveEngine(LiveTrader):
             except Exception:
                 pass
         else:
-            nifty_price = self._cached_market_state.get("nifty_price", 24252.00)
-            prev_close = self._cached_market_state.get("nifty_prev_close", 24231.85)
-            change = self._cached_market_state.get("nifty_change", 20.15)
-            change_pct = self._cached_market_state.get("nifty_change_pct", 0.08)
+            last_c = self.data_manager.candles[-1] if self.data_manager.candles else None
+            nifty_price = self._cached_market_state.get("nifty_price") or (last_c.close if last_c else None)
+            prev_close = self._cached_market_state.get("nifty_prev_close")
+            change = self._cached_market_state.get("nifty_change")
+            change_pct = self._cached_market_state.get("nifty_change_pct")
 
         if sensex_price is not None:
             self._cached_market_state["sensex_price"] = sensex_price
@@ -108,10 +109,12 @@ class WebLiveEngine(LiveTrader):
             self._cached_market_state["sensex_change"] = round(sensex_change, 2) if sensex_change is not None else None
             self._cached_market_state["sensex_change_pct"] = round(sensex_change_pct, 2) if sensex_change_pct is not None else None
         else:
-            sensex_price = self._cached_market_state.get("sensex_price", 77540.83)
-            sensex_prev_close = self._cached_market_state.get("sensex_prev_close", 77537.72)
-            sensex_change = self._cached_market_state.get("sensex_change", 3.11)
-            sensex_change_pct = self._cached_market_state.get("sensex_change_pct", 0.00)
+            sm = self.data_managers.get("SENSEX")
+            last_c = sm.candles[-1] if sm and sm.candles else None
+            sensex_price = self._cached_market_state.get("sensex_price") or (last_c.close if last_c else None)
+            sensex_prev_close = self._cached_market_state.get("sensex_prev_close")
+            sensex_change = self._cached_market_state.get("sensex_change")
+            sensex_change_pct = self._cached_market_state.get("sensex_change_pct")
 
         if banknifty_price is not None:
             self._cached_market_state["banknifty_price"] = banknifty_price
@@ -119,10 +122,12 @@ class WebLiveEngine(LiveTrader):
             self._cached_market_state["banknifty_change"] = round(banknifty_change, 2) if banknifty_change is not None else None
             self._cached_market_state["banknifty_change_pct"] = round(banknifty_change_pct, 2) if banknifty_change_pct is not None else None
         else:
-            banknifty_price = self._cached_market_state.get("banknifty_price", 51240.50)
-            banknifty_prev_close = self._cached_market_state.get("banknifty_prev_close", 51180.20)
-            banknifty_change = self._cached_market_state.get("banknifty_change", 60.30)
-            banknifty_change_pct = self._cached_market_state.get("banknifty_change_pct", 0.12)
+            bm = self.data_managers.get("BANKNIFTY")
+            last_c = bm.candles[-1] if bm and bm.candles else None
+            banknifty_price = self._cached_market_state.get("banknifty_price") or (last_c.close if last_c else None)
+            banknifty_prev_close = self._cached_market_state.get("banknifty_prev_close")
+            banknifty_change = self._cached_market_state.get("banknifty_change")
+            banknifty_change_pct = self._cached_market_state.get("banknifty_change_pct")
 
         nifty_candles_5m = self.data_manager.get_candles_5m_with_delta(today)
         sensex_candles_5m = self.data_managers["SENSEX"].get_candles_5m_with_delta(today)
@@ -448,14 +453,15 @@ class WebLiveEngine(LiveTrader):
             self.logger.log_error(f"Candle history restore failed, starting with an empty chart: {e}")
 
     async def _restore_candle_history(self, pool, today) -> None:
-        """Restores the last 5 trading days of 1-min candles (OHLCV + CVD delta) from local SQLite
-        cache, eliminating heavy network reads from Supabase and ensuring 1H 50-EMA is fully
-        calculated from 09:15 AM on market open."""
-        # Auto-prune candles older than 5 days on startup to keep SQLite db < 3 MB forever
-        sqlite_cache.purge_old_candles(retention_days=5)
+        """Restores 14 days of 1-min candles (OHLCV + CVD delta) from local SQLite cache
+        and merges today's session candles, ensuring 1H 50-EMA is fully calculated from 09:15 AM."""
+        # Auto-prune candles older than 14 days on startup
+        sqlite_cache.purge_old_candles(retention_days=14)
 
         for index, data_manager in self.data_managers.items():
-            restored = []
+            # Always load SQLite's past 14 days of historical candles first
+            sqlite_candles = sqlite_cache.load_recent_candles(index, days=14)
+            today_candles = []
             if pool:
                 try:
                     rows = await asyncio.wait_for(
@@ -467,7 +473,7 @@ class WebLiveEngine(LiveTrader):
                         timeout=self.DB_TIMEOUT_SECS)
                     if rows:
                         midnight = datetime.combine(today, dtime(0, 0), tzinfo=IST)
-                        restored = [
+                        today_candles = [
                             Candle(
                                 timestamp=midnight + timedelta(minutes=row["bucket_minute"]),
                                 open=float(row["open"]), high=float(row["high"]), low=float(row["low"]),
@@ -478,12 +484,16 @@ class WebLiveEngine(LiveTrader):
                 except Exception as e:
                     self.logger.log_error(f"Pool candle restore query failed for {index}: {e}")
 
-            if not restored:
-                restored = sqlite_cache.load_recent_candles(index, days=5)
+            # Merge historical SQLite candles with today's pool candles
+            all_candles = {c.timestamp: c for c in sqlite_candles}
+            for tc in today_candles:
+                all_candles[tc.timestamp] = tc
 
+            restored = sorted(all_candles.values(), key=lambda c: c.timestamp)
             if restored:
                 data_manager.candles = restored
                 self._last_persisted_candle_ts[index] = restored[-1].timestamp
+                sqlite_cache.save_candles(index, restored)
 
         self.logger.log_websocket_event(
             "candle_history_restored", {index: len(dm.candles) for index, dm in self.data_managers.items()})
@@ -632,10 +642,13 @@ class WebLiveEngine(LiveTrader):
             self.logger.log_error(f"Signal rejected by risk limits: {e}", {"strategy": signal.strategy})
             return
 
-        # Auto-subscribe option symbol to Fyers WebSocket for sub-second real-time tick streaming
+        # Auto-subscribe option symbol to Fyers WebSocket using real date-coded symbol
         if self.fyers and self.data_engine_enabled:
-            exchange = INDEX_TO_EXCHANGE.get(signal.underlying, "NSE")
-            raw_sym = f"{exchange}:{signal.strike}"
+            dm = self.data_managers.get(signal.underlying, self.data_manager)
+            raw_sym = dm.get_fyers_symbol(signal.strike)
+            if not raw_sym:
+                exchange = INDEX_TO_EXCHANGE.get(signal.underlying, "NSE")
+                raw_sym = f"{exchange}:{signal.strike}"
             try:
                 self.fyers.subscribe_symbols([raw_sym])
                 self._monitored_symbols.add(raw_sym)
@@ -686,10 +699,11 @@ class WebLiveEngine(LiveTrader):
             asyncio.create_task(self._close_position_db(order))
             if order.strategy:
                 asyncio.create_task(self._save_wallet_db(order.strategy))
-            # Clean up WebSocket subscription for closed contract
+            # Clean up WebSocket subscription for closed contract using real Fyers symbol
             if self.fyers and self.data_engine_enabled:
-                exchange = INDEX_TO_EXCHANGE.get(order.underlying, "NSE")
-                raw_sym = f"{exchange}:{order.symbol}"
+                dm = self.data_managers.get(order.underlying, self.data_manager)
+                raw_sym = (dm.get_fyers_symbol(order.symbol)
+                           if dm else None) or f"{INDEX_TO_EXCHANGE.get(order.underlying, 'NSE')}:{order.symbol}"
                 try:
                     self.fyers.unsubscribe_symbols([raw_sym])
                     self._monitored_symbols.discard(raw_sym)

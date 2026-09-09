@@ -15,14 +15,25 @@ export function Login({ onLoggedIn, onClose }) {
     e.preventDefault();
     setError(null);
     setLoading(true);
+
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error("Authentication request timed out (10s). Please check your connection and try again.")), 10000)
+    );
+
     try {
-      const { data, error: supaError } = await supabase.auth.signInWithPassword({ email, password });
-      if (supaError) throw supaError;
-      const user = await api("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ access_token: data.session.access_token }),
-      });
+      const loginFlow = async () => {
+        const { data, error: supaError } = await supabase.auth.signInWithPassword({ email, password });
+        if (supaError) throw supaError;
+        if (!data?.session?.access_token) throw new Error("No session token received from authentication server.");
+        const user = await api("/api/auth/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ access_token: data.session.access_token }),
+        });
+        return user;
+      };
+
+      const user = await Promise.race([loginFlow(), timeoutPromise]);
       onLoggedIn(user);
     } catch (err) {
       setError(err.message || "Failed to sign in. Please verify your credentials.");

@@ -46,6 +46,7 @@ class DataManager:
         self.candles: list[Candle] = []
         self._current: Optional[Candle] = None
         self.option_chain: dict[str, OptionQuote] = {}
+        self._symbol_alias: dict[str, str] = {}
         # Previous tick's LTP/cumulative-volume, for the tick-rule delta classification below --
         # simple instance attributes (not a per-symbol dict like TradeDashBoard's own version)
         # since one DataManager already scopes to exactly one index's one spot-price series.
@@ -124,6 +125,27 @@ class DataManager:
         quote.updated_at = tick.get("timestamp") or datetime.now()
         self.option_chain[symbol] = quote
 
+        # Synchronize tick to simplified strike alias (e.g. NIFTY24500CE) so open position
+        # P&Ls update on incoming sub-second ticks without waiting for 10s REST polls
+        alias = self._symbol_alias.get(symbol)
+        if alias and alias != symbol:
+            alias_quote = self.option_chain.get(alias, OptionQuote(symbol=alias))
+            alias_quote.ltp = quote.ltp
+            alias_quote.bid = quote.bid
+            alias_quote.ask = quote.ask
+            alias_quote.oi = quote.oi
+            alias_quote.volume = quote.volume
+            alias_quote.updated_at = quote.updated_at
+            self.option_chain[alias] = alias_quote
+
+    def get_fyers_symbol(self, simple_key: str) -> Optional[str]:
+        """Returns the real Fyers date-coded symbol (e.g. 'NSE:NIFTY2690923500PE')
+        given a simple key like 'NIFTY23500PE'."""
+        quote = self.option_chain.get(simple_key)
+        if quote and quote.symbol and ":" in quote.symbol:
+            return quote.symbol
+        return self._symbol_alias.get(simple_key)
+
     # ---- Historical seeding (backtest) -------------------------------------
 
     def load_historical(self, df: pd.DataFrame | list) -> None:
@@ -195,7 +217,10 @@ class DataManager:
             strike = row.get("strike_price")
             option_type = row.get("option_type")
             if strike is not None and strike > 0 and option_type in ("CE", "PE"):
-                self.option_chain[f"{self.underlying}{int(strike)}{option_type}"] = quote
+                simple_key = f"{self.underlying}{int(strike)}{option_type}"
+                self.option_chain[simple_key] = quote
+                self._symbol_alias[symbol] = simple_key
+                self._symbol_alias[simple_key] = symbol
 
     def get_option_chain(self) -> dict:
         return dict(self.option_chain)
@@ -390,16 +415,22 @@ class DataManager:
             candles.append(self._current)
         return candles
 
-    def get_candles_5m_with_delta(self, today: date) -> list[dict]:
-        """5-min OHLCV + cumulative-tick-delta bars for today's session, for the live chart
-        (see CandleChart.jsx). Includes the still-forming current candle so the last bar updates
-        live instead of freezing until its 5-min bucket actually closes -- same reasoning as
-        get_today_candles above. `bucket` is minutes-since-midnight, matching TradeDashBoard's
-        own CandleChart.jsx convention (bucketToTime())."""
-        todays = self.get_today_candles(today)
-        if not todays and self.candles:
-            latest_day = self.candles[-1].timestamp.date()
-            todays = [c for c in self.candles if c.timestamp.date() == latest_day]
+    def get_candles_5m_with_delta(self, today: date, days: int = 1) -> list[dict]:
+        """5-min OHLCV + cumulative-tick-delta bars for the live chart (see CandleChart.jsx).
+        If days <= 1, returns today's session (or latest day).
+        If days > 1, returns the last `days` calendar days of 5m bars with Unix timestamps."""
+        if days <= 1:
+            todays = self.get_today_candles(today)
+            if not todays and self.candles:
+                latest_day = self.candles[-1].timestamp.date()
+                todays = [c for c in self.candles if c.timestamp.date() == latest_day]
+        else:
+            cutoff = today - timedelta(days=days)
+            todays = [c for c in self.candles if c.timestamp.date() >= cutoff]
+            if not todays and self.candles:
+                todays = list(self.candles)
+            if self._current is not None:
+                todays = todays + [self._current]
 
         if not todays:
             return []
@@ -417,6 +448,7 @@ class DataManager:
             midnight = ts.replace(hour=0, minute=0, second=0, microsecond=0)
             bucket = int((ts - midnight).total_seconds() // 60)
             bars.append({
+                "time": int(ts.timestamp()),
                 "bucket": bucket, "open": float(row["Open"]), "high": float(row["High"]),
                 "low": float(row["Low"]), "close": float(row["Close"]),
                 "volume": float(row["Volume"]), "delta": float(row["Delta"]),

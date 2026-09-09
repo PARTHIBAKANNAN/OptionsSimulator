@@ -77,14 +77,20 @@ class BaseStrategy:
         return symbol, float(best_strike)
 
     def get_option_price(self, symbol: str, strike: float, spot_price: float,
-                          option_type: str, data_state: dict) -> float:
-        """Prefer the real quote from the option chain; fall back to a Black-Scholes estimate."""
+                          option_type: str, data_state: dict) -> Optional[float]:
+        """Prefer the real quote from the option chain. In live trading, strictly refuse
+        synthetic Black-Scholes prices to prevent massive tick-jump entry errors."""
         option_chain = data_state.get("option_chain", {})
         quote = option_chain.get(symbol)
         if quote is not None and getattr(quote, "ltp", 0) > 0:
-            return quote.ltp
+            return float(quote.ltp)
+
+        # In live trading, never enter on synthetic/theoretical Black-Scholes prices
+        if data_state.get("is_live", False):
+            return None
 
         timestamp = data_state.get("timestamp") or datetime.now()
         days_to_expiry = next_weekly_expiry_days(timestamp, index=self.underlying)
         return black_scholes_price(spot=spot_price, strike=strike, days_to_expiry=days_to_expiry,
                                     option_type=option_type)
+

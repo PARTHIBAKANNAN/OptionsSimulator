@@ -175,11 +175,15 @@ class LiveTrader:
 
     def _seed_historical_candles(self) -> None:
         """Warms up the 1H/15m/5m indicators before market open so day-1 strategies aren't blind,
-        for both indices."""
+        for both indices, and caches candles in SQLite so 50-EMA is preserved across restarts."""
+        import src.db.sqlite_candle_cache as sqlite_cache
         for index, symbol in INDEX_SYMBOLS.items():
             try:
                 history = self.fyers.get_historical_data(symbol, resolution="1", days=10)
                 self.data_managers[index].load_historical(history)
+                candles = self.data_managers[index].candles
+                if candles:
+                    sqlite_cache.save_candles(index, candles)
                 self.logger.log_websocket_event("historical_seed_loaded", {"index": index, "candles": len(history)})
             except Exception as e:
                 self.logger.log_error(f"Historical seeding failed for {index}, starting cold: {e}")
@@ -312,6 +316,7 @@ class LiveTrader:
         all_signals = []
         for index, data_manager in self.data_managers.items():
             state = data_manager.get_state()
+            state["is_live"] = True
             if state["nifty_price"] is None:
                 continue
             all_signals.extend(self.strategy_engines[index].evaluate_all(state))
@@ -348,9 +353,12 @@ class LiveTrader:
             self.logger.log_error(f"Signal rejected by risk limits: {e}", {"strategy": signal.strategy})
             return
 
-        # Auto-subscribe option contract symbol to live WebSocket ticks
-        exchange = INDEX_TO_EXCHANGE.get(signal.underlying, "NSE")
-        raw_sym = f"{exchange}:{signal.strike}"
+        # Auto-subscribe option contract symbol to live WebSocket ticks using real Fyers symbol
+        dm = self.data_managers.get(signal.underlying, self.data_manager)
+        raw_sym = dm.get_fyers_symbol(signal.strike)
+        if not raw_sym:
+            exchange = INDEX_TO_EXCHANGE.get(signal.underlying, "NSE")
+            raw_sym = f"{exchange}:{signal.strike}"
         try:
             self.fyers.subscribe_symbols([raw_sym])
             self._monitored_symbols.add(raw_sym)

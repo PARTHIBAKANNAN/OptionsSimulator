@@ -146,12 +146,14 @@ export function CandleChart({ candles = [], tradeMarkers = [], height = 400 }) {
     seriesRef.current = series;
     ema20SeriesRef.current = ema20Series;
     ema50SeriesRef.current = ema50Series;
+    deltaSeriesRef.current = deltaSeries;
     candleMarkersRef.current = candleMarkers;
 
     return () => {
       chart.remove();
       chartRef.current = null;
       seriesRef.current = null;
+      deltaSeriesRef.current = null;
       ema20SeriesRef.current = null;
       ema50SeriesRef.current = null;
       candleMarkersRef.current = null;
@@ -163,7 +165,7 @@ export function CandleChart({ candles = [], tradeMarkers = [], height = 400 }) {
     if (!seriesRef.current) return;
     const data = (candles || [])
       .map((c) => ({
-        time: bucketToTime(c.bucket),
+        time: c.time ?? bucketToTime(c.bucket),
         open: c.open,
         high: c.high,
         low: c.low,
@@ -180,6 +182,18 @@ export function CandleChart({ candles = [], tradeMarkers = [], height = 400 }) {
     }
     if (ema50SeriesRef.current && showEma) {
       ema50SeriesRef.current.setData(computeEmaSeries(data, 50));
+    }
+
+    if (deltaSeriesRef.current) {
+      const { up, down } = readCandleColors();
+      const deltaData = (candles || [])
+        .map((c) => ({
+          time: c.time ?? bucketToTime(c.bucket),
+          value: c.delta ?? 0,
+          color: (c.delta ?? 0) >= 0 ? up : down,
+        }))
+        .sort((a, b) => a.time - b.time);
+      deltaSeriesRef.current.setData(deltaData);
     }
 
     if (!candlesInitializedRef.current) {

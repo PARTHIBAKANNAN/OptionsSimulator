@@ -169,7 +169,7 @@ class StrategyEngine:
                     self.logger.log_error(f"Strategy {strategy.name} raised: {e}", {"strategy": strategy.name})
                 continue
 
-            if signal is None:
+            if signal is None or signal.entry_price is None or signal.entry_price <= 0:
                 continue
 
             strategy.last_signal_time = signal.timestamp
