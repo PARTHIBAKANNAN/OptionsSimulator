@@ -277,11 +277,10 @@ FYERS_MONTH_CODES = {
 }
 
 
-def to_fyers_symbol(symbol: str, expiry: date = None) -> str:
+def to_fyers_symbol(symbol: str, expiry: date = None, is_monthly: bool = None) -> str:
     """Builds valid Fyers WebSocket option symbol:
-       'BANKNIFTY56300CE' + 2026-09-29 -> 'NSE:BANKNIFTY2692956300CE'
-       'SENSEX75100PE'    + 2026-09-10 -> 'BSE:SENSEX2691075100PE'
-       'NIFTY24600CE'     + 2026-09-15 -> 'NSE:NIFTY2691524600CE'"""
+       - Monthly expiry (e.g. BANKNIFTY): 'NSE:BANKNIFTY26SEP56300PE'
+       - Weekly expiry (e.g. NIFTY, SENSEX): 'NSE:NIFTY2691524600CE' / 'BSE:SENSEX2691075100PE'"""
     strike, option_type = parse_option_symbol(symbol)
     if strike is None:
         return symbol
@@ -297,6 +296,13 @@ def to_fyers_symbol(symbol: str, expiry: date = None) -> str:
     if expiry is None:
         expiry = next_weekly_expiry_date(datetime.now(), index=underlying)
     yy = f"{expiry.year % 100:02d}"
+
+    # Under SEBI regulations, BANKNIFTY contracts expire monthly: format is {YY}{MMM}{STRIKE}{TYPE}
+    if is_monthly or underlying == "BANKNIFTY":
+        mmm = expiry.strftime("%b").upper()
+        return f"{exchange}:{underlying}{yy}{mmm}{int(strike)}{option_type}"
+
+    # Weekly contracts: format is {YY}{M}{DD}{STRIKE}{TYPE}
     m = FYERS_MONTH_CODES.get(expiry.month, str(expiry.month))
     dd = f"{expiry.day:02d}"
     return f"{exchange}:{underlying}{yy}{m}{dd}{int(strike)}{option_type}"

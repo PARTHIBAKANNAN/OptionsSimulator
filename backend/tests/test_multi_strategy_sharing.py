@@ -163,3 +163,133 @@ def test_master_health_endpoint():
     assert data["strategies"]["by_index"]["BANKNIFTY"] == 15
     assert data["strategies"]["by_index"]["SENSEX"] == 15
     assert data["strategies"]["by_index"]["NIFTY"] == 14
+
+
+@pytest.mark.asyncio
+async def test_three_strategies_entering_different_times_independent_pnl_and_exits():
+    """Simulates 3 different strategies entering the SAME option contract at 9:25, 10:00, and 10:10.
+    Verifies that:
+    - Each strategy has its own distinct entry price and trade timing.
+    - Running unrealized P&L is calculated accurately for each strategy from its own entry price.
+    - When one strategy hits its stop-loss, it exits independently while others remain active.
+    - Strategy cards in UI state maintain isolated P&L, stop-loss, and trade status.
+    - WebSocket subscription is preserved until the very last strategy closes.
+    """
+    engine = _make_engine()
+    engine._save_position_db = AsyncMock()
+    engine._save_wallet_db = AsyncMock()
+    engine._close_position_db = AsyncMock()
+
+    raw_symbol = to_fyers_symbol("BANKNIFTY56300CE", date(2026, 9, 29))
+    engine.data_managers["BANKNIFTY"].option_chain[raw_symbol] = OptionQuote(symbol=raw_symbol, ltp=300.0)
+    engine.data_managers["BANKNIFTY"].option_chain["BANKNIFTY56300CE"] = OptionQuote(symbol="BANKNIFTY56300CE", ltp=300.0)
+    engine.data_managers["BANKNIFTY"]._symbol_alias["BANKNIFTY56300CE"] = raw_symbol
+    engine.data_managers["BANKNIFTY"]._symbol_alias[raw_symbol] = "BANKNIFTY56300CE"
+
+    t1 = datetime(2026, 9, 9, 9, 25, tzinfo=IST)
+    t2 = datetime(2026, 9, 9, 10, 0, tzinfo=IST)
+    t3 = datetime(2026, 9, 9, 10, 10, tzinfo=IST)
+
+    # Strategy 1 enters at 09:25 @ ₹300
+    await engine.execute_signal(Signal(
+        strategy="BANKNIFTY_MACD_BULLISH_1M_ATM",
+        direction="CE", action="BUY", strike="BANKNIFTY56300CE",
+        confidence=0.8, rationale="macd", entry_price=300.0,
+        timestamp=t1, underlying="BANKNIFTY",
+    ))
+
+    # Strategy 2 enters at 10:00 @ ₹340
+    await engine.execute_signal(Signal(
+        strategy="BANKNIFTY_SUPPORT_BOUNCE_1M_ATM",
+        direction="CE", action="BUY", strike="BANKNIFTY56300CE",
+        confidence=0.85, rationale="bounce", entry_price=340.0,
+        timestamp=t2, underlying="BANKNIFTY",
+    ))
+
+    # Strategy 3 enters at 10:10 @ ₹360
+    await engine.execute_signal(Signal(
+        strategy="BANKNIFTY_DUAL_SUPERTREND_BB_CE",
+        direction="CE", action="BUY", strike="BANKNIFTY56300CE",
+        confidence=0.9, rationale="supertrend", entry_price=360.0,
+        timestamp=t3, underlying="BANKNIFTY",
+    ))
+
+    positions = engine.paper_trader.get_positions()
+    assert len(positions) == 3
+
+    # Verify each position has its own unique entry parameters
+    pos_by_strat = {p.strategy: p for p in positions}
+    assert "BANKNIFTY_MACD_BULLISH_1M_ATM" in pos_by_strat
+    assert "BANKNIFTY_SUPPORT_BOUNCE_1M_ATM" in pos_by_strat
+    assert "BANKNIFTY_DUAL_SUPERTREND_BB_CE" in pos_by_strat
+
+    # Verify isolated entry times
+    assert pos_by_strat["BANKNIFTY_MACD_BULLISH_1M_ATM"].entry_time == t1
+    assert pos_by_strat["BANKNIFTY_SUPPORT_BOUNCE_1M_ATM"].entry_time == t2
+    assert pos_by_strat["BANKNIFTY_DUAL_SUPERTREND_BB_CE"].entry_time == t3
+
+    # Simulate live tick at 10:15 AM where market LTP = ₹350
+    # Strat 1 (entry ~300.30): gain ~+49.7 pts -> PnL is POSITIVE
+    # Strat 2 (entry ~340.34): gain ~+9.66 pts -> PnL is POSITIVE
+    # Strat 3 (entry ~360.36): loss ~-10.36 pts -> PnL is NEGATIVE
+    engine.data_managers["BANKNIFTY"].option_chain["BANKNIFTY56300CE"].ltp = 350.0
+    status_rows = {r["strategy"]: r for r in engine._strategy_status_list({"BANKNIFTY56300CE": 350.0})}
+
+    pnl1 = status_rows["BANKNIFTY_MACD_BULLISH_1M_ATM"]["entry"]["trade_pnl"]
+    pnl2 = status_rows["BANKNIFTY_SUPPORT_BOUNCE_1M_ATM"]["entry"]["trade_pnl"]
+    pnl3 = status_rows["BANKNIFTY_DUAL_SUPERTREND_BB_CE"]["entry"]["trade_pnl"]
+
+    assert pnl1 > pnl2 > 0  # Strat 1 has higher profit than Strat 2
+    assert pnl3 < 0         # Strat 3 has negative PnL
+
+    # Now drop price to ₹280 at 10:20 AM:
+    # Strat 3 SL: ~360 * 0.8 = 288. At 280, Strat 3 SL is HIT!
+    # Strat 2 SL: ~340 * 0.8 = 272. At 280, Strat 2 is still OPEN!
+    # Strat 1 SL: ~300 * 0.8 = 240. At 280, Strat 1 is still OPEN!
+    engine.data_managers["BANKNIFTY"].option_chain["BANKNIFTY56300CE"].ltp = 280.0
+    engine.data_managers["BANKNIFTY"].option_chain[raw_symbol].ltp = 280.0
+
+    with patch("backend.app.live_engine.datetime") as mock_dt:
+        mock_dt.now.return_value = datetime(2026, 9, 9, 10, 20, tzinfo=IST)
+        engine.check_exits()
+
+    # Strat 3 closed, Strat 1 and Strat 2 remain open
+    remaining = {p.strategy: p for p in engine.paper_trader.get_positions()}
+    assert len(remaining) == 2
+    assert "BANKNIFTY_MACD_BULLISH_1M_ATM" in remaining
+    assert "BANKNIFTY_SUPPORT_BOUNCE_1M_ATM" in remaining
+    assert "BANKNIFTY_DUAL_SUPERTREND_BB_CE" not in remaining
+
+    # Fyers WebSocket must still be subscribed because 2 positions are open!
+    engine.fyers.unsubscribe_symbols.assert_not_called()
+
+    # Next drop to ₹265:
+    # Strat 2 SL: 272 -> Strat 2 HIT!
+    # Strat 1 SL: 240 -> Strat 1 still OPEN!
+    engine.data_managers["BANKNIFTY"].option_chain["BANKNIFTY56300CE"].ltp = 265.0
+    engine.data_managers["BANKNIFTY"].option_chain[raw_symbol].ltp = 265.0
+
+    with patch("backend.app.live_engine.datetime") as mock_dt:
+        mock_dt.now.return_value = datetime(2026, 9, 9, 10, 25, tzinfo=IST)
+        engine.check_exits()
+
+    remaining = {p.strategy: p for p in engine.paper_trader.get_positions()}
+    assert len(remaining) == 1
+    assert "BANKNIFTY_MACD_BULLISH_1M_ATM" in remaining
+
+    # Still NOT unsubscribed!
+    engine.fyers.unsubscribe_symbols.assert_not_called()
+
+    # Finally drop to ₹235: Strat 1 SL (240) HIT!
+    engine.data_managers["BANKNIFTY"].option_chain["BANKNIFTY56300CE"].ltp = 235.0
+    engine.data_managers["BANKNIFTY"].option_chain[raw_symbol].ltp = 235.0
+
+    with patch("backend.app.live_engine.datetime") as mock_dt:
+        mock_dt.now.return_value = datetime(2026, 9, 9, 10, 30, tzinfo=IST)
+        engine.check_exits()
+
+    assert len(engine.paper_trader.get_positions()) == 0
+
+    # ONLY when the 3rd and final position closes is the symbol unsubscribed!
+    engine.fyers.unsubscribe_symbols.assert_called_once_with([raw_symbol])
+    assert raw_symbol not in engine._monitored_symbols
