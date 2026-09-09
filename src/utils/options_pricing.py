@@ -270,3 +270,34 @@ def format_readable_contract(symbol: str, expiry: date = None, timestamp: dateti
         expiry = next_weekly_expiry_date(ts, index=prefix)
     return f"{prefix} {expiry.day:02d}-{expiry.strftime('%b').upper()}-{expiry.year} {int(strike)} {option_type}"
 
+
+FYERS_MONTH_CODES = {
+    1: "1", 2: "2", 3: "3", 4: "4", 5: "5", 6: "6",
+    7: "7", 8: "8", 9: "9", 10: "O", 11: "N", 12: "D"
+}
+
+
+def to_fyers_symbol(symbol: str, expiry: date = None) -> str:
+    """Builds valid Fyers WebSocket option symbol:
+       'BANKNIFTY56300CE' + 2026-09-29 -> 'NSE:BANKNIFTY2692956300CE'
+       'SENSEX75100PE'    + 2026-09-10 -> 'BSE:SENSEX2691075100PE'
+       'NIFTY24600CE'     + 2026-09-15 -> 'NSE:NIFTY2691524600CE'"""
+    strike, option_type = parse_option_symbol(symbol)
+    if strike is None:
+        return symbol
+    if "BANKNIFTY" in symbol:
+        underlying = "BANKNIFTY"
+        exchange = "NSE"
+    elif "SENSEX" in symbol:
+        underlying = "SENSEX"
+        exchange = "BSE"
+    else:
+        underlying = "NIFTY"
+        exchange = "NSE"
+    if expiry is None:
+        expiry = next_weekly_expiry_date(datetime.now(), index=underlying)
+    yy = f"{expiry.year % 100:02d}"
+    m = FYERS_MONTH_CODES.get(expiry.month, str(expiry.month))
+    dd = f"{expiry.day:02d}"
+    return f"{exchange}:{underlying}{yy}{m}{dd}{int(strike)}{option_type}"
+

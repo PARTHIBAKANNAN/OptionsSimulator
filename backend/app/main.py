@@ -89,6 +89,61 @@ async def health(request: Request):
     }
 
 
+@app.get("/api/health/master")
+async def master_health(request: Request):
+    """Comprehensive diagnostic endpoint checking all indices, data feeds, indicators,
+    and strategy engines for live readiness."""
+    from datetime import datetime
+    from src.trader import IST
+    from src.utils.options_pricing import next_weekly_expiry_date
+    engine: WebLiveEngine = request.app.state.live_engine
+    now = datetime.now(IST)
+
+    indices_diag = {}
+    for idx_name in ("NIFTY", "SENSEX", "BANKNIFTY"):
+        dm = engine.data_managers.get(idx_name)
+        if dm:
+            state = dm.get_state()
+            cached_ind = getattr(dm, "_cached_values", {})
+            candles = getattr(dm, "candles", [])
+            chain = dm.get_option_chain()
+            next_exp = next_weekly_expiry_date(now, index=idx_name)
+            indices_diag[idx_name] = {
+                "spot_price": state.get("nifty_price"),
+                "candles_count": len(candles),
+                "latest_candle_time": candles[-1].timestamp.isoformat() if candles else None,
+                "has_50_ema_1h": "ema_50_1h" in cached_ind or "ema_50_5m" in cached_ind,
+                "cached_indicators_count": len(cached_ind),
+                "option_chain_quotes_count": len(chain),
+                "next_expiry_date": next_exp.isoformat(),
+            }
+        else:
+            indices_diag[idx_name] = {"error": "DataManager not initialized"}
+
+    strategy_counts = {idx: len(se.strategies) for idx, se in getattr(engine, "strategy_engines", {}).items()}
+    total_strategies = sum(strategy_counts.values())
+
+    return {
+        "status": "ok",
+        "timestamp": now.isoformat(),
+        "mode": "live" if engine.data_engine_enabled else "replay",
+        "is_running": engine.is_running,
+        "db_available": request.app.state.db_available,
+        "fyers": {
+            "authenticated": bool(engine.fyers.access_token) if engine.data_engine_enabled else False,
+            "connected": getattr(engine, "_connected", False),
+            "monitored_symbols_count": len(getattr(engine, "_monitored_symbols", set())),
+            "monitored_symbols": sorted(list(getattr(engine, "_monitored_symbols", set()))),
+        },
+        "indices": indices_diag,
+        "strategies": {
+            "total_active": total_strategies,
+            "by_index": strategy_counts,
+            "open_positions": len(engine.paper_trader.get_positions()),
+        },
+    }
+
+
 @app.get("/api/snapshot")
 async def snapshot(user: dict = Depends(security.require_login)):
     return shared_state.get()

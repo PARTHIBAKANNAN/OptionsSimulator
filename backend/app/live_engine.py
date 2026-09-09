@@ -22,7 +22,7 @@ from src.data_manager import Candle
 from src.simulator.paper_trader import Order, RiskLimitExceeded
 from src.utils.options_pricing import (
     black_scholes_price, format_display_symbol, next_weekly_expiry_date, next_weekly_expiry_days,
-    parse_option_symbol,
+    parse_option_symbol, to_fyers_symbol,
 )
 import src.db.sqlite_candle_cache as sqlite_cache
 
@@ -645,10 +645,7 @@ class WebLiveEngine(LiveTrader):
         # Auto-subscribe option symbol to Fyers WebSocket using real date-coded symbol
         if self.fyers and self.data_engine_enabled:
             dm = self.data_managers.get(signal.underlying, self.data_manager)
-            raw_sym = dm.get_fyers_symbol(signal.strike)
-            if not raw_sym:
-                exchange = INDEX_TO_EXCHANGE.get(signal.underlying, "NSE")
-                raw_sym = f"{exchange}:{signal.strike}"
+            raw_sym = (dm.get_fyers_symbol(signal.strike) if dm else None) or to_fyers_symbol(signal.strike)
             try:
                 self.fyers.subscribe_symbols([raw_sym])
                 self._monitored_symbols.add(raw_sym)
@@ -695,20 +692,25 @@ class WebLiveEngine(LiveTrader):
             current_prices.update({sym: q.ltp for sym, q in data_manager.get_option_chain().items()})
         closed = self.paper_trader.update_positions(
             current_prices, timestamp=datetime.now(IST), time_exit_mins=self.time_exit_mins, eod_square_off=True)
-        for order in closed:
-            asyncio.create_task(self._close_position_db(order))
-            if order.strategy:
-                asyncio.create_task(self._save_wallet_db(order.strategy))
-            # Clean up WebSocket subscription for closed contract using real Fyers symbol
-            if self.fyers and self.data_engine_enabled:
-                dm = self.data_managers.get(order.underlying, self.data_manager)
-                raw_sym = (dm.get_fyers_symbol(order.symbol)
-                           if dm else None) or f"{INDEX_TO_EXCHANGE.get(order.underlying, 'NSE')}:{order.symbol}"
-                try:
-                    self.fyers.unsubscribe_symbols([raw_sym])
-                    self._monitored_symbols.discard(raw_sym)
-                except Exception:
-                    pass
+        if closed:
+            remaining_symbols = {o.symbol for o in self.paper_trader.get_positions()}
+            for order in closed:
+                asyncio.create_task(self._close_position_db(order))
+                if order.strategy:
+                    asyncio.create_task(self._save_wallet_db(order.strategy))
+                # Active reference counting: only unsubscribe if zero remaining open positions hold this symbol
+                if self.fyers and self.data_engine_enabled and order.symbol not in remaining_symbols:
+                    dm = self.data_managers.get(order.underlying, self.data_manager)
+                    raw_sym = (dm.get_fyers_symbol(order.symbol)
+                               if dm else None) or to_fyers_symbol(order.symbol)
+                    try:
+                        self.fyers.unsubscribe_symbols([raw_sym])
+                        self._monitored_symbols.discard(raw_sym)
+                    except Exception:
+                        pass
+                if self.telegram and self.data_engine_enabled:
+                    pnl = order.net_pnl if hasattr(order, "net_pnl") and order.net_pnl is not None else order.realized_pnl
+                    asyncio.create_task(self.telegram.send_position_exit(order, pnl or 0.0, order.exit_reason or "EXIT"))
         self._publish_state()
 
     # ---- Entry point: live Fyers vs local replay -------------------------------------

@@ -158,3 +158,17 @@ def test_banknifty_monthly_expiry_resolves_to_last_tuesday_of_month():
     # NIFTY expires on Tuesday Sep 15, 2026
     assert next_weekly_expiry_date(wed, index="NIFTY") == date(2026, 9, 15)
 
+
+def test_to_fyers_symbol():
+    from src.utils.options_pricing import to_fyers_symbol
+    # BANKNIFTY monthly last Tuesday (Sep 29, 2026)
+    assert to_fyers_symbol("BANKNIFTY56300PE", date(2026, 9, 29)) == "NSE:BANKNIFTY2692956300PE"
+    # SENSEX weekly Thursday (Sep 10, 2026)
+    assert to_fyers_symbol("SENSEX75100CE", date(2026, 9, 10)) == "BSE:SENSEX2691075100CE"
+    # NIFTY weekly Tuesday (Sep 15, 2026)
+    assert to_fyers_symbol("NIFTY24600CE", date(2026, 9, 15)) == "NSE:NIFTY2691524600CE"
+    # Month encoding October = O, November = N, December = D
+    assert to_fyers_symbol("NIFTY24600CE", date(2026, 10, 6)) == "NSE:NIFTY26O0624600CE"
+    assert to_fyers_symbol("BANKNIFTY56000PE", date(2026, 11, 24)) == "NSE:BANKNIFTY26N2456000PE"
+    assert to_fyers_symbol("SENSEX75000CE", date(2026, 12, 17)) == "BSE:SENSEX26D1775000CE"
+
