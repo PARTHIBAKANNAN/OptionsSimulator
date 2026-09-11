@@ -219,6 +219,15 @@ async def get_public_market_summary():
     }
 
 
+@app.get("/api/public/candles/{index}")
+async def get_public_candles(index: str):
+    idx = index.upper()
+    current_state = shared_state.get()
+    key = f"{idx.lower()}_candles_5m"
+    candles = current_state.get(key, [])
+    return {"index": idx, "count": len(candles), "candles": candles}
+
+
 @app.websocket("/ws/public-ticker")
 async def ws_public_ticker(websocket: WebSocket):
     """Public lightweight WebSocket broadcasting real-time spot index ticks (500ms). Zero sensitive math/signals."""
