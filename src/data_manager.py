@@ -128,6 +128,15 @@ class DataManager:
         # Synchronize tick to simplified strike alias (e.g. NIFTY24500CE) so open position
         # P&Ls update on incoming sub-second ticks without waiting for 10s REST polls
         alias = self._symbol_alias.get(symbol)
+        if not alias and ":" in symbol:
+            # Auto-infer simplified key if alias was not pre-populated via REST poll
+            from src.utils.options_pricing import parse_option_symbol
+            strike, opt_type = parse_option_symbol(symbol)
+            if strike is not None and opt_type is not None:
+                alias = f"{self.underlying}{int(strike)}{opt_type}"
+                self._symbol_alias[symbol] = alias
+                self._symbol_alias[alias] = symbol
+
         if alias and alias != symbol:
             alias_quote = self.option_chain.get(alias, OptionQuote(symbol=alias))
             alias_quote.ltp = quote.ltp
@@ -205,12 +214,20 @@ class DataManager:
             symbol = row.get("symbol")
             if not symbol:
                 continue
+            existing = self.option_chain.get(symbol)
+            ltp = float(row.get("ltp", 0))
+            # Protect active real-time WebSocket ticks from being overwritten by delayed REST snapshots
+            if existing and existing.ltp > 0 and (datetime.now() - (existing.updated_at or datetime.min)).total_seconds() < 60:
+                ltp = existing.ltp
+
             quote = OptionQuote(
                 symbol=symbol,
-                ltp=float(row.get("ltp", 0)),
-                oi=int(row.get("oi", 0)),
-                volume=int(row.get("volume", 0)),
-                updated_at=datetime.now(),
+                ltp=ltp,
+                bid=float(row.get("bid", existing.bid if existing else 0)),
+                ask=float(row.get("ask", existing.ask if existing else 0)),
+                oi=int(row.get("oi", existing.oi if existing else 0)),
+                volume=int(row.get("volume", existing.volume if existing else 0)),
+                updated_at=existing.updated_at if (existing and existing.ltp > 0) else datetime.now(),
             )
             self.option_chain[symbol] = quote
 
@@ -415,22 +432,15 @@ class DataManager:
             candles.append(self._current)
         return candles
 
-    def get_candles_5m_with_delta(self, today: date, days: int = 1) -> list[dict]:
+    def get_candles_5m_with_delta(self, today: date, days: int = 3) -> list[dict]:
         """5-min OHLCV + cumulative-tick-delta bars for the live chart (see CandleChart.jsx).
-        If days <= 1, returns today's session (or latest day).
-        If days > 1, returns the last `days` calendar days of 5m bars with Unix timestamps."""
-        if days <= 1:
-            todays = self.get_today_candles(today)
-            if not todays and self.candles:
-                latest_day = self.candles[-1].timestamp.date()
-                todays = [c for c in self.candles if c.timestamp.date() == latest_day]
-        else:
-            cutoff = today - timedelta(days=days)
-            todays = [c for c in self.candles if c.timestamp.date() >= cutoff]
-            if not todays and self.candles:
-                todays = list(self.candles)
-            if self._current is not None:
-                todays = todays + [self._current]
+        Returns the last `days` trading days of 5m bars with Unix timestamps for rich chart context."""
+        cutoff = today - timedelta(days=max(days, 1))
+        todays = [c for c in self.candles if c.timestamp.date() >= cutoff]
+        if not todays and self.candles:
+            todays = list(self.candles)
+        if self._current is not None and self._current.timestamp.date() >= cutoff:
+            todays = todays + [self._current]
 
         if not todays:
             return []
@@ -438,6 +448,16 @@ class DataManager:
             "Timestamp": c.timestamp, "Open": c.open, "High": c.high, "Low": c.low,
             "Close": c.close, "Volume": c.volume, "Delta": c.delta,
         } for c in todays]).set_index("Timestamp")
+
+        # Exclude pre-market uncrossing artifacts (e.g. 09:07 indicative prices) to prevent distorted candles
+        try:
+            df = df.between_time("09:15", "15:30")
+        except Exception:
+            pass
+
+        if df.empty:
+            return []
+
         resampled = df.resample("5min").agg({
             "Open": "first", "High": "max", "Low": "min", "Close": "last",
             "Volume": "sum", "Delta": "sum",

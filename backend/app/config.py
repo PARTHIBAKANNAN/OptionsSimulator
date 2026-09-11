@@ -27,7 +27,7 @@ class WebConfig:
         return WebConfig(
             base=base,
             cors_origins=cors_origins,
-            stream_interval=float(os.getenv("STREAM_INTERVAL", "1.0")),
+            stream_interval=float(os.getenv("STREAM_INTERVAL", "0.1")),
             session_secret=os.getenv("SESSION_SECRET", ""),
             supabase_url=os.getenv("SUPABASE_URL", ""),
             supabase_db_url=os.getenv("SUPABASE_DB_URL", ""),

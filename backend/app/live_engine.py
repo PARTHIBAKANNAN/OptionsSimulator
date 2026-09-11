@@ -508,7 +508,7 @@ class WebLiveEngine(LiveTrader):
                 continue
             self._last_persisted_candle_ts[index] = new_candles[-1].timestamp
             sqlite_cache.save_candles(index, new_candles)
-            asyncio.create_task(self._persist_candles_db(index, new_candles))
+            self._schedule_async(self._persist_candles_db(index, new_candles))
 
     async def _persist_candles_db(self, index: str, candles: list) -> None:
         """Persists candles locally and executes DB hooks if available."""
@@ -568,9 +568,9 @@ class WebLiveEngine(LiveTrader):
                 order.order_id, price=price, timestamp=datetime.now(IST), reason="EOD_SQUARE_OFF"
             )
             if closed_order:
-                asyncio.create_task(self._close_position_db(closed_order))
+                self._schedule_async(self._close_position_db(closed_order))
                 if closed_order.strategy:
-                    asyncio.create_task(self._save_wallet_db(closed_order.strategy))
+                    self._schedule_async(self._save_wallet_db(closed_order.strategy))
 
         self._publish_state()
 
@@ -593,7 +593,7 @@ class WebLiveEngine(LiveTrader):
             await self._save_signal_db(signal_id, signal, "approve")
             decision = "approve"
         else:
-            loop = asyncio.get_event_loop()
+            loop = self._loop or asyncio.get_event_loop()
             future = pending_signals.register(signal_id, self._signal_dict(signal) | {"id": signal_id}, loop)
             await self._save_signal_db(signal_id, signal, "pending")
             self._publish_state()
@@ -602,7 +602,7 @@ class WebLiveEngine(LiveTrader):
                 try:
                     telegram_signal_id = await asyncio.wait_for(
                         self.telegram.send_signal_alert(signal), timeout=self.TELEGRAM_TIMEOUT_SECS)
-                    asyncio.create_task(self._await_telegram_and_resolve(telegram_signal_id, signal_id))
+                    self._schedule_async(self._await_telegram_and_resolve(telegram_signal_id, signal_id))
                 except Exception as e:
                     self.logger.log_error(f"Telegram alert failed, web approval still available: {e}")
 
@@ -654,7 +654,7 @@ class WebLiveEngine(LiveTrader):
 
         await self._save_position_db(order)
         if order.strategy:
-            asyncio.create_task(self._save_wallet_db(order.strategy))
+            self._schedule_async(self._save_wallet_db(order.strategy))
         self._publish_state()
         # Gated by data_engine_enabled, not just `if self.telegram:` — Telegram credentials are
         # configured VM-wide, so this ran unconditionally on every fill regardless of mode. Fixed
@@ -695,9 +695,9 @@ class WebLiveEngine(LiveTrader):
         if closed:
             remaining_symbols = {o.symbol for o in self.paper_trader.get_positions()}
             for order in closed:
-                asyncio.create_task(self._close_position_db(order))
+                self._schedule_async(self._close_position_db(order))
                 if order.strategy:
-                    asyncio.create_task(self._save_wallet_db(order.strategy))
+                    self._schedule_async(self._save_wallet_db(order.strategy))
                 # Active reference counting: only unsubscribe if zero remaining open positions hold this symbol
                 if self.fyers and self.data_engine_enabled and order.symbol not in remaining_symbols:
                     dm = self.data_managers.get(order.underlying, self.data_manager)
@@ -710,12 +710,13 @@ class WebLiveEngine(LiveTrader):
                         pass
                 if self.telegram and self.data_engine_enabled:
                     pnl = order.net_pnl if hasattr(order, "net_pnl") and order.net_pnl is not None else order.realized_pnl
-                    asyncio.create_task(self.telegram.send_position_exit(order, pnl or 0.0, order.exit_reason or "EXIT"))
+                    self._schedule_async(self.telegram.send_position_exit(order, pnl or 0.0, order.exit_reason or "EXIT"))
         self._publish_state()
 
     # ---- Entry point: live Fyers vs local replay -------------------------------------
 
     async def start(self) -> None:
+        self._loop = asyncio.get_running_loop()
         if self.data_engine_enabled:
             await self._restore_state()
             await super().start()
@@ -739,23 +740,20 @@ class WebLiveEngine(LiveTrader):
             nifty_df = pd.read_csv(HISTORICAL_PATH, parse_dates=["Timestamp"])
             nifty_df["underlying"] = "NIFTY"
             frames.append(nifty_df)
-        else:
-            self.logger.log_error(f"Replay mode: no historical data at {HISTORICAL_PATH}")
         if SENSEX_HISTORICAL_PATH.exists():
             sensex_df = pd.read_csv(SENSEX_HISTORICAL_PATH, parse_dates=["Timestamp"])
             sensex_df["underlying"] = "SENSEX"
             frames.append(sensex_df)
-        else:
-            self.logger.log_error(f"Replay mode: no SENSEX historical data at {SENSEX_HISTORICAL_PATH} "
-                                   f"-- continuing NIFTY-only")
         if not frames:
-            return
-        self._replay_df = pd.concat(frames, ignore_index=True).sort_values("Timestamp")
-        self.is_running = True
+            raise FileNotFoundError(f"Neither {HISTORICAL_PATH} nor {SENSEX_HISTORICAL_PATH} found")
 
+        combined = pd.concat(frames, ignore_index=True)
+        self._replay_df = combined.sort_values("Timestamp").reset_index(drop=True)
+        self.is_running = True
         candle_count = 0
+
         while self.is_running:
-            for row in self._replay_df.itertuples(index=False):
+            for _, row in self._replay_df.iterrows():
                 if not self.is_running:
                     break
                 try:
@@ -771,7 +769,7 @@ class WebLiveEngine(LiveTrader):
                     self._check_exits_replay(now=state["timestamp"])
 
                     for signal in self.evaluate_strategies():
-                        asyncio.create_task(self.execute_signal(signal))
+                        self._schedule_async(self.execute_signal(signal))
                 except Exception:
                     # The for-loop body is otherwise all synchronous — an uncaught exception here
                     # would otherwise silently kill this whole task (asyncio's default handler for
@@ -814,5 +812,5 @@ class WebLiveEngine(LiveTrader):
         closed = self.paper_trader.update_positions(
             current_prices, timestamp=now, time_exit_mins=self.time_exit_mins)
         for order in closed:
-            asyncio.create_task(self._close_position_db(order))
+            self._schedule_async(self._close_position_db(order))
         self._publish_state()

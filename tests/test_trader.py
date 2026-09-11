@@ -230,11 +230,9 @@ def test_on_market_closed_tick_is_a_noop_on_the_base_cli_trader():
 
 
 @pytest.mark.asyncio
-async def test_poll_option_chain_only_subscribes_to_real_fyers_symbols():
-    # Regression: update_option_chain() now stores both the raw Fyers symbol and a simplified
-    # "NIFTY24600CE" key (see DataManager) -- only the raw one is ever valid to hand to Fyers'
-    # own subscribe_symbols(); passing the simplified key would try to subscribe to a symbol
-    # that doesn't exist on the exchange at all.
+async def test_poll_option_chain_updates_option_chain_without_blanket_websocket_flooding():
+    # Option chain polling updates DataManager quotes; WebSocket subscriptions are targeted to
+    # open position symbols (in execute_signal) to avoid socket queue lag.
     trader = _make_trader_with_mock_fyers()
     trader.fyers.get_option_chain.return_value = {"optionsChain": [
         {"symbol": "NSE:NIFTY2681124600CE", "strike_price": 24600, "option_type": "CE", "ltp": 172.1},
@@ -242,20 +240,9 @@ async def test_poll_option_chain_only_subscribes_to_real_fyers_symbols():
 
     await trader.poll_option_chain()
 
-    trader.fyers.subscribe_symbols.assert_called_once()
-    subscribed = trader.fyers.subscribe_symbols.call_args.args[0]
-    assert subscribed == ["NSE:NIFTY2681124600CE"]
-
-
-@pytest.mark.asyncio
-async def test_poll_option_chain_does_not_resubscribe_already_monitored_symbols():
-    trader = _make_trader_with_mock_fyers()
-    trader.fyers.get_option_chain.return_value = {"optionsChain": [
-        {"symbol": "NSE:NIFTY2681124600CE", "strike_price": 24600, "option_type": "CE", "ltp": 172.1},
-    ]}
-
-    await trader.poll_option_chain()
-    trader.fyers.subscribe_symbols.reset_mock()
-    await trader.poll_option_chain()
-
+    # DataManager has the updated chain
+    chain = trader.data_managers["NIFTY"].get_option_chain()
+    assert "NSE:NIFTY2681124600CE" in chain
+    assert chain["NSE:NIFTY2681124600CE"].ltp == 172.1
+    # Does not blanket subscribe all chain symbols over websocket
     trader.fyers.subscribe_symbols.assert_not_called()

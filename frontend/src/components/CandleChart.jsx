@@ -87,6 +87,17 @@ export function CandleChart({ candles = [], tradeMarkers = [], height = 400 }) {
         vertLines: { visible: false },
         horzLines: { color: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)" },
       },
+      localization: {
+        timeFormatter: (timestamp) => {
+          const date = new Date(timestamp * 1000);
+          return date.toLocaleTimeString("en-IN", {
+            timeZone: "Asia/Kolkata",
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: false,
+          });
+        },
+      },
       timeScale: {
         timeVisible: true,
         secondsVisible: false,
@@ -94,6 +105,15 @@ export function CandleChart({ candles = [], tradeMarkers = [], height = 400 }) {
         minBarSpacing: 3,
         fixLeftEdge: true,
         rightOffset: 12,
+        tickMarkFormatter: (time) => {
+          const date = new Date(time * 1000);
+          return date.toLocaleTimeString("en-IN", {
+            timeZone: "Asia/Kolkata",
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: false,
+          });
+        },
       },
     });
 

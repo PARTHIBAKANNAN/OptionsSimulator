@@ -13,7 +13,7 @@ from datetime import time as dtime
 RISK_FREE_RATE = 0.07
 DEFAULT_IV = 0.14
 
-SYMBOL_RE = re.compile(r"(?:NIFTY|SENSEX|BANKNIFTY)(\d+)(CE|PE)$")
+SYMBOL_RE = re.compile(r"(?:NIFTY|SENSEX|BANKNIFTY).*?(\d{4,6})(CE|PE)$")
 
 # Each index's weekly-expiry weekday, as a chronological list of (effective_from, weekday) --
 # weekday 0=Monday .. 6=Sunday. The applicable regime for a given date is the last entry whose
@@ -56,8 +56,10 @@ def _expiry_weekday(for_date: date, index: str = "NIFTY") -> int:
 
 
 def parse_option_symbol(symbol: str):
-    """'NIFTY24500CE' -> (24500.0, 'CE'); 'SENSEX81500PE' -> (81500.0, 'PE'); (None, None) if it
-    doesn't match."""
+    """'NIFTY24500CE' -> (24500.0, 'CE')
+       'NSE:BANKNIFTY26SEP56300CE' -> (56300.0, 'CE')
+       'NSE:NIFTY2691524600CE' -> (24600.0, 'CE')
+       (None, None) if it doesn't match."""
     match = SYMBOL_RE.search(symbol)
     if not match:
         return None, None

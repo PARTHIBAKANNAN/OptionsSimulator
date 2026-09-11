@@ -154,10 +154,14 @@ def test_master_health_endpoint():
     assert "SENSEX" in data["indices"]
     assert "BANKNIFTY" in data["indices"]
 
-    # Verify correct next expiry dates reported for tomorrow/next cycle
-    assert data["indices"]["BANKNIFTY"]["next_expiry_date"] == "2026-09-29"
-    assert data["indices"]["SENSEX"]["next_expiry_date"] == "2026-09-10"
-    assert data["indices"]["NIFTY"]["next_expiry_date"] == "2026-09-15"
+    # Verify correct next expiry dates reported for current/next cycle
+    from datetime import datetime
+    from src.trader import IST
+    from src.utils.options_pricing import next_weekly_expiry_date
+    now_ist = datetime.now(IST)
+    assert data["indices"]["BANKNIFTY"]["next_expiry_date"] == next_weekly_expiry_date(now_ist, index="BANKNIFTY").isoformat()
+    assert data["indices"]["SENSEX"]["next_expiry_date"] == next_weekly_expiry_date(now_ist, index="SENSEX").isoformat()
+    assert data["indices"]["NIFTY"]["next_expiry_date"] == next_weekly_expiry_date(now_ist, index="NIFTY").isoformat()
 
     assert data["strategies"]["total_active"] == 44
     assert data["strategies"]["by_index"]["BANKNIFTY"] == 15

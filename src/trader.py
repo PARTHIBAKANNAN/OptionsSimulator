@@ -137,6 +137,24 @@ class LiveTrader:
         self._last_login_date = None
         self._historical_seeded_date = None
         self._last_premarket_intel_date = None
+        self._loop: asyncio.AbstractEventLoop | None = None
+
+    def _schedule_async(self, coro) -> None:
+        """Dispatches an async coroutine safely from any thread (main asyncio loop or WebSocket thread)."""
+        try:
+            loop = self._loop or asyncio.get_running_loop()
+            if loop.is_running():
+                try:
+                    curr_loop = asyncio.get_running_loop()
+                    if curr_loop is loop:
+                        loop.create_task(coro)
+                        return
+                except RuntimeError:
+                    pass
+                asyncio.run_coroutine_threadsafe(coro, loop)
+        except Exception as e:
+            if self.logger:
+                self.logger.log_error(f"_schedule_async failed: {e}")
 
     # ---- Tick handlers (called synchronously from the WebSocket thread) --------
 
@@ -165,8 +183,10 @@ class LiveTrader:
         if option_index is None:
             self.logger.log_error(f"on_tick: unrecognized symbol/exchange, dropping tick: {symbol}")
             return
-        tick.update({"bid": message.get("bid_price1", 0), "ask": message.get("ask_price1", 0),
-                     "oi": message.get("oi", 0)})
+
+        bid = message.get("bid_price") if message.get("bid_price") is not None else message.get("bid_price1", 0)
+        ask = message.get("ask_price") if message.get("ask_price") is not None else message.get("ask_price1", 0)
+        tick.update({"bid": float(bid or 0), "ask": float(ask or 0), "oi": int(message.get("oi", 0))})
         self.data_managers[option_index].on_option_tick(symbol, tick)
 
         # Instant sub-second exit check on incoming option tick
@@ -251,12 +271,13 @@ class LiveTrader:
     # ---- Main loop ---------------------------------------------------------------
 
     async def start(self) -> None:
+        self._loop = asyncio.get_running_loop()
         if self.telegram:
             await self.telegram.start_listening()
 
         self.is_running = True
         last_poll = 0.0
-        loop = asyncio.get_event_loop()
+        loop = self._loop
 
         try:
             while self.is_running:
@@ -275,16 +296,10 @@ class LiveTrader:
 
                     signals = self.evaluate_strategies()
                     for signal in signals:
-                        asyncio.create_task(self.execute_signal(signal))
+                        self._schedule_async(self.execute_signal(signal))
 
                     self.check_exits()
                 except Exception:
-                    # An uncaught exception here would otherwise silently kill the whole engine
-                    # task with no visible trace (asyncio's default handler for an unretrieved
-                    # task exception can go missing once uvicorn reconfigures the root logger) —
-                    # exactly what caused the original freeze bug (see _start_replay). Log with
-                    # the full traceback and keep looping instead of dying on whatever tick
-                    # triggers this.
                     self.logger.log_error(f"Unhandled exception in live loop:\n{traceback.format_exc()}")
 
                 await asyncio.sleep(1)
@@ -296,19 +311,6 @@ class LiveTrader:
             try:
                 chain = self.fyers.get_option_chain(symbol)
                 self.data_managers[index].update_option_chain(chain)
-                # update_option_chain() now stores each quote under BOTH the raw Fyers symbol
-                # (e.g. "NSE:NIFTY2681124600CE") and a simplified "NIFTY24600CE" key strategies
-                # actually use (see its docstring) -- only the former is ever valid to hand to
-                # Fyers' own subscribe_symbols(); the simplified key isn't a real tradable symbol
-                # at all. Filtered by this index's own exchange prefix so NIFTY's poll never
-                # tries to (re-)subscribe SENSEX's raw symbols and vice versa.
-                exchange_prefix = f"{INDEX_TO_EXCHANGE[index]}:"
-                all_symbols = {s for s in self.data_managers[index].get_option_chain().keys()
-                               if s.startswith(exchange_prefix)}
-                new_symbols = all_symbols - self._monitored_symbols
-                if new_symbols:
-                    self.fyers.subscribe_symbols(list(new_symbols))
-                    self._monitored_symbols |= new_symbols
             except Exception as e:
                 self.logger.log_error(f"poll_option_chain failed for {index}: {e}")
 
@@ -370,14 +372,6 @@ class LiveTrader:
             await self.telegram.send_trade_execution(order)
 
     def check_exits(self) -> None:
-        # Must pass an explicit IST-aware timestamp — otherwise update_positions() defaults to
-        # tz-naive datetime.now(), which raises `TypeError: Cannot subtract tz-naive and
-        # tz-aware datetime-like objects` against order.entry_time (tz-aware, from on_tick's
-        # datetime.now(IST)) the instant a position survives to its time-exit check. See
-        # WebLiveEngine._check_exits_replay's identical fix for the original freeze bug.
-        #
-        # Merging both indices' option chains into one flat dict is safe (no key collisions):
-        # NIFTY and SENSEX symbols are already uniquely prefixed by select_strike().
         current_prices = {}
         for data_manager in self.data_managers.values():
             current_prices.update({sym: q.ltp for sym, q in data_manager.get_option_chain().items()})
@@ -399,7 +393,7 @@ class LiveTrader:
                 self.state_manager.append_trade(order)
                 if self.telegram:
                     pnl = order.net_pnl if hasattr(order, "net_pnl") and order.net_pnl is not None else order.realized_pnl
-                    asyncio.create_task(self.telegram.send_position_exit(order, pnl or 0.0, order.exit_reason or "EXIT"))
+                    self._schedule_async(self.telegram.send_position_exit(order, pnl or 0.0, order.exit_reason or "EXIT"))
 
             self.state_manager.save_positions(self.paper_trader.get_positions())
 
