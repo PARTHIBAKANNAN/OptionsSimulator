@@ -230,9 +230,9 @@ def test_on_market_closed_tick_is_a_noop_on_the_base_cli_trader():
 
 
 @pytest.mark.asyncio
-async def test_poll_option_chain_updates_option_chain_without_blanket_websocket_flooding():
-    # Option chain polling updates DataManager quotes; WebSocket subscriptions are targeted to
-    # open position symbols (in execute_signal) to avoid socket queue lag.
+async def test_poll_option_chain_subscribes_option_symbols_to_websocket():
+    # Option chain polling updates DataManager quotes and subscribes option strikes
+    # to Fyers WebSocket for live sub-second tick streaming.
     trader = _make_trader_with_mock_fyers()
     trader.fyers.get_option_chain.return_value = {"optionsChain": [
         {"symbol": "NSE:NIFTY2681124600CE", "strike_price": 24600, "option_type": "CE", "ltp": 172.1},
@@ -244,5 +244,5 @@ async def test_poll_option_chain_updates_option_chain_without_blanket_websocket_
     chain = trader.data_managers["NIFTY"].get_option_chain()
     assert "NSE:NIFTY2681124600CE" in chain
     assert chain["NSE:NIFTY2681124600CE"].ltp == 172.1
-    # Does not blanket subscribe all chain symbols over websocket
-    trader.fyers.subscribe_symbols.assert_not_called()
+    # Confirms active option chain symbols are subscribed to WebSocket for live ticks
+    trader.fyers.subscribe_symbols.assert_called_with(["NSE:NIFTY2681124600CE"])

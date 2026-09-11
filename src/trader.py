@@ -311,6 +311,13 @@ class LiveTrader:
             try:
                 chain = self.fyers.get_option_chain(symbol)
                 self.data_managers[index].update_option_chain(chain)
+                exchange_prefix = f"{INDEX_TO_EXCHANGE[index]}:"
+                all_symbols = {s for s in self.data_managers[index].get_option_chain().keys()
+                               if s.startswith(exchange_prefix)}
+                new_symbols = all_symbols - self._monitored_symbols
+                if new_symbols:
+                    self.fyers.subscribe_symbols(list(new_symbols))
+                    self._monitored_symbols |= new_symbols
             except Exception as e:
                 self.logger.log_error(f"poll_option_chain failed for {index}: {e}")
 

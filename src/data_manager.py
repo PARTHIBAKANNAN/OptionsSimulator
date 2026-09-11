@@ -4,7 +4,7 @@ resamples to the timeframes each strategy needs, and exposes a single `data_stat
 that strategies evaluate against.
 """
 from dataclasses import dataclass
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, timedelta, timezone
 from typing import Optional
 
 import numpy as np
@@ -122,7 +122,13 @@ class DataManager:
         quote.ask = float(tick.get("ask", quote.ask))
         quote.oi = int(tick.get("oi", quote.oi))
         quote.volume = int(tick.get("volume", quote.volume))
-        quote.updated_at = tick.get("timestamp") or datetime.now()
+        # Always stamp with tz-aware UTC so update_option_chain's freshness guard can safely
+        # compare against datetime.now(timezone.utc) without raising offset-naive errors.
+        ts = tick.get("timestamp")
+        if ts is not None and getattr(ts, "tzinfo", None) is not None:
+            quote.updated_at = ts.astimezone(timezone.utc)
+        else:
+            quote.updated_at = datetime.now(timezone.utc)
         self.option_chain[symbol] = quote
 
         # Synchronize tick to simplified strike alias (e.g. NIFTY24500CE) so open position
@@ -210,15 +216,40 @@ class DataManager:
         returned None forever. Fyers' own response already separates strike_price/option_type
         cleanly, so store each quote under BOTH the raw Fyers symbol and that simplified key rather
         than parsing the Fyers string. See docs/ARCHITECTURE.md."""
+        now_utc = datetime.now(timezone.utc)
         for row in chain_data.get("optionsChain", []):
             symbol = row.get("symbol")
             if not symbol:
                 continue
             existing = self.option_chain.get(symbol)
-            ltp = float(row.get("ltp", 0))
-            # Protect active real-time WebSocket ticks from being overwritten by delayed REST snapshots
-            if existing and existing.ltp > 0 and (datetime.now() - (existing.updated_at or datetime.min)).total_seconds() < 60:
-                ltp = existing.ltp
+            rest_ltp = float(row.get("ltp", 0))
+
+            # Protect active real-time WebSocket ticks from being overwritten by delayed REST snapshots.
+            # Previously used datetime.now() (naive) vs on_option_tick's tz-aware updated_at, which
+            # raised "can't subtract offset-naive and offset-aware datetimes" every 10 seconds and
+            # crashed poll_option_chain silently -- leaving ALL option LTPs stale since boot.
+            ltp = rest_ltp
+            if existing and existing.ltp > 0 and existing.updated_at is not None:
+                updated = existing.updated_at
+                if updated.tzinfo is None:
+                    # Coerce naive timestamps (legacy/boot entries) to UTC for safe comparison
+                    updated = updated.replace(tzinfo=timezone.utc)
+                age_secs = (now_utc - updated).total_seconds()
+                if age_secs < 30:
+                    # WS tick is fresh — keep it, only pull bid/ask/oi/volume from REST
+                    ltp = existing.ltp
+
+            # Keep the most recent updated_at: WS tick's timestamp if fresh, REST's now_utc otherwise
+            if existing and existing.updated_at is not None and existing.ltp > 0:
+                updated_at = existing.updated_at
+                if updated_at.tzinfo is None:
+                    updated_at = updated_at.replace(tzinfo=timezone.utc)
+                if (now_utc - updated_at).total_seconds() < 30:
+                    updated_at_final = updated_at
+                else:
+                    updated_at_final = now_utc
+            else:
+                updated_at_final = now_utc
 
             quote = OptionQuote(
                 symbol=symbol,
@@ -227,7 +258,7 @@ class DataManager:
                 ask=float(row.get("ask", existing.ask if existing else 0)),
                 oi=int(row.get("oi", existing.oi if existing else 0)),
                 volume=int(row.get("volume", existing.volume if existing else 0)),
-                updated_at=existing.updated_at if (existing and existing.ltp > 0) else datetime.now(),
+                updated_at=updated_at_final,
             )
             self.option_chain[symbol] = quote
 
@@ -436,18 +467,21 @@ class DataManager:
         """5-min OHLCV + cumulative-tick-delta bars for the live chart (see CandleChart.jsx).
         Returns the last `days` trading days of 5m bars with Unix timestamps for rich chart context."""
         cutoff = today - timedelta(days=max(days, 1))
-        todays = [c for c in self.candles if c.timestamp.date() >= cutoff]
-        if not todays and self.candles:
-            todays = list(self.candles)
-        if self._current is not None and self._current.timestamp.date() >= cutoff:
-            todays = todays + [self._current]
 
-        if not todays:
+        # Step 1: Use ONLY closed 1-min candles for the historical resample so that a still-forming
+        # 1-min bar never bleeds partial H/L into an already-closed 5m bar.  This matches how
+        # TradingView/Groww display charts: historical bars are stable; only the live bar updates.
+        closed_candles = [c for c in self.candles if c.timestamp.date() >= cutoff]
+        if not closed_candles and self.candles:
+            closed_candles = list(self.candles)
+
+        if not closed_candles:
             return []
+
         df = pd.DataFrame([{
             "Timestamp": c.timestamp, "Open": c.open, "High": c.high, "Low": c.low,
             "Close": c.close, "Volume": c.volume, "Delta": c.delta,
-        } for c in todays]).set_index("Timestamp")
+        } for c in closed_candles]).set_index("Timestamp")
 
         # Exclude pre-market uncrossing artifacts (e.g. 09:07 indicative prices) to prevent distorted candles
         try:
@@ -473,6 +507,38 @@ class DataManager:
                 "low": float(row["Low"]), "close": float(row["Close"]),
                 "volume": float(row["Volume"]), "delta": float(row["Delta"]),
             })
+
+        # Step 2: Merge the live still-forming 1-min candle into the current 5m bucket separately.
+        # This updates only the rightmost live bar without touching closed bars.
+        cur = self._current
+        if cur is not None and cur.timestamp.date() >= cutoff:
+            ts_cur = cur.timestamp
+            # Snap to the 5-min bucket boundary the 1-min candle belongs to
+            minutes_since_midnight = ts_cur.hour * 60 + ts_cur.minute
+            bucket_minute = (minutes_since_midnight // 5) * 5
+            bucket_ts = ts_cur.replace(hour=bucket_minute // 60, minute=bucket_minute % 60,
+                                       second=0, microsecond=0)
+            bucket_unix = int(bucket_ts.timestamp())
+            midnight = bucket_ts.replace(hour=0, minute=0, second=0, microsecond=0)
+            bucket_min = int((bucket_ts - midnight).total_seconds() // 60)
+
+            if bars and bars[-1]["time"] == bucket_unix:
+                # Update the last bar's live fields (the 5m bar is still forming)
+                last = bars[-1]
+                last["high"] = max(last["high"], cur.high)
+                last["low"] = min(last["low"], cur.low)
+                last["close"] = cur.close
+                last["volume"] = last["volume"] + cur.volume
+                last["delta"] = last["delta"] + cur.delta
+            else:
+                # New 5m bucket just opened — create it from the live 1-min candle
+                bars.append({
+                    "time": bucket_unix,
+                    "bucket": bucket_min,
+                    "open": cur.open, "high": cur.high, "low": cur.low, "close": cur.close,
+                    "volume": float(cur.volume), "delta": float(cur.delta),
+                })
+
         return bars
 
     def get_state(self) -> dict:
