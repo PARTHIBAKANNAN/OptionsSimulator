@@ -7,7 +7,13 @@ _jwk_client: jwt.PyJWKClient | None = None
 def configure(supabase_url: str) -> None:
     global _jwk_client
     if supabase_url:
-        _jwk_client = jwt.PyJWKClient(f"{supabase_url}/auth/v1/.well-known/jwks.json")
+        _jwk_client = jwt.PyJWKClient(
+            f"{supabase_url}/auth/v1/.well-known/jwks.json",
+            cache_keys=True,
+            cache_jwk_set=True,
+            lifespan=86400,
+            timeout=10.0,
+        )
 
 
 def is_configured() -> bool:

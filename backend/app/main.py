@@ -156,7 +156,8 @@ async def login(request: Request):
     if not token:
         raise HTTPException(status_code=400, detail="access_token required")
     try:
-        user = supabase_auth.verify_token(token)
+        loop = asyncio.get_running_loop()
+        user = await loop.run_in_executor(None, supabase_auth.verify_token, token)
     except Exception as e:
         raise HTTPException(status_code=401, detail=f"Invalid token: {e}")
     security.login_user(request, user)
