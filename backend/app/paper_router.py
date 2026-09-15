@@ -96,20 +96,6 @@ async def _close_and_persist(engine, order_id: str):
     await engine._close_position_db(closed)
     if closed.strategy:
         await engine._save_wallet_db(closed.strategy)
-    # Active reference counting: only unsubscribe if zero remaining open positions hold this symbol
-    if getattr(engine, "fyers", None) and getattr(engine, "data_engine_enabled", False):
-        closed_symbol = getattr(closed, "symbol", None) or getattr(order, "symbol", None)
-        if closed_symbol:
-            remaining_symbols = {getattr(o, "symbol", None) for o in engine.paper_trader.get_positions()}
-            if closed_symbol not in remaining_symbols:
-                underlying = getattr(closed, "underlying", None) or getattr(order, "underlying", "NIFTY")
-                dm = engine.data_managers.get(underlying, getattr(engine, "data_manager", None)) if getattr(engine, "data_managers", None) else None
-                raw_sym = (dm.get_fyers_symbol(closed_symbol) if dm else None) or to_fyers_symbol(closed_symbol)
-                try:
-                    engine.fyers.unsubscribe_symbols([raw_sym])
-                    engine._monitored_symbols.discard(raw_sym)
-                except Exception:
-                    pass
     return closed
 
 

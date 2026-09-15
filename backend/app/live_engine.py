@@ -642,16 +642,6 @@ class WebLiveEngine(LiveTrader):
             self.logger.log_error(f"Signal rejected by risk limits: {e}", {"strategy": signal.strategy})
             return
 
-        # Auto-subscribe option symbol to Fyers WebSocket using real date-coded symbol
-        if self.fyers and self.data_engine_enabled:
-            dm = self.data_managers.get(signal.underlying, self.data_manager)
-            raw_sym = (dm.get_fyers_symbol(signal.strike) if dm else None) or to_fyers_symbol(signal.strike)
-            try:
-                self.fyers.subscribe_symbols([raw_sym])
-                self._monitored_symbols.add(raw_sym)
-            except Exception as e:
-                self.logger.log_error(f"WebSocket symbol subscription failed for {raw_sym}: {e}")
-
         await self._save_position_db(order)
         if order.strategy:
             self._schedule_async(self._save_wallet_db(order.strategy))
@@ -698,16 +688,7 @@ class WebLiveEngine(LiveTrader):
                 self._schedule_async(self._close_position_db(order))
                 if order.strategy:
                     self._schedule_async(self._save_wallet_db(order.strategy))
-                # Active reference counting: only unsubscribe if zero remaining open positions hold this symbol
-                if self.fyers and self.data_engine_enabled and order.symbol not in remaining_symbols:
-                    dm = self.data_managers.get(order.underlying, self.data_manager)
-                    raw_sym = (dm.get_fyers_symbol(order.symbol)
-                               if dm else None) or to_fyers_symbol(order.symbol)
-                    try:
-                        self.fyers.unsubscribe_symbols([raw_sym])
-                        self._monitored_symbols.discard(raw_sym)
-                    except Exception:
-                        pass
+
                 if self.telegram and self.data_engine_enabled:
                     pnl = order.net_pnl if hasattr(order, "net_pnl") and order.net_pnl is not None else order.realized_pnl
                     self._schedule_async(self.telegram.send_position_exit(order, pnl or 0.0, order.exit_reason or "EXIT"))

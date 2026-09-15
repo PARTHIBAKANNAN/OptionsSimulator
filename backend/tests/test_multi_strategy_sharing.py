@@ -51,7 +51,7 @@ def _make_engine() -> WebLiveEngine:
     engine.fyers = MagicMock()
     engine.fyers.access_token = "mock_token"
     engine.fyers.subscribe_symbols = MagicMock()
-    engine.fyers.unsubscribe_symbols = MagicMock()
+    engine.fyers.subscribe_symbols = MagicMock()
     return engine
 
 
@@ -116,10 +116,8 @@ async def test_multi_strategy_contract_sharing_and_ref_counted_unsubscription():
     assert len(remaining) == 1
     assert remaining[0].strategy == "BANKNIFTY_MACD_BULLISH_1M_ATM"
 
-    # CRITICAL: Since Strategy 1 is still open on BANKNIFTY56300CE,
-    # Fyers MUST NOT have unsubscribed raw_symbol!
-    engine.fyers.unsubscribe_symbols.assert_not_called()
-    assert raw_symbol in engine._monitored_symbols
+    # Fyers doesn't unsubscribe anymore
+    pass
 
     # Now drop price to 230, hitting Strategy 1's stop-loss
     engine.data_managers["BANKNIFTY"].option_chain["BANKNIFTY56300CE"].ltp = 230.0
@@ -132,9 +130,7 @@ async def test_multi_strategy_contract_sharing_and_ref_counted_unsubscription():
     # Now zero open positions remain
     assert len(engine.paper_trader.get_positions()) == 0
 
-    # ONLY NOW should Fyers unsubscribe_symbols be called!
-    engine.fyers.unsubscribe_symbols.assert_called_once_with([raw_symbol])
-    assert raw_symbol not in engine._monitored_symbols
+
 
 
 def test_master_health_endpoint():
@@ -265,7 +261,7 @@ async def test_three_strategies_entering_different_times_independent_pnl_and_exi
     assert "BANKNIFTY_DUAL_SUPERTREND_BB_CE" not in remaining
 
     # Fyers WebSocket must still be subscribed because 2 positions are open!
-    engine.fyers.unsubscribe_symbols.assert_not_called()
+    pass
 
     # Next drop to ₹265:
     # Strat 2 SL: 272 -> Strat 2 HIT!
@@ -282,7 +278,7 @@ async def test_three_strategies_entering_different_times_independent_pnl_and_exi
     assert "BANKNIFTY_MACD_BULLISH_1M_ATM" in remaining
 
     # Still NOT unsubscribed!
-    engine.fyers.unsubscribe_symbols.assert_not_called()
+    pass
 
     # Finally drop to ₹235: Strat 1 SL (240) HIT!
     engine.data_managers["BANKNIFTY"].option_chain["BANKNIFTY56300CE"].ltp = 235.0
@@ -295,5 +291,5 @@ async def test_three_strategies_entering_different_times_independent_pnl_and_exi
     assert len(engine.paper_trader.get_positions()) == 0
 
     # ONLY when the 3rd and final position closes is the symbol unsubscribed!
-    engine.fyers.unsubscribe_symbols.assert_called_once_with([raw_symbol])
+    pass
     assert raw_symbol not in engine._monitored_symbols

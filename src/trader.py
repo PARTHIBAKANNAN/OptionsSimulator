@@ -362,18 +362,6 @@ class LiveTrader:
             self.logger.log_error(f"Signal rejected by risk limits: {e}", {"strategy": signal.strategy})
             return
 
-        # Auto-subscribe option contract symbol to live WebSocket ticks using real Fyers symbol
-        dm = self.data_managers.get(signal.underlying, self.data_manager)
-        raw_sym = dm.get_fyers_symbol(signal.strike)
-        if not raw_sym:
-            exchange = INDEX_TO_EXCHANGE.get(signal.underlying, "NSE")
-            raw_sym = f"{exchange}:{signal.strike}"
-        try:
-            self.fyers.subscribe_symbols([raw_sym])
-            self._monitored_symbols.add(raw_sym)
-        except Exception as e:
-            self.logger.log_error(f"WebSocket symbol subscription failed for {raw_sym}: {e}")
-
         self.state_manager.save_positions(self.paper_trader.get_positions())
         if self.telegram:
             await self.telegram.send_trade_execution(order)
@@ -388,15 +376,6 @@ class LiveTrader:
             remaining_symbols = {o.symbol for o in self.paper_trader.get_positions()}
             self.state_manager.save_positions(self.paper_trader.get_positions())
             for order in closed:
-                # Active reference counting: only unsubscribe if zero remaining positions hold this symbol
-                if order.symbol not in remaining_symbols:
-                    exchange = INDEX_TO_EXCHANGE.get(order.underlying, "NSE")
-                    raw_sym = f"{exchange}:{order.symbol}"
-                    try:
-                        self.fyers.unsubscribe_symbols([raw_sym])
-                        self._monitored_symbols.discard(raw_sym)
-                    except Exception:
-                        pass
                 self.state_manager.append_trade(order)
                 if self.telegram:
                     pnl = order.net_pnl if hasattr(order, "net_pnl") and order.net_pnl is not None else order.realized_pnl

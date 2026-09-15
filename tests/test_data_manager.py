@@ -178,20 +178,25 @@ def test_update_option_chain_stores_both_the_raw_fyers_symbol_and_the_simplified
     # the UI's live LTP) silently missed and returned None forever. Confirmed against a real Fyers
     # optionchain response on 2026-08-06.
     dm = DataManager()
+    from src.utils.options_pricing import to_fyers_symbol
+    sym_ce = to_fyers_symbol("NIFTY24600CE")
+    sym_pe = to_fyers_symbol("NIFTY24600PE")
+    
     chain_data = {"optionsChain": [
         {"symbol": "NSE:NIFTY50-INDEX", "strike_price": -1, "option_type": "", "ltp": 24627.4},
-        {"symbol": "NSE:NIFTY2681124600CE", "strike_price": 24600, "option_type": "CE", "ltp": 172.1, "oi": 500},
-        {"symbol": "NSE:NIFTY2681124600PE", "strike_price": 24600, "option_type": "PE", "ltp": 108.75, "oi": 300},
+        {"symbol": sym_ce, "strike_price": 24600, "option_type": "CE", "ltp": 172.1, "oi": 500},
+        {"symbol": sym_pe, "strike_price": 24600, "option_type": "PE", "ltp": 108.75, "oi": 300},
     ]}
 
     dm.update_option_chain(chain_data)
     chain = dm.get_option_chain()
 
-    assert chain["NSE:NIFTY2681124600CE"].ltp == 172.1
+    assert chain[sym_ce].ltp == 172.1
     assert chain["NIFTY24600CE"].ltp == 172.1
     assert chain["NIFTY24600CE"].oi == 500
     assert chain["NIFTY24600PE"].ltp == 108.75
-    assert "NSE:NIFTY50-INDEX" in chain
+    # The index itself is ignored because strike_price is -1 and option_type is empty
+    assert "NSE:NIFTY50-INDEX" not in chain
     assert "NIFTY-1CE" not in chain and "NIFTY-1PE" not in chain  # the index row itself, excluded
 
 
@@ -200,8 +205,10 @@ def test_update_option_chain_respects_underlying_for_the_simplified_key():
     # -- otherwise a second DataManager instance for a different index would silently collide with
     # NIFTY's own simplified-key convention.
     dm = DataManager(underlying="SENSEX")
+    from src.utils.options_pricing import to_fyers_symbol
+    sym_sensex = to_fyers_symbol("SENSEX81500CE")
     chain_data = {"optionsChain": [
-        {"symbol": "BSE:SENSEX2681181500CE", "strike_price": 81500, "option_type": "CE", "ltp": 250.0},
+        {"symbol": sym_sensex, "strike_price": 81500, "option_type": "CE", "ltp": 250.0},
     ]}
     dm.update_option_chain(chain_data)
     chain = dm.get_option_chain()

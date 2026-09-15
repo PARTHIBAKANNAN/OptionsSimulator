@@ -216,10 +216,23 @@ class DataManager:
         returned None forever. Fyers' own response already separates strike_price/option_type
         cleanly, so store each quote under BOTH the raw Fyers symbol and that simplified key rather
         than parsing the Fyers string. See docs/ARCHITECTURE.md."""
+        from src.utils.options_pricing import to_fyers_symbol
         now_utc = datetime.now(timezone.utc)
         for row in chain_data.get("optionsChain", []):
             symbol = row.get("symbol")
             if not symbol:
+                continue
+
+            strike = row.get("strike_price")
+            option_type = row.get("option_type")
+            if strike is None or strike <= 0 or option_type not in ("CE", "PE"):
+                continue
+
+            # Only accept symbols that match the nearest weekly expiry. Fyers returns all 
+            # expiries, which overwrites the simple alias with the wrong contract otherwise.
+            simple_key = f"{self.underlying}{int(strike)}{option_type}"
+            expected_symbol = to_fyers_symbol(simple_key)
+            if symbol != expected_symbol:
                 continue
             existing = self.option_chain.get(symbol)
             rest_ltp = float(row.get("ltp", 0))
@@ -262,13 +275,10 @@ class DataManager:
             )
             self.option_chain[symbol] = quote
 
-            strike = row.get("strike_price")
-            option_type = row.get("option_type")
-            if strike is not None and strike > 0 and option_type in ("CE", "PE"):
-                simple_key = f"{self.underlying}{int(strike)}{option_type}"
-                self.option_chain[simple_key] = quote
-                self._symbol_alias[symbol] = simple_key
-                self._symbol_alias[simple_key] = symbol
+            # simple_key and strike/option_type were already extracted above
+            self.option_chain[simple_key] = quote
+            self._symbol_alias[symbol] = simple_key
+            self._symbol_alias[simple_key] = symbol
 
     def get_option_chain(self) -> dict:
         return dict(self.option_chain)
