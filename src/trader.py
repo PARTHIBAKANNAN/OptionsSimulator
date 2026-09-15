@@ -35,6 +35,7 @@ from src.strategies.engine import (
 from src.alerts.telegram_alerts import TelegramAlertsManager
 from src.persistence.state_manager import StateManager
 from src.utils.logger import get_logger
+from src.utils.options_pricing import to_fyers_symbol
 
 NIFTY_SYMBOL = "NSE:NIFTY50-INDEX"
 SENSEX_SYMBOL = "BSE:SENSEX-INDEX"
@@ -363,6 +364,15 @@ class LiveTrader:
             return
 
         self.state_manager.save_positions(self.paper_trader.get_positions())
+        dm = self.data_managers.get(signal.underlying, self.data_manager)
+        raw_sym = dm.get_fyers_symbol(signal.strike) or to_fyers_symbol(signal.strike)
+        if raw_sym and raw_sym not in self._monitored_symbols:
+            if getattr(self.fyers, "ws", None):
+                try:
+                    self.fyers.subscribe_symbols([raw_sym])
+                except Exception as e:
+                    self.logger.log_error(f"Failed to subscribe {raw_sym}: {e}")
+            self._monitored_symbols.add(raw_sym)
         if self.telegram:
             await self.telegram.send_trade_execution(order)
 

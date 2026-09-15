@@ -9,6 +9,9 @@ import math
 import re
 from datetime import date, datetime, timedelta
 from datetime import time as dtime
+from zoneinfo import ZoneInfo
+
+IST = ZoneInfo("Asia/Kolkata")
 
 RISK_FREE_RATE = 0.07
 DEFAULT_IV = 0.14
@@ -123,7 +126,7 @@ def select_optimal_delta_strike(spot: float, option_type: str, index: str = "NIF
     atm = round(spot / step) * step
 
     if days_to_expiry is None:
-        days_to_expiry = next_weekly_expiry_days(datetime.now(), index=index)
+        days_to_expiry = next_weekly_expiry_days(datetime.now(IST), index=index)
 
     # Generate strike ladder candidates (-3 to +3 strikes)
     if option_type.upper() == "CE":
@@ -177,6 +180,11 @@ def next_weekly_expiry_days(from_date: datetime, index: str = "NIFTY") -> float:
     - BANKNIFTY: Discontinued weekly options; monthly expiry on the last Tuesday of the month.
     - SENSEX: Weekly options expire on Thursday.
     - NIFTY: Weekly options expire on Tuesday."""
+    if from_date.tzinfo is not None:
+        from_date = from_date.astimezone(IST)
+    else:
+        from_date = from_date.replace(tzinfo=IST)
+
     if index == "BANKNIFTY":
         expiry_dt = next_weekly_expiry_date(from_date, index="BANKNIFTY")
         diff_days = (expiry_dt - from_date.date()).days
@@ -202,6 +210,11 @@ def next_weekly_expiry_days(from_date: datetime, index: str = "NIFTY") -> float:
 def is_expiry_day(from_date: datetime, index: str = "NIFTY") -> bool:
     """True on the applicable expiry weekday for this index before the 15:30 IST close — the
     window an expiry-day strategy can act in."""
+    if from_date.tzinfo is not None:
+        from_date = from_date.astimezone(IST)
+    else:
+        from_date = from_date.replace(tzinfo=IST)
+
     if index == "BANKNIFTY":
         expiry_date = last_tuesday_of_month(from_date.date())
         return (from_date.date() == expiry_date and from_date.time() < dtime(15, 30))
@@ -214,6 +227,11 @@ def next_weekly_expiry_date(from_date: datetime, index: str = "NIFTY") -> date:
     - BANKNIFTY: Discontinued weekly options; expires monthly on the last Tuesday of the month.
     - SENSEX: Weekly options expire on Thursday.
     - NIFTY: Weekly options expire on Tuesday."""
+    if from_date.tzinfo is not None:
+        from_date = from_date.astimezone(IST)
+    else:
+        from_date = from_date.replace(tzinfo=IST)
+
     if index == "BANKNIFTY":
         curr_expiry = last_tuesday_of_month(from_date.date())
         market_close = from_date.replace(hour=15, minute=30, second=0, microsecond=0)
@@ -252,7 +270,7 @@ def format_display_symbol(symbol: str, expiry: date = None) -> str:
     else:
         prefix = "NIFTY"
     if expiry is None:
-        expiry = next_weekly_expiry_date(datetime.now(), index=prefix)
+        expiry = next_weekly_expiry_date(datetime.now(IST), index=prefix)
     return f"{prefix}{expiry.day:02d}{expiry.strftime('%b')}{expiry.year}{int(strike)}{option_type}"
 
 
@@ -268,7 +286,7 @@ def format_readable_contract(symbol: str, expiry: date = None, timestamp: dateti
     else:
         prefix = "NIFTY"
     if expiry is None:
-        ts = timestamp or datetime.now()
+        ts = timestamp or datetime.now(IST)
         expiry = next_weekly_expiry_date(ts, index=prefix)
     return f"{prefix} {expiry.day:02d}-{expiry.strftime('%b').upper()}-{expiry.year} {int(strike)} {option_type}"
 
@@ -296,7 +314,7 @@ def to_fyers_symbol(symbol: str, expiry: date = None, is_monthly: bool = None) -
         underlying = "NIFTY"
         exchange = "NSE"
     if expiry is None:
-        expiry = next_weekly_expiry_date(datetime.now(), index=underlying)
+        expiry = next_weekly_expiry_date(datetime.now(IST), index=underlying)
     yy = f"{expiry.year % 100:02d}"
 
     # Under SEBI regulations, BANKNIFTY contracts expire monthly: format is {YY}{MMM}{STRIKE}{TYPE}

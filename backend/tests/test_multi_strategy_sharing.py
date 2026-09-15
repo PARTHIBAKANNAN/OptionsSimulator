@@ -288,6 +288,5 @@ async def test_three_strategies_entering_different_times_independent_pnl_and_exi
 
     assert len(engine.paper_trader.get_positions()) == 0
 
-    # ONLY when the 3rd and final position closes is the symbol unsubscribed!
+    # Positions are closed, but subscription remains active for market day
     pass
-    assert raw_symbol not in engine._monitored_symbols

@@ -645,6 +645,15 @@ class WebLiveEngine(LiveTrader):
         await self._save_position_db(order)
         if order.strategy:
             self._schedule_async(self._save_wallet_db(order.strategy))
+        dm = self.data_managers.get(signal.underlying, self.data_manager)
+        raw_sym = dm.get_fyers_symbol(signal.strike) or to_fyers_symbol(signal.strike)
+        if raw_sym and raw_sym not in self._monitored_symbols and self.data_engine_enabled:
+            if getattr(self.fyers, "ws", None):
+                try:
+                    self.fyers.subscribe_symbols([raw_sym])
+                except Exception as e:
+                    self.logger.log_error(f"Failed to subscribe {raw_sym}: {e}")
+            self._monitored_symbols.add(raw_sym)
         self._publish_state()
         # Gated by data_engine_enabled, not just `if self.telegram:` — Telegram credentials are
         # configured VM-wide, so this ran unconditionally on every fill regardless of mode. Fixed
