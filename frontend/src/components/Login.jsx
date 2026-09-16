@@ -17,7 +17,7 @@ export function Login({ onLoggedIn, onClose }) {
     setLoading(true);
 
     const timeoutPromise = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error("Authentication request timed out (10s). Please check your connection and try again.")), 10000)
+      setTimeout(() => reject(new Error("Authentication request timed out (30s). Please check your connection and try again.")), 30000)
     );
 
     try {
