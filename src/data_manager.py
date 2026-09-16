@@ -116,26 +116,29 @@ class DataManager:
             self._current = None
 
     def on_option_tick(self, symbol: str, tick: dict) -> None:
-        quote = self.option_chain.get(symbol, OptionQuote(symbol=symbol))
+        quote = self.option_chain.get(symbol)
+        if quote is None:
+            quote = OptionQuote(symbol=symbol)
+            self.option_chain[symbol] = quote
+            alias = self._symbol_alias.get(symbol)
+            if alias:
+                self.option_chain[alias] = quote
+
         quote.ltp = float(tick.get("ltp", quote.ltp))
         quote.bid = float(tick.get("bid", quote.bid))
         quote.ask = float(tick.get("ask", quote.ask))
         quote.oi = int(tick.get("oi", quote.oi))
         quote.volume = int(tick.get("volume", quote.volume))
-        # Always stamp with tz-aware UTC so update_option_chain's freshness guard can safely
-        # compare against datetime.now(timezone.utc) without raising offset-naive errors.
+        
         ts = tick.get("timestamp")
         if ts is not None and getattr(ts, "tzinfo", None) is not None:
             quote.updated_at = ts.astimezone(timezone.utc)
         else:
             quote.updated_at = datetime.now(timezone.utc)
-        self.option_chain[symbol] = quote
 
-        # Synchronize tick to simplified strike alias (e.g. NIFTY24500CE) so open position
-        # P&Ls update on incoming sub-second ticks without waiting for 10s REST polls
+        # Ensure simplified alias also points to the exact same quote object in memory
         alias = self._symbol_alias.get(symbol)
         if not alias and ":" in symbol:
-            # Auto-infer simplified key if alias was not pre-populated via REST poll
             from src.utils.options_pricing import parse_option_symbol
             strike, opt_type = parse_option_symbol(symbol)
             if strike is not None and opt_type is not None:
@@ -143,15 +146,8 @@ class DataManager:
                 self._symbol_alias[symbol] = alias
                 self._symbol_alias[alias] = symbol
 
-        if alias and alias != symbol:
-            alias_quote = self.option_chain.get(alias, OptionQuote(symbol=alias))
-            alias_quote.ltp = quote.ltp
-            alias_quote.bid = quote.bid
-            alias_quote.ask = quote.ask
-            alias_quote.oi = quote.oi
-            alias_quote.volume = quote.volume
-            alias_quote.updated_at = quote.updated_at
-            self.option_chain[alias] = alias_quote
+        if alias and self.option_chain.get(alias) is not quote:
+            self.option_chain[alias] = quote
 
     def get_fyers_symbol(self, simple_key: str) -> Optional[str]:
         """Returns the real Fyers date-coded symbol (e.g. 'NSE:NIFTY2690923500PE')
@@ -209,14 +205,8 @@ class DataManager:
         return self.candles[-count:] if count else list(self.candles)
 
     def update_option_chain(self, chain_data: dict) -> None:
-        """Fyers' real option symbols are date-coded (e.g. 'NSE:NIFTY2681124600CE'), but
-        select_strike() (see base_strategy.py) generates the simple 'NIFTY24600CE' form that
-        order.symbol/strategies actually use everywhere -- these never matched, so every live-mode
-        price lookup (entry pricing, SL/TP/time-exit checks, the UI's live LTP) silently missed and
-        returned None forever. Fyers' own response already separates strike_price/option_type
-        cleanly, so store each quote under BOTH the raw Fyers symbol and that simplified key rather
-        than parsing the Fyers string. See docs/ARCHITECTURE.md."""
-        from src.utils.options_pricing import to_fyers_symbol
+        """Stores each option quote under BOTH the raw Fyers symbol and simplified key
+        (e.g. 'NIFTY24600CE') sharing the EXACT same OptionQuote memory object."""
         now_utc = datetime.now(timezone.utc)
         for row in chain_data.get("optionsChain", []):
             symbol = row.get("symbol")
@@ -228,54 +218,31 @@ class DataManager:
             if strike is None or strike <= 0 or option_type not in ("CE", "PE"):
                 continue
 
-            # Only accept symbols that match the nearest weekly expiry. Fyers returns all 
-            # expiries, which overwrites the simple alias with the wrong contract otherwise.
             simple_key = f"{self.underlying}{int(strike)}{option_type}"
-            expected_symbol = to_fyers_symbol(simple_key)
-            if symbol != expected_symbol:
-                continue
             existing = self.option_chain.get(symbol)
             rest_ltp = float(row.get("ltp", 0))
 
-            # Protect active real-time WebSocket ticks from being overwritten by delayed REST snapshots.
-            # Previously used datetime.now() (naive) vs on_option_tick's tz-aware updated_at, which
-            # raised "can't subtract offset-naive and offset-aware datetimes" every 10 seconds and
-            # crashed poll_option_chain silently -- leaving ALL option LTPs stale since boot.
+            # Protect active real-time WebSocket ticks from being overwritten by delayed REST snapshots
             ltp = rest_ltp
+            updated_at_final = now_utc
             if existing and existing.ltp > 0 and existing.updated_at is not None:
                 updated = existing.updated_at
                 if updated.tzinfo is None:
-                    # Coerce naive timestamps (legacy/boot entries) to UTC for safe comparison
                     updated = updated.replace(tzinfo=timezone.utc)
-                age_secs = (now_utc - updated).total_seconds()
-                if age_secs < 30:
-                    # WS tick is fresh — keep it, only pull bid/ask/oi/volume from REST
+                if (now_utc - updated).total_seconds() < 30:
                     ltp = existing.ltp
+                    updated_at_final = updated
 
-            # Keep the most recent updated_at: WS tick's timestamp if fresh, REST's now_utc otherwise
-            if existing and existing.updated_at is not None and existing.ltp > 0:
-                updated_at = existing.updated_at
-                if updated_at.tzinfo is None:
-                    updated_at = updated_at.replace(tzinfo=timezone.utc)
-                if (now_utc - updated_at).total_seconds() < 30:
-                    updated_at_final = updated_at
-                else:
-                    updated_at_final = now_utc
-            else:
-                updated_at_final = now_utc
+            quote = existing if existing is not None else OptionQuote(symbol=symbol)
+            quote.ltp = ltp
+            quote.bid = float(row.get("bid", quote.bid))
+            quote.ask = float(row.get("ask", quote.ask))
+            quote.oi = int(row.get("oi", quote.oi))
+            quote.volume = int(row.get("volume", quote.volume))
+            quote.updated_at = updated_at_final
 
-            quote = OptionQuote(
-                symbol=symbol,
-                ltp=ltp,
-                bid=float(row.get("bid", existing.bid if existing else 0)),
-                ask=float(row.get("ask", existing.ask if existing else 0)),
-                oi=int(row.get("oi", existing.oi if existing else 0)),
-                volume=int(row.get("volume", existing.volume if existing else 0)),
-                updated_at=updated_at_final,
-            )
+            # Store the exact same object reference under both raw Fyers symbol and simplified key
             self.option_chain[symbol] = quote
-
-            # simple_key and strike/option_type were already extracted above
             self.option_chain[simple_key] = quote
             self._symbol_alias[symbol] = simple_key
             self._symbol_alias[simple_key] = symbol
