@@ -16,21 +16,14 @@ IST = ZoneInfo("Asia/Kolkata")
 RISK_FREE_RATE = 0.07
 DEFAULT_IV = 0.14
 
-SYMBOL_RE = re.compile(r"(?:NIFTY|SENSEX|BANKNIFTY).*?(\d{4,6})(CE|PE)$")
+MONTH_NAMES = "JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC"
+WEEKLY_RE = re.compile(r"(?:NSE:|BSE:)?(?:NIFTY|SENSEX|BANKNIFTY)\d{2}[1-9OND]\d{2}(\d+)(CE|PE)$")
+MONTHLY_RE = re.compile(rf"(?:NSE:|BSE:)?(?:NIFTY|SENSEX|BANKNIFTY)\d{{2}}(?:{MONTH_NAMES})(\d+)(CE|PE)$")
+SIMPLE_RE = re.compile(r"(?:NSE:|BSE:)?(?:NIFTY|SENSEX|BANKNIFTY)(\d+)(CE|PE)$")
 
 # Each index's weekly-expiry weekday, as a chronological list of (effective_from, weekday) --
 # weekday 0=Monday .. 6=Sunday. The applicable regime for a given date is the last entry whose
 # effective_from is <= that date.
-#
-# NIFTY: NSE moved weekly index expiry from Thursday to Tuesday effective 2025-09-01 (a
-# SEBI-mandated exchange-wide swap). Contracts expiring on/before 2025-08-31 were the last
-# Thursday-expiry ones; the first Tuesday expiry was 2025-09-02.
-#
-# SENSEX: BSE weekly options launched with a Friday expiry effective 2023-05-15, moved to Tuesday
-# for an interim phase effective 2025-01-01, then to Thursday (current) effective 2025-09-01 --
-# confirmed by user.
-#
-# BANKNIFTY: Thursday prior to 2023-09-01; Wednesday (2) since 2023-09-04.
 INDEX_EXPIRY_RULES = {
     "NIFTY": [
         (date.min, 3),          # Thursday, since inception
@@ -59,14 +52,24 @@ def _expiry_weekday(for_date: date, index: str = "NIFTY") -> int:
 
 
 def parse_option_symbol(symbol: str):
-    """'NIFTY24500CE' -> (24500.0, 'CE')
-       'NSE:BANKNIFTY26SEP56300CE' -> (56300.0, 'CE')
-       'NSE:NIFTY2691524600CE' -> (24600.0, 'CE')
-       (None, None) if it doesn't match."""
-    match = SYMBOL_RE.search(symbol)
-    if not match:
+    """Parses strike and option type from any option symbol format:
+       - Fyers Weekly:  'NSE:NIFTY2692223250PE'  -> (23250.0, 'PE')
+       - Fyers Monthly: 'NSE:BANKNIFTY26SEP56300CE' -> (56300.0, 'CE')
+       - Simple:        'NIFTY23250PE'          -> (23250.0, 'PE')
+       (None, None) if not recognized.
+    """
+    if not symbol:
         return None, None
-    return float(match.group(1)), match.group(2)
+    m = WEEKLY_RE.search(symbol)
+    if m:
+        return float(m.group(1)), m.group(2)
+    m = MONTHLY_RE.search(symbol)
+    if m:
+        return float(m.group(1)), m.group(2)
+    m = SIMPLE_RE.search(symbol)
+    if m:
+        return float(m.group(1)), m.group(2)
+    return None, None
 
 
 def _norm_cdf(x: float) -> float:
