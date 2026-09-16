@@ -144,6 +144,42 @@ async def master_health(request: Request):
     }
 
 
+@app.post("/api/public/fetch-contract-candles")
+async def fetch_contract_candles(request: Request):
+    """Fetches real 1-minute historical candles from Fyers for given symbols using the active authenticated session."""
+    body = await request.json()
+    symbols = body.get("symbols", [])
+    days = int(body.get("days", 2))
+    engine: WebLiveEngine = request.app.state.live_engine
+    
+    results = {}
+    for sym in symbols:
+        try:
+            loop = asyncio.get_running_loop()
+            df = await loop.run_in_executor(
+                None, engine.fyers.get_historical_data, sym, "1", days
+            )
+            if df is not None and not df.empty:
+                records = []
+                for _, row in df.iterrows():
+                    ts = row["Timestamp"]
+                    records.append({
+                        "timestamp": ts.isoformat() if hasattr(ts, "isoformat") else str(ts),
+                        "open": float(row["Open"]),
+                        "high": float(row["High"]),
+                        "low": float(row["Low"]),
+                        "close": float(row["Close"]),
+                        "volume": int(row["Volume"]) if "Volume" in row else 0,
+                    })
+                results[sym] = records
+            else:
+                results[sym] = []
+        except Exception as e:
+            results[sym] = {"error": str(e)}
+            
+    return {"status": "ok", "candles": results}
+
+
 @app.get("/api/snapshot")
 async def snapshot(user: dict = Depends(security.require_login)):
     return shared_state.get()
