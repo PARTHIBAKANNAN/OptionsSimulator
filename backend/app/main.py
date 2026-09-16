@@ -26,9 +26,9 @@ logger = get_logger()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    supabase_auth.configure(config.supabase_url)
-    if not config.supabase_url:
-        logger.log_error("SUPABASE_URL not set — login will be rejected until it's configured")
+    supabase_auth.configure(config.supabase_url, jwt_secret=config.supabase_jwt_secret)
+    if not supabase_auth.is_configured():
+        logger.log_error("Neither SUPABASE_URL nor SUPABASE_JWT_SECRET set — login will be rejected")
 
     db_available = False
     if config.supabase_db_url:

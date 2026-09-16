@@ -13,6 +13,7 @@ class WebConfig:
     session_secret: str
     supabase_url: str
     supabase_db_url: str
+    supabase_jwt_secret: str
     port: int
     data_engine_enabled: bool
     instance_name: str
@@ -31,6 +32,7 @@ class WebConfig:
             session_secret=os.getenv("SESSION_SECRET", ""),
             supabase_url=os.getenv("SUPABASE_URL", ""),
             supabase_db_url=os.getenv("SUPABASE_DB_URL", ""),
+            supabase_jwt_secret=os.getenv("SUPABASE_JWT_SECRET", ""),
             port=int(os.getenv("PORT", "8001")),
             data_engine_enabled=os.getenv("DATA_ENGINE_ENABLED", "false").strip().lower() == "true",
             instance_name=os.getenv("INSTANCE_NAME", "local"),
