@@ -161,10 +161,17 @@ class LiveTrader:
 
     def on_tick(self, message: dict) -> None:
         symbol = message.get("symbol")
-        if symbol is None:
+        if not symbol:
             return
-        tick = {"ltp": message.get("ltp"), "volume": message.get("vol_traded_today", 0),
-                "timestamp": datetime.now(IST)}
+
+        raw_ltp = message.get("ltp") if message.get("ltp") is not None else (
+            message.get("last_price") if message.get("last_price") is not None else message.get("ltp_close")
+        )
+        tick = {
+            "ltp": raw_ltp,
+            "volume": message.get("vol_traded_today", message.get("volume", 0)),
+            "timestamp": datetime.now(IST),
+        }
 
         index = SYMBOL_TO_INDEX.get(symbol)
         if index is not None:

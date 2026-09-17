@@ -125,12 +125,43 @@ class DataManager:
             if alias:
                 self.option_chain[alias] = quote
 
-        quote.ltp = float(tick.get("ltp", quote.ltp))
-        quote.bid = float(tick.get("bid", quote.bid))
-        quote.ask = float(tick.get("ask", quote.ask))
-        quote.oi = int(tick.get("oi", quote.oi))
-        quote.volume = int(tick.get("volume", quote.volume))
-        quote.source = "ws"
+        new_ltp = tick.get("ltp")
+        if new_ltp is not None:
+            try:
+                val = float(new_ltp)
+                if val > 0:
+                    quote.ltp = val
+                    quote.source = "ws"
+            except (TypeError, ValueError):
+                pass
+
+        new_bid = tick.get("bid")
+        if new_bid is not None:
+            try:
+                quote.bid = float(new_bid)
+            except (TypeError, ValueError):
+                pass
+
+        new_ask = tick.get("ask")
+        if new_ask is not None:
+            try:
+                quote.ask = float(new_ask)
+            except (TypeError, ValueError):
+                pass
+
+        new_oi = tick.get("oi")
+        if new_oi is not None:
+            try:
+                quote.oi = int(new_oi)
+            except (TypeError, ValueError):
+                pass
+
+        new_vol = tick.get("volume")
+        if new_vol is not None:
+            try:
+                quote.volume = int(new_vol)
+            except (TypeError, ValueError):
+                pass
         
         ts = tick.get("timestamp")
         if ts is not None and getattr(ts, "tzinfo", None) is not None:
@@ -251,9 +282,11 @@ class DataManager:
             updated_at_final = now_utc
             source = "rest"
             if existing and existing.ltp > 0 and getattr(existing, "source", "rest") == "ws":
-                ltp = existing.ltp
-                updated_at_final = existing.updated_at or now_utc
-                source = "ws"
+                is_recent_ws = bool(existing.updated_at and (now_utc - existing.updated_at).total_seconds() < 2.0)
+                if is_recent_ws:
+                    ltp = existing.ltp
+                    updated_at_final = existing.updated_at
+                    source = "ws"
 
             quote = existing if existing is not None else OptionQuote(symbol=symbol)
             quote.ltp = ltp
