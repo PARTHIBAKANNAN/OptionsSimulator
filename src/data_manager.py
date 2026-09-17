@@ -35,6 +35,7 @@ class OptionQuote:
     oi: int = 0
     volume: int = 0
     updated_at: Optional[datetime] = None
+    source: str = "rest"
 
 
 class DataManager:
@@ -129,6 +130,7 @@ class DataManager:
         quote.ask = float(tick.get("ask", quote.ask))
         quote.oi = int(tick.get("oi", quote.oi))
         quote.volume = int(tick.get("volume", quote.volume))
+        quote.source = "ws"
         
         ts = tick.get("timestamp")
         if ts is not None and getattr(ts, "tzinfo", None) is not None:
@@ -148,6 +150,19 @@ class DataManager:
 
         if alias and self.option_chain.get(alias) is not quote:
             self.option_chain[alias] = quote
+
+    def register_symbol_alias(self, simple_key: str, fyers_symbol: str) -> None:
+        """Explicitly binds a simple key (e.g. SENSEX74300PE) to a Fyers symbol (e.g. BSE:SENSEX2691774300PE)
+        ensuring both point to the exact same OptionQuote object in memory."""
+        self._symbol_alias[simple_key] = fyers_symbol
+        self._symbol_alias[fyers_symbol] = simple_key
+        existing = self.option_chain.get(fyers_symbol) or self.option_chain.get(simple_key)
+        if existing is None:
+            existing = OptionQuote(symbol=fyers_symbol)
+        else:
+            existing.symbol = fyers_symbol
+        self.option_chain[fyers_symbol] = existing
+        self.option_chain[simple_key] = existing
 
     def get_fyers_symbol(self, simple_key: str) -> Optional[str]:
         """Returns the real Fyers date-coded symbol (e.g. 'NSE:NIFTY2690923500PE')
@@ -222,16 +237,19 @@ class DataManager:
             existing = self.option_chain.get(symbol)
             rest_ltp = float(row.get("ltp", 0))
 
-            # Protect active real-time WebSocket ticks from being overwritten by delayed REST snapshots
+            # Protect active real-time WebSocket ticks from being overwritten by delayed REST snapshots:
+            # Only preserve existing LTP if it was sourced from a live WebSocket tick within the last 2 seconds.
             ltp = rest_ltp
             updated_at_final = now_utc
-            if existing and existing.ltp > 0 and existing.updated_at is not None:
+            source = "rest"
+            if existing and existing.ltp > 0 and existing.updated_at is not None and getattr(existing, "source", "rest") == "ws":
                 updated = existing.updated_at
                 if updated.tzinfo is None:
                     updated = updated.replace(tzinfo=timezone.utc)
-                if (now_utc - updated).total_seconds() < 30:
+                if (now_utc - updated).total_seconds() < 2.0:
                     ltp = existing.ltp
                     updated_at_final = updated
+                    source = "ws"
 
             quote = existing if existing is not None else OptionQuote(symbol=symbol)
             quote.ltp = ltp
@@ -240,6 +258,7 @@ class DataManager:
             quote.oi = int(row.get("oi", quote.oi))
             quote.volume = int(row.get("volume", quote.volume))
             quote.updated_at = updated_at_final
+            quote.source = source
 
             # Store the exact same object reference under both raw Fyers symbol and simplified key
             self.option_chain[symbol] = quote

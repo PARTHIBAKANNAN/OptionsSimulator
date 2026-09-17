@@ -260,7 +260,16 @@ class LiveTrader:
 
         if market_open and not self._connected and self.fyers.access_token:
             self.fyers.start_websocket(self.on_tick)
-            self.fyers.subscribe_symbols(list(INDEX_SYMBOLS.values()))
+            symbols_to_sub = set(INDEX_SYMBOLS.values())
+            for dm in self.data_managers.values():
+                for sym in dm.get_option_chain().keys():
+                    if ":" in sym:
+                        symbols_to_sub.add(sym)
+            try:
+                self.fyers.subscribe_symbols(list(symbols_to_sub))
+                self._monitored_symbols |= symbols_to_sub
+            except Exception as e:
+                self.logger.log_error(f"Initial subscribe failed: {e}")
             self._connected = True
         elif not market_open and self._connected:
             self.fyers.stop_websocket()
@@ -310,15 +319,18 @@ class LiveTrader:
     async def poll_option_chain(self) -> None:
         for index, symbol in INDEX_SYMBOLS.items():
             try:
-                chain = self.fyers.get_option_chain(symbol)
+                chain = self.fyers.get_option_chain(symbol, strike_count=15)
                 self.data_managers[index].update_option_chain(chain)
                 exchange_prefix = f"{INDEX_TO_EXCHANGE[index]}:"
                 all_symbols = {s for s in self.data_managers[index].get_option_chain().keys()
                                if s.startswith(exchange_prefix)}
                 new_symbols = all_symbols - self._monitored_symbols
-                if new_symbols:
-                    self.fyers.subscribe_symbols(list(new_symbols))
-                    self._monitored_symbols |= new_symbols
+                if new_symbols and getattr(self.fyers, "ws", None):
+                    try:
+                        self.fyers.subscribe_symbols(list(new_symbols))
+                        self._monitored_symbols |= new_symbols
+                    except Exception as e:
+                        self.logger.log_error(f"subscribe_symbols failed for {index}: {e}")
             except Exception as e:
                 self.logger.log_error(f"poll_option_chain failed for {index}: {e}")
 

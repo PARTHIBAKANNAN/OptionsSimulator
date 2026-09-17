@@ -6,6 +6,7 @@ after 5s of no changes, so clients can detect a dead connection). Mirrors TradeD
 actual broadcaster (a native WebSocket fanout, despite "SSE" in older env-var naming/comments).
 """
 import asyncio
+import copy
 import json
 from typing import Callable
 
@@ -32,15 +33,11 @@ class Broadcaster:
 
     def snapshot_frame(self) -> str:
         self._seq += 1
-        self._prev_snapshot = dict(self._snapshot_provider())
+        self._prev_snapshot = copy.deepcopy(self._snapshot_provider())
         return json.dumps({"type": "snapshot", "seq": self._seq, "data": self._prev_snapshot})
 
     async def start(self) -> None:
-        # dict(...) copies — if snapshot_provider ever returns the same live mutable object on
-        # every call instead of a fresh dict, storing it by reference here would silently alias
-        # _prev_snapshot to it, so every future diff compares the object against itself and never
-        # detects a change.
-        self._prev_snapshot = dict(self._snapshot_provider())
+        self._prev_snapshot = copy.deepcopy(self._snapshot_provider())
         self._task = asyncio.create_task(self._run())
 
     async def stop(self) -> None:
@@ -65,7 +62,7 @@ class Broadcaster:
                 self._fanout(json.dumps({"type": "heartbeat", "seq": self._seq}))
                 last_change_time = now
 
-            self._prev_snapshot = dict(curr)
+            self._prev_snapshot = copy.deepcopy(curr)
 
     def _fanout(self, frame: str) -> None:
         for queue in list(self._subscribers):

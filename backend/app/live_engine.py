@@ -414,6 +414,13 @@ class WebLiveEngine(LiveTrader):
                     peak_price=entry_price, entry_charges=float(row["entry_charges"] or 0.0),
                 )
                 self.paper_trader.orders[order.order_id] = order
+                dm = self.data_managers.get(order.underlying, self.data_manager)
+                raw_sym = dm.get_fyers_symbol(order.symbol) or to_fyers_symbol(order.symbol)
+                if raw_sym:
+                    dm.register_symbol_alias(order.symbol, raw_sym)
+                    quote = dm.option_chain.get(raw_sym)
+                    if quote and quote.ltp == 0.0:
+                        quote.ltp = entry_price
 
             # Reconstructs today's per-strategy trade count and realized P&L too -- without this,
             # max_trades_per_day_per_strategy and the daily-loss breaker both silently reset to
@@ -647,13 +654,18 @@ class WebLiveEngine(LiveTrader):
             self._schedule_async(self._save_wallet_db(order.strategy))
         dm = self.data_managers.get(signal.underlying, self.data_manager)
         raw_sym = dm.get_fyers_symbol(signal.strike) or to_fyers_symbol(signal.strike)
-        if raw_sym and raw_sym not in self._monitored_symbols and self.data_engine_enabled:
-            if getattr(self.fyers, "ws", None):
-                try:
-                    self.fyers.subscribe_symbols([raw_sym])
-                except Exception as e:
-                    self.logger.log_error(f"Failed to subscribe {raw_sym}: {e}")
-            self._monitored_symbols.add(raw_sym)
+        if raw_sym:
+            dm.register_symbol_alias(signal.strike, raw_sym)
+            quote = dm.option_chain.get(raw_sym)
+            if quote and quote.ltp == 0.0:
+                quote.ltp = signal.entry_price
+            if raw_sym not in self._monitored_symbols and self.data_engine_enabled:
+                if getattr(self.fyers, "ws", None):
+                    try:
+                        self.fyers.subscribe_symbols([raw_sym])
+                    except Exception as e:
+                        self.logger.log_error(f"Failed to subscribe {raw_sym}: {e}")
+                self._monitored_symbols.add(raw_sym)
         self._publish_state()
         # Gated by data_engine_enabled, not just `if self.telegram:` — Telegram credentials are
         # configured VM-wide, so this ran unconditionally on every fill regardless of mode. Fixed
