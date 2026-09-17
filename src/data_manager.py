@@ -140,6 +140,22 @@ class DataManager:
 
         # Update the simplified alias if this symbol is registered to the active option chain
         alias = self._symbol_alias.get(symbol)
+        if not alias and ":" in symbol:
+            from src.utils.options_pricing import parse_option_symbol, to_fyers_symbol
+            strike, opt_type = parse_option_symbol(symbol)
+            if strike is not None and opt_type is not None:
+                candidate_alias = f"{self.underlying}{int(strike)}{opt_type}"
+                # Only map if this symbol matches the current active expiry for this underlying,
+                # completely preventing far-month or wrong-expiry contracts from hijacking quotes.
+                try:
+                    expected_raw = to_fyers_symbol(candidate_alias)
+                    if symbol == expected_raw:
+                        alias = candidate_alias
+                        self._symbol_alias[symbol] = alias
+                        self._symbol_alias[alias] = symbol
+                except Exception:
+                    pass
+
         if alias and self.option_chain.get(alias) is not quote:
             self.option_chain[alias] = quote
 
