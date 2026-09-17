@@ -129,16 +129,28 @@ class WebLiveEngine(LiveTrader):
             banknifty_change = self._cached_market_state.get("banknifty_change")
             banknifty_change_pct = self._cached_market_state.get("banknifty_change_pct")
 
-        nifty_candles_5m = self.data_manager.get_candles_5m_with_delta(today)
-        sensex_candles_5m = self.data_managers["SENSEX"].get_candles_5m_with_delta(today)
-        banknifty_candles_5m = self.data_managers["BANKNIFTY"].get_candles_5m_with_delta(today)
+        now_ts = now.timestamp()
+        if not hasattr(self, "_last_5m_resample_time") or (now_ts - getattr(self, "_last_5m_resample_time", 0.0) >= 5.0):
+            self._cached_5m_candles = {
+                "nifty": self.data_manager.get_candles_5m_with_delta(today),
+                "sensex": self.data_managers["SENSEX"].get_candles_5m_with_delta(today),
+                "banknifty": self.data_managers["BANKNIFTY"].get_candles_5m_with_delta(today),
+                "sparkline": [c.close for c in self.data_manager.get_today_candles(today)],
+            }
+            self._last_5m_resample_time = now_ts
+
+        cached_5m = getattr(self, "_cached_5m_candles", {})
+        nifty_candles_5m = cached_5m.get("nifty", [])
+        sensex_candles_5m = cached_5m.get("sensex", [])
+        banknifty_candles_5m = cached_5m.get("banknifty", [])
+        nifty_sparkline = cached_5m.get("sparkline", [])
 
         shared_state.update({
             "nifty_price": nifty_price,
             "nifty_prev_close": prev_close,
             "nifty_change": round(change, 2) if change is not None else None,
             "nifty_change_pct": round(change_pct, 2) if change_pct is not None else None,
-            "nifty_sparkline": [c.close for c in self.data_manager.get_today_candles(today)],
+            "nifty_sparkline": nifty_sparkline,
             "nifty_candles_5m": nifty_candles_5m,
             "sensex_price": sensex_price,
             "sensex_prev_close": sensex_prev_close,

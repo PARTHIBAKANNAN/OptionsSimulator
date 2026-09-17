@@ -138,16 +138,8 @@ class DataManager:
         else:
             quote.updated_at = datetime.now(timezone.utc)
 
-        # Ensure simplified alias also points to the exact same quote object in memory
+        # Update the simplified alias if this symbol is registered to the active option chain
         alias = self._symbol_alias.get(symbol)
-        if not alias and ":" in symbol:
-            from src.utils.options_pricing import parse_option_symbol
-            strike, opt_type = parse_option_symbol(symbol)
-            if strike is not None and opt_type is not None:
-                alias = f"{self.underlying}{int(strike)}{opt_type}"
-                self._symbol_alias[symbol] = alias
-                self._symbol_alias[alias] = symbol
-
         if alias and self.option_chain.get(alias) is not quote:
             self.option_chain[alias] = quote
 
@@ -238,18 +230,14 @@ class DataManager:
             rest_ltp = float(row.get("ltp", 0))
 
             # Protect active real-time WebSocket ticks from being overwritten by delayed REST snapshots:
-            # Only preserve existing LTP if it was sourced from a live WebSocket tick within the last 2 seconds.
+            # If the quote has already received a live WS tick, always preserve the live WebSocket LTP!
             ltp = rest_ltp
             updated_at_final = now_utc
             source = "rest"
-            if existing and existing.ltp > 0 and existing.updated_at is not None and getattr(existing, "source", "rest") == "ws":
-                updated = existing.updated_at
-                if updated.tzinfo is None:
-                    updated = updated.replace(tzinfo=timezone.utc)
-                if (now_utc - updated).total_seconds() < 2.0:
-                    ltp = existing.ltp
-                    updated_at_final = updated
-                    source = "ws"
+            if existing and existing.ltp > 0 and getattr(existing, "source", "rest") == "ws":
+                ltp = existing.ltp
+                updated_at_final = existing.updated_at or now_utc
+                source = "ws"
 
             quote = existing if existing is not None else OptionQuote(symbol=symbol)
             quote.ltp = ltp
