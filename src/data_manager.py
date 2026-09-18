@@ -204,8 +204,15 @@ class DataManager:
         self.option_chain[simple_key] = existing
 
     def get_fyers_symbol(self, simple_key: str) -> Optional[str]:
-        """Returns the real Fyers date-coded symbol (e.g. 'NSE:NIFTY2690923500PE')
-        given a simple key like 'NIFTY23500PE'."""
+        """Returns the real Fyers date-coded symbol (e.g. 'BSE:SENSEX26SEP74500PE')
+        given a simple key like 'SENSEX74500PE'."""
+        from src.utils.options_pricing import to_fyers_symbol
+        try:
+            expected = to_fyers_symbol(simple_key)
+            if expected:
+                return expected
+        except Exception:
+            pass
         quote = self.option_chain.get(simple_key)
         if quote and quote.symbol and ":" in quote.symbol:
             return quote.symbol

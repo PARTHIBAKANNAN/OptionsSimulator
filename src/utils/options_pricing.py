@@ -320,8 +320,10 @@ def to_fyers_symbol(symbol: str, expiry: date = None, is_monthly: bool = None) -
         expiry = next_weekly_expiry_date(datetime.now(IST), index=underlying)
     yy = f"{expiry.year % 100:02d}"
 
-    # Under SEBI regulations, BANKNIFTY contracts expire monthly: format is {YY}{MMM}{STRIKE}{TYPE}
-    if is_monthly or underlying == "BANKNIFTY":
+    # Under SEBI regulations, any contract expiring on the last expiry of the month is the
+    # monthly contract: format is {YY}{MMM}{STRIKE}{TYPE} (e.g. BSE:SENSEX26SEP74500CE, NSE:BANKNIFTY26SEP56200CE)
+    is_last_expiry_of_month = (expiry + timedelta(days=7)).month != expiry.month
+    if is_monthly or underlying == "BANKNIFTY" or is_last_expiry_of_month:
         mmm = expiry.strftime("%b").upper()
         return f"{exchange}:{underlying}{yy}{mmm}{int(strike)}{option_type}"
 

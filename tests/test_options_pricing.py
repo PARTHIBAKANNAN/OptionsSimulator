@@ -168,6 +168,11 @@ def test_to_fyers_symbol():
     assert to_fyers_symbol("SENSEX75100CE", date(2026, 9, 10)) == "BSE:SENSEX2691075100CE"
     # NIFTY weekly Tuesday (Sep 15, 2026)
     assert to_fyers_symbol("NIFTY24600CE", date(2026, 9, 15)) == "NSE:NIFTY2691524600CE"
+    # SENSEX monthly Thursday (Sep 24, 2026 is last Thursday of Sept)
+    assert to_fyers_symbol("SENSEX74500CE", date(2026, 9, 24)) == "BSE:SENSEX26SEP74500CE"
+    assert to_fyers_symbol("SENSEX74500PE", date(2026, 9, 24)) == "BSE:SENSEX26SEP74500PE"
+    # NIFTY monthly Tuesday (Sep 29, 2026 is last Tuesday of Sept)
+    assert to_fyers_symbol("NIFTY23250CE", date(2026, 9, 29)) == "NSE:NIFTY26SEP23250CE"
     # Month encoding October = O, December = D
     assert to_fyers_symbol("NIFTY24600CE", date(2026, 10, 6)) == "NSE:NIFTY26O0624600CE"
     assert to_fyers_symbol("SENSEX75000CE", date(2026, 12, 17)) == "BSE:SENSEX26D1775000CE"
