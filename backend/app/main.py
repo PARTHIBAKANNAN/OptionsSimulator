@@ -123,12 +123,23 @@ async def master_health(request: Request):
     strategy_counts = {idx: len(se.strategies) for idx, se in getattr(engine, "strategy_engines", {}).items()}
     total_strategies = sum(strategy_counts.values())
 
+    readiness = getattr(engine, "readiness_state", None)
+    readiness_name = readiness.name if hasattr(readiness, "name") else str(readiness) if readiness else "NOT_INITIALIZED"
+
+    market_data_diag = {
+        "readiness_state": readiness_name,
+        "instruments_registered": len(getattr(getattr(engine, "instrument_registry", None), "_instruments", {})),
+        "quotes_in_store": len(getattr(getattr(engine, "quote_store", None), "_quotes", {})),
+        "quote_validator_active": hasattr(engine, "quote_validator"),
+    }
+
     return {
         "status": "ok",
         "timestamp": now.isoformat(),
         "mode": "live" if engine.data_engine_enabled else "replay",
         "is_running": engine.is_running,
         "db_available": request.app.state.db_available,
+        "market_data": market_data_diag,
         "fyers": {
             "authenticated": bool(engine.fyers.access_token) if engine.data_engine_enabled else False,
             "connected": getattr(engine, "_connected", False),
