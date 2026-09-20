@@ -42,7 +42,7 @@ class StateManager:
         path = self.data_dir / "trade_history.csv"
         is_new = not path.exists()
         with open(path, "a", newline="", encoding="utf-8") as f:
-            writer = csv.DictWriter(f, fieldnames=TRADE_FIELDS)
+            writer = csv.DictWriter(f, fieldnames=TRADE_FIELDS, extrasaction="ignore")
             if is_new:
                 writer.writeheader()
             writer.writerow(_serialize(trade))

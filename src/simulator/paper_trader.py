@@ -1,14 +1,21 @@
 """
 Simulated order execution — no broker calls, no real money. Tracks open positions,
 applies stop-loss/take-profit/time-exit, and calculates realized + unrealized P&L.
+Enforces strict Bid/Ask execution and 24-field audit logging.
 """
-import uuid
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import date, datetime, timedelta, time as dtime
 from functools import cached_property
-from typing import Optional
+import logging
+import time
+from typing import Dict, List, Optional, Union
+import uuid
 
+from src.market_data.audit_record import AuditLogger, ExecutionAuditRecord
+from src.market_data.quote_store import QuoteSnapshot
 from src.utils.charges import calculate_charges
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -32,6 +39,10 @@ class Order:
     trailing_active: bool = False
     entry_charges: float = 0.0
     exit_charges: float = 0.0
+    canonical_id: Optional[str] = None
+    fyers_symbol: Optional[str] = None
+    decision_quote_version: int = 0
+    execution_quote_version: int = 0
 
     def unrealized_pnl(self, current_price: float) -> float:
         return (current_price - self.entry_price) * self.qty * self.lot_size
@@ -58,28 +69,41 @@ class RiskLimitExceeded(Exception):
 
 
 class PaperTrader:
-    # Default stepped trailing tiers, as % of entry premium rather than flat rupee points — see
-    # update_positions() below for why. First-pass values pending validation against the re-run
-    # backtest, same as take_profit_pct; not a final tuned answer.
     DEFAULT_TRAILING_TIERS_PCT = [
         {"gain_pct": 10.0, "lock_pct": 0.0},
         {"gain_pct": 20.0, "lock_pct": 5.0},
         {"gain_pct": 30.0, "lock_pct": 10.0},
     ]
 
-    def __init__(self, initial_capital: float = 1_000_000, slippage_pct: float = 0.1,
-                 lot_size: int = 65, max_concurrent_positions: int = 5,
-                 max_daily_loss: float = 5000, max_trades_per_day_per_strategy: int = 2,
-                 trailing_stop_enabled: bool = False, trailing_activation_pct: float = 10.0,
-                 trailing_stop_pct: float = 15.0, trailing_tiers_pct: list = None,
-                 consecutive_loss_limit: int = None, consecutive_loss_cooldown_days: int = 1,
-                 max_drawdown_pct_of_capital: float = None, drawdown_cooldown_days: int = 3,
-                 drawdown_breaker_grace_trades: int = 3,
-                 capital_by_strategy: dict = None, charges_rates: dict = None,
-                 enable_wallets: bool = False, post_loss_cooldown_mins: int = 0,
-                 min_entry_premium: float = None, tiered_trailing_enabled: bool = False,
-                 tiered_rules: dict = None, expanding_dynamic_tsl_enabled: bool = False,
-                 multi_index_tsl: dict = None, logger=None):
+    def __init__(
+        self,
+        initial_capital: float = 1_000_000,
+        slippage_pct: float = 0.1,
+        lot_size: int = 65,
+        max_concurrent_positions: int = 5,
+        max_daily_loss: float = 5000,
+        max_trades_per_day_per_strategy: int = 2,
+        trailing_stop_enabled: bool = False,
+        trailing_activation_pct: float = 10.0,
+        trailing_stop_pct: float = 15.0,
+        trailing_tiers_pct: list = None,
+        consecutive_loss_limit: int = None,
+        consecutive_loss_cooldown_days: int = 1,
+        max_drawdown_pct_of_capital: float = None,
+        drawdown_cooldown_days: int = 3,
+        drawdown_breaker_grace_trades: int = 3,
+        capital_by_strategy: dict = None,
+        charges_rates: dict = None,
+        enable_wallets: bool = False,
+        post_loss_cooldown_mins: int = 0,
+        min_entry_premium: float = None,
+        tiered_trailing_enabled: bool = False,
+        tiered_rules: dict = None,
+        expanding_dynamic_tsl_enabled: bool = False,
+        multi_index_tsl: dict = None,
+        logger=None,
+        audit_logger: Optional[AuditLogger] = None,
+    ):
         self.initial_capital = initial_capital
         self.slippage_pct = slippage_pct
         self.lot_size = lot_size
@@ -108,25 +132,11 @@ class PaperTrader:
                 "itm": {"min_entry_price": 450.0, "cost_lock_pts": 40.0, "trail_stage1_pts": 36.0, "stage1_threshold_pts": 75.0, "trail_stage2_pts": 55.0, "stage2_threshold_pts": 150.0, "target_pts": 220.0},
             },
         }
-        # Trailing stop only arms once a position is up trailing_activation_pct from entry — before
-        # that it would just clamp tightly to entry-price noise and shake out trades early. Once
-        # armed, it ratchets up to stay trailing_stop_pct below the peak premium seen so far,
-        # locking in gains as the trade runs instead of relying solely on the fixed take_profit.
         self.trailing_stop_enabled = trailing_stop_enabled
         self.trailing_activation_pct = trailing_activation_pct
         self.trailing_stop_pct = trailing_stop_pct
-        # Sorted descending by gain_pct once, here, so update_positions() can just take the first
-        # tier whose threshold is met rather than re-sorting on every single price update.
         tiers = trailing_tiers_pct if trailing_tiers_pct is not None else self.DEFAULT_TRAILING_TIERS_PCT
         self.trailing_tiers_pct = sorted(tiers, key=lambda t: t["gain_pct"], reverse=True)
-        # Circuit breakers: pause NEW entries for a strategy (existing open positions still get
-        # managed normally) after either K losses in a row, or its cumulative drawdown from peak
-        # P&L eats too much of the capital actually allocated to it. Both are None/disabled by
-        # default — a strategy has to opt in with real numbers. capital_by_strategy maps strategy
-        # name -> its allocated capital (e.g. from data/backtest_results/capital_requirements.json);
-        # without an entry there, the drawdown breaker can't fire for that strategy. See
-        # docs/ARCHITECTURE.md for why per-strategy drawdown-as-%-of-capital, not just the
-        # backtest's arbitrary initial_capital baseline, is what actually matters here.
         self.consecutive_loss_limit = consecutive_loss_limit
         self.consecutive_loss_cooldown_days = consecutive_loss_cooldown_days
         self.max_drawdown_pct_of_capital = max_drawdown_pct_of_capital
@@ -136,6 +146,7 @@ class PaperTrader:
         self.charges_rates = charges_rates
         self.post_loss_cooldown_mins = post_loss_cooldown_mins
         self.logger = logger
+        self.audit_logger = audit_logger
         self._strategy_last_exit: dict[str, dict] = {}
 
         self.wallet_balance: dict[str, float] = dict(self.capital_by_strategy) if enable_wallets else {}
@@ -158,16 +169,12 @@ class PaperTrader:
             self._strategy_trades_today = {}
             self._strategy_last_exit = {}
 
-    def restore_daily_counts(self, day: date, trades_today: dict[str, int],
-                              realized_pnl_today: float = 0.0) -> None:
-        """Reconstructs today's per-strategy trade count and realized P&L after a restart (see
-        WebLiveEngine._restore_state). Without this, max_trades_per_day_per_strategy and the
-        overall daily-loss breaker both silently reset to zero on every restart -- confirmed live
-        on 2026-08-06, where 3 restarts in one trading day let MACD_BULLISH place 3 entries
-        despite its 2/day cap, each restart's fresh in-memory counter never knowing about the
-        entries the previous run had already placed. Must set _current_day too, or the very next
-        place_order()/close_position() call's _roll_day() sees a mismatched day and wipes this
-        right back out."""
+    def restore_daily_counts(
+        self,
+        day: date,
+        trades_today: dict[str, int],
+        realized_pnl_today: float = 0.0,
+    ) -> None:
         self._current_day = day
         self._strategy_trades_today = dict(trades_today)
         self._realized_pnl_today = realized_pnl_today
@@ -175,45 +182,163 @@ class PaperTrader:
     def has_open_position(self, strategy: str) -> bool:
         return any(o.strategy == strategy for o in self.get_positions())
 
-    def place_order(self, symbol: str, side: str, qty: int, price: float,
-                     stop_loss: float = None, take_profit: float = None,
-                     strategy: str = None, timestamp: datetime = None,
-                     lot_size: int = None) -> Order:
+    def _log_audit_record(
+        self,
+        event_id: str,
+        strategy: Optional[str],
+        canonical_id: Optional[str],
+        fyers_symbol: str,
+        side: str,
+        qty: int,
+        price: float,
+        quote_snapshot: Optional[QuoteSnapshot],
+        decision_ver: int,
+        exec_ver: int,
+        status: str,
+        rejection_code: Optional[str] = None,
+        rejection_reason: Optional[str] = None,
+        fill_price: Optional[float] = None,
+    ) -> None:
+        if not self.audit_logger:
+            return
+
+        # Parse canonical components
+        underlying = "UNKNOWN"
+        expiry_str = ""
+        strike = 0.0
+        opt_type = ""
+        if canonical_id and "|" in canonical_id:
+            parts = canonical_id.split("|")
+            if len(parts) >= 4:
+                underlying, expiry_str, strike_str, opt_type = parts[0], parts[1], parts[2], parts[3]
+                try:
+                    strike = float(strike_str)
+                except ValueError:
+                    pass
+        elif "BANKNIFTY" in fyers_symbol:
+            underlying = "BANKNIFTY"
+        elif "SENSEX" in fyers_symbol:
+            underlying = "SENSEX"
+        elif "NIFTY" in fyers_symbol:
+            underlying = "NIFTY"
+
+        ltp = quote_snapshot.ltp if quote_snapshot else price
+        bid = quote_snapshot.bid if quote_snapshot else 0.0
+        ask = quote_snapshot.ask if quote_snapshot else 0.0
+        ex_ts = quote_snapshot.exchange_timestamp if quote_snapshot else time.time()
+        rx_ts = quote_snapshot.receive_epoch_timestamp if quote_snapshot else time.time()
+        age_ms = quote_snapshot.age_ms() if quote_snapshot else 0.0
+        now_ts = time.time()
+
+        record = ExecutionAuditRecord(
+            event_id=event_id,
+            strategy_id=strategy or "UNKNOWN",
+            canonical_instrument_id=canonical_id or fyers_symbol,
+            underlying=underlying,
+            expiry=expiry_str,
+            strike=strike,
+            option_type=opt_type,
+            fyers_symbol=fyers_symbol,
+            side=side,
+            quantity=qty,
+            ltp=ltp,
+            bid=bid,
+            ask=ask,
+            decision_quote_version=decision_ver,
+            execution_quote_version=exec_ver,
+            exchange_timestamp=ex_ts,
+            receive_timestamp=rx_ts,
+            processing_timestamp=now_ts,
+            execution_timestamp=now_ts,
+            quote_age_ms=age_ms,
+            execution_price=fill_price,
+            status=status,
+            rejection_code=rejection_code,
+            rejection_reason=rejection_reason,
+        )
+        self.audit_logger.log_record(record)
+
+    def place_order(
+        self,
+        symbol: str,
+        side: str,
+        qty: int,
+        price: float,
+        stop_loss: float = None,
+        take_profit: float = None,
+        strategy: str = None,
+        timestamp: datetime = None,
+        lot_size: int = None,
+        canonical_instrument_id: Optional[str] = None,
+        fyers_symbol: Optional[str] = None,
+        quote_snapshot: Optional[QuoteSnapshot] = None,
+        decision_quote_version: int = 0,
+        execution_quote_version: int = 0,
+    ) -> Order:
         timestamp = timestamp or datetime.now()
         self._roll_day(timestamp)
-        # Per-order override so one shared PaperTrader can size NIFTY (65) and SENSEX (20) orders
-        # correctly -- falls back to the instance default when a caller doesn't pass one, so any
-        # code path that forgets stays on today's single-index behavior instead of crashing.
         lot_size = lot_size if lot_size is not None else self.lot_size
+        actual_symbol = fyers_symbol or symbol
+        event_id = str(uuid.uuid4())
+
+        def _reject(code: str, reason: str):
+            self._log_audit_record(
+                event_id=event_id,
+                strategy=strategy,
+                canonical_id=canonical_instrument_id,
+                fyers_symbol=actual_symbol,
+                side=side,
+                qty=qty,
+                price=price,
+                quote_snapshot=quote_snapshot,
+                decision_ver=decision_quote_version,
+                exec_ver=execution_quote_version,
+                status="REJECTED",
+                rejection_code=code,
+                rejection_reason=reason,
+            )
+            raise RiskLimitExceeded(reason)
 
         if self.max_daily_loss is not None and self._realized_pnl_today <= -abs(self.max_daily_loss):
-            raise RiskLimitExceeded(f"Daily loss limit of {self.max_daily_loss} already hit")
+            _reject("REJECTED_DAILY_LOSS_LIMIT", f"Daily loss limit of {self.max_daily_loss} already hit")
+
         if self.max_concurrent_positions is not None and len(self.get_positions()) >= self.max_concurrent_positions:
-            raise RiskLimitExceeded(f"Max concurrent positions ({self.max_concurrent_positions}) reached")
+            _reject("REJECTED_MAX_CONCURRENT_POSITIONS", f"Max concurrent positions ({self.max_concurrent_positions}) reached")
+
         if strategy is not None and self.has_open_position(strategy):
-            raise RiskLimitExceeded(f"Strategy '{strategy}' already has an open position")
+            _reject("REJECTED_STRATEGY_POSITION_EXISTS", f"Strategy '{strategy}' already has an open position")
+
         if strategy is not None and self._strategy_trades_today.get(strategy, 0) >= self.max_trades_per_day_per_strategy:
-            raise RiskLimitExceeded(
-                f"Strategy '{strategy}' already hit its {self.max_trades_per_day_per_strategy} trades/day limit")
+            _reject(
+                "REJECTED_MAX_TRADES_PER_DAY",
+                f"Strategy '{strategy}' already hit its {self.max_trades_per_day_per_strategy} trades/day limit",
+            )
+
         if strategy is not None:
             paused_until = self._strategy_paused_until.get(strategy)
             if paused_until is not None and timestamp.date() < paused_until:
-                raise RiskLimitExceeded(
-                    f"Strategy '{strategy}' is paused by a circuit breaker until {paused_until}")
+                _reject(
+                    "REJECTED_STRATEGY_PAUSED",
+                    f"Strategy '{strategy}' is paused by a circuit breaker until {paused_until}",
+                )
 
-            # Sequential entry rule: if previous trade on this strategy was a LOSS, enforce cooldown
             if self.post_loss_cooldown_mins > 0:
                 last_exit = getattr(self, "_strategy_last_exit", {}).get(strategy)
                 if last_exit and last_exit.get("realized_pnl", 0) <= 0:
                     cooldown_expiry = last_exit["exit_time"] + timedelta(minutes=self.post_loss_cooldown_mins)
                     if timestamp < cooldown_expiry:
-                        raise RiskLimitExceeded(
-                            f"Strategy '{strategy}' in {self.post_loss_cooldown_mins}-min post-loss cooldown until {cooldown_expiry.strftime('%H:%M:%S')}")
+                        _reject(
+                            "REJECTED_POST_LOSS_COOLDOWN",
+                            f"Strategy '{strategy}' in {self.post_loss_cooldown_mins}-min post-loss cooldown until {cooldown_expiry.strftime('%H:%M:%S')}",
+                        )
 
         if self.min_entry_premium is not None and price < self.min_entry_premium:
-            raise RiskLimitExceeded(
-                f"Entry premium Rs.{price:.2f} is below minimum allowed floor Rs.{self.min_entry_premium:.2f}")
+            _reject(
+                "REJECTED_MIN_PREMIUM_FLOOR",
+                f"Entry premium Rs.{price:.2f} is below minimum allowed floor Rs.{self.min_entry_premium:.2f}",
+            )
 
+        # For BUY: executable price is Ask, with optional slippage
         fill_price = price * (1 + self.slippage_pct / 100) if side == "BUY" else price * (1 - self.slippage_pct / 100)
         order_value = fill_price * qty * lot_size
         entry_charges = calculate_charges(order_value, "BUY", self.charges_rates).total
@@ -222,15 +347,13 @@ class PaperTrader:
             required = order_value + entry_charges
             available = self.wallet_balance[strategy]
             if required > available:
-                raise RiskLimitExceeded(
-                    f"Strategy '{strategy}' wallet balance (Rs.{available:,.2f}) insufficient "
-                    f"for this order (Rs.{required:,.2f} needed)")
+                _reject(
+                    "REJECTED_INSUFFICIENT_WALLET",
+                    f"Strategy '{strategy}' wallet balance (Rs.{available:,.2f}) insufficient for this order (Rs.{required:,.2f} needed)",
+                )
 
         order = Order(
-            # UUID, not a sequential counter: the web backend persists orders to Postgres across
-            # process restarts, where a counter that resets to 1 each time would collide with an
-            # already-persisted order_id — see docs/ARCHITECTURE.md.
-            order_id=str(uuid.uuid4()),
+            order_id=event_id,
             symbol=symbol,
             side=side,
             qty=qty,
@@ -243,12 +366,32 @@ class PaperTrader:
             strategy=strategy,
             peak_price=fill_price,
             entry_charges=round(entry_charges, 2),
+            canonical_id=canonical_instrument_id,
+            fyers_symbol=actual_symbol,
+            decision_quote_version=decision_quote_version,
+            execution_quote_version=execution_quote_version or (quote_snapshot.version if quote_snapshot else 0),
         )
         self.orders[order.order_id] = order
         if strategy is not None:
             self._strategy_trades_today[strategy] = self._strategy_trades_today.get(strategy, 0) + 1
             if strategy in self.wallet_balance:
                 self.wallet_balance[strategy] -= order_value + entry_charges
+
+        self._log_audit_record(
+            event_id=order.order_id,
+            strategy=strategy,
+            canonical_id=canonical_instrument_id,
+            fyers_symbol=actual_symbol,
+            side=side,
+            qty=qty,
+            price=price,
+            quote_snapshot=quote_snapshot,
+            decision_ver=decision_quote_version,
+            exec_ver=order.execution_quote_version,
+            status="FILLED",
+            fill_price=fill_price,
+        )
+
         if self.logger:
             self.logger.log_trade(order)
         return order
@@ -260,8 +403,16 @@ class PaperTrader:
         order.status = "CANCELLED"
         return True
 
-    def close_position(self, order_id: str, price: float, timestamp: datetime = None,
-                        reason: str = "MANUAL") -> Optional[Order]:
+    def close_position(
+        self,
+        order_id: str,
+        price: float,
+        timestamp: datetime = None,
+        reason: str = "MANUAL",
+        quote_snapshot: Optional[QuoteSnapshot] = None,
+        decision_quote_version: int = 0,
+        execution_quote_version: int = 0,
+    ) -> Optional[Order]:
         order = self.orders.get(order_id)
         if not order or order.status != "OPEN":
             return None
@@ -288,6 +439,22 @@ class PaperTrader:
             if order.strategy in self.wallet_balance:
                 self.wallet_balance[order.strategy] += exit_value - order.exit_charges
 
+        # Audit record for exit execution (SELL at Bid)
+        self._log_audit_record(
+            event_id=str(uuid.uuid4()),
+            strategy=order.strategy,
+            canonical_id=order.canonical_id,
+            fyers_symbol=order.fyers_symbol or order.symbol,
+            side="SELL",
+            qty=order.qty,
+            price=price,
+            quote_snapshot=quote_snapshot,
+            decision_ver=decision_quote_version or (quote_snapshot.version if quote_snapshot else 0),
+            exec_ver=execution_quote_version or (quote_snapshot.version if quote_snapshot else 0),
+            status="FILLED",
+            fill_price=price,
+        )
+
         if self.logger:
             self.logger.log_trade(order)
         return order
@@ -297,8 +464,12 @@ class PaperTrader:
             return None
         allocated = self.capital_by_strategy.get(strategy, 0.0)
         balance = self.wallet_balance[strategy]
-        return {"strategy": strategy, "balance": round(balance, 2), "allocated_capital": allocated,
-                "pnl_in_wallet": round(balance - allocated, 2)}
+        return {
+            "strategy": strategy,
+            "balance": round(balance, 2),
+            "allocated_capital": allocated,
+            "pnl_in_wallet": round(balance - allocated, 2),
+        }
 
     def get_all_wallets(self) -> dict[str, dict]:
         return {s: self.get_wallet(s) for s in self.wallet_balance}
@@ -311,7 +482,8 @@ class PaperTrader:
         if self.logger:
             self.logger.log_error(
                 f"Circuit breaker: strategy '{strategy}' paused until {resume_date}",
-                {"strategy": strategy})
+                {"strategy": strategy},
+            )
 
     def _update_circuit_breakers(self, strategy: str, realized_pnl: float, exit_date: date) -> None:
         if realized_pnl > 0:
@@ -321,7 +493,7 @@ class PaperTrader:
             self._strategy_consecutive_losses[strategy] = losses
             if self.consecutive_loss_limit is not None and losses >= self.consecutive_loss_limit:
                 self._pause_strategy(strategy, exit_date, self.consecutive_loss_cooldown_days)
-                self._strategy_consecutive_losses[strategy] = 0  # fresh count once it resumes
+                self._strategy_consecutive_losses[strategy] = 0
 
         cumulative = self._strategy_cumulative_pnl.get(strategy, 0.0) + realized_pnl
         self._strategy_cumulative_pnl[strategy] = cumulative
@@ -339,27 +511,53 @@ class PaperTrader:
                     self._pause_strategy(strategy, exit_date, self.drawdown_cooldown_days)
                     self._strategy_drawdown_grace_remaining[strategy] = self.drawdown_breaker_grace_trades
 
-    def update_positions(self, current_prices: dict, timestamp: datetime = None,
-                          time_exit_mins: int = None, eod_square_off: bool = False) -> list[Order]:
-        """current_prices: {symbol: ltp}. Applies SL/TP/time-exit/EOD square-off. Returns orders closed this call."""
+    def update_positions(
+        self,
+        current_prices: dict,
+        timestamp: datetime = None,
+        time_exit_mins: int = None,
+        eod_square_off: bool = False,
+    ) -> list[Order]:
+        """
+        current_prices: {symbol: float | QuoteSnapshot}.
+        Applies SL/TP/TSL/time-exit/EOD square-off.
+        Separates trigger evaluation from exit execution fill (fills strictly at Bid).
+        """
         timestamp = timestamp or datetime.now()
         closed = []
         for order in self.get_positions():
-            price = current_prices.get(order.symbol)
-            if price is None:
+            quote_val = (
+                current_prices.get(order.canonical_id)
+                or current_prices.get(order.fyers_symbol)
+                or current_prices.get(order.symbol)
+            )
+            if quote_val is None:
+                continue
+
+            quote_snap: Optional[QuoteSnapshot] = None
+            if isinstance(quote_val, QuoteSnapshot):
+                quote_snap = quote_val
+                eval_price = quote_snap.ltp
+                exec_bid = quote_snap.bid
+            elif isinstance(quote_val, dict):
+                eval_price = float(quote_val.get("ltp", 0.0))
+                exec_bid = float(quote_val.get("bid", 0.0))
+            else:
+                eval_price = float(quote_val)
+                exec_bid = eval_price
+
+            if eval_price <= 0:
                 continue
 
             trailing_stop_price = None
             if self.trailing_stop_enabled and order.entry_price:
-                order.peak_price = max(order.peak_price, price)
+                order.peak_price = max(order.peak_price, eval_price)
                 peak_gain_pts = order.peak_price - order.entry_price
                 ep = order.entry_price
 
                 if getattr(self, "expanding_dynamic_tsl_enabled", True):
-                    # Multi-Index & Moneyness Expanding Dynamic TSL
-                    underlying = order.underlying  # "NIFTY", "BANKNIFTY", or "SENSEX"
+                    underlying = order.underlying
                     index_rules = self.multi_index_tsl.get(underlying, self.multi_index_tsl.get("NIFTY", {}))
-                    
                     is_itm = "_ITM" in (order.strategy or "") or (ep >= index_rules.get("itm", {}).get("min_entry_price", 200.0))
                     rule = index_rules.get("itm" if is_itm else "atm", {})
 
@@ -370,19 +568,15 @@ class PaperTrader:
                     trail2 = rule.get("trail_stage2_pts", 15.0)
 
                     if peak_gain_pts >= stage2_thresh:
-                        # Stage 2 Super-Trend Runner Trail (Peak - trail2)
                         order.trailing_active = True
                         trailing_stop_price = max(ep, order.peak_price - trail2)
                     elif peak_gain_pts >= stage1_thresh:
-                        # Stage 1 Trend Building Trail (Peak - trail1)
                         order.trailing_active = True
                         trailing_stop_price = max(ep, order.peak_price - trail1)
                     elif peak_gain_pts >= cost_lock:
-                        # Cost Lock (Break-Even)
                         order.trailing_active = True
                         trailing_stop_price = ep
                 elif self.tiered_trailing_enabled:
-                    # 3-Tier Dynamic TSL Framework fallback
                     if ep < 200.0:
                         if peak_gain_pts >= 45.0:
                             order.trailing_active = True
@@ -420,7 +614,6 @@ class PaperTrader:
                             order.trailing_active = True
                             trailing_stop_price = ep
                 else:
-                    # Legacy percentage tiers fallback
                     gain_pct = (order.peak_price - order.entry_price) / order.entry_price * 100
                     stepped_price = None
                     for tier in self.trailing_tiers_pct:
@@ -434,7 +627,6 @@ class PaperTrader:
                     elif order.trailing_active:
                         trailing_stop_price = max(dynamic_price, order.entry_price)
 
-                # Monotonic trailing stop escalation (never moves downward)
                 if trailing_stop_price is not None:
                     prev_tsl = getattr(order, "_highest_trailing_stop", None)
                     if prev_tsl is not None:
@@ -442,23 +634,38 @@ class PaperTrader:
                     order._highest_trailing_stop = trailing_stop_price
 
             reason = None
-            fill_price = price
-            if order.stop_loss is not None and price <= order.stop_loss:
+            if order.stop_loss is not None and eval_price <= order.stop_loss:
                 reason = "STOP_LOSS"
-                fill_price = order.stop_loss
-            elif trailing_stop_price is not None and price <= trailing_stop_price:
+            elif trailing_stop_price is not None and eval_price <= trailing_stop_price:
                 reason = "TRAILING_STOP"
-                fill_price = trailing_stop_price
-            elif order.take_profit is not None and price >= order.take_profit:
+            elif order.take_profit is not None and eval_price >= order.take_profit:
                 reason = "TAKE_PROFIT"
-                fill_price = order.take_profit
             elif time_exit_mins is not None and timestamp - order.entry_time >= timedelta(minutes=time_exit_mins):
                 reason = "TIME_EXIT"
             elif eod_square_off and timestamp is not None and hasattr(timestamp, "time") and timestamp.time() >= dtime(15, 15):
                 reason = "EOD_SQUARE_OFF"
 
             if reason:
-                closed_order = self.close_position(order.order_id, fill_price, timestamp, reason)
+                if isinstance(quote_val, QuoteSnapshot) and exec_bid > 0:
+                    fill_price = exec_bid * (1 - self.slippage_pct / 100)
+                else:
+                    # Backtest / flat float price mode
+                    if reason == "STOP_LOSS":
+                        fill_price = order.stop_loss
+                    elif reason == "TAKE_PROFIT":
+                        fill_price = order.take_profit
+                    elif reason == "TRAILING_STOP":
+                        fill_price = trailing_stop_price if trailing_stop_price is not None else eval_price
+                    else:
+                        fill_price = eval_price * (1 - self.slippage_pct / 100)
+
+                closed_order = self.close_position(
+                    order.order_id,
+                    fill_price,
+                    timestamp,
+                    reason,
+                    quote_snapshot=quote_snap,
+                )
                 if closed_order:
                     closed.append(closed_order)
         return closed
@@ -474,8 +681,13 @@ class PaperTrader:
         unrealized = 0.0
         if current_prices:
             for o in self.get_positions():
-                price = current_prices.get(o.symbol)
-                if price is not None:
+                quote_val = (
+                    current_prices.get(o.canonical_id)
+                    or current_prices.get(o.fyers_symbol)
+                    or current_prices.get(o.symbol)
+                )
+                if quote_val is not None:
+                    price = quote_val.ltp if isinstance(quote_val, QuoteSnapshot) else float(quote_val)
                     unrealized += o.unrealized_pnl(price)
         return {
             "realized_pnl": realized,

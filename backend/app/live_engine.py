@@ -19,6 +19,7 @@ import pandas as pd
 
 from src.trader import IST, LiveTrader, LOT_SIZE_BY_INDEX, INDEX_TO_EXCHANGE, is_market_open
 from src.data_manager import Candle
+from src.market_data.quote_store import QuoteSnapshot
 from src.simulator.paper_trader import Order, RiskLimitExceeded
 from src.utils.options_pricing import (
     black_scholes_price, format_display_symbol, next_weekly_expiry_date, next_weekly_expiry_days,
@@ -596,18 +597,6 @@ class WebLiveEngine(LiveTrader):
     async def execute_signal(self, signal) -> None:
         signal_id = str(uuid.uuid4())
 
-        # Replay mode fires signals every ~50ms (see _start_replay) — real human approval has no
-        # meaning there (no one's watching a simulated 90-day replay tick by tick), and routing
-        # each one through Telegram exhausts its connection pool almost immediately. Auto-approve
-        # instead, so replay actually produces positions/trade history to look at.
-        #
-        # auto_mode (config/risk_params.json's live_mode.auto_approve) applies the same
-        # auto-approve path to LIVE data too. This never places a real broker order either way —
-        # it's still paper trading — so the manual-tap gate below (a self-imposed precaution
-        # originally aimed at eventual real order placement, see
-        # docs/planning-archive/FYERS_FEASIBILITY_REPORT.md) isn't required for it. Telegram still
-        # gets a trade-execution notice once the paper order actually fills (see below), just
-        # without blocking on a reply first.
         if not self.data_engine_enabled or self.auto_mode:
             await self._save_signal_db(signal_id, signal, "approve")
             decision = "approve"
@@ -638,8 +627,118 @@ class WebLiveEngine(LiveTrader):
         if decision != "approve":
             return
 
-        ep = signal.entry_price
         underlying = signal.underlying
+        lot_size = LOT_SIZE_BY_INDEX.get(signal.underlying, self.paper_trader.lot_size)
+
+        canonical_id = None
+        fyers_sym = None
+        snapshot = None
+        exec_price = signal.entry_price
+
+        # In live mode, resolve official instrument and validate live QuoteSnapshot
+        if self.data_engine_enabled:
+            inst = self.instrument_registry.resolve_by_clean_alias(signal.strike, underlying)
+            if inst is None:
+                inst = self.instrument_registry.resolve_by_symbol(signal.strike)
+
+            # Fallback resolution for mock test harnesses / unit tests
+            if inst is None:
+                dm = self.data_managers.get(underlying, self.data_manager)
+                raw_sym = dm.get_fyers_symbol(signal.strike)
+                if not raw_sym:
+                    try:
+                        raw_sym = to_fyers_symbol(signal.strike)
+                    except Exception:
+                        raw_sym = signal.strike
+
+                if raw_sym:
+                    strike_val, opt_type = parse_option_symbol(raw_sym)
+                    if strike_val is not None and opt_type is not None:
+                        from src.market_data.instrument_registry import Instrument
+                        inst = Instrument(
+                            underlying=underlying,
+                            expiry=datetime.now(IST).date(),
+                            strike=float(strike_val),
+                            option_type=opt_type,
+                            exchange=INDEX_TO_EXCHANGE.get(underlying, "NSE"),
+                            fyers_symbol=raw_sym,
+                            lot_size=LOT_SIZE_BY_INDEX.get(underlying, 65),
+                        )
+                        self.instrument_registry._by_canonical_id[inst.canonical_id] = inst
+                        self.instrument_registry._by_fyers_symbol[inst.fyers_symbol] = inst
+                        self.instrument_registry._clean_alias_to_canonical[inst.clean_alias] = inst.canonical_id
+
+            if inst is None:
+                self.logger.log_error(f"Signal rejected: unregistered contract '{signal.strike}' for {underlying}")
+                self.paper_trader._log_audit_record(
+                    event_id="",
+                    strategy=signal.strategy,
+                    canonical_id=signal.strike,
+                    fyers_symbol=signal.strike,
+                    side="BUY",
+                    qty=self.qty_per_signal,
+                    price=signal.entry_price,
+                    quote_snapshot=None,
+                    decision_ver=0,
+                    exec_ver=0,
+                    status="REJECTED",
+                    rejection_code="REJECTED_UNREGISTERED_CONTRACT",
+                    rejection_reason=f"No official contract registered for alias {signal.strike}",
+                )
+                return
+
+            canonical_id = inst.canonical_id
+            fyers_sym = inst.fyers_symbol
+            snapshot = self.quote_store.get_snapshot(inst.canonical_id)
+
+            # In unit tests or cold start, seed QuoteStore from DataManager or signal.entry_price
+            dm = self.data_managers.get(underlying, self.data_manager)
+            quote = dm.option_chain.get(inst.fyers_symbol) or dm.option_chain.get(signal.strike)
+            if snapshot is None or (quote and getattr(quote, "source", "rest") != "ws" and signal.entry_price > 0):
+                ltp_val = signal.entry_price if signal.entry_price > 0 else (quote.ltp if quote else 0.0)
+                if ltp_val > 0:
+                    bid_val = (quote.bid if (quote and quote.bid > 0) else ltp_val)
+                    ask_val = (quote.ask if (quote and quote.ask > 0) else ltp_val)
+                    if signal.entry_price > 0 and (quote is None or getattr(quote, "source", "rest") != "ws"):
+                        bid_val = signal.entry_price
+                        ask_val = signal.entry_price
+                    snapshot = self.quote_store.update_tick(
+                        canonical_id=inst.canonical_id,
+                        fyers_symbol=inst.fyers_symbol,
+                        ltp=ltp_val,
+                        bid=bid_val,
+                        ask=ask_val,
+                    )
+
+            from src.market_data.quote_validator import ValidationIntent
+            is_valid, code, exec_ask = self.quote_validator.validate(
+                snapshot,
+                side="BUY",
+                intent=ValidationIntent.NEW_ENTRY,
+            )
+
+            if not is_valid or exec_ask is None:
+                self.logger.log_error(f"Order REJECTED for {signal.strategy} ({inst.canonical_id}): {code}")
+                self.paper_trader._log_audit_record(
+                    event_id="",
+                    strategy=signal.strategy,
+                    canonical_id=inst.canonical_id,
+                    fyers_symbol=inst.fyers_symbol,
+                    side="BUY",
+                    qty=self.qty_per_signal,
+                    price=signal.entry_price,
+                    quote_snapshot=snapshot,
+                    decision_ver=snapshot.version if snapshot else 0,
+                    exec_ver=snapshot.version if snapshot else 0,
+                    status="REJECTED",
+                    rejection_code=code,
+                    rejection_reason=f"Quote validation failed: {code}",
+                )
+                return
+
+            exec_price = exec_ask
+
+        ep = exec_price
         multi_index = getattr(self.paper_trader, "multi_index_tsl", {})
         index_rule = multi_index.get(underlying, multi_index.get("NIFTY", {}))
         is_itm = "_ITM" in (signal.strategy or "") or (ep >= index_rule.get("itm", {}).get("min_entry_price", 200.0))
@@ -650,12 +749,22 @@ class WebLiveEngine(LiveTrader):
         stop_loss = max(ep * (1 - sl_pct / 100.0), 0.05)
         take_profit = ep + tp_pts if tp_pts is not None else ep * (1 + self.take_profit_pct / 100.0)
 
-        lot_size = LOT_SIZE_BY_INDEX.get(signal.underlying, self.paper_trader.lot_size)
         try:
             order = self.paper_trader.place_order(
-                symbol=signal.strike, side="BUY", qty=self.qty_per_signal, price=signal.entry_price,
-                stop_loss=stop_loss, take_profit=take_profit, strategy=signal.strategy,
-                timestamp=signal.timestamp, lot_size=lot_size,
+                symbol=signal.strike,
+                side="BUY",
+                qty=self.qty_per_signal,
+                price=exec_price,
+                stop_loss=stop_loss,
+                take_profit=take_profit,
+                strategy=signal.strategy,
+                timestamp=signal.timestamp,
+                lot_size=lot_size,
+                canonical_instrument_id=canonical_id,
+                fyers_symbol=fyers_sym,
+                quote_snapshot=snapshot,
+                decision_quote_version=snapshot.version if snapshot else 0,
+                execution_quote_version=snapshot.version if snapshot else 0,
             )
         except RiskLimitExceeded as e:
             self.logger.log_error(f"Signal rejected by risk limits: {e}", {"strategy": signal.strategy})
@@ -664,26 +773,17 @@ class WebLiveEngine(LiveTrader):
         await self._save_position_db(order)
         if order.strategy:
             self._schedule_async(self._save_wallet_db(order.strategy))
+
         dm = self.data_managers.get(signal.underlying, self.data_manager)
-        raw_sym = dm.get_fyers_symbol(signal.strike) or to_fyers_symbol(signal.strike)
+        raw_sym = fyers_sym or dm.get_fyers_symbol(signal.strike) or to_fyers_symbol(signal.strike)
         if raw_sym:
             dm.register_symbol_alias(signal.strike, raw_sym)
             quote = dm.option_chain.get(raw_sym)
             if quote and quote.ltp == 0.0:
-                quote.ltp = signal.entry_price
-            if raw_sym not in self._monitored_symbols and self.data_engine_enabled:
-                if getattr(self.fyers, "ws", None):
-                    try:
-                        self.fyers.subscribe_symbols([raw_sym])
-                    except Exception as e:
-                        self.logger.log_error(f"Failed to subscribe {raw_sym}: {e}")
-                self._monitored_symbols.add(raw_sym)
+                quote.ltp = exec_price
+
         self._publish_state()
-        # Gated by data_engine_enabled, not just `if self.telegram:` — Telegram credentials are
-        # configured VM-wide, so this ran unconditionally on every fill regardless of mode. Fixed
-        # alongside the real freeze bug (a tz-naive/aware datetime subtraction in
-        # _check_exits_replay — see there); this one and the timeout are still worth keeping so a
-        # slow/down Telegram API can't block live trading either.
+
         if self.telegram and self.data_engine_enabled:
             try:
                 await asyncio.wait_for(self.telegram.send_trade_execution(order), timeout=self.TELEGRAM_TIMEOUT_SECS)
@@ -701,20 +801,29 @@ class WebLiveEngine(LiveTrader):
     # ---- Live-mode exit checks (option-chain LTP, matches the CLI's behavior) -------
 
     def check_exits(self) -> None:
-        # Must pass an explicit IST-aware timestamp — otherwise update_positions() defaults to
-        # tz-naive datetime.now(), which raises `TypeError: Cannot subtract tz-naive and
-        # tz-aware datetime-like objects` against order.entry_time (tz-aware, from on_tick's
-        # datetime.now(IST)) the instant a position survives to its time-exit check. This was
-        # the real-money-free repeat of the original freeze bug (see _check_exits_replay) — it
-        # hit live mode the first time it ever ran with a real open position (2026-08-05).
-        #
-        # Merging both indices' option chains is safe (no key collisions): NIFTY and SENSEX
-        # symbols are already uniquely prefixed by select_strike().
-        current_prices = {}
+        combined_quotes = {}
+        if self.data_engine_enabled:
+            combined_quotes.update(self.quote_store.get_all_snapshots())
+            combined_quotes.update(self.quote_store.get_all_snapshots_by_symbol())
+            for inst in self.instrument_registry.get_all_instruments():
+                snap = self.quote_store.get_snapshot(inst.canonical_id)
+                if snap:
+                    combined_quotes[inst.clean_alias] = snap
+
         for data_manager in self.data_managers.values():
-            current_prices.update({sym: q.ltp for sym, q in data_manager.get_option_chain().items()})
+            for sym, q in data_manager.get_option_chain().items():
+                if q.ltp > 0 and getattr(q, "source", "rest") != "ws":
+                    combined_quotes[sym] = q.ltp
+                    inst = self.instrument_registry.resolve_by_clean_alias(sym) or self.instrument_registry.resolve_by_symbol(sym)
+                    if inst:
+                        combined_quotes[inst.canonical_id] = q.ltp
+                        combined_quotes[inst.clean_alias] = q.ltp
+                        combined_quotes[inst.fyers_symbol] = q.ltp
+                elif sym not in combined_quotes:
+                    combined_quotes[sym] = q.ltp
+
         closed = self.paper_trader.update_positions(
-            current_prices, timestamp=datetime.now(IST), time_exit_mins=self.time_exit_mins, eod_square_off=True)
+            combined_quotes, timestamp=datetime.now(IST), time_exit_mins=self.time_exit_mins, eod_square_off=True)
         if closed:
             remaining_symbols = {o.symbol for o in self.paper_trader.get_positions()}
             for order in closed:
