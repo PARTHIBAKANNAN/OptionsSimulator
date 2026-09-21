@@ -59,8 +59,24 @@ class WebLiveEngine(LiveTrader):
     def _publish_state(self) -> None:
         state = self.data_manager.get_state()
         current_prices = {}
+        if self.data_engine_enabled and hasattr(self, "quote_store"):
+            # QuoteStore is the sole authority for live prices
+            for cid, snap in self.quote_store.get_all_snapshots().items():
+                if snap.ltp > 0:
+                    current_prices[cid] = snap.ltp
+            for sym, snap in self.quote_store.get_all_snapshots_by_symbol().items():
+                if snap.ltp > 0:
+                    current_prices[sym] = snap.ltp
+            if hasattr(self, "instrument_registry"):
+                for inst in self.instrument_registry.get_all_instruments():
+                    snap = self.quote_store.get_snapshot(inst.canonical_id)
+                    if snap and snap.ltp > 0:
+                        current_prices[inst.clean_alias] = snap.ltp
+
         for data_manager in self.data_managers.values():
-            current_prices.update({sym: q.ltp for sym, q in data_manager.get_option_chain().items()})
+            for sym, q in data_manager.get_option_chain().items():
+                if q.ltp > 0 and sym not in current_prices:
+                    current_prices[sym] = q.ltp
         pnl = self.paper_trader.get_pnl(current_prices)
 
         now = datetime.now(IST)
@@ -212,7 +228,11 @@ class WebLiveEngine(LiveTrader):
             last_closed = None
             if opens:
                 latest = max(opens, key=lambda o: o.entry_time)
-                ltp = current_prices.get(latest.symbol)
+                ltp = (
+                    current_prices.get(latest.canonical_id)
+                    or current_prices.get(latest.fyers_symbol)
+                    or current_prices.get(latest.symbol)
+                ) if current_prices else None
                 trade_pnl = latest.unrealized_pnl(ltp) if ltp is not None else None
                 if trade_pnl is not None:
                     # Subtract entry charges from running unrealized PnL
@@ -256,8 +276,22 @@ class WebLiveEngine(LiveTrader):
                     "lot_size": o.lot_size,
                     "entry_price": o.entry_price,
                     "entry_time": o.entry_time.isoformat(),
-                    "ltp": current_prices.get(o.symbol),
-                    "trade_pnl": o.unrealized_pnl(current_prices.get(o.symbol)) if current_prices.get(o.symbol) is not None else 0.0,
+                    "ltp": (
+                        current_prices.get(o.canonical_id)
+                        or current_prices.get(o.fyers_symbol)
+                        or current_prices.get(o.symbol)
+                    ) if current_prices else None,
+                    "trade_pnl": o.unrealized_pnl(
+                        (
+                            current_prices.get(o.canonical_id)
+                            or current_prices.get(o.fyers_symbol)
+                            or current_prices.get(o.symbol)
+                        ) if current_prices else None
+                    ) if current_prices and (
+                        current_prices.get(o.canonical_id)
+                        or current_prices.get(o.fyers_symbol)
+                        or current_prices.get(o.symbol)
+                    ) is not None else 0.0,
                     "stop_loss": o.stop_loss,
                     "take_profit": o.take_profit,
                 }
@@ -305,7 +339,11 @@ class WebLiveEngine(LiveTrader):
 
     @staticmethod
     def _order_dict(order, current_prices: dict = None) -> dict:
-        ltp = current_prices.get(order.symbol) if current_prices else None
+        ltp = (
+            current_prices.get(order.canonical_id)
+            or current_prices.get(order.fyers_symbol)
+            or current_prices.get(order.symbol)
+        ) if current_prices else None
         trade_pnl = order.unrealized_pnl(ltp) if ltp is not None else 0.0
         return {
             "order_id": order.order_id, "symbol": order.symbol, "qty": order.qty,
@@ -579,11 +617,31 @@ class WebLiveEngine(LiveTrader):
 
         # Force square-off any lingering open positions when market closes (15:30 PM IST)
         current_prices = {}
+        if self.data_engine_enabled and hasattr(self, "quote_store"):
+            for cid, snap in self.quote_store.get_all_snapshots().items():
+                if snap.ltp > 0:
+                    current_prices[cid] = snap.ltp
+            for sym, snap in self.quote_store.get_all_snapshots_by_symbol().items():
+                if snap.ltp > 0:
+                    current_prices[sym] = snap.ltp
+            if hasattr(self, "instrument_registry"):
+                for inst in self.instrument_registry.get_all_instruments():
+                    snap = self.quote_store.get_snapshot(inst.canonical_id)
+                    if snap and snap.ltp > 0:
+                        current_prices[inst.clean_alias] = snap.ltp
+
         for data_manager in self.data_managers.values():
-            current_prices.update({sym: q.ltp for sym, q in data_manager.get_option_chain().items()})
+            for sym, q in data_manager.get_option_chain().items():
+                if q.ltp > 0 and sym not in current_prices:
+                    current_prices[sym] = q.ltp
 
         for order in self.paper_trader.get_positions():
-            price = current_prices.get(order.symbol) or order.entry_price
+            price = (
+                current_prices.get(order.canonical_id)
+                or current_prices.get(order.fyers_symbol)
+                or current_prices.get(order.symbol)
+                or order.entry_price
+            )
             closed_order = self.paper_trader.close_position(
                 order.order_id, price=price, timestamp=datetime.now(IST), reason="EOD_SQUARE_OFF"
             )

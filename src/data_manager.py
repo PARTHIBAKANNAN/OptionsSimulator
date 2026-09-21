@@ -289,11 +289,9 @@ class DataManager:
             updated_at_final = now_utc
             source = "rest"
             if existing and existing.ltp > 0 and getattr(existing, "source", "rest") == "ws":
-                is_recent_ws = bool(existing.updated_at and (now_utc - existing.updated_at).total_seconds() < 2.0)
-                if is_recent_ws:
-                    ltp = existing.ltp
-                    updated_at_final = existing.updated_at
-                    source = "ws"
+                ltp = existing.ltp
+                updated_at_final = existing.updated_at
+                source = "ws"
 
             quote = existing if existing is not None else OptionQuote(symbol=symbol)
             quote.ltp = ltp
