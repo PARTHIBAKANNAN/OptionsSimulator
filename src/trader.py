@@ -160,6 +160,8 @@ class LiveTrader:
         self._last_premarket_intel_date = None
         self._loop: Optional[asyncio.AbstractEventLoop] = None
         self._last_gate_log_time = 0.0
+        self._last_tick_time = 0.0
+        self._last_watchdog_resub = 0.0
 
     def _schedule_async(self, coro) -> None:
         try:
@@ -258,6 +260,7 @@ class LiveTrader:
         if not isinstance(message, dict):
             return
 
+        self._last_tick_time = time.time()
         symbol = message.get("symbol")
         if not symbol:
             return
@@ -464,6 +467,37 @@ class LiveTrader:
                         self._on_market_closed_tick()
                         await asyncio.sleep(5)
                         continue
+
+                    # Staleness Watchdog: Check if WebSocket ticks stopped flowing during market hours
+                    now_wall = time.time()
+                    if market_open and self._connected and self._last_tick_time > 0:
+                        tick_age = now_wall - self._last_tick_time
+                        if tick_age > 45.0:
+                            logger.error(
+                                "CRITICAL: WebSocket silent freeze detected (no ticks for %.1fs). Hard restarting socket and backfilling candles...",
+                                tick_age,
+                            )
+                            try:
+                                self.fyers.stop_websocket()
+                            except Exception:
+                                pass
+                            self._connected = False
+                            self._last_tick_time = now_wall
+                            self.ensure_connection_state(now)
+                            self._seed_historical_candles()
+                        elif tick_age > 15.0:
+                            if now_wall - getattr(self, "_last_watchdog_resub", 0.0) > 15.0:
+                                logger.warning(
+                                    "WebSocket tick gap detected (no ticks for %.1fs). Re-subscribing %d monitored symbols...",
+                                    tick_age,
+                                    len(self._monitored_symbols),
+                                )
+                                try:
+                                    if self._monitored_symbols:
+                                        self.fyers.subscribe_symbols(list(self._monitored_symbols))
+                                except Exception as e:
+                                    self.logger.log_error(f"Watchdog re-subscribe failed: {e}")
+                                self._last_watchdog_resub = now_wall
 
                     if loop.time() - last_poll >= self.poll_interval:
                         await self.poll_option_chain()

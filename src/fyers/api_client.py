@@ -58,6 +58,7 @@ class FyersAPIClient:
         self.fyers = None
         self.ws = None
         self._tick_callback = None
+        self._subscribed_symbols: set[str] = set()
 
     # ---- Authentication ----------------------------------------------------
 
@@ -210,6 +211,18 @@ class FyersAPIClient:
         def on_open():
             if self.logger:
                 self.logger.log_websocket_event("websocket_opened", {})
+            if self._subscribed_symbols:
+                try:
+                    time.sleep(0.5)
+                    self.ws.subscribe(symbols=list(self._subscribed_symbols), data_type="SymbolUpdate")
+                    if self.logger:
+                        self.logger.log_websocket_event(
+                            "websocket_auto_resubscribed",
+                            {"count": len(self._subscribed_symbols)},
+                        )
+                except Exception as e:
+                    if self.logger:
+                        self.logger.log_error(f"Auto-resubscribe failed on websocket open: {e}")
 
         self.ws = data_ws.FyersDataSocket(
             access_token=f"{self.client_id}:{self.access_token}",
@@ -227,10 +240,13 @@ class FyersAPIClient:
     def subscribe_symbols(self, symbols: list) -> None:
         if not self.ws:
             raise FyersAuthError("Call start_websocket() before subscribe_symbols()")
-        self.ws.subscribe(symbols=symbols, data_type="SymbolUpdate")
+        if symbols:
+            self._subscribed_symbols.update(symbols)
+            self.ws.subscribe(symbols=list(symbols), data_type="SymbolUpdate")
 
     def stop_websocket(self) -> None:
         if self.ws:
+            self._subscribed_symbols.clear()
             self.ws.close_connection()
 
     # ---- REST ------------------------------------------------------------
