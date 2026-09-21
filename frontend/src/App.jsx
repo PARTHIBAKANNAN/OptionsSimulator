@@ -58,28 +58,68 @@ function AppInner() {
   const [showLoginModal, setShowLoginModal] = useState(false);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setUser((curr) => (curr === undefined ? null : curr));
-    }, 4000);
+    let cancelled = false;
 
-    api("/api/auth/me")
-      .then((u) => {
-        clearTimeout(timer);
-        setUser(u);
-      })
-      .catch(() => {
-        clearTimeout(timer);
+    async function initAuth() {
+      // 1. First attempt existing backend session cookie
+      try {
+        const u = await api("/api/auth/me");
+        if (!cancelled && u) {
+          setUser(u);
+          return;
+        }
+      } catch {
+        // Backend cookie not present, expired, or server restarted
+      }
+
+      // 2. Auto-recover from client Supabase session (stored in localStorage)
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.access_token) {
+          const u = await api("/api/auth/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ access_token: session.access_token }),
+          });
+          if (!cancelled && u) {
+            setUser(u);
+            return;
+          }
+        }
+      } catch (err) {
+        console.warn("[Auth] Supabase session recovery failed:", err);
+      }
+
+      // 3. Neither backend cookie nor valid Supabase session exists
+      if (!cancelled) {
         setUser(null);
-      });
+      }
+    }
 
-    return () => clearTimeout(timer);
+    initAuth();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "SIGNED_OUT") {
+        setUser(null);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+      subscription?.unsubscribe();
+    };
   }, []);
 
   async function handleLogout() {
-    await api("/api/auth/logout", { method: "POST" });
+    try {
+      await api("/api/auth/logout", { method: "POST" });
+    } catch {
+      // Ignore if already expired
+    }
     await supabase.auth.signOut();
     setUser(null);
   }
+
 
   if (user === undefined) {
     return <div className="flex min-h-screen items-center justify-center text-faint">Loading OptionsSimulator…</div>;

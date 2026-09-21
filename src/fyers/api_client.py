@@ -54,11 +54,18 @@ class FyersAPIClient:
         self.redirect_uri = redirect_uri
         self.logger = logger
 
-        self.access_token = None
-        self.fyers = None
         self.ws = None
         self._tick_callback = None
         self._subscribed_symbols: set[str] = set()
+
+        cached = self._load_cached_token()
+        if cached:
+            self.access_token = cached
+            self.fyers = self._build_model(cached)
+        else:
+            self.access_token = None
+            self.fyers = None
+
 
     # ---- Authentication ----------------------------------------------------
 

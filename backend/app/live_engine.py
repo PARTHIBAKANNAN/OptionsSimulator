@@ -205,16 +205,31 @@ class WebLiveEngine(LiveTrader):
         for order in self.paper_trader.get_positions():
             open_by_strategy.setdefault(order.strategy, []).append(order)
 
+        def _to_ist(dt):
+            if dt is None:
+                return None
+            if isinstance(dt, str):
+                try:
+                    dt = datetime.fromisoformat(dt)
+                except Exception:
+                    return None
+            if dt.tzinfo is None:
+                return dt.replace(tzinfo=IST)
+            return dt.astimezone(IST)
+
         closed_today_by_strategy: dict[str, list] = {}
         last_closed_by_strategy: dict[str, object] = {}
         for order in self.paper_trader.get_trade_history():
             if not order.exit_time:
                 continue
-            if order.exit_time.astimezone(IST).date() == today:
+            exit_ist = _to_ist(order.exit_time)
+            if exit_ist and exit_ist.date() == today:
                 closed_today_by_strategy.setdefault(order.strategy, []).append(order)
             current_latest = last_closed_by_strategy.get(order.strategy)
-            if current_latest is None or order.exit_time > current_latest.exit_time:
+            curr_exit_ist = _to_ist(current_latest.exit_time) if current_latest and current_latest.exit_time else None
+            if current_latest is None or (exit_ist and curr_exit_ist and exit_ist > curr_exit_ist):
                 last_closed_by_strategy[order.strategy] = order
+
 
         rows = []
         all_strategies = [s for engine in self.strategy_engines.values() for s in engine.strategies]
@@ -610,47 +625,51 @@ class WebLiveEngine(LiveTrader):
         return signals
 
     def _on_market_closed_tick(self) -> None:
-        # Flushes the day's last still-forming candle once
-        for data_manager in self.data_managers.values():
-            data_manager.flush_current_candle()
-        self._maybe_persist_new_candles()
+        try:
+            # Flushes the day's last still-forming candle once
+            for data_manager in self.data_managers.values():
+                data_manager.flush_current_candle()
+            self._maybe_persist_new_candles()
 
-        # Force square-off any lingering open positions when market closes (15:30 PM IST)
-        current_prices = {}
-        if self.data_engine_enabled and hasattr(self, "quote_store"):
-            for cid, snap in self.quote_store.get_all_snapshots().items():
-                if snap.ltp > 0:
-                    current_prices[cid] = snap.ltp
-            for sym, snap in self.quote_store.get_all_snapshots_by_symbol().items():
-                if snap.ltp > 0:
-                    current_prices[sym] = snap.ltp
-            if hasattr(self, "instrument_registry"):
-                for inst in self.instrument_registry.get_all_instruments():
-                    snap = self.quote_store.get_snapshot(inst.canonical_id)
-                    if snap and snap.ltp > 0:
-                        current_prices[inst.clean_alias] = snap.ltp
+            # Force square-off any lingering open positions when market closes (15:30 PM IST)
+            current_prices = {}
+            if self.data_engine_enabled and hasattr(self, "quote_store"):
+                for cid, snap in self.quote_store.get_all_snapshots().items():
+                    if snap.ltp > 0:
+                        current_prices[cid] = snap.ltp
+                for sym, snap in self.quote_store.get_all_snapshots_by_symbol().items():
+                    if snap.ltp > 0:
+                        current_prices[sym] = snap.ltp
+                if hasattr(self, "instrument_registry"):
+                    for inst in self.instrument_registry.get_all_instruments():
+                        snap = self.quote_store.get_snapshot(inst.canonical_id)
+                        if snap and snap.ltp > 0:
+                            current_prices[inst.clean_alias] = snap.ltp
 
-        for data_manager in self.data_managers.values():
-            for sym, q in data_manager.get_option_chain().items():
-                if q.ltp > 0 and sym not in current_prices:
-                    current_prices[sym] = q.ltp
+            for data_manager in self.data_managers.values():
+                for sym, q in data_manager.get_option_chain().items():
+                    if q.ltp > 0 and sym not in current_prices:
+                        current_prices[sym] = q.ltp
 
-        for order in self.paper_trader.get_positions():
-            price = (
-                current_prices.get(order.canonical_id)
-                or current_prices.get(order.fyers_symbol)
-                or current_prices.get(order.symbol)
-                or order.entry_price
-            )
-            closed_order = self.paper_trader.close_position(
-                order.order_id, price=price, timestamp=datetime.now(IST), reason="EOD_SQUARE_OFF"
-            )
-            if closed_order:
-                self._schedule_async(self._close_position_db(closed_order))
-                if closed_order.strategy:
-                    self._schedule_async(self._save_wallet_db(closed_order.strategy))
+            for order in self.paper_trader.get_positions():
+                price = (
+                    current_prices.get(order.canonical_id)
+                    or current_prices.get(order.fyers_symbol)
+                    or current_prices.get(order.symbol)
+                    or order.entry_price
+                )
+                closed_order = self.paper_trader.close_position(
+                    order.order_id, price=price, timestamp=datetime.now(IST), reason="EOD_SQUARE_OFF"
+                )
+                if closed_order:
+                    self._schedule_async(self._close_position_db(closed_order))
+                    if closed_order.strategy:
+                        self._schedule_async(self._save_wallet_db(closed_order.strategy))
 
-        self._publish_state()
+            self._publish_state()
+        except Exception as e:
+            self.logger.log_error(f"Unhandled exception in _on_market_closed_tick: {e}\n{traceback.format_exc()}")
+
 
     async def execute_signal(self, signal) -> None:
         signal_id = str(uuid.uuid4())
