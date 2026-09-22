@@ -474,15 +474,15 @@ async def test_maybe_persist_new_candles_does_not_requeue_already_persisted_cand
 @pytest.mark.asyncio
 async def test_persist_candles_db_writes_expected_columns():
     engine = _make_engine(data_engine_enabled=True)
-    engine._db_execute = AsyncMock()
+    engine._db_executemany = AsyncMock()
     candle = Candle(timestamp=datetime(2026, 8, 6, 9, 15), open=100.0, high=101.0, low=99.0,
                      close=100.5, volume=500, delta=42.0)
 
     await engine._persist_candles_db("NIFTY", [candle])
 
-    query, *params = engine._db_execute.call_args.args
+    query, records = engine._db_executemany.call_args.args
     assert "options_candle_history" in query
-    assert params == ["NIFTY", date(2026, 8, 6), 555, 100.0, 101.0, 99.0, 100.5, 500, 42.0]
+    assert records == [("NIFTY", date(2026, 8, 6), 555, 100.0, 101.0, 99.0, 100.5, 500, 42.0)]
 
 
 @pytest.mark.asyncio

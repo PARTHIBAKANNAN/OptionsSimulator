@@ -6,6 +6,7 @@ from typing import Optional
 from src.utils.options_pricing import black_scholes_price, next_weekly_expiry_days
 
 OPENING_CUTOFF_TIME = dtime(9, 25)
+EOD_CUTOFF_TIME = dtime(15, 15)
 
 
 @dataclass
@@ -35,10 +36,10 @@ class BaseStrategy:
         self._last_signal_bar: Optional[datetime] = None
 
     def can_trigger(self, current_time: datetime) -> bool:
-        """Enforces opening 09:25 AM cutoff and a minimum cooldown between signals to prevent immediate duplicate re-entries."""
+        """Enforces opening 09:25 AM cutoff, 15:15 PM EOD cutoff, and a minimum cooldown between signals."""
         if current_time is not None:
             t = current_time.time() if hasattr(current_time, "time") else None
-            if t and t < OPENING_CUTOFF_TIME:
+            if t and (t < OPENING_CUTOFF_TIME or t >= EOD_CUTOFF_TIME):
                 return False
         if self.last_signal_time is None:
             return True

@@ -1,12 +1,34 @@
 import { API_BASE } from "../lib/apiBase";
 
-export async function api(path, opts) {
-  const res = await fetch(`${API_BASE}${path}`, { credentials: "include", ...opts });
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    throw new Error(body.detail || `Request failed (${res.status})`);
+export async function api(path, opts = {}) {
+  const { timeout = 8000, signal: customSignal, ...fetchOpts } = opts;
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeout);
+
+  // Link caller signal if provided
+  if (customSignal) {
+    customSignal.addEventListener("abort", () => controller.abort());
   }
-  return res.json();
+
+  try {
+    const res = await fetch(`${API_BASE}${path}`, {
+      credentials: "include",
+      signal: controller.signal,
+      ...fetchOpts,
+    });
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      throw new Error(body.detail || `Request failed (${res.status})`);
+    }
+    return res.json();
+  } catch (err) {
+    if (err.name === "AbortError") {
+      throw new Error(`Request to ${path} timed out after ${timeout}ms`);
+    }
+    throw err;
+  } finally {
+    clearTimeout(id);
+  }
 }
 
 export async function approveSignal(signalId) {

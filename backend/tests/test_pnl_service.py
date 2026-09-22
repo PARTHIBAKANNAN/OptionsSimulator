@@ -101,3 +101,28 @@ def test_build_workbook_has_the_three_expected_sheets():
     assert trades_sheet.cell(row=2, column=1).value == "abc"
     # net P&L = 50 - (3 + 2) = 45
     assert trades_sheet.cell(row=2, column=12).value == 45.0
+
+
+def test_build_workbook_converts_utc_to_ist():
+    from datetime import datetime, timezone
+    strategies = pnl_service.build_strategy_summary(["SENSEX_ORB"], {"SENSEX_ORB": {"trades": 1, "wins": 1, "gross_pnl": 4387.55, "charges": 76.58}}, {})
+    combined = pnl_service.combine_totals(strategies)
+    # UTC 04:08:00 is 09:38:00 IST (+5:30)
+    utc_entry = datetime(2026, 9, 15, 4, 8, 0, tzinfo=timezone.utc)
+    utc_exit = datetime(2026, 9, 15, 4, 55, 33, tzinfo=timezone.utc)
+    trades = [{
+        "order_id": "2380d170", "strategy": "SENSEX_ORB", "symbol": "SENSEX75500CE", "qty": 1,
+        "entry_price": 623.37, "entry_time": utc_entry, "exit_price": 842.75, "exit_time": utc_exit,
+        "exit_reason": "TAKE_PROFIT", "realized_pnl": 4387.55, "entry_charges": 38.29, "exit_charges": 38.29,
+    }]
+
+    wb = pnl_service.build_workbook(strategies, combined, trades, date(2026, 9, 15), date(2026, 9, 15))
+    trades_sheet = wb["Trades"]
+    
+    # Verify entry and exit times in cell are in IST (+5:30)
+    cell_entry = trades_sheet.cell(row=2, column=5).value
+    cell_exit = trades_sheet.cell(row=2, column=7).value
+    
+    assert cell_entry == datetime(2026, 9, 15, 9, 38, 0)
+    assert cell_exit == datetime(2026, 9, 15, 10, 25, 33)
+

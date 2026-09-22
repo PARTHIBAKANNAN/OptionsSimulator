@@ -153,7 +153,7 @@ class StrategyEngine:
 
     def evaluate_all(self, data_state: dict) -> list[Signal]:
         ts = data_state.get("timestamp")
-        if ts and hasattr(ts, "time") and ts.time() < dtime(9, 25):
+        if ts and hasattr(ts, "time") and (ts.time() < dtime(9, 25) or ts.time() >= dtime(15, 15)):
             return []
 
         signals = []

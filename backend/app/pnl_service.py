@@ -7,11 +7,14 @@ net P&L = gross realized_pnl minus both legs' charges (entry_charges + exit_char
 "actual cash-flow effect on the wallet" meaning as Order.net_pnl in src/simulator/paper_trader.py,
 just aggregated from Postgres rows instead of in-memory Order objects.
 """
-from datetime import date
+from datetime import date, datetime, timezone
+from zoneinfo import ZoneInfo
 
 from openpyxl import Workbook
 
 from . import db
+
+IST = ZoneInfo("Asia/Kolkata")
 
 
 async def strategy_pnl_rows(start_date: date, end_date: date) -> dict[str, dict]:
@@ -26,7 +29,8 @@ async def strategy_pnl_rows(start_date: date, end_date: date) -> dict[str, dict]
                   COALESCE(SUM(realized_pnl), 0) AS gross_pnl,
                   COALESCE(SUM(entry_charges + exit_charges), 0) AS charges
            FROM options_positions
-           WHERE status = 'CLOSED' AND strategy IS NOT NULL AND exit_time::date BETWEEN $1 AND $2
+           WHERE status = 'CLOSED' AND strategy IS NOT NULL 
+             AND (exit_time AT TIME ZONE 'Asia/Kolkata')::date BETWEEN $1 AND $2
            GROUP BY strategy""",
         start_date, end_date,
     )
@@ -39,11 +43,12 @@ async def daily_net_pnl_series(start_date: date, end_date: date) -> list[dict]:
     except RuntimeError:
         return []
     rows = await pool.fetch(
-        """SELECT exit_time::date AS day,
+        """SELECT (exit_time AT TIME ZONE 'Asia/Kolkata')::date AS day,
                   COALESCE(SUM(realized_pnl - entry_charges - exit_charges), 0) AS net_pnl
            FROM options_positions
-           WHERE status = 'CLOSED' AND exit_time::date BETWEEN $1 AND $2
-           GROUP BY exit_time::date ORDER BY day""",
+           WHERE status = 'CLOSED' 
+             AND (exit_time AT TIME ZONE 'Asia/Kolkata')::date BETWEEN $1 AND $2
+           GROUP BY (exit_time AT TIME ZONE 'Asia/Kolkata')::date ORDER BY day""",
         start_date, end_date,
     )
     return [{"date": row["day"].isoformat(), "net_pnl": float(row["net_pnl"])} for row in rows]
@@ -58,11 +63,13 @@ async def closed_trades_in_range(start_date: date, end_date: date) -> list[dict]
         """SELECT order_id, strategy, symbol, qty, entry_price, entry_time, exit_price, exit_time,
                   exit_reason, realized_pnl, entry_charges, exit_charges
            FROM options_positions
-           WHERE status = 'CLOSED' AND exit_time::date BETWEEN $1 AND $2
+           WHERE status = 'CLOSED' 
+             AND (exit_time AT TIME ZONE 'Asia/Kolkata')::date BETWEEN $1 AND $2
            ORDER BY exit_time""",
         start_date, end_date,
     )
     return [dict(row) for row in rows]
+
 
 
 def build_strategy_summary(strategy_names: list[str], db_rows: dict[str, dict],
@@ -126,6 +133,20 @@ def build_workbook(strategies: list[dict], combined: dict, trades: list[dict],
             s["wallet_balance"], s["allocated_capital"],
         ])
 
+    def _to_ist_naive(dt):
+        if dt is None:
+            return None
+        if isinstance(dt, str):
+            try:
+                dt = datetime.fromisoformat(dt)
+            except Exception:
+                return dt
+        if hasattr(dt, "astimezone"):
+            if dt.tzinfo is None:
+                dt = dt.replace(tzinfo=timezone.utc)
+            return dt.astimezone(IST).replace(tzinfo=None)
+        return dt
+
     trades_sheet = wb.create_sheet("Trades")
     trades_sheet.append(
         ["Order ID", "Strategy", "Symbol", "Qty", "Entry Time", "Entry Price", "Exit Time",
@@ -134,10 +155,9 @@ def build_workbook(strategies: list[dict], combined: dict, trades: list[dict],
         gross = float(t["realized_pnl"]) if t["realized_pnl"] is not None else None
         charges = float(t["entry_charges"] or 0) + float(t["exit_charges"] or 0)
         net = round(gross - charges, 2) if gross is not None else None
-        # openpyxl can't write tz-aware datetimes -- strip tzinfo (values are for a human export,
-        # not further computation).
-        entry_time = t["entry_time"].replace(tzinfo=None) if t["entry_time"] else None
-        exit_time = t["exit_time"].replace(tzinfo=None) if t["exit_time"] else None
+        # Convert UTC timestamp to IST (+05:30) and strip tzinfo so openpyxl writes human-readable IST time
+        entry_time = _to_ist_naive(t.get("entry_time"))
+        exit_time = _to_ist_naive(t.get("exit_time"))
         trades_sheet.append([
             t["order_id"], t["strategy"], t["symbol"], t["qty"], entry_time,
             float(t["entry_price"]) if t["entry_price"] is not None else None, exit_time,
@@ -146,3 +166,4 @@ def build_workbook(strategies: list[dict], combined: dict, trades: list[dict],
         ])
 
     return wb
+

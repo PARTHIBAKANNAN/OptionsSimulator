@@ -17,7 +17,7 @@ export function Login({ onLoggedIn, onClose }) {
     setLoading(true);
 
     const timeoutPromise = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error("Authentication request timed out (30s). Please check your connection and try again.")), 30000)
+      setTimeout(() => reject(new Error("Authentication request timed out (12s). Please verify your connection or try again.")), 12000)
     );
 
     try {
@@ -29,6 +29,7 @@ export function Login({ onLoggedIn, onClose }) {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ access_token: data.session.access_token }),
+          timeout: 8000,
         });
         return user;
       };

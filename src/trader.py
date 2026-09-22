@@ -439,7 +439,10 @@ class LiveTrader:
 
             self._connected = True
         elif not market_open and self._connected:
-            self.fyers.stop_websocket()
+            try:
+                self.fyers.stop_websocket()
+            except Exception as e:
+                self.logger.log_error(f"Error stopping websocket at market close: {e}")
             self._connected = False
             self._monitored_symbols = set()
             self.readiness_stage = "INIT"
@@ -560,6 +563,9 @@ class LiveTrader:
                 self.logger.log_error(f"poll_option_chain failed for {index}: {e}")
 
     def evaluate_strategies(self) -> list:
+        now = datetime.now(IST)
+        if now.time() < dtime(9, 25) or now.time() >= dtime(15, 15):
+            return []
         all_signals = []
         for index, data_manager in self.data_managers.items():
             state = data_manager.get_state()

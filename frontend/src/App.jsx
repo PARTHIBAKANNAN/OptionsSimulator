@@ -61,38 +61,53 @@ function AppInner() {
     let cancelled = false;
 
     async function initAuth() {
-      // 1. First attempt existing backend session cookie
-      try {
-        const u = await api("/api/auth/me");
-        if (!cancelled && u) {
-          setUser(u);
-          return;
-        }
-      } catch {
-        // Backend cookie not present, expired, or server restarted
-      }
+      const fallbackTimer = setTimeout(() => {
+        if (!cancelled) setUser(null);
+      }, 3500);
 
-      // 2. Auto-recover from client Supabase session (stored in localStorage)
       try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session?.access_token) {
-          const u = await api("/api/auth/login", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ access_token: session.access_token }),
-          });
+        // 1. First attempt existing backend session cookie
+        try {
+          const u = await api("/api/auth/me", { timeout: 2500 });
           if (!cancelled && u) {
+            clearTimeout(fallbackTimer);
             setUser(u);
             return;
           }
+        } catch {
+          // Backend cookie not present, expired, or server restarted
         }
-      } catch (err) {
-        console.warn("[Auth] Supabase session recovery failed:", err);
-      }
 
-      // 3. Neither backend cookie nor valid Supabase session exists
-      if (!cancelled) {
-        setUser(null);
+        // 2. Auto-recover from client Supabase session (stored in localStorage)
+        try {
+          const { data: { session } } = await supabase.auth.getSession();
+          if (session?.access_token) {
+            const u = await api("/api/auth/login", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ access_token: session.access_token }),
+              timeout: 3000,
+            });
+            if (!cancelled && u) {
+              clearTimeout(fallbackTimer);
+              setUser(u);
+              return;
+            }
+          }
+        } catch (err) {
+          console.warn("[Auth] Supabase session recovery failed:", err);
+        }
+
+        // 3. Neither backend cookie nor valid Supabase session exists
+        if (!cancelled) {
+          clearTimeout(fallbackTimer);
+          setUser(null);
+        }
+      } catch {
+        if (!cancelled) {
+          clearTimeout(fallbackTimer);
+          setUser(null);
+        }
       }
     }
 

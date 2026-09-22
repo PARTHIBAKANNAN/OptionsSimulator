@@ -401,6 +401,18 @@ class WebLiveEngine(LiveTrader):
         except Exception as e:
             self.logger.log_error(f"DB write failed/timed out, continuing without it: {e}")
 
+    async def _db_executemany(self, query: str, records: list) -> None:
+        if not self.data_engine_enabled or not records:
+            return
+        try:
+            pool = db.get_pool()
+        except RuntimeError:
+            return
+        try:
+            await asyncio.wait_for(pool.executemany(query, records), timeout=self.DB_TIMEOUT_SECS * 2)
+        except Exception as e:
+            self.logger.log_error(f"DB batch write failed/timed out, continuing without it: {e}")
+
     async def _save_position_db(self, order) -> None:
         await self._db_execute(
             """INSERT INTO options_positions
@@ -584,19 +596,32 @@ class WebLiveEngine(LiveTrader):
             self._schedule_async(self._persist_candles_db(index, new_candles))
 
     async def _persist_candles_db(self, index: str, candles: list) -> None:
-        """Persists candles locally and executes DB hooks if available."""
+        """Persists candles locally and executes DB hooks in a single batch query."""
         sqlite_cache.save_candles(index, candles)
+        if not candles:
+            return
+        records = []
         for candle in candles:
             midnight = candle.timestamp.replace(hour=0, minute=0, second=0, microsecond=0)
             bucket_minute = int((candle.timestamp - midnight).total_seconds() // 60)
-            await self._db_execute(
-                """INSERT INTO options_candle_history
-                   (underlying, bucket_date, bucket_minute, open, high, low, close, volume, delta)
-                   VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
-                   ON CONFLICT (underlying, bucket_date, bucket_minute) DO NOTHING""",
-                index, candle.timestamp.date(), bucket_minute,
-                candle.open, candle.high, candle.low, candle.close, candle.volume, candle.delta,
-            )
+            records.append((
+                index,
+                candle.timestamp.date(),
+                bucket_minute,
+                candle.open,
+                candle.high,
+                candle.low,
+                candle.close,
+                candle.volume,
+                candle.delta,
+            ))
+        await self._db_executemany(
+            """INSERT INTO options_candle_history
+               (underlying, bucket_date, bucket_minute, open, high, low, close, volume, delta)
+               VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+               ON CONFLICT (underlying, bucket_date, bucket_minute) DO NOTHING""",
+            records,
+        )
 
     async def _save_signal_db(self, signal_id: str, signal, status: str) -> None:
         await self._db_execute(
