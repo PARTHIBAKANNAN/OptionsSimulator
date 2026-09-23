@@ -527,8 +527,8 @@ class PaperTrader:
         closed = []
         for order in self.get_positions():
             quote_val = (
-                current_prices.get(order.canonical_id)
-                or current_prices.get(order.fyers_symbol)
+                current_prices.get(order.fyers_symbol)
+                or current_prices.get(order.canonical_id)
                 or current_prices.get(order.symbol)
             )
             if quote_val is None:
@@ -682,8 +682,8 @@ class PaperTrader:
         if current_prices:
             for o in self.get_positions():
                 quote_val = (
-                    current_prices.get(o.canonical_id)
-                    or current_prices.get(o.fyers_symbol)
+                    current_prices.get(o.fyers_symbol)
+                    or current_prices.get(o.canonical_id)
                     or current_prices.get(o.symbol)
                 )
                 if quote_val is not None:

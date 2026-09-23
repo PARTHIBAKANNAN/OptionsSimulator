@@ -63,12 +63,12 @@ function AppInner() {
     async function initAuth() {
       const fallbackTimer = setTimeout(() => {
         if (!cancelled) setUser(null);
-      }, 3500);
+      }, 10000);
 
       try {
         // 1. First attempt existing backend session cookie
         try {
-          const u = await api("/api/auth/me", { timeout: 2500 });
+          const u = await api("/api/auth/me", { timeout: 8000 });
           if (!cancelled && u) {
             clearTimeout(fallbackTimer);
             setUser(u);
@@ -86,7 +86,7 @@ function AppInner() {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ access_token: session.access_token }),
-              timeout: 3000,
+              timeout: 8000,
             });
             if (!cancelled && u) {
               clearTimeout(fallbackTimer);

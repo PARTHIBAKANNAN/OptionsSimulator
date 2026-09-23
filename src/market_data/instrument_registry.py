@@ -44,7 +44,13 @@ class InstrumentRegistry:
         self._clean_alias_to_canonical: Dict[str, str] = {}
         self._active_expiry_by_underlying: Dict[str, date] = {}
         self._by_underlying: Dict[str, List[Instrument]] = {}
+        self._quote_store = None
         self._lock = threading.RLock()
+
+    def set_quote_store(self, quote_store) -> None:
+        """Associates QuoteStore to allow seamless canonical ID migration."""
+        with self._lock:
+            self._quote_store = quote_store
 
     def register_from_fyers_chain(
         self,
@@ -121,25 +127,40 @@ class InstrumentRegistry:
                     lot_size=lot_size,
                 )
 
+                # Clean up any orphaned ad-hoc registration for this symbol with a different canonical_id
+                old_inst = self._by_fyers_symbol.get(instrument.fyers_symbol)
+                if old_inst and old_inst.canonical_id != instrument.canonical_id:
+                    self._by_canonical_id.pop(old_inst.canonical_id, None)
+                    if self._quote_store:
+                        self._quote_store.remap_canonical_id(old_inst.canonical_id, instrument.canonical_id)
+
                 # Store by canonical ID and official broker symbol
                 self._by_canonical_id[instrument.canonical_id] = instrument
                 self._by_fyers_symbol[instrument.fyers_symbol] = instrument
 
-                # Track active expiry (earliest valid expiry encountered for underlying)
-                curr_active = self._active_expiry_by_underlying.get(instrument.underlying)
-                if curr_active is None or instrument.expiry < curr_active:
-                    self._active_expiry_by_underlying[instrument.underlying] = instrument.expiry
-
-                # Clean alias mapping (maps to active/earliest expiry contract)
-                # If clean alias collision across expiries, active expiry takes precedence
-                if instrument.underlying not in self._by_underlying:
-                    self._by_underlying[instrument.underlying] = []
-                self._by_underlying[instrument.underlying].append(instrument)
-
                 registered.append(instrument)
 
+            # Determine active expiry: earliest valid expiry on or after today (IST).
+            # If all are in the past (e.g. historical tests/fixtures), pick earliest available in registered set.
+            today = datetime.now(IST).date()
+            future_expiries = [inst.expiry for inst in registered if inst.expiry >= today]
+            if future_expiries:
+                active_exp = min(future_expiries)
+            elif registered:
+                active_exp = min(inst.expiry for inst in registered)
+            else:
+                active_exp = None
+
+            if active_exp:
+                self._active_expiry_by_underlying[underlying.upper()] = active_exp
+
+            # Deduplicate and maintain _by_underlying
+            existing_for_underlying = {inst.canonical_id: inst for inst in self._by_underlying.get(underlying.upper(), [])}
+            for inst in registered:
+                existing_for_underlying[inst.canonical_id] = inst
+            self._by_underlying[underlying.upper()] = list(existing_for_underlying.values())
+
             # Re-index clean aliases to strictly map to active expiry contracts
-            active_exp = self._active_expiry_by_underlying.get(underlying.upper())
             if active_exp:
                 for inst in self._by_underlying.get(underlying.upper(), []):
                     if inst.expiry == active_exp:

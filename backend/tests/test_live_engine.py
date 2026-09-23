@@ -599,3 +599,31 @@ def test_publish_state_exchange_open_reflects_real_market_hours():
         mock_dt.now.return_value = IST.localize(datetime(2026, 8, 4, 20, 0))  # well after close
         engine._publish_state()
     assert shared_state.get()["exchange_open"] is False
+
+
+def test_order_dict_prefers_live_fyers_symbol_over_stale_canonical_id():
+    from src.simulator.paper_trader import Order
+
+    order = Order(
+        order_id="test_ord_1",
+        symbol="NIFTY24700CE",
+        side="BUY",
+        qty=1,
+        lot_size=65,
+        entry_price=100.0,
+        entry_time=datetime(2026, 8, 4, 9, 30),
+        status="OPEN",
+        strategy="EMA_CROSS",
+        canonical_id="NIFTY|2026-08-04|24700|CE",  # old stale ad-hoc canonical id
+        fyers_symbol="NSE:NIFTY2680624700CE",       # true broker symbol
+    )
+
+    # current_prices has both: a frozen stale price under canonical_id, and a live fresh price under fyers_symbol
+    current_prices = {
+        "NIFTY|2026-08-04|24700|CE": 80.0,     # stale frozen price (-20 pts off)
+        "NSE:NIFTY2680624700CE": 115.0,        # live true broker tick price
+    }
+
+    res = WebLiveEngine._order_dict(order, current_prices)
+    assert res["ltp"] == 115.0  # Must match the live tick, NOT the stale canonical_id!
+    assert res["trade_pnl"] == round((115.0 - 100.0) * 1 * 65, 2)

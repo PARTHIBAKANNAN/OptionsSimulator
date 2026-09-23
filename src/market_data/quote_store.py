@@ -25,6 +25,7 @@ class QuoteSnapshot:
     version: int
     prev_close: float = 0.0
     pchange: float = 0.0
+    source: str = "ws"
 
     @property
     def oi(self) -> int:
@@ -71,6 +72,7 @@ class QuoteStore:
         exchange_ts: float = 0.0,
         prev_close: float = 0.0,
         pchange: float = 0.0,
+        source: str = "ws",
     ) -> QuoteSnapshot:
         """
         Atomically updates the quote for a canonical instrument and increments its version.
@@ -104,6 +106,7 @@ class QuoteStore:
                 version=ver,
                 prev_close=float(final_prev_close),
                 pchange=float(pchange),
+                source=source,
             )
             self._snapshots_by_canonical[canonical_id] = snapshot
             self._snapshots_by_symbol[fyers_symbol] = snapshot
@@ -137,6 +140,30 @@ class QuoteStore:
     def total_quotes_count(self) -> int:
         with self._lock:
             return len(self._snapshots_by_canonical)
+
+    def remap_canonical_id(self, old_canonical_id: str, new_canonical_id: str) -> None:
+        """Migrates a snapshot from an ad-hoc/old canonical ID to the official canonical ID."""
+        with self._lock:
+            snap = self._snapshots_by_canonical.pop(old_canonical_id, None)
+            if snap:
+                migrated = QuoteSnapshot(
+                    canonical_id=new_canonical_id,
+                    fyers_symbol=snap.fyers_symbol,
+                    ltp=snap.ltp,
+                    bid=snap.bid,
+                    ask=snap.ask,
+                    open_interest=snap.open_interest,
+                    volume=snap.volume,
+                    exchange_timestamp=snap.exchange_timestamp,
+                    receive_epoch_timestamp=snap.receive_epoch_timestamp,
+                    receive_monotonic_timestamp=snap.receive_monotonic_timestamp,
+                    version=snap.version,
+                    prev_close=snap.prev_close,
+                    pchange=snap.pchange,
+                    source=getattr(snap, "source", "ws"),
+                )
+                self._snapshots_by_canonical[new_canonical_id] = migrated
+                self._snapshots_by_symbol[snap.fyers_symbol] = migrated
 
     def clear(self) -> None:
         with self._lock:

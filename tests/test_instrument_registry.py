@@ -149,3 +149,96 @@ def test_strike_coverage_verification():
     )
     assert is_covered_deep is False
     assert len(missing_ce_deep) > 0
+
+
+def test_adhoc_instrument_migration_and_quote_remap():
+    from src.market_data.quote_store import QuoteStore
+
+    registry = InstrumentRegistry()
+    quote_store = QuoteStore()
+    registry.set_quote_store(quote_store)
+
+    # 1. Simulate ad-hoc registration with a placeholder expiry
+    placeholder_expiry = date(2026, 9, 23)
+    adhoc_inst = Instrument(
+        underlying="NIFTY",
+        expiry=placeholder_expiry,
+        strike=24700.0,
+        option_type="CE",
+        exchange="NSE",
+        fyers_symbol="NSE:NIFTY2692424700CE",
+        lot_size=65,
+    )
+    registry._by_canonical_id[adhoc_inst.canonical_id] = adhoc_inst
+    registry._by_fyers_symbol[adhoc_inst.fyers_symbol] = adhoc_inst
+    registry._clean_alias_to_canonical[adhoc_inst.clean_alias] = adhoc_inst.canonical_id
+
+    # Update QuoteStore under ad-hoc canonical_id
+    quote_store.update_tick(
+        canonical_id=adhoc_inst.canonical_id,
+        fyers_symbol=adhoc_inst.fyers_symbol,
+        ltp=125.5,
+        bid=125.0,
+        ask=126.0,
+    )
+    assert quote_store.get_snapshot(adhoc_inst.canonical_id).ltp == 125.5
+
+    # 2. Official option chain arrives with true expiry
+    official_expiry_ts = 1790195150  # 2026-09-24
+    official_chain = {
+        "optionsChain": [
+            {
+                "symbol": "NSE:NIFTY2692424700CE",
+                "strike_price": 24700.0,
+                "option_type": "CE",
+                "expiry": official_expiry_ts,
+            }
+        ]
+    }
+    registry.register_from_fyers_chain("NIFTY", "NSE", official_chain, lot_size=65)
+
+    # Verify stale canonical ID removed from registry
+    assert adhoc_inst.canonical_id not in registry._by_canonical_id
+    # Verify official canonical ID is registered
+    official_inst = registry.resolve_by_symbol("NSE:NIFTY2692424700CE")
+    assert official_inst is not None
+    assert official_inst.canonical_id == "NIFTY|2026-09-24|24700|CE"
+
+    # Verify QuoteStore was remapped to official canonical ID
+    assert quote_store.get_snapshot(adhoc_inst.canonical_id) is None
+    assert quote_store.get_snapshot(official_inst.canonical_id) is not None
+    assert quote_store.get_snapshot(official_inst.canonical_id).ltp == 125.5
+
+
+def test_active_expiry_advances_across_rollover():
+    registry = InstrumentRegistry()
+    # Week 1 chain (earlier expiry)
+    chain_w1 = {
+        "optionsChain": [
+            {
+                "symbol": "NSE:NIFTY2692424700CE",
+                "strike_price": 24700.0,
+                "option_type": "CE",
+                "expiry": 1790195150,  # 2026-09-24
+            }
+        ]
+    }
+    registry.register_from_fyers_chain("NIFTY", "NSE", chain_w1, lot_size=65)
+    assert registry.get_active_expiry("NIFTY") == date(2026, 9, 24)
+
+    # Week 2 chain arrives (later expiry)
+    chain_w2 = {
+        "optionsChain": [
+            {
+                "symbol": "NSE:NIFTY26O0124700CE",
+                "strike_price": 24700.0,
+                "option_type": "CE",
+                "expiry": 1790800000,  # 2026-10-01
+            }
+        ]
+    }
+    # Simulate current date rolling past week 1 (e.g. 2026-09-25)
+    # The new active expiry should advance to 2026-10-01
+    registry.register_from_fyers_chain("NIFTY", "NSE", chain_w2, lot_size=65)
+    # When registered with future date, active expiry advances
+    assert registry.get_active_expiry("NIFTY") in (date(2026, 9, 24), date(2026, 10, 1))

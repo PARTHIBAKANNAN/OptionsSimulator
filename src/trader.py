@@ -46,6 +46,7 @@ STRIKE_STEP_BY_INDEX = {"NIFTY": 50, "SENSEX": 100, "BANKNIFTY": 100}
 
 IST = ZoneInfo("Asia/Kolkata")
 DAILY_LOGIN_TIME = dtime(8, 50)
+DAILY_LOGIN_CUTOFF = dtime(15, 35)
 CAPITAL_REQUIREMENTS_PATH = (
     Path(__file__).resolve().parent.parent / "data" / "backtest_results" / "capital_requirements.json"
 )
@@ -68,6 +69,7 @@ class LiveTrader:
         # Market data & execution infrastructure
         self.instrument_registry = InstrumentRegistry()
         self.quote_store = QuoteStore()
+        self.instrument_registry.set_quote_store(self.quote_store)
         self.quote_validator = QuoteValidator(
             entry_max_age_ms=500.0,
             exit_max_age_ms=2000.0,
@@ -75,6 +77,10 @@ class LiveTrader:
             max_spread_bps=800,
         )
         self.audit_logger = AuditLogger()
+
+        self._last_login_attempt_ts = 0.0
+        self._last_login_attempt_dt = None
+        self._login_backoff_sec = 30.0
 
         # Readiness gate state: "INIT" -> "CONTRACT_READY" -> "SUBSCRIPTION_READY" -> "QUOTE_READY" -> "STRATEGIES_ARMED"
         self.readiness_stage = "INIT"
@@ -297,7 +303,7 @@ class LiveTrader:
         # Route option contract ticks via InstrumentRegistry
         inst = self.instrument_registry.resolve_by_symbol(symbol)
         if inst is None:
-            from src.utils.options_pricing import parse_option_symbol
+            from src.utils.options_pricing import parse_option_symbol, next_weekly_expiry_date
             strike_val, opt_type = parse_option_symbol(symbol)
             if strike_val is not None and opt_type is not None:
                 if "BANKNIFTY" in symbol:
@@ -307,9 +313,12 @@ class LiveTrader:
                 else:
                     opt_index = "NIFTY"
 
+                now_ist = datetime.now(IST)
+                expiry_date = next_weekly_expiry_date(now_ist, index=opt_index)
+
                 inst = Instrument(
                     underlying=opt_index,
-                    expiry=datetime.now(IST).date(),
+                    expiry=expiry_date,
                     strike=float(strike_val),
                     option_type=opt_type,
                     exchange=INDEX_TO_EXCHANGE.get(opt_index, "NSE"),
@@ -382,22 +391,38 @@ class LiveTrader:
 
     def ensure_connection_state(self, now: datetime) -> bool:
         market_open = self.config.force_market_open or is_market_open(now, self.config.risk_params)
-        past_login_time = self.config.force_market_open or (now.weekday() < 5 and now.time() >= DAILY_LOGIN_TIME)
+        in_login_window = self.config.force_market_open or (
+            now.weekday() < 5 and DAILY_LOGIN_TIME <= now.time() < DAILY_LOGIN_CUTOFF
+        )
 
-        if past_login_time and self._last_login_date != now.date():
-            if self.fyers.refresh_access_token():
-                self._last_login_date = now.date()
-                self._connected = False
-                self.readiness_stage = "INIT"
-            else:
-                self.logger.log_error("Daily Fyers token refresh failed; will retry next tick.")
+        if in_login_window and self._last_login_date != now.date():
+            now_wall = time.time()
+            last_ts = getattr(self, "_last_login_attempt_ts", 0.0)
+            last_dt = getattr(self, "_last_login_attempt_dt", None)
+            backoff = getattr(self, "_login_backoff_sec", 30.0)
+
+            wall_elapsed = now_wall - last_ts
+            dt_elapsed = (now - last_dt).total_seconds() if last_dt else 999999.0
+            if last_dt is None or wall_elapsed >= backoff or dt_elapsed >= backoff:
+                self._last_login_attempt_ts = now_wall
+                self._last_login_attempt_dt = now
+                if self.fyers.refresh_access_token():
+                    self._last_login_date = now.date()
+                    self._connected = False
+                    self.readiness_stage = "INIT"
+                    self._login_backoff_sec = 30.0
+                else:
+                    self._login_backoff_sec = min(backoff * 2, 300.0)
+                    self.logger.log_error(
+                        f"Daily Fyers token refresh failed; backing off for {self._login_backoff_sec:.0f}s before retry."
+                    )
 
         if self.fyers.access_token and self._historical_seeded_date != now.date():
             self._seed_historical_candles()
             self._historical_seeded_date = now.date()
 
         # Trigger Pre-Market Catalyst AI Intelligence at 08:50 AM IST
-        if past_login_time and self._last_premarket_intel_date != now.date():
+        if in_login_window and self._last_premarket_intel_date != now.date():
             try:
                 from backend.app.ai_intelligence import generate_live_premarket_intel
                 intel = generate_live_premarket_intel()
@@ -464,7 +489,7 @@ class LiveTrader:
             while self.is_running:
                 try:
                     now = datetime.now(IST)
-                    market_open = self.ensure_connection_state(now)
+                    market_open = await asyncio.to_thread(self.ensure_connection_state, now)
 
                     if not market_open:
                         self._on_market_closed_tick()
@@ -486,8 +511,8 @@ class LiveTrader:
                                 pass
                             self._connected = False
                             self._last_tick_time = now_wall
-                            self.ensure_connection_state(now)
-                            self._seed_historical_candles()
+                            await asyncio.to_thread(self.ensure_connection_state, now)
+                            await asyncio.to_thread(self._seed_historical_candles)
                         elif tick_age > 15.0:
                             if now_wall - getattr(self, "_last_watchdog_resub", 0.0) > 15.0:
                                 logger.warning(
@@ -641,23 +666,35 @@ class LiveTrader:
         # Query latest live snapshot from QuoteStore
         snapshot = self.quote_store.get_snapshot(inst.canonical_id)
 
-        # In unit tests or cold start, seed QuoteStore from DataManager or signal.entry_price
+        # In unit tests or cold start, seed QuoteStore ONLY if no live WS snapshot exists
         dm = self.data_managers.get(underlying, self.data_manager)
         quote = dm.option_chain.get(inst.fyers_symbol) or dm.option_chain.get(signal.strike)
-        if snapshot is None or (quote and getattr(quote, "source", "rest") != "ws" and signal.entry_price > 0):
-            ltp_val = signal.entry_price if signal.entry_price > 0 else (quote.ltp if quote else 0.0)
+        is_live_ws = snapshot is not None and getattr(snapshot, "source", "ws") == "ws"
+        if not is_live_ws:
+            if quote and getattr(quote, "source", "rest") == "ws" and quote.ltp > 0:
+                ltp_val = quote.ltp
+                bid_val = quote.bid or ltp_val
+                ask_val = quote.ask or ltp_val
+                src = "ws"
+            elif signal.entry_price > 0:
+                ltp_val = signal.entry_price
+                bid_val = quote.bid if (quote and quote.bid > 0) else ltp_val
+                ask_val = quote.ask if (quote and quote.ask > 0) else ltp_val
+                src = "seed"
+            else:
+                ltp_val = quote.ltp if quote else 0.0
+                bid_val = quote.bid if quote else 0.0
+                ask_val = quote.ask if quote else 0.0
+                src = "seed"
+
             if ltp_val > 0:
-                bid_val = (quote.bid if (quote and quote.bid > 0) else ltp_val)
-                ask_val = (quote.ask if (quote and quote.ask > 0) else ltp_val)
-                if signal.entry_price > 0 and (quote is None or getattr(quote, "source", "rest") != "ws"):
-                    bid_val = signal.entry_price
-                    ask_val = signal.entry_price
                 snapshot = self.quote_store.update_tick(
                     canonical_id=inst.canonical_id,
                     fyers_symbol=inst.fyers_symbol,
                     ltp=ltp_val,
                     bid=bid_val,
                     ask=ask_val,
+                    source=src,
                 )
 
         # Validate quote snapshot (Freshness <= 500ms, Ask > 0, Spread <= 8%)

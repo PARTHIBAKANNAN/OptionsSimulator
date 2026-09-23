@@ -244,8 +244,8 @@ class WebLiveEngine(LiveTrader):
             if opens:
                 latest = max(opens, key=lambda o: o.entry_time)
                 ltp = (
-                    current_prices.get(latest.canonical_id)
-                    or current_prices.get(latest.fyers_symbol)
+                    current_prices.get(latest.fyers_symbol)
+                    or current_prices.get(latest.canonical_id)
                     or current_prices.get(latest.symbol)
                 ) if current_prices else None
                 trade_pnl = latest.unrealized_pnl(ltp) if ltp is not None else None
@@ -283,35 +283,25 @@ class WebLiveEngine(LiveTrader):
                         "take_profit": last.take_profit,
                     }
 
-            open_list = [
-                {
+            open_list = []
+            for o in opens:
+                o_ltp = (
+                    current_prices.get(o.fyers_symbol)
+                    or current_prices.get(o.canonical_id)
+                    or current_prices.get(o.symbol)
+                ) if current_prices else None
+                open_list.append({
                     "order_id": o.order_id,
                     "contract": format_display_symbol(o.symbol, next_weekly_expiry_date(o.entry_time, index=o.underlying)),
                     "qty": o.qty,
                     "lot_size": o.lot_size,
                     "entry_price": o.entry_price,
                     "entry_time": o.entry_time.isoformat(),
-                    "ltp": (
-                        current_prices.get(o.canonical_id)
-                        or current_prices.get(o.fyers_symbol)
-                        or current_prices.get(o.symbol)
-                    ) if current_prices else None,
-                    "trade_pnl": o.unrealized_pnl(
-                        (
-                            current_prices.get(o.canonical_id)
-                            or current_prices.get(o.fyers_symbol)
-                            or current_prices.get(o.symbol)
-                        ) if current_prices else None
-                    ) if current_prices and (
-                        current_prices.get(o.canonical_id)
-                        or current_prices.get(o.fyers_symbol)
-                        or current_prices.get(o.symbol)
-                    ) is not None else 0.0,
+                    "ltp": o_ltp,
+                    "trade_pnl": o.unrealized_pnl(o_ltp) if o_ltp is not None else 0.0,
                     "stop_loss": o.stop_loss,
                     "take_profit": o.take_profit,
-                }
-                for o in opens
-            ]
+                })
 
             closed_list = [
                 {
@@ -355,8 +345,8 @@ class WebLiveEngine(LiveTrader):
     @staticmethod
     def _order_dict(order, current_prices: dict = None) -> dict:
         ltp = (
-            current_prices.get(order.canonical_id)
-            or current_prices.get(order.fyers_symbol)
+            current_prices.get(order.fyers_symbol)
+            or current_prices.get(order.canonical_id)
             or current_prices.get(order.symbol)
         ) if current_prices else None
         trade_pnl = order.unrealized_pnl(ltp) if ltp is not None else 0.0
@@ -678,8 +668,8 @@ class WebLiveEngine(LiveTrader):
 
             for order in self.paper_trader.get_positions():
                 price = (
-                    current_prices.get(order.canonical_id)
-                    or current_prices.get(order.fyers_symbol)
+                    current_prices.get(order.fyers_symbol)
+                    or current_prices.get(order.canonical_id)
                     or current_prices.get(order.symbol)
                     or order.entry_price
                 )
@@ -793,23 +783,35 @@ class WebLiveEngine(LiveTrader):
             fyers_sym = inst.fyers_symbol
             snapshot = self.quote_store.get_snapshot(inst.canonical_id)
 
-            # In unit tests or cold start, seed QuoteStore from DataManager or signal.entry_price
+            # In unit tests or cold start, seed QuoteStore ONLY if no live WS snapshot exists
             dm = self.data_managers.get(underlying, self.data_manager)
             quote = dm.option_chain.get(inst.fyers_symbol) or dm.option_chain.get(signal.strike)
-            if snapshot is None or (quote and getattr(quote, "source", "rest") != "ws" and signal.entry_price > 0):
-                ltp_val = signal.entry_price if signal.entry_price > 0 else (quote.ltp if quote else 0.0)
+            is_live_ws = snapshot is not None and getattr(snapshot, "source", "ws") == "ws"
+            if not is_live_ws:
+                if quote and getattr(quote, "source", "rest") == "ws" and quote.ltp > 0:
+                    ltp_val = quote.ltp
+                    bid_val = quote.bid or ltp_val
+                    ask_val = quote.ask or ltp_val
+                    src = "ws"
+                elif signal.entry_price > 0:
+                    ltp_val = signal.entry_price
+                    bid_val = quote.bid if (quote and quote.bid > 0) else ltp_val
+                    ask_val = quote.ask if (quote and quote.ask > 0) else ltp_val
+                    src = "seed"
+                else:
+                    ltp_val = quote.ltp if quote else 0.0
+                    bid_val = quote.bid if quote else 0.0
+                    ask_val = quote.ask if quote else 0.0
+                    src = "seed"
+
                 if ltp_val > 0:
-                    bid_val = (quote.bid if (quote and quote.bid > 0) else ltp_val)
-                    ask_val = (quote.ask if (quote and quote.ask > 0) else ltp_val)
-                    if signal.entry_price > 0 and (quote is None or getattr(quote, "source", "rest") != "ws"):
-                        bid_val = signal.entry_price
-                        ask_val = signal.entry_price
                     snapshot = self.quote_store.update_tick(
                         canonical_id=inst.canonical_id,
                         fyers_symbol=inst.fyers_symbol,
                         ltp=ltp_val,
                         bid=bid_val,
                         ask=ask_val,
+                        source=src,
                     )
 
             from src.market_data.quote_validator import ValidationIntent
