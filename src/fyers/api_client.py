@@ -252,9 +252,19 @@ class FyersAPIClient:
             self.ws.subscribe(symbols=list(symbols), data_type="SymbolUpdate")
 
     def stop_websocket(self) -> None:
+        """Closes the WebSocket connection but PRESERVES the subscription list so that
+        on_open's auto-resubscribe fires correctly when Fyers SDK reconnects or when
+        the watchdog restarts the socket mid-session."""
         if self.ws:
-            self._subscribed_symbols.clear()
-            self.ws.close_connection()
+            try:
+                self.ws.close_connection()
+            except Exception:
+                pass  # SDK thread cleanup can deadlock; don't block the caller
+
+    def stop_websocket_final(self) -> None:
+        """Full shutdown: clears subscriptions and closes. Use only at app exit."""
+        self._subscribed_symbols.clear()
+        self.stop_websocket()
 
     # ---- REST ------------------------------------------------------------
 

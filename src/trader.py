@@ -663,38 +663,81 @@ class LiveTrader:
             )
             return
 
+        # --- Auto-subscribe contract if not already in the WebSocket feed ---
+        # This is critical on big trend days: the market crashes 1000+ pts into strikes that
+        # weren't in the initial subscription universe. Without this, QuoteStore has no live
+        # ticks and the trade would execute at a stale/phantom price.
+        # Only applies when live WebSocket is connected (not in unit tests/backtests).
+        if self._connected and inst.fyers_symbol not in self._monitored_symbols:
+            try:
+                self.fyers.subscribe_symbols([inst.fyers_symbol])
+                self._monitored_symbols.add(inst.fyers_symbol)
+                logger.info(
+                    "Auto-subscribed new contract %s (%s) before trade execution",
+                    inst.fyers_symbol, inst.canonical_id,
+                )
+            except Exception as e:
+                self.logger.log_error(f"Auto-subscribe failed for {inst.fyers_symbol}: {e}")
+
         # Query latest live snapshot from QuoteStore
         snapshot = self.quote_store.get_snapshot(inst.canonical_id)
 
-        # In unit tests or cold start, seed QuoteStore ONLY if no live WS snapshot exists
-        dm = self.data_managers.get(underlying, self.data_manager)
-        quote = dm.option_chain.get(inst.fyers_symbol) or dm.option_chain.get(signal.strike)
+        # Also check by fyers_symbol in case canonical_id mapping is stale
+        if snapshot is None:
+            snapshot = self.quote_store.get_snapshot_by_symbol(inst.fyers_symbol)
+
+        # In LIVE trading (self._connected), ONLY accept genuine WebSocket-sourced snapshots.
+        # Never seed QuoteStore with stale REST/signal prices — that's what caused the
+        # 25-point option LTP drift on 2026-09-24. If no live WS snapshot exists, reject
+        # the trade; the auto-subscribe above ensures future ticks will flow.
+        #
+        # In unit tests / backtests (not self._connected), allow seed prices so tests pass.
         is_live_ws = snapshot is not None and getattr(snapshot, "source", "ws") == "ws"
         if not is_live_ws:
+            # Allow DataManager WS quotes as a secondary live source
+            dm = self.data_managers.get(underlying, self.data_manager)
+            quote = dm.option_chain.get(inst.fyers_symbol) or dm.option_chain.get(signal.strike)
             if quote and getattr(quote, "source", "rest") == "ws" and quote.ltp > 0:
-                ltp_val = quote.ltp
-                bid_val = quote.bid or ltp_val
-                ask_val = quote.ask or ltp_val
-                src = "ws"
-            elif signal.entry_price > 0:
-                ltp_val = signal.entry_price
-                bid_val = quote.bid if (quote and quote.bid > 0) else ltp_val
-                ask_val = quote.ask if (quote and quote.ask > 0) else ltp_val
-                src = "seed"
-            else:
-                ltp_val = quote.ltp if quote else 0.0
-                bid_val = quote.bid if quote else 0.0
-                ask_val = quote.ask if quote else 0.0
-                src = "seed"
-
-            if ltp_val > 0:
                 snapshot = self.quote_store.update_tick(
                     canonical_id=inst.canonical_id,
                     fyers_symbol=inst.fyers_symbol,
-                    ltp=ltp_val,
-                    bid=bid_val,
-                    ask=ask_val,
-                    source=src,
+                    ltp=quote.ltp,
+                    bid=quote.bid or quote.ltp,
+                    ask=quote.ask or quote.ltp,
+                    source="ws",
+                )
+            elif self._connected:
+                # LIVE MODE: reject — no live price available
+                logger.warning(
+                    "Order REJECTED for %s (%s): NO_LIVE_WS_PRICE — contract was just auto-subscribed, "
+                    "waiting for first tick before allowing entry.",
+                    signal.strategy, inst.canonical_id,
+                )
+                self.paper_trader._log_audit_record(
+                    event_id="",
+                    strategy=signal.strategy,
+                    canonical_id=inst.canonical_id,
+                    fyers_symbol=inst.fyers_symbol,
+                    side="BUY",
+                    qty=self.qty_per_signal,
+                    price=signal.entry_price,
+                    quote_snapshot=None,
+                    decision_ver=0,
+                    exec_ver=0,
+                    status="REJECTED",
+                    rejection_code="REJECTED_NO_LIVE_WS_PRICE",
+                    rejection_reason=f"No live WebSocket price for {inst.fyers_symbol}; auto-subscribed, awaiting first tick",
+                )
+                return
+            elif signal.entry_price > 0:
+                # TEST/BACKTEST MODE: seed QuoteStore with signal's entry_price
+                snapshot = self.quote_store.update_tick(
+                    canonical_id=inst.canonical_id,
+                    fyers_symbol=inst.fyers_symbol,
+                    ltp=signal.entry_price,
+                    bid=quote.bid if (quote and quote.bid > 0) else signal.entry_price,
+                    ask=quote.ask if (quote and quote.ask > 0) else signal.entry_price,
+                    source="seed",
                 )
 
         # Validate quote snapshot (Freshness <= 500ms, Ask > 0, Spread <= 8%)
@@ -862,6 +905,6 @@ class LiveTrader:
 
     async def stop(self) -> None:
         self.is_running = False
-        self.fyers.stop_websocket()
+        self.fyers.stop_websocket_final()
         if self.telegram:
             await self.telegram.stop_listening()

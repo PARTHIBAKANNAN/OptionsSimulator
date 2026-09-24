@@ -53,6 +53,10 @@ class DataManager:
         # since one DataManager already scopes to exactly one index's one spot-price series.
         self._prev_ltp: Optional[float] = None
         self._prev_volume: Optional[int] = None
+        # Raw live WebSocket tick LTP — updated on every single tick, independent of candle
+        # construction. Used by get_state() for spot index display so the UI always shows the
+        # freshest tick, exactly like TradeDashBoard's market_state.set_nifty(ltp=ltp).
+        self._live_ltp: Optional[float] = None
 
         # Multi-timeframe indicators only change when their bar actually closes — recomputing a
         # full resample of up to `window_size` candles on every single 1-min tick is both wasteful
@@ -68,6 +72,11 @@ class DataManager:
         ts = tick.get("timestamp") or datetime.now()
         price = float(tick["ltp"])
         volume = int(tick.get("volume", 0))
+
+        # Store raw tick LTP immediately — before any candle logic — so get_state()
+        # always returns the freshest price even if candle construction is delayed.
+        self._live_ltp = price
+
         minute_bucket = ts.replace(second=0, microsecond=0)
         tick_delta = self._tick_rule_delta(price, volume)
 
@@ -581,7 +590,10 @@ class DataManager:
 
     def get_state(self) -> dict:
         current = self.get_current_candle()
-        price = current.close if current else None
+        # Prefer the raw live WebSocket tick LTP (updated every tick) over the candle close
+        # (which only updates once per minute and freezes if ticks stop). This is the same
+        # pattern as TradeDashBoard's market_state.set_nifty(ltp=ltp).
+        price = self._live_ltp if self._live_ltp is not None else (current.close if current else None)
         key = f"{self.underlying.lower()}_price"
         return {
             "nifty_price": price,  # back-compat
