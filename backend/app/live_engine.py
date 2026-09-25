@@ -59,18 +59,20 @@ class WebLiveEngine(LiveTrader):
     def _publish_state(self) -> None:
         state = self.data_manager.get_state()
         current_prices = {}
+        stale_threshold = time.time() - 15.0
+
         if self.data_engine_enabled and hasattr(self, "quote_store"):
             # QuoteStore is the sole authority for live prices
             for cid, snap in self.quote_store.get_all_snapshots().items():
-                if snap.ltp > 0:
+                if snap.ltp > 0 and snap.receive_epoch_timestamp >= stale_threshold:
                     current_prices[cid] = snap.ltp
             for sym, snap in self.quote_store.get_all_snapshots_by_symbol().items():
-                if snap.ltp > 0:
+                if snap.ltp > 0 and snap.receive_epoch_timestamp >= stale_threshold:
                     current_prices[sym] = snap.ltp
             if hasattr(self, "instrument_registry"):
                 for inst in self.instrument_registry.get_all_instruments():
                     snap = self.quote_store.get_snapshot(inst.canonical_id)
-                    if snap and snap.ltp > 0:
+                    if snap and snap.ltp > 0 and snap.receive_epoch_timestamp >= stale_threshold:
                         current_prices[inst.clean_alias] = snap.ltp
 
         for data_manager in self.data_managers.values():
@@ -648,17 +650,19 @@ class WebLiveEngine(LiveTrader):
 
             # Force square-off any lingering open positions when market closes (15:30 PM IST)
             current_prices = {}
+            stale_threshold = time.time() - 15.0
+            
             if self.data_engine_enabled and hasattr(self, "quote_store"):
                 for cid, snap in self.quote_store.get_all_snapshots().items():
-                    if snap.ltp > 0:
+                    if snap.ltp > 0 and snap.receive_epoch_timestamp >= stale_threshold:
                         current_prices[cid] = snap.ltp
                 for sym, snap in self.quote_store.get_all_snapshots_by_symbol().items():
-                    if snap.ltp > 0:
+                    if snap.ltp > 0 and snap.receive_epoch_timestamp >= stale_threshold:
                         current_prices[sym] = snap.ltp
                 if hasattr(self, "instrument_registry"):
                     for inst in self.instrument_registry.get_all_instruments():
                         snap = self.quote_store.get_snapshot(inst.canonical_id)
-                        if snap and snap.ltp > 0:
+                        if snap and snap.ltp > 0 and snap.receive_epoch_timestamp >= stale_threshold:
                             current_prices[inst.clean_alias] = snap.ltp
 
             for data_manager in self.data_managers.values():
@@ -906,12 +910,18 @@ class WebLiveEngine(LiveTrader):
 
     def check_exits(self) -> None:
         combined_quotes = {}
+        stale_threshold = time.time() - 15.0
+
         if self.data_engine_enabled:
-            combined_quotes.update(self.quote_store.get_all_snapshots())
-            combined_quotes.update(self.quote_store.get_all_snapshots_by_symbol())
+            for cid, snap in self.quote_store.get_all_snapshots().items():
+                if snap.ltp > 0 and snap.receive_epoch_timestamp >= stale_threshold:
+                    combined_quotes[cid] = snap
+            for sym, snap in self.quote_store.get_all_snapshots_by_symbol().items():
+                if snap.ltp > 0 and snap.receive_epoch_timestamp >= stale_threshold:
+                    combined_quotes[sym] = snap
             for inst in self.instrument_registry.get_all_instruments():
                 snap = self.quote_store.get_snapshot(inst.canonical_id)
-                if snap:
+                if snap and snap.ltp > 0 and snap.receive_epoch_timestamp >= stale_threshold:
                     combined_quotes[inst.clean_alias] = snap
 
         for data_manager in self.data_managers.values():

@@ -322,8 +322,18 @@ def to_fyers_symbol(symbol: str, expiry: date = None, is_monthly: bool = None) -
 
     # Under SEBI regulations, any contract expiring on the last expiry of the month is the
     # monthly contract: format is {YY}{MMM}{STRIKE}{TYPE} (e.g. BSE:SENSEX26SEP74500CE, NSE:BANKNIFTY26SEP56200CE)
-    is_last_expiry_of_month = (expiry + timedelta(days=7)).month != expiry.month
-    if is_monthly or underlying == "BANKNIFTY" or is_last_expiry_of_month:
+    # However, indexes can have different weekdays for weekly vs monthly (e.g. NIFTY weekly=Tue, monthly=Thu).
+    is_last_week_of_month = (expiry + timedelta(days=7)).month != expiry.month
+    is_monthly_contract = is_monthly or underlying == "BANKNIFTY"
+    
+    if not is_monthly_contract and is_last_week_of_month:
+        # NIFTY monthly is Thursday (3), SENSEX is Friday (4)
+        monthly_wd = {"NIFTY": 3, "SENSEX": 4}.get(underlying, _expiry_weekday(expiry, underlying))
+        weekly_wd = _expiry_weekday(expiry, underlying)
+        if expiry.weekday() == monthly_wd or expiry.weekday() != weekly_wd:
+            is_monthly_contract = True
+
+    if is_monthly_contract:
         mmm = expiry.strftime("%b").upper()
         return f"{exchange}:{underlying}{yy}{mmm}{int(strike)}{option_type}"
 
