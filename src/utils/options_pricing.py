@@ -327,11 +327,8 @@ def to_fyers_symbol(symbol: str, expiry: date = None, is_monthly: bool = None) -
     is_monthly_contract = is_monthly or underlying == "BANKNIFTY"
     
     if not is_monthly_contract and is_last_week_of_month:
-        # NIFTY monthly is Thursday (3), SENSEX is Friday (4)
-        monthly_wd = {"NIFTY": 3, "SENSEX": 4}.get(underlying, _expiry_weekday(expiry, underlying))
-        weekly_wd = _expiry_weekday(expiry, underlying)
-        if expiry.weekday() == monthly_wd or expiry.weekday() != weekly_wd:
-            is_monthly_contract = True
+        # Both NIFTY and SENSEX use the same weekday for weekly and monthly expiries in their respective regimes.
+        is_monthly_contract = True
 
     if is_monthly_contract:
         mmm = expiry.strftime("%b").upper()
