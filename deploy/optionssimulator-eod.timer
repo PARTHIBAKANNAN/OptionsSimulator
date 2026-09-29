@@ -1,0 +1,11 @@
+[Unit]
+Description=Timer for OptionsSimulator End of Day Shutdown at 15:35 IST (Mon-Fri)
+
+[Timer]
+# 15:35 IST is 10:05 UTC
+OnCalendar=Mon..Fri *-*-* 10:05:00 UTC
+Unit=optionssimulator-eod.service
+Persistent=true
+
+[Install]
+WantedBy=timers.target

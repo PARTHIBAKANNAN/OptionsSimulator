@@ -55,8 +55,12 @@ class FyersAPIClient:
         self.logger = logger
 
         self.ws = None
+        self.ws_spot = None
+        self.ws_trades = None
         self._tick_callback = None
         self._subscribed_symbols: set[str] = set()
+        self._spot_symbols: set[str] = {"NSE:NIFTY50-INDEX", "NSE:NIFTYBANK-INDEX", "BSE:SENSEX-INDEX"}
+        self._trade_symbols: set[str] = set()
 
         cached = self._load_cached_token()
         if cached:
@@ -199,39 +203,36 @@ class FyersAPIClient:
 
     # ---- WebSocket -----------------------------------------------------------
 
-    def start_websocket(self, on_tick_callback) -> None:
-        if not self.access_token:
-            raise FyersAuthError("Call authenticate_with_totp() before start_websocket()")
-        self._tick_callback = on_tick_callback
-
+    def _create_socket_instance(self, channel_name: str, symbols_set: set):
         def on_message(message):
-            self._tick_callback(message)
+            if self._tick_callback:
+                self._tick_callback(message)
 
         def on_error(message):
             if self.logger:
-                self.logger.log_error(f"websocket error: {message}")
+                self.logger.log_error(f"websocket [{channel_name}] error: {message}")
 
         def on_close(message):
             if self.logger:
-                self.logger.log_websocket_event("websocket_closed", {"message": str(message)})
+                self.logger.log_websocket_event(f"websocket_{channel_name}_closed", {"message": str(message)})
 
         def on_open():
             if self.logger:
-                self.logger.log_websocket_event("websocket_opened", {})
-            if self._subscribed_symbols:
+                self.logger.log_websocket_event(f"websocket_{channel_name}_opened", {})
+            if symbols_set:
                 try:
                     time.sleep(0.5)
-                    self.ws.subscribe(symbols=list(self._subscribed_symbols), data_type="SymbolUpdate")
+                    sock.subscribe(symbols=list(symbols_set), data_type="SymbolUpdate")
                     if self.logger:
                         self.logger.log_websocket_event(
-                            "websocket_auto_resubscribed",
-                            {"count": len(self._subscribed_symbols)},
+                            f"websocket_{channel_name}_auto_resubscribed",
+                            {"count": len(symbols_set)},
                         )
                 except Exception as e:
                     if self.logger:
-                        self.logger.log_error(f"Auto-resubscribe failed on websocket open: {e}")
+                        self.logger.log_error(f"Auto-resubscribe failed on [{channel_name}] open: {e}")
 
-        self.ws = data_ws.FyersDataSocket(
+        sock = data_ws.FyersDataSocket(
             access_token=f"{self.client_id}:{self.access_token}",
             log_path=str(SDK_LOG_DIR),
             litemode=False,
@@ -242,7 +243,32 @@ class FyersAPIClient:
             on_error=on_error,
             on_message=on_message,
         )
+        return sock
+
+    def start_websocket(self, on_tick_callback) -> None:
+        if not self.access_token:
+            raise FyersAuthError("Call authenticate_with_totp() before start_websocket()")
+        self._tick_callback = on_tick_callback
+
+        # 1. Primary / Discovery socket (Socket 3)
+        self.ws = self._create_socket_instance("discovery", self._subscribed_symbols)
         self.ws.connect()
+
+        # 2. Dedicated Spot Index socket (Socket 1: NIFTY, BANKNIFTY, SENSEX)
+        try:
+            self.ws_spot = self._create_socket_instance("spot", self._spot_symbols)
+            self.ws_spot.connect()
+        except Exception as e:
+            if self.logger:
+                self.logger.log_error(f"Failed to start dedicated spot websocket: {e}")
+
+        # 3. Dedicated Active Trades socket (Socket 2: open positions across strategies)
+        try:
+            self.ws_trades = self._create_socket_instance("trades", self._trade_symbols)
+            self.ws_trades.connect()
+        except Exception as e:
+            if self.logger:
+                self.logger.log_error(f"Failed to start dedicated trades websocket: {e}")
 
     def subscribe_symbols(self, symbols: list) -> None:
         if not self.ws:
@@ -251,19 +277,45 @@ class FyersAPIClient:
             self._subscribed_symbols.update(symbols)
             self.ws.subscribe(symbols=list(symbols), data_type="SymbolUpdate")
 
+    def subscribe_trades_symbols(self, symbols: list) -> None:
+        """Subscribes open trade contracts to the dedicated high-priority Socket 2."""
+        if symbols:
+            self._trade_symbols.update(symbols)
+            if self.ws_trades:
+                try:
+                    self.ws_trades.subscribe(symbols=list(symbols), data_type="SymbolUpdate")
+                except Exception as e:
+                    if self.logger:
+                        self.logger.log_error(f"subscribe_trades_symbols failed: {e}")
+            elif self.ws:
+                self.subscribe_symbols(symbols)
+
+    def unsubscribe_trades_symbols(self, symbols: list) -> None:
+        """Unsubscribes closed trade contracts from the dedicated Socket 2."""
+        if symbols:
+            self._trade_symbols.difference_update(symbols)
+            if self.ws_trades:
+                try:
+                    self.ws_trades.unsubscribe(symbols=list(symbols), data_type="SymbolUpdate")
+                except Exception as e:
+                    if self.logger:
+                        self.logger.log_error(f"unsubscribe_trades_symbols failed: {e}")
+
     def stop_websocket(self) -> None:
-        """Closes the WebSocket connection but PRESERVES the subscription list so that
+        """Closes the WebSocket connections but PRESERVES the subscription lists so that
         on_open's auto-resubscribe fires correctly when Fyers SDK reconnects or when
         the watchdog restarts the socket mid-session."""
-        if self.ws:
-            try:
-                self.ws.close_connection()
-            except Exception:
-                pass  # SDK thread cleanup can deadlock; don't block the caller
+        for sock in (self.ws, self.ws_spot, self.ws_trades):
+            if sock:
+                try:
+                    sock.close_connection()
+                except Exception:
+                    pass
 
     def stop_websocket_final(self) -> None:
-        """Full shutdown: clears subscriptions and closes. Use only at app exit."""
+        """Full shutdown: clears subscriptions and closes all sockets. Use only at app exit."""
         self._subscribed_symbols.clear()
+        self._trade_symbols.clear()
         self.stop_websocket()
 
     # ---- REST ------------------------------------------------------------

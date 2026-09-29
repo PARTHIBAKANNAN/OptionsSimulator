@@ -30,6 +30,7 @@ from src.strategies.engine import (
     create_nifty_strategies,
     create_sensex_strategies,
 )
+from src.utils.holidays import is_trading_holiday
 from src.utils.logger import get_logger
 
 logger = logging.getLogger(__name__)
@@ -58,7 +59,9 @@ def is_market_open(now: datetime, risk_params: dict = None) -> bool:
     hours = risk_params.get("market_hours", {})
     start = dtime.fromisoformat(hours.get("start", "09:15"))
     end = dtime.fromisoformat(hours.get("end", "15:30"))
-    return start <= now.time() <= end and now.weekday() < 5
+    if now.weekday() >= 5 or is_trading_holiday(now.date()):
+        return False
+    return start <= now.time() <= end
 
 
 class LiveTrader:
@@ -159,6 +162,7 @@ class LiveTrader:
         self.state_manager = StateManager()
         self.is_running = False
         self._monitored_symbols: Set[str] = set()
+        self._active_trade_symbols: Dict[str, int] = {}
         self.recent_signals: list = []
         self._connected = False
         self._last_login_date = None
@@ -298,6 +302,7 @@ class LiveTrader:
         if index is not None:
             self.data_managers[index].on_nifty_tick(tick)
             self._check_readiness_transition()
+            self._on_spot_tick(index, tick)
             return
 
         # Route option contract ticks via InstrumentRegistry
@@ -359,6 +364,15 @@ class LiveTrader:
         # Instant sub-second exit check on incoming tick
         if self.paper_trader.get_positions():
             self.check_exits()
+            self._on_option_tick(inst, tick)
+
+    def _on_spot_tick(self, index: str, tick: dict) -> None:
+        """Hook for subclasses to handle real-time spot ticks instantly."""
+        pass
+
+    def _on_option_tick(self, inst: Instrument, tick: dict) -> None:
+        """Hook for subclasses to handle real-time option ticks instantly."""
+        pass
 
     def _check_readiness_transition(self) -> None:
         """Transitions readiness gates based on live feed telemetry."""
@@ -551,7 +565,7 @@ class LiveTrader:
                 except Exception:
                     self.logger.log_error(f"Unhandled exception in live loop:\n{traceback.format_exc()}")
 
-                await asyncio.sleep(1)
+                await asyncio.sleep(0.25)
         finally:
             await self.stop()
 
@@ -809,9 +823,40 @@ class LiveTrader:
             self.logger.log_error(f"Signal rejected by risk limits: {e}", {"strategy": signal.strategy})
             return
 
+        # Reconcile Socket 2 subscriptions with reference counting across all strategies
+        self._reconcile_active_trade_symbols()
         self.state_manager.save_positions(self.paper_trader.get_positions())
         if self.telegram:
             await self.telegram.send_trade_execution(order)
+
+    def _reconcile_active_trade_symbols(self) -> None:
+        """Maintains reference count of active trade symbols on Socket 2 across strategies."""
+        open_syms = [
+            getattr(o, "fyers_symbol", None) or getattr(o, "symbol", "")
+            for o in self.paper_trader.get_positions()
+        ]
+        active_counts: Dict[str, int] = {}
+        for s in open_syms:
+            if s:
+                active_counts[s] = active_counts.get(s, 0) + 1
+
+        # Check for symbols that need subscribing on Socket 2
+        for s, count in active_counts.items():
+            if s not in self._active_trade_symbols:
+                self._active_trade_symbols[s] = count
+                if hasattr(self.fyers, "subscribe_trades_symbols"):
+                    self.fyers.subscribe_trades_symbols([s])
+                    logger.info("Subscribed %s to Socket 2 (active across %d position(s))", s, count)
+            else:
+                self._active_trade_symbols[s] = count
+
+        # Check for symbols whose positions are ALL closed
+        to_unsubscribe = [s for s in self._active_trade_symbols if s not in active_counts]
+        for s in to_unsubscribe:
+            del self._active_trade_symbols[s]
+            if hasattr(self.fyers, "unsubscribe_trades_symbols"):
+                self.fyers.unsubscribe_trades_symbols([s])
+                logger.info("Unsubscribed %s from Socket 2 (all positions closed across all strategies)", s)
 
     def check_exits(self) -> None:
         """
@@ -829,18 +874,28 @@ class LiveTrader:
             if snap:
                 combined_quotes[inst.clean_alias] = snap
 
-        # Fallback / merge DataManager quotes
+        # Fallback / merge DataManager quotes ONLY if not already present from QuoteStore
+        active_syms = set()
+        for o in self.paper_trader.get_positions():
+            if getattr(o, "canonical_id", None):
+                active_syms.add(o.canonical_id)
+            if getattr(o, "fyers_symbol", None):
+                active_syms.add(o.fyers_symbol)
+            if getattr(o, "symbol", None):
+                active_syms.add(o.symbol)
+
         for data_manager in self.data_managers.values():
             for sym, q in data_manager.get_option_chain().items():
-                if q.ltp > 0 and getattr(q, "source", "rest") != "ws":
+                if q.ltp > 0 and sym not in active_syms and sym not in combined_quotes:
                     combined_quotes[sym] = q.ltp
                     inst = self.instrument_registry.resolve_by_clean_alias(sym) or self.instrument_registry.resolve_by_symbol(sym)
                     if inst:
-                        combined_quotes[inst.canonical_id] = q.ltp
-                        combined_quotes[inst.clean_alias] = q.ltp
-                        combined_quotes[inst.fyers_symbol] = q.ltp
-                elif sym not in combined_quotes:
-                    combined_quotes[sym] = q.ltp
+                        if inst.canonical_id not in combined_quotes and inst.canonical_id not in active_syms:
+                            combined_quotes[inst.canonical_id] = q.ltp
+                        if inst.clean_alias not in combined_quotes and inst.clean_alias not in active_syms:
+                            combined_quotes[inst.clean_alias] = q.ltp
+                        if inst.fyers_symbol not in combined_quotes and inst.fyers_symbol not in active_syms:
+                            combined_quotes[inst.fyers_symbol] = q.ltp
 
         closed = self.paper_trader.update_positions(
             combined_quotes,
@@ -856,6 +911,7 @@ class LiveTrader:
                     pnl = order.net_pnl if hasattr(order, "net_pnl") and order.net_pnl is not None else order.realized_pnl
                     self._schedule_async(self.telegram.send_position_exit(order, pnl or 0.0, order.exit_reason or "EXIT"))
 
+            self._reconcile_active_trade_symbols()
             self.state_manager.save_positions(self.paper_trader.get_positions())
 
     def _get_telegram_stats(self, scope: str) -> dict:

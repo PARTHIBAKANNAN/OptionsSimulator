@@ -22,6 +22,7 @@ class Broadcaster:
         self._prev_snapshot: dict = {}
         self._seq = 0
         self._task: asyncio.Task | None = None
+        self._loop: asyncio.AbstractEventLoop | None = None
 
     def subscribe(self) -> asyncio.Queue:
         queue: asyncio.Queue = asyncio.Queue(maxsize=self._max_queue)
@@ -37,12 +38,25 @@ class Broadcaster:
         return json.dumps({"type": "snapshot", "seq": self._seq, "data": self._prev_snapshot})
 
     async def start(self) -> None:
+        self._loop = asyncio.get_running_loop()
         self._prev_snapshot = copy.deepcopy(self._snapshot_provider())
         self._task = asyncio.create_task(self._run())
 
     async def stop(self) -> None:
         if self._task:
             self._task.cancel()
+
+    def fanout_patch(self, patch: dict) -> None:
+        """Immediate event-driven delta frame fanout (<0.5ms). Thread-safe."""
+        if not self._subscribers or not patch:
+            return
+        self._seq += 1
+        self._prev_snapshot.update(patch)
+        frame = json.dumps({"type": "delta", "seq": self._seq, "data": patch})
+        if self._loop and self._loop.is_running():
+            self._loop.call_soon_threadsafe(self._fanout, frame)
+        else:
+            self._fanout(frame)
 
     async def _run(self) -> None:
         loop = asyncio.get_event_loop()
@@ -57,12 +71,11 @@ class Broadcaster:
                 self._seq += 1
                 self._fanout(json.dumps({"type": "delta", "seq": self._seq, "data": changed}))
                 last_change_time = now
+                self._prev_snapshot.update(changed)
             elif now - last_change_time >= HEARTBEAT_SECS:
                 self._seq += 1
                 self._fanout(json.dumps({"type": "heartbeat", "seq": self._seq}))
                 last_change_time = now
-
-            self._prev_snapshot = copy.deepcopy(curr)
 
     def _fanout(self, frame: str) -> None:
         for queue in list(self._subscribers):

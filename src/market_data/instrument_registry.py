@@ -78,6 +78,15 @@ class InstrumentRegistry:
                 exp_ts = first_exp.get("expiry")
                 if exp_ts and isinstance(exp_ts, (int, float)) and exp_ts > 0:
                     fallback_expiry_date = datetime.fromtimestamp(exp_ts, tz=IST).date()
+            elif isinstance(first_exp, (int, float)) and first_exp > 0:
+                fallback_expiry_date = datetime.fromtimestamp(first_exp, tz=IST).date()
+
+        if fallback_expiry_date is None:
+            try:
+                from src.utils.options_pricing import next_weekly_expiry_date
+                fallback_expiry_date = next_weekly_expiry_date(datetime.now(IST), index=underlying.upper())
+            except Exception:
+                pass
 
         registered: List[Instrument] = []
 
