@@ -5,6 +5,7 @@
 # same as TradeDashBoard, they're a manual one-time step via the Supabase SQL editor
 # (see backend/migrations/001_options_positions.sql).
 set -euo pipefail
+export TZ="Asia/Kolkata"
 
 APP_DIR="/home/ubuntu/optionssimulator-app"
 SERVICE="optionssimulator-backend"
