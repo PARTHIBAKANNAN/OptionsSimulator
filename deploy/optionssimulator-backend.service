@@ -1,6 +1,7 @@
 # Copy to /etc/systemd/system/optionssimulator-backend.service on the VM, then:
 #   sudo systemctl daemon-reload
 #   sudo systemctl enable optionssimulator-backend
+# (don't `--now` it until the app directory/venv/.env are actually in place)
 [Unit]
 Description=OptionsSimulator FastAPI backend
 After=network.target network-online.target
@@ -11,10 +12,8 @@ Type=simple
 User=ubuntu
 Group=ubuntu
 WorkingDirectory=/home/ubuntu/optionssimulator-app
-Environment="TZ=Asia/Kolkata"
-ExecCondition=/home/ubuntu/optionssimulator-app/venv/bin/python scripts/check_market_holiday.py
 ExecStart=/home/ubuntu/optionssimulator-app/venv/bin/python -u backend/run.py
-Restart=on-failure
+Restart=always
 RestartSec=5
 StandardOutput=journal
 StandardError=journal

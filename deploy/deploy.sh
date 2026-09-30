@@ -5,7 +5,6 @@
 # same as TradeDashBoard, they're a manual one-time step via the Supabase SQL editor
 # (see backend/migrations/001_options_positions.sql).
 set -euo pipefail
-export TZ="Asia/Kolkata"
 
 APP_DIR="/home/ubuntu/optionssimulator-app"
 SERVICE="optionssimulator-backend"
@@ -52,16 +51,6 @@ pip install -q -r backend/requirements.txt
 
 log "building frontend"
 (cd frontend && npm ci && npm run build)
-
-log "updating systemd units and timers"
-sudo cp deploy/optionssimulator-backend.service /etc/systemd/system/
-sudo cp deploy/optionssimulator-morning.timer /etc/systemd/system/
-sudo cp deploy/optionssimulator-eod.service /etc/systemd/system/
-sudo cp deploy/optionssimulator-eod.timer /etc/systemd/system/
-sudo systemctl daemon-reload
-sudo systemctl enable optionssimulator-backend
-sudo systemctl enable --now optionssimulator-morning.timer
-sudo systemctl enable --now optionssimulator-eod.timer
 
 log "restarting $SERVICE"
 sudo systemctl restart "$SERVICE"

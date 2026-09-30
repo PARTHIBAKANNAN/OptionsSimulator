@@ -55,93 +55,6 @@ class WebLiveEngine(LiveTrader):
             except Exception:
                 pass
 
-    # ---- Event-driven instant tick publishing (bypasses main loop sleep) ------------
-
-    def _on_spot_tick(self, index: str, tick: dict) -> None:
-        """Immediate event-driven spot price push to shared_state (<2ms).
-        Bypasses the main loop sleep completely."""
-        try:
-            now = datetime.now(IST)
-            today = now.date()
-            dm = self.data_managers.get(index)
-            if not dm:
-                return
-            spot = dm.live_ltp or tick.get("ltp")
-            if spot is None or spot <= 0:
-                return
-            prev_close = dm.get_prev_close(today)
-            change = (spot - prev_close) if (prev_close and prev_close > 0) else None
-            change_pct = (change / prev_close * 100) if (change is not None and prev_close) else None
-
-            patch_dict = {}
-            if index == "NIFTY":
-                patch_dict = {
-                    "nifty_price": spot,
-                    "nifty_prev_close": prev_close,
-                    "nifty_change": round(change, 2) if change is not None else None,
-                    "nifty_change_pct": round(change_pct, 2) if change_pct is not None else None,
-                }
-            elif index == "SENSEX":
-                patch_dict = {
-                    "sensex_price": spot,
-                    "sensex_prev_close": prev_close,
-                    "sensex_change": round(change, 2) if change is not None else None,
-                    "sensex_change_pct": round(change_pct, 2) if change_pct is not None else None,
-                }
-            elif index == "BANKNIFTY":
-                patch_dict = {
-                    "banknifty_price": spot,
-                    "banknifty_prev_close": prev_close,
-                    "banknifty_change": round(change, 2) if change is not None else None,
-                    "banknifty_change_pct": round(change_pct, 2) if change_pct is not None else None,
-                }
-
-            if patch_dict:
-                patch_dict["timestamp"] = now.isoformat()
-                shared_state.patch(patch_dict)
-        except Exception:
-            pass
-
-    def _on_option_tick(self, inst, tick: dict) -> None:
-        """Immediate update of open position prices and P&L upon live tick arrival."""
-        try:
-            if not hasattr(self, "paper_trader"):
-                return
-            open_positions = self.paper_trader.get_positions()
-            if not open_positions:
-                return
-
-            # Check if inst is in any open position
-            sym_matches = [
-                o for o in open_positions
-                if getattr(o, "canonical_id", "") == inst.canonical_id or getattr(o, "fyers_symbol", "") == inst.fyers_symbol
-            ]
-            if not sym_matches:
-                return
-
-            ltp = tick.get("ltp")
-            if ltp is None or ltp <= 0:
-                return
-
-            # Build fast current_prices lookup for all open positions
-            current_prices = {inst.canonical_id: ltp, inst.fyers_symbol: ltp, inst.clean_alias: ltp}
-            for o in open_positions:
-                if o.canonical_id not in current_prices:
-                    snap = self.quote_store.get_snapshot(o.canonical_id)
-                    if snap and snap.ltp > 0:
-                        current_prices[o.canonical_id] = snap.ltp
-                        current_prices[o.fyers_symbol] = snap.ltp
-
-            pnl = self.paper_trader.get_pnl(current_prices)
-            positions_data = [self._order_dict(o, current_prices) for o in open_positions]
-            shared_state.patch({
-                "positions": positions_data,
-                "pnl": pnl,
-                "strategy_status": self._strategy_status_list(current_prices),
-            })
-        except Exception:
-            pass
-
     # ---- State publishing (feeds the Broadcaster) ----------------------------------
 
     def _publish_state(self) -> None:
@@ -149,37 +62,23 @@ class WebLiveEngine(LiveTrader):
         current_prices = {}
         stale_threshold = time.time() - 15.0
 
-        # Build set of all symbol variants for currently open positions
-        active_syms = set()
-        if hasattr(self, "paper_trader"):
-            for o in self.paper_trader.get_positions():
-                if getattr(o, "canonical_id", None):
-                    active_syms.add(o.canonical_id)
-                if getattr(o, "fyers_symbol", None):
-                    active_syms.add(o.fyers_symbol)
-                if getattr(o, "symbol", None):
-                    active_syms.add(o.symbol)
-
         if self.data_engine_enabled and hasattr(self, "quote_store"):
             # QuoteStore is the sole authority for live prices
-            # NEVER evict open positions even if their last tick was >15s ago
             for cid, snap in self.quote_store.get_all_snapshots().items():
-                if snap.ltp > 0 and (cid in active_syms or snap.receive_epoch_timestamp >= stale_threshold):
+                if snap.ltp > 0 and snap.receive_epoch_timestamp >= stale_threshold:
                     current_prices[cid] = snap.ltp
             for sym, snap in self.quote_store.get_all_snapshots_by_symbol().items():
-                if snap.ltp > 0 and (sym in active_syms or snap.receive_epoch_timestamp >= stale_threshold):
+                if snap.ltp > 0 and snap.receive_epoch_timestamp >= stale_threshold:
                     current_prices[sym] = snap.ltp
             if hasattr(self, "instrument_registry"):
                 for inst in self.instrument_registry.get_all_instruments():
                     snap = self.quote_store.get_snapshot(inst.canonical_id)
-                    is_active = (inst.clean_alias in active_syms or inst.canonical_id in active_syms or inst.fyers_symbol in active_syms)
-                    if snap and snap.ltp > 0 and (is_active or snap.receive_epoch_timestamp >= stale_threshold):
+                    if snap and snap.ltp > 0 and snap.receive_epoch_timestamp >= stale_threshold:
                         current_prices[inst.clean_alias] = snap.ltp
 
         for data_manager in self.data_managers.values():
             for sym, q in data_manager.get_option_chain().items():
-                # Never allow delayed REST snapshots to overwrite or supply prices for active open positions
-                if q.ltp > 0 and sym not in current_prices and sym not in active_syms:
+                if q.ltp > 0 and sym not in current_prices:
                     current_prices[sym] = q.ltp
         pnl = self.paper_trader.get_pnl(current_prices)
 

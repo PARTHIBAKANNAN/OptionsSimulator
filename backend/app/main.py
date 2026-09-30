@@ -4,7 +4,6 @@ innermost layer), Supabase-JWT login bridge, WebSocket streaming, and the paper-
 routers. Lifespan starts the DB pool, the live engine (or replay fallback), and the broadcaster.
 """
 import asyncio
-import os
 
 from fastapi import Depends, FastAPI, HTTPException, Request, WebSocket, WebSocketDisconnect
 from contextlib import asynccontextmanager
@@ -46,7 +45,6 @@ async def lifespan(app: FastAPI):
     broadcaster = Broadcaster(shared_state.get, interval=config.stream_interval)
     app.state.live_engine = engine
     app.state.broadcaster = broadcaster
-    shared_state.set_listener(broadcaster.fanout_patch)
 
     engine_task = asyncio.create_task(engine.start())
     await broadcaster.start()
@@ -89,22 +87,6 @@ async def health(request: Request):
         "is_running": engine.is_running,
         "db_available": request.app.state.db_available,
     }
-
-
-@app.post("/api/admin/shutdown")
-async def admin_shutdown(request: Request):
-    """Graceful evening shutdown: flushes state, closes WebSocket cleanly, and stops engine."""
-    engine: WebLiveEngine = request.app.state.live_engine
-    logger.info("Admin shutdown requested via /api/admin/shutdown")
-    try:
-        await engine.stop()
-        loop = asyncio.get_running_loop()
-        # Allow response to be sent before terminating process
-        loop.call_later(0.5, lambda: os._exit(0))
-        return {"status": "ok", "message": "Graceful shutdown initiated"}
-    except Exception as e:
-        logger.error(f"Error during graceful shutdown: {e}")
-        return {"status": "error", "message": str(e)}
 
 
 @app.get("/api/health/master")

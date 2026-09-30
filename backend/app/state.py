@@ -11,23 +11,10 @@ class SharedState:
     def __init__(self):
         self._lock = threading.RLock()
         self._snapshot: dict = {}
-        self._patch_listener = None
-
-    def set_listener(self, listener) -> None:
-        self._patch_listener = listener
 
     def update(self, snapshot: dict) -> None:
         with self._lock:
             self._snapshot = snapshot
-
-    def patch(self, delta: dict) -> None:
-        with self._lock:
-            self._snapshot.update(delta)
-        if self._patch_listener:
-            try:
-                self._patch_listener(delta)
-            except Exception:
-                pass
 
     def get(self) -> dict:
         with self._lock:

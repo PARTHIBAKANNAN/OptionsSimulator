@@ -37,15 +37,10 @@ cp frontend/.env.example frontend/.env
 # 4. Build the frontend once so it exists before the service starts
 cd frontend && npm ci && npm run build && cd ..
 
-# 5. systemd unit and automated lifecycle timers
+# 5. systemd unit (installed, NOT started until .env is filled in and Caddy is updated)
 sudo cp deploy/optionssimulator-backend.service /etc/systemd/system/
-sudo cp deploy/optionssimulator-morning.timer /etc/systemd/system/
-sudo cp deploy/optionssimulator-eod.service /etc/systemd/system/
-sudo cp deploy/optionssimulator-eod.timer /etc/systemd/system/
 sudo systemctl daemon-reload
 sudo systemctl enable optionssimulator-backend
-sudo systemctl enable --now optionssimulator-morning.timer
-sudo systemctl enable --now optionssimulator-eod.timer
 
 # 6. Caddy route — see Caddy-snippet.conf for the exact block and where it goes
 sudo nano /etc/caddy/Caddyfile
