@@ -428,15 +428,19 @@ class WebLiveEngine(LiveTrader):
             self.logger.log_error(f"DB batch write failed/timed out, continuing without it: {e}")
 
     async def _save_position_db(self, order) -> None:
+        # Persists canonical_id/fyers_symbol so a restart can re-link this position to the
+        # QuoteStore/windowed WS feed directly, instead of losing live pricing until the
+        # resolve-fallback in _restore_state() re-derives it from the clean alias.
         await self._db_execute(
             """INSERT INTO options_positions
                (order_id, symbol, side, qty, lot_size, entry_price, entry_time, status,
-                stop_loss, take_profit, strategy, entry_charges)
-               VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
+                stop_loss, take_profit, strategy, entry_charges, canonical_id, fyers_symbol)
+               VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
                ON CONFLICT (order_id) DO UPDATE SET status = EXCLUDED.status""",
             order.order_id, order.symbol, order.side, order.qty, order.lot_size,
             order.entry_price, order.entry_time, order.status, order.stop_loss,
             order.take_profit, order.strategy, order.entry_charges,
+            order.canonical_id, order.fyers_symbol,
         )
 
     async def _close_position_db(self, order) -> None:
@@ -491,7 +495,7 @@ class WebLiveEngine(LiveTrader):
             open_rows = await asyncio.wait_for(
                 pool.fetch(
                     """SELECT order_id, symbol, side, qty, lot_size, entry_price, entry_time,
-                              stop_loss, take_profit, strategy, entry_charges
+                              stop_loss, take_profit, strategy, entry_charges, canonical_id, fyers_symbol
                        FROM options_positions
                        WHERE status = 'OPEN' AND (entry_time AT TIME ZONE 'Asia/Kolkata')::date = $1""",
                     today),
@@ -504,15 +508,25 @@ class WebLiveEngine(LiveTrader):
                     status="OPEN", stop_loss=row["stop_loss"] and float(row["stop_loss"]),
                     take_profit=row["take_profit"] and float(row["take_profit"]), strategy=row["strategy"],
                     peak_price=entry_price, entry_charges=float(row["entry_charges"] or 0.0),
+                    canonical_id=row.get("canonical_id"), fyers_symbol=row.get("fyers_symbol"),
                 )
                 self.paper_trader.orders[order.order_id] = order
                 dm = self.data_managers.get(order.underlying, self.data_manager)
-                raw_sym = dm.get_fyers_symbol(order.symbol) or to_fyers_symbol(order.symbol)
+                raw_sym = order.fyers_symbol or dm.get_fyers_symbol(order.symbol) or to_fyers_symbol(order.symbol)
                 if raw_sym:
                     dm.register_symbol_alias(order.symbol, raw_sym)
                     quote = dm.option_chain.get(raw_sym)
                     if quote and quote.ltp == 0.0:
                         quote.ltp = entry_price
+                    # Legacy rows predating the canonical_id/fyers_symbol columns (NULL from the
+                    # DB): re-derive fyers_symbol from the clean alias so this position can still
+                    # be force-subscribed on the windowed WS feed (_desired_ws_symbols) and
+                    # resolved via QuoteStore.get_snapshot_by_symbol immediately. canonical_id is
+                    # intentionally left unset here — instrument_registry is still empty at this
+                    # point in startup (contract discovery runs later in ensure_connection_state);
+                    # fyers_symbol alone is sufficient for every pricing/subscription lookup.
+                    if not order.fyers_symbol:
+                        order.fyers_symbol = raw_sym
 
             # Reconstructs today's per-strategy trade count and realized P&L too -- without this,
             # max_trades_per_day_per_strategy and the daily-loss breaker both silently reset to
