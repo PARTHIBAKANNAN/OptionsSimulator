@@ -120,6 +120,22 @@ async def master_health(request: Request):
         else:
             indices_diag[idx_name] = {"error": "DataManager not initialized"}
 
+    positions_diag = []
+    if hasattr(engine, "quote_store"):
+        for o in engine.paper_trader.get_positions():
+            snap = engine.quote_store.get_snapshot(getattr(o, "canonical_id", None)) if getattr(o, "canonical_id", None) else None
+            if snap is None and getattr(o, "fyers_symbol", None):
+                snap = engine.quote_store.get_snapshot_by_symbol(o.fyers_symbol)
+            positions_diag.append({
+                "symbol": o.symbol,
+                "fyers_symbol": getattr(o, "fyers_symbol", None),
+                "strategy": o.strategy,
+                "entry_price": o.entry_price,
+                "ws_ltp": snap.ltp if snap else None,
+                "ws_source": snap.source if snap else None,
+                "ws_age_ms": round(snap.age_ms(), 1) if snap else None,
+            })
+
     strategy_counts = {idx: len(se.strategies) for idx, se in getattr(engine, "strategy_engines", {}).items()}
     total_strategies = sum(strategy_counts.values())
 
@@ -149,6 +165,7 @@ async def master_health(request: Request):
             "monitored_symbols": sorted(list(getattr(engine, "_monitored_symbols", set()))),
         },
         "indices": indices_diag,
+        "positions_diag": positions_diag,
         "strategies": {
             "total_active": total_strategies,
             "by_index": strategy_counts,
