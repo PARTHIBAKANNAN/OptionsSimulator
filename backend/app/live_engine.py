@@ -95,8 +95,11 @@ class WebLiveEngine(LiveTrader):
 
         for data_manager in self.data_managers.values():
             for sym, q in data_manager.get_option_chain().items():
-                # Never let a stale REST/frozen option-chain price override an open position's WS LTP.
-                if q.ltp > 0 and sym not in current_prices and sym not in active:
+                # Fill from the REST/option-chain only when we have NO quote for this symbol yet.
+                # Open positions already have their (staleness-bypassed) WS price in current_prices
+                # above, so this never OVERRIDES an open position's WS LTP with a frozen value — but
+                # it still provides a price for a position that has no WS snapshot at all.
+                if q.ltp > 0 and sym not in current_prices:
                     current_prices[sym] = q.ltp
         pnl = self.paper_trader.get_pnl(current_prices)
 
@@ -690,7 +693,9 @@ class WebLiveEngine(LiveTrader):
 
             for data_manager in self.data_managers.values():
                 for sym, q in data_manager.get_option_chain().items():
-                    if q.ltp > 0 and sym not in current_prices and sym not in active:
+                    # Fill only when absent — never override an open position's WS price (added,
+                    # staleness-bypassed, above), but still price a position that has no WS snapshot.
+                    if q.ltp > 0 and sym not in current_prices:
                         current_prices[sym] = q.ltp
 
             for order in self.paper_trader.get_positions():
@@ -958,18 +963,25 @@ class WebLiveEngine(LiveTrader):
 
         for data_manager in self.data_managers.values():
             for sym, q in data_manager.get_option_chain().items():
-                # Never override an open position's live WS quote with a non-ws REST/frozen price.
-                if sym in active:
+                if q.ltp <= 0:
                     continue
                 inst = self.instrument_registry.resolve_by_clean_alias(sym) or self.instrument_registry.resolve_by_symbol(sym)
-                if inst and (inst.canonical_id in active or inst.clean_alias in active or inst.fyers_symbol in active):
+                keys = {sym}
+                if inst:
+                    keys |= {inst.canonical_id, inst.clean_alias, inst.fyers_symbol}
+                if keys & active:
+                    # Open position: never OVERRIDE a GENUINE live WS quote with a REST/frozen
+                    # price. But a seed/rest placeholder (or no quote at all) may be replaced by the
+                    # fresher option-chain price — otherwise the entry seed would mask a real move.
+                    existing = next((combined_quotes[k] for k in keys if k in combined_quotes), None)
+                    existing_is_ws = existing is not None and getattr(existing, "source", "rest") == "ws"
+                    if not existing_is_ws:
+                        for k in keys:
+                            combined_quotes[k] = q.ltp
                     continue
-                if q.ltp > 0 and getattr(q, "source", "rest") != "ws":
-                    combined_quotes[sym] = q.ltp
-                    if inst:
-                        combined_quotes[inst.canonical_id] = q.ltp
-                        combined_quotes[inst.clean_alias] = q.ltp
-                        combined_quotes[inst.fyers_symbol] = q.ltp
+                if getattr(q, "source", "rest") != "ws":
+                    for k in keys:
+                        combined_quotes[k] = q.ltp
                 elif sym not in combined_quotes:
                     combined_quotes[sym] = q.ltp
 

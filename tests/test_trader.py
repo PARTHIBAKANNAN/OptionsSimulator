@@ -242,12 +242,16 @@ async def test_poll_option_chain_updates_chain_and_windows_feed():
     trader = _make_trader_with_mock_fyers()
     trader._connected = True
     trader.data_managers["NIFTY"]._live_ltp = 24600.0  # ATM = 24600, so the strike is in-window
-    trader.fyers.get_option_chain.return_value = {
-        "optionsChain": [
-            {"symbol": sym, "strike_price": 24600, "option_type": "CE", "ltp": 172.1, "expiry": exp},
-        ],
-        "expiryData": [{"expiry": exp}],
-    }
+
+    # Each index returns its OWN chain (the mock must not hand the NIFTY chain to SENSEX/BANKNIFTY,
+    # or the registry would re-register the NIFTY symbol under the last underlying processed).
+    def _chain_for(index_symbol, strike_count=25):
+        if index_symbol == "NSE:NIFTY50-INDEX":
+            return {"optionsChain": [
+                {"symbol": sym, "strike_price": 24600, "option_type": "CE", "ltp": 172.1, "expiry": exp},
+            ], "expiryData": [{"expiry": exp}]}
+        return {"optionsChain": [], "expiryData": [{"expiry": exp}]}
+    trader.fyers.get_option_chain.side_effect = _chain_for
 
     await trader.poll_option_chain()
 

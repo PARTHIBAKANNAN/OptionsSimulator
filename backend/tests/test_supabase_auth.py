@@ -7,7 +7,11 @@ from backend.app import supabase_auth
 
 
 def test_verify_token_raises_when_not_configured():
+    # Reset ALL module globals — a prior test's configure() leaves _jwt_secret/_supabase_url set,
+    # which would make is_configured() True and this stop raising (order-dependent flake).
     supabase_auth._jwk_client = None
+    supabase_auth._jwt_secret = None
+    supabase_auth._supabase_url = None
     with pytest.raises(RuntimeError):
         supabase_auth.verify_token("some-token")
 
