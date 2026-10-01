@@ -242,3 +242,24 @@ def test_active_expiry_advances_across_rollover():
     registry.register_from_fyers_chain("NIFTY", "NSE", chain_w2, lot_size=65)
     # When registered with future date, active expiry advances
     assert registry.get_active_expiry("NIFTY") in (date(2026, 9, 24), date(2026, 10, 1))
+
+
+def test_register_accepts_string_epoch_expiry_from_expirydata():
+    """Fyers' real option-chain rows carry NO per-row expiry; the expiry lives in top-level
+    expiryData as a STRING epoch (e.g. "1793095800"). The old int/float-only check rejected every
+    contract (expiry=None), leaving the registry empty and silently breaking the windowed WS feed.
+    Registration must coerce the string epoch and use it as the fallback for rows lacking expiry."""
+    from datetime import date
+    registry = InstrumentRegistry()
+    chain = {
+        "expiryData": [{"date": "27-10-2026", "expiry": "1793095800", "expiry_flag": "M"}],
+        "optionsChain": [
+            {"symbol": "NSE:NIFTYBANK-INDEX", "strike_price": -1, "option_type": ""},  # index row: skip
+            {"symbol": "NSE:BANKNIFTY26OCT54600PE", "strike_price": 54600, "option_type": "PE", "ltp": 652.5},
+            {"symbol": "NSE:BANKNIFTY26OCT54600CE", "strike_price": 54600, "option_type": "CE", "ltp": 1139.2},
+        ],
+    }
+    registered = registry.register_from_fyers_chain("BANKNIFTY", "NSE", chain, lot_size=30)
+    assert len(registered) == 2  # both option rows registered; the index row (strike -1) skipped
+    assert all(inst.expiry == date(2026, 10, 27) for inst in registered)
+    assert {inst.option_type for inst in registered} == {"CE", "PE"}

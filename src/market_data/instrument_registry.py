@@ -15,6 +15,17 @@ logger = logging.getLogger(__name__)
 IST = ZoneInfo("Asia/Kolkata")
 
 
+def _coerce_epoch(v) -> Optional[int]:
+    """Fyers returns the chain expiry as a STRING epoch (e.g. "1793095800") in expiryData, not an
+    int — so the old isinstance(int,float) check rejected every contract (expiry=None), which left
+    the registry empty and silently broke the windowed WS subscription. Coerce str/int/float."""
+    try:
+        iv = int(float(v))
+    except (TypeError, ValueError):
+        return None
+    return iv if iv > 0 else None
+
+
 @dataclass(frozen=True, slots=True)
 class Instrument:
     underlying: str
@@ -75,8 +86,8 @@ class InstrumentRegistry:
         if expiry_data and isinstance(expiry_data, list) and len(expiry_data) > 0:
             first_exp = expiry_data[0]
             if isinstance(first_exp, dict):
-                exp_ts = first_exp.get("expiry")
-                if exp_ts and isinstance(exp_ts, (int, float)) and exp_ts > 0:
+                exp_ts = _coerce_epoch(first_exp.get("expiry"))
+                if exp_ts:
                     fallback_expiry_date = datetime.fromtimestamp(exp_ts, tz=IST).date()
 
         registered: List[Instrument] = []
@@ -89,11 +100,12 @@ class InstrumentRegistry:
                 symbol = item.get("symbol")
                 strike_price = item.get("strike_price")
                 opt_type = item.get("option_type")
-                raw_expiry = item.get("expiry")
+                raw_expiry = _coerce_epoch(item.get("expiry"))
 
-                # Parse official expiry date from epoch seconds
+                # Parse official expiry date from epoch seconds; fall back to the chain's active
+                # expiryData[0] (the current-series expiry) when the row carries no per-row epoch.
                 expiry_dt: Optional[date] = None
-                if raw_expiry and isinstance(raw_expiry, (int, float)) and raw_expiry > 0:
+                if raw_expiry:
                     expiry_dt = datetime.fromtimestamp(raw_expiry, tz=IST).date()
                 elif fallback_expiry_date is not None:
                     expiry_dt = fallback_expiry_date
