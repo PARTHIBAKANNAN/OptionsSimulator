@@ -125,6 +125,7 @@
     "gst_pct": 18.0
   },
   "polling": {
-    "option_chain_interval_secs": 10
+    "option_chain_interval_secs": 10,
+    "atm_window_strikes": 10
   }
 }

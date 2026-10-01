@@ -57,28 +57,46 @@ class WebLiveEngine(LiveTrader):
 
     # ---- State publishing (feeds the Broadcaster) ----------------------------------
 
+    def _active_position_keys(self) -> set:
+        """Every key form (canonical_id, fyers_symbol, clean alias) of currently-open positions.
+        Quotes for these are NEVER stale-evicted and NEVER overridden by the REST/option-chain
+        fallback — an open position must always mark against its own last real WS tick (shown with
+        an age badge if it goes stale), never a silently-frozen substitute from another source."""
+        keys = set()
+        for o in self.paper_trader.get_positions():
+            for k in (getattr(o, "canonical_id", None), getattr(o, "fyers_symbol", None), getattr(o, "symbol", None)):
+                if k:
+                    keys.add(k)
+        return keys
+
     def _publish_state(self) -> None:
         state = self.data_manager.get_state()
         current_prices = {}
         stale_threshold = time.time() - 15.0
+        active = self._active_position_keys()
 
         if self.data_engine_enabled and hasattr(self, "quote_store"):
-            # QuoteStore is the sole authority for live prices
+            # QuoteStore is the sole authority for live prices. Open positions bypass the 15s
+            # staleness filter so their LTP never drops out and gets masked by a frozen fallback.
             for cid, snap in self.quote_store.get_all_snapshots().items():
-                if snap.ltp > 0 and snap.receive_epoch_timestamp >= stale_threshold:
+                if snap.ltp > 0 and (snap.receive_epoch_timestamp >= stale_threshold or cid in active):
                     current_prices[cid] = snap.ltp
             for sym, snap in self.quote_store.get_all_snapshots_by_symbol().items():
-                if snap.ltp > 0 and snap.receive_epoch_timestamp >= stale_threshold:
+                if snap.ltp > 0 and (snap.receive_epoch_timestamp >= stale_threshold or sym in active):
                     current_prices[sym] = snap.ltp
             if hasattr(self, "instrument_registry"):
                 for inst in self.instrument_registry.get_all_instruments():
                     snap = self.quote_store.get_snapshot(inst.canonical_id)
-                    if snap and snap.ltp > 0 and snap.receive_epoch_timestamp >= stale_threshold:
+                    if snap and snap.ltp > 0 and (
+                        snap.receive_epoch_timestamp >= stale_threshold
+                        or inst.canonical_id in active or inst.fyers_symbol in active or inst.clean_alias in active
+                    ):
                         current_prices[inst.clean_alias] = snap.ltp
 
         for data_manager in self.data_managers.values():
             for sym, q in data_manager.get_option_chain().items():
-                if q.ltp > 0 and sym not in current_prices:
+                # Never let a stale REST/frozen option-chain price override an open position's WS LTP.
+                if q.ltp > 0 and sym not in current_prices and sym not in active:
                     current_prices[sym] = q.ltp
         pnl = self.paper_trader.get_pnl(current_prices)
 
@@ -652,23 +670,27 @@ class WebLiveEngine(LiveTrader):
             # Force square-off any lingering open positions when market closes (15:30 PM IST)
             current_prices = {}
             stale_threshold = time.time() - 15.0
-            
+            active = self._active_position_keys()
+
             if self.data_engine_enabled and hasattr(self, "quote_store"):
                 for cid, snap in self.quote_store.get_all_snapshots().items():
-                    if snap.ltp > 0 and snap.receive_epoch_timestamp >= stale_threshold:
+                    if snap.ltp > 0 and (snap.receive_epoch_timestamp >= stale_threshold or cid in active):
                         current_prices[cid] = snap.ltp
                 for sym, snap in self.quote_store.get_all_snapshots_by_symbol().items():
-                    if snap.ltp > 0 and snap.receive_epoch_timestamp >= stale_threshold:
+                    if snap.ltp > 0 and (snap.receive_epoch_timestamp >= stale_threshold or sym in active):
                         current_prices[sym] = snap.ltp
                 if hasattr(self, "instrument_registry"):
                     for inst in self.instrument_registry.get_all_instruments():
                         snap = self.quote_store.get_snapshot(inst.canonical_id)
-                        if snap and snap.ltp > 0 and snap.receive_epoch_timestamp >= stale_threshold:
+                        if snap and snap.ltp > 0 and (
+                            snap.receive_epoch_timestamp >= stale_threshold
+                            or inst.canonical_id in active or inst.fyers_symbol in active or inst.clean_alias in active
+                        ):
                             current_prices[inst.clean_alias] = snap.ltp
 
             for data_manager in self.data_managers.values():
                 for sym, q in data_manager.get_option_chain().items():
-                    if q.ltp > 0 and sym not in current_prices:
+                    if q.ltp > 0 and sym not in current_prices and sym not in active:
                         current_prices[sym] = q.ltp
 
             for order in self.paper_trader.get_positions():
@@ -786,6 +808,11 @@ class WebLiveEngine(LiveTrader):
 
             canonical_id = inst.canonical_id
             fyers_sym = inst.fyers_symbol
+
+            # Just-in-time subscribe + await a fresh tick for strikes outside the standing ATM
+            # window (e.g. deep-ITM SENSEX). Without this they'd always fail NEW_ENTRY as stale.
+            await self._ensure_subscribed_fresh(inst)
+
             snapshot = self.quote_store.get_snapshot(inst.canonical_id)
 
             # In unit tests or cold start, seed QuoteStore ONLY if no live WS snapshot exists
@@ -912,24 +939,33 @@ class WebLiveEngine(LiveTrader):
     def check_exits(self) -> None:
         combined_quotes = {}
         stale_threshold = time.time() - 15.0
+        active = self._active_position_keys()
 
         if self.data_engine_enabled:
             for cid, snap in self.quote_store.get_all_snapshots().items():
-                if snap.ltp > 0 and snap.receive_epoch_timestamp >= stale_threshold:
+                if snap.ltp > 0 and (snap.receive_epoch_timestamp >= stale_threshold or cid in active):
                     combined_quotes[cid] = snap
             for sym, snap in self.quote_store.get_all_snapshots_by_symbol().items():
-                if snap.ltp > 0 and snap.receive_epoch_timestamp >= stale_threshold:
+                if snap.ltp > 0 and (snap.receive_epoch_timestamp >= stale_threshold or sym in active):
                     combined_quotes[sym] = snap
             for inst in self.instrument_registry.get_all_instruments():
                 snap = self.quote_store.get_snapshot(inst.canonical_id)
-                if snap and snap.ltp > 0 and snap.receive_epoch_timestamp >= stale_threshold:
+                if snap and snap.ltp > 0 and (
+                    snap.receive_epoch_timestamp >= stale_threshold
+                    or inst.canonical_id in active or inst.fyers_symbol in active or inst.clean_alias in active
+                ):
                     combined_quotes[inst.clean_alias] = snap
 
         for data_manager in self.data_managers.values():
             for sym, q in data_manager.get_option_chain().items():
+                # Never override an open position's live WS quote with a non-ws REST/frozen price.
+                if sym in active:
+                    continue
+                inst = self.instrument_registry.resolve_by_clean_alias(sym) or self.instrument_registry.resolve_by_symbol(sym)
+                if inst and (inst.canonical_id in active or inst.clean_alias in active or inst.fyers_symbol in active):
+                    continue
                 if q.ltp > 0 and getattr(q, "source", "rest") != "ws":
                     combined_quotes[sym] = q.ltp
-                    inst = self.instrument_registry.resolve_by_clean_alias(sym) or self.instrument_registry.resolve_by_symbol(sym)
                     if inst:
                         combined_quotes[inst.canonical_id] = q.ltp
                         combined_quotes[inst.clean_alias] = q.ltp

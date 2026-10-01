@@ -123,14 +123,16 @@ async def master_health(request: Request):
     strategy_counts = {idx: len(se.strategies) for idx, se in getattr(engine, "strategy_engines", {}).items()}
     total_strategies = sum(strategy_counts.values())
 
-    readiness = getattr(engine, "readiness_state", None)
+    readiness = getattr(engine, "readiness_stage", None)
     readiness_name = readiness.name if hasattr(readiness, "name") else str(readiness) if readiness else "NOT_INITIALIZED"
 
     market_data_diag = {
         "readiness_state": readiness_name,
-        "instruments_registered": len(getattr(getattr(engine, "instrument_registry", None), "_instruments", {})),
-        "quotes_in_store": len(getattr(getattr(engine, "quote_store", None), "_quotes", {})),
+        "instruments_registered": len(getattr(getattr(engine, "instrument_registry", None), "_by_canonical_id", {})),
+        "quotes_in_store": len(getattr(getattr(engine, "quote_store", None), "_snapshots_by_canonical", {})),
+        "active_quotes_2s": engine.quote_store.get_active_quote_count(2000.0) if hasattr(engine, "quote_store") else 0,
         "quote_validator_active": hasattr(engine, "quote_validator"),
+        "atm_window_strikes": getattr(engine, "atm_window_strikes", None),
     }
 
     return {

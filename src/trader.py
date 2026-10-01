@@ -85,6 +85,13 @@ class LiveTrader:
         # Readiness gate state: "INIT" -> "CONTRACT_READY" -> "SUBSCRIPTION_READY" -> "QUOTE_READY" -> "STRATEGIES_ARMED"
         self.readiness_stage = "INIT"
         self.strikecount = config.risk_params.get("polling", {}).get("option_chain_strikecount", 25)
+        # Live feed is pruned to ATM +/- N strikes per index (+ indices + open positions + JIT pins)
+        # so the single free-tier Fyers socket isn't starved by ~549 symbols. OI/discovery still
+        # comes from the full REST option-chain poll, so no strategy loses data. Set this very high
+        # (e.g. 999) to fall back to subscribing the entire registered chain (old behavior).
+        self.atm_window_strikes = config.risk_params.get("polling", {}).get("atm_window_strikes", 10)
+        # symbols temporarily pinned to the feed for a just-in-time entry: {fyers_symbol: expiry_epoch}
+        self._jit_pinned: Dict[str, float] = {}
 
         self.data_managers = {
             "NIFTY": DataManager(),
@@ -387,6 +394,96 @@ class LiveTrader:
             except Exception as e:
                 self.logger.log_error(f"Historical seeding failed for {index}, starting cold: {e}")
 
+    # ---- Windowed WebSocket subscription (single free-tier socket) ----------
+
+    def _desired_ws_symbols(self) -> Set[str]:
+        """The set of symbols the single socket SHOULD carry right now: the 3 indices, every
+        open position's exact symbol (always, so its LTP stays fresh for SL/TP for the whole life
+        of the trade), any live JIT entry pins, and ATM +/- N strikes per index. Deep ITM/OTM
+        strikes outside the window are intentionally excluded here and picked up just-in-time when
+        a signal actually targets them (see _ensure_subscribed_fresh)."""
+        desired: Set[str] = set(INDEX_SYMBOLS.values())
+
+        for order in self.paper_trader.get_positions():
+            sym = getattr(order, "fyers_symbol", None)
+            if sym:
+                desired.add(sym)
+
+        now_wall = time.time()
+        self._jit_pinned = {s: exp for s, exp in self._jit_pinned.items() if exp > now_wall}
+        desired |= set(self._jit_pinned.keys())
+
+        for index in INDEX_SYMBOLS:
+            step = STRIKE_STEP_BY_INDEX[index]
+            # Read the raw live LTP directly (avoid get_state(), which recomputes indicators — this
+            # runs every 10s poll and the VM is single-core). Fall back to the current candle close.
+            dm = self.data_managers[index]
+            spot = dm._live_ltp
+            if not spot or spot <= 0:
+                cur = dm.get_current_candle()
+                spot = cur.close if cur else None
+            if not spot or spot <= 0:
+                continue  # no spot yet; indices subscribe first, window fills in on the next poll
+            atm = round(spot / step) * step
+            lo = atm - self.atm_window_strikes * step
+            hi = atm + self.atm_window_strikes * step
+            for inst in self.instrument_registry.get_all_instruments():
+                if inst.underlying == index and lo <= inst.strike <= hi:
+                    desired.add(inst.fyers_symbol)
+        return desired
+
+    def _sync_subscriptions(self) -> None:
+        """Reconciles the live feed to _desired_ws_symbols(): subscribe what's newly needed,
+        unsubscribe what's fallen out of the window. Indices and open positions are always in the
+        desired set, so they are never dropped."""
+        if not self._connected:
+            return
+        try:
+            desired = self._desired_ws_symbols()
+        except Exception as e:
+            self.logger.log_error(f"_desired_ws_symbols failed: {e}")
+            return
+        to_add = desired - self._monitored_symbols
+        to_remove = self._monitored_symbols - desired
+        if to_add:
+            try:
+                self.fyers.subscribe_symbols(list(to_add))
+                self._monitored_symbols |= to_add
+            except Exception as e:
+                self.logger.log_error(f"Windowed subscribe failed: {e}")
+        if to_remove:
+            try:
+                self.fyers.unsubscribe_symbols(list(to_remove))
+                self._monitored_symbols -= to_remove
+            except Exception as e:
+                self.logger.log_error(f"Windowed unsubscribe failed: {e}")
+
+    async def _ensure_subscribed_fresh(self, inst, timeout_secs: float = 1.5) -> None:
+        """Just-in-time subscribe a signal's target contract when it's outside the standing ATM
+        window (e.g. deep-ITM SENSEX strikes ~15+ steps from spot), then wait briefly for its first
+        fresh WS tick so the entry isn't rejected as a stale quote. Pins the symbol to the feed for
+        120s so the 10s window reconcile won't drop it before the position actually opens."""
+        if not getattr(self, "data_engine_enabled", True):
+            return
+        sym = getattr(inst, "fyers_symbol", None)
+        cid = getattr(inst, "canonical_id", None)
+        if not sym or not cid:
+            return
+        self._jit_pinned[sym] = time.time() + 120.0
+        if sym not in self._monitored_symbols:
+            try:
+                self.fyers.subscribe_symbols([sym])
+                self._monitored_symbols.add(sym)
+            except Exception as e:
+                self.logger.log_error(f"JIT subscribe failed for {sym}: {e}")
+        max_age = getattr(self.quote_validator, "entry_max_age_ms", 500.0)
+        deadline = time.monotonic() + timeout_secs
+        while time.monotonic() < deadline:
+            snap = self.quote_store.get_snapshot(cid)
+            if snap and getattr(snap, "source", "ws") == "ws" and snap.ltp > 0 and snap.age_ms() <= max_age:
+                return
+            await asyncio.sleep(0.1)
+
     # ---- Daily Login / Connect / Pre-Subscription State Machine -------------
 
     def ensure_connection_state(self, now: datetime) -> bool:
@@ -443,26 +540,22 @@ class LiveTrader:
             # Stage 1: Contract discovery & coverage verification
             self.initialize_contracts()
 
-            # Stage 2: Pre-Subscription
+            # Stage 2: Pre-Subscription (windowed — indices + ATM+/-N + open positions only, so the
+            # single free-tier socket isn't starved by the full ~549-symbol chain). The broad chain
+            # is still fetched for OI/discovery via the REST poll; only the WS feed is pruned.
             self.fyers.start_websocket(self.on_tick)
-
-            # Build complete verified universe
-            universe_symbols = set(INDEX_SYMBOLS.values())
-            for inst in self.instrument_registry.get_all_instruments():
-                universe_symbols.add(inst.fyers_symbol)
-
+            self._monitored_symbols = set()
+            self._connected = True
             try:
-                self.fyers.subscribe_symbols(list(universe_symbols))
-                self._monitored_symbols |= universe_symbols
+                self._sync_subscriptions()
                 self.readiness_stage = "SUBSCRIPTION_READY"
                 logger.info(
-                    "Readiness Stage -> SUBSCRIPTION_READY (Pre-subscribed %d official symbols)",
-                    len(universe_symbols),
+                    "Readiness Stage -> SUBSCRIPTION_READY (windowed feed: %d symbols, ATM+/-%d)",
+                    len(self._monitored_symbols),
+                    self.atm_window_strikes,
                 )
             except Exception as e:
                 self.logger.log_error(f"Pre-subscription failed: {e}")
-
-            self._connected = True
         elif not market_open and self._connected:
             try:
                 self.fyers.stop_websocket()
@@ -557,7 +650,9 @@ class LiveTrader:
 
     async def poll_option_chain(self) -> None:
         """
-        Polls option chain every 10s for open interest/volume discovery.
+        Polls the FULL option chain every 10s for open interest/volume discovery and strike
+        registration. This REST data (not the WS feed) is what OI/discovery strategies consume,
+        so the WS feed can stay pruned to the ATM window without blinding any strategy.
         REST polling NEVER overwrites live WebSocket prices in QuoteStore.
         """
         for index, symbol in INDEX_SYMBOLS.items():
@@ -565,27 +660,17 @@ class LiveTrader:
                 chain = self.fyers.get_option_chain(symbol, strike_count=self.strikecount)
                 self.data_managers[index].update_option_chain(chain)
 
-                # Dynamically register any newly listed strikes without overwriting live quotes
+                # Register any newly listed strikes (for OI/discovery + JIT resolution) without
+                # overwriting live quotes. These are NOT all pushed to the WS — the window does that.
                 exchange = INDEX_TO_EXCHANGE[index]
                 lot_size = LOT_SIZE_BY_INDEX[index]
-                new_registered = self.instrument_registry.register_from_fyers_chain(index, exchange, chain, lot_size)
-
-                # Subscribe any newly discovered contracts
-                new_symbols = {inst.fyers_symbol for inst in new_registered} - self._monitored_symbols
-                if not new_symbols:
-                    exchange_prefix = f"{INDEX_TO_EXCHANGE[index]}:"
-                    all_dm_symbols = {s for s in self.data_managers[index].get_option_chain().keys() if s.startswith(exchange_prefix)}
-                    new_symbols = all_dm_symbols - self._monitored_symbols
-
-                if new_symbols:
-                    try:
-                        self.fyers.subscribe_symbols(list(new_symbols))
-                        self._monitored_symbols |= new_symbols
-                        logger.info("Subscribed %d newly listed contracts for %s", len(new_symbols), index)
-                    except Exception as e:
-                        self.logger.log_error(f"subscribe_symbols failed for {index}: {e}")
+                self.instrument_registry.register_from_fyers_chain(index, exchange, chain, lot_size)
             except Exception as e:
                 self.logger.log_error(f"poll_option_chain failed for {index}: {e}")
+
+        # Reconcile the windowed WS feed once per poll (re-centers as spot moves, drops stale
+        # out-of-window strikes, picks up newly-opened positions).
+        self._sync_subscriptions()
 
     def evaluate_strategies(self) -> list:
         now = datetime.now(IST)

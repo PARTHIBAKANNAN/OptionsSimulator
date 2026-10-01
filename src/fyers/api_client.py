@@ -251,6 +251,22 @@ class FyersAPIClient:
             self._subscribed_symbols.update(symbols)
             self.ws.subscribe(symbols=list(symbols), data_type="SymbolUpdate")
 
+    def unsubscribe_symbols(self, symbols: list) -> None:
+        """Drops symbols from the live feed so the single free-tier socket isn't starved by a
+        bloated universe. Best-effort: a failed unsubscribe must never crash the engine loop, and
+        we still prune the local set so on_open's auto-resubscribe won't re-add dropped symbols."""
+        if not self.ws or not symbols:
+            return
+        syms = [s for s in symbols if s in self._subscribed_symbols]
+        if not syms:
+            return
+        self._subscribed_symbols.difference_update(syms)
+        try:
+            self.ws.unsubscribe(symbols=syms, data_type="SymbolUpdate")
+        except Exception as e:
+            if self.logger:
+                self.logger.log_error(f"unsubscribe_symbols failed: {e}")
+
     def stop_websocket(self) -> None:
         """Closes the WebSocket connection but PRESERVES the subscription list so that
         on_open's auto-resubscribe fires correctly when Fyers SDK reconnects or when
