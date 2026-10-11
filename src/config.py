@@ -20,6 +20,12 @@ class Config:
     telegram_bot_token: str
     telegram_chat_id: str
     force_market_open: bool
+    broker: str = "fyers"
+    aliceblue_user_id: str = ""
+    aliceblue_password: str = ""
+    aliceblue_totp_key: str = ""
+    aliceblue_api_key: str = ""
+    aliceblue_session_token: str = ""
     risk_params: dict = field(default_factory=dict)
 
     @staticmethod
@@ -40,12 +46,21 @@ class Config:
             telegram_bot_token=os.getenv("TELEGRAM_BOT_TOKEN", ""),
             telegram_chat_id=os.getenv("TELEGRAM_CHAT_ID", ""),
             force_market_open=os.getenv("FORCE_MARKET_OPEN", "false").strip().lower() == "true",
+            broker=os.getenv("BROKER", "aliceblue").strip().lower(),
+            aliceblue_user_id=os.getenv("ALICEBLUE_USER_ID", "2628887"),
+            aliceblue_password=os.getenv("ALICEBLUE_PASSWORD", ""),
+            aliceblue_totp_key=os.getenv("ALICEBLUE_TOTP_KEY", ""),
+            aliceblue_api_key=os.getenv("ALICEBLUE_API_KEY", ""),
+            aliceblue_session_token=os.getenv("ALICEBLUE_SESSION_TOKEN", ""),
             risk_params=risk_params,
         )
 
     def validate(self, require_fyers: bool = True, require_telegram: bool = False) -> None:
         missing = []
-        if require_fyers:
+        if self.broker == "aliceblue":
+            if not self.aliceblue_user_id:
+                missing.append("ALICEBLUE_USER_ID")
+        elif require_fyers:
             for field_name in (
                 "fyers_client_id",
                 "fyers_secret_key",

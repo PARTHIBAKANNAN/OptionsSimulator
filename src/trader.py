@@ -17,6 +17,7 @@ from src.alerts.telegram_alerts import TelegramAlertsManager
 from src.backtester.report import load_capital_by_strategy
 from src.config import Config
 from src.data_manager import DataManager
+from src.brokers.aliceblue_client import AliceBlueClient
 from src.fyers.api_client import FyersAPIClient
 from src.market_data.audit_record import AuditLogger
 from src.market_data.instrument_registry import Instrument, InstrumentRegistry
@@ -145,6 +146,19 @@ class LiveTrader:
         self.poll_interval = config.risk_params.get("polling", {}).get("option_chain_interval_secs", 10)
         self.auto_mode = config.risk_params.get("live_mode", {}).get("auto_approve", True)
 
+        self.aliceblue = None
+        if getattr(config, "broker", "aliceblue") == "aliceblue":
+            self.aliceblue = AliceBlueClient(
+                user_id=config.aliceblue_user_id,
+                password=config.aliceblue_password,
+                totp_key=config.aliceblue_totp_key,
+                api_key=config.aliceblue_api_key,
+                session_token=config.aliceblue_session_token,
+                quote_store=self.quote_store,
+                instrument_registry=self.instrument_registry,
+                data_managers=self.data_managers,
+            )
+
         self.fyers = FyersAPIClient(
             client_id=config.fyers_client_id,
             secret_key=config.fyers_secret_key,
@@ -197,9 +211,26 @@ class LiveTrader:
     def initialize_contracts(self) -> bool:
         """
         Stage 1: CONTRACT_READY verification.
-        Fetches official FYERS option chains, registers canonical instruments,
+        Fetches official broker option contracts, registers canonical instruments,
         and dynamically verifies that +/- 15 strikes around ATM are covered.
         """
+        if getattr(self, "aliceblue", None) and self.config.broker == "aliceblue":
+            try:
+                if not self.aliceblue.is_authenticated:
+                    self.aliceblue.initialize()
+                else:
+                    self.aliceblue.contract_master.load_contracts()
+                    self.aliceblue._sync_instruments_to_registry()
+                self.readiness_stage = "CONTRACT_READY"
+                logger.info(
+                    "Readiness Stage -> CONTRACT_READY (Alice Blue: %d contracts indexed)",
+                    len(self.instrument_registry.get_all_instruments()),
+                )
+                return True
+            except Exception as e:
+                self.logger.log_error(f"Alice Blue contract initialization failed: {e}")
+                return False
+
         if not self.fyers.access_token:
             return False
 
@@ -470,7 +501,9 @@ class LiveTrader:
         if not sym or not cid:
             return
         self._jit_pinned[sym] = time.time() + 120.0
-        if sym not in self._monitored_symbols:
+        if getattr(self, "aliceblue", None) and self.config.broker == "aliceblue":
+            self.aliceblue.subscribe_symbol(cid)
+        elif sym not in self._monitored_symbols:
             try:
                 self.fyers.subscribe_symbols([sym])
                 self._monitored_symbols.add(sym)
@@ -534,6 +567,32 @@ class LiveTrader:
                     asyncio.create_task(self.telegram.send_alert(summary_msg))
             except Exception as e:
                 self.logger.log_error(f"Pre-market intelligence generation at 08:50 AM failed: {e}")
+
+        # Alice Blue connection & corridor subscription
+        if getattr(self, "aliceblue", None) and self.config.broker == "aliceblue":
+            if market_open and not self._connected:
+                if not self.aliceblue.is_authenticated:
+                    self.aliceblue.initialize()
+                self.initialize_contracts()
+                self.aliceblue.connect_websocket()
+                for _ in range(15):
+                    if self.aliceblue.is_connected:
+                        break
+                    time.sleep(0.1)
+                if self.aliceblue.is_connected:
+                    self._connected = True
+                    self.readiness_stage = "SUBSCRIPTION_READY"
+                    spot_prices = {
+                        k: (getattr(dm.get_current_candle(), "close", 0.0) or (22500.0 if k == "NIFTY" else (55200.0 if k == "BANKNIFTY" else 81000.0)))
+                        for k, dm in self.data_managers.items()
+                    }
+                    self.aliceblue.subscribe_strike_corridor(spot_prices)
+                    logger.info("Readiness Stage -> SUBSCRIPTION_READY (Alice Blue strike corridor active)")
+            elif not market_open and self._connected:
+                self.aliceblue.disconnect()
+                self._connected = False
+                self.readiness_stage = "INIT"
+            return market_open
 
         # Pre-Market / Market-Open Contract Discovery & Pre-Subscription
         if market_open and not self._connected and self.fyers.access_token:
