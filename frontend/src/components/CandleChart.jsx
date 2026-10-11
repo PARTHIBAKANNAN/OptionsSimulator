@@ -90,12 +90,18 @@ export function CandleChart({ candles = [], tradeMarkers = [], height = 400 }) {
       localization: {
         timeFormatter: (timestamp) => {
           const date = new Date(timestamp * 1000);
-          return date.toLocaleTimeString("en-IN", {
+          const dStr = date.toLocaleDateString("en-IN", {
+            timeZone: "Asia/Kolkata",
+            day: "2-digit",
+            month: "short",
+          });
+          const tStr = date.toLocaleTimeString("en-IN", {
             timeZone: "Asia/Kolkata",
             hour: "2-digit",
             minute: "2-digit",
             hour12: false,
           });
+          return `${dStr} ${tStr}`;
         },
       },
       timeScale: {
@@ -105,14 +111,14 @@ export function CandleChart({ candles = [], tradeMarkers = [], height = 400 }) {
         minBarSpacing: 3,
         fixLeftEdge: true,
         rightOffset: 12,
-        tickMarkFormatter: (time) => {
+        tickMarkFormatter: (time, tickMarkType) => {
           const date = new Date(time * 1000);
-          return date.toLocaleTimeString("en-IN", {
-            timeZone: "Asia/Kolkata",
-            hour: "2-digit",
-            minute: "2-digit",
-            hour12: false,
-          });
+          const hours = date.toLocaleTimeString("en-IN", { timeZone: "Asia/Kolkata", hour: "2-digit", hour12: false });
+          const mins = date.toLocaleTimeString("en-IN", { timeZone: "Asia/Kolkata", minute: "2-digit" });
+          if (tickMarkType < 3 || (hours === "09" && mins === "15")) {
+            return date.toLocaleDateString("en-IN", { timeZone: "Asia/Kolkata", day: "2-digit", month: "short" });
+          }
+          return `${hours}:${mins}`;
         },
       },
     });

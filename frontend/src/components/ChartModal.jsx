@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Columns2, Square, TrendingUp, TrendingDown, Layers } from "lucide-react";
+import { X, Columns2, Square, TrendingUp, TrendingDown, Layers, Loader2 } from "lucide-react";
 import { CandleChart } from "./CandleChart";
+import { API_BASE } from "../lib/apiBase";
 
 function fmtNum(v) {
   return v == null ? "—" : Number(v).toLocaleString("en-IN", { maximumFractionDigits: 2 });
@@ -28,8 +29,33 @@ export function ChartModal({
   const [activeTab, setActiveTab] = useState(
     initialIndex?.includes("BANKNIFTY") ? "BANKNIFTY" : initialIndex?.includes("SENSEX") ? "SENSEX" : "NIFTY"
   );
+  const [timeframe, setTimeframe] = useState("5m");
+  const [customCandles, setCustomCandles] = useState(null);
+  const [loadingTf, setLoadingTf] = useState(false);
 
-  const currentCandles = activeTab === "BANKNIFTY" ? bankniftyCandles : activeTab === "SENSEX" ? sensexCandles : niftyCandles;
+  useEffect(() => {
+    let active = true;
+    async function loadCandles() {
+      try {
+        setLoadingTf(true);
+        const res = await fetch(`${API_BASE}/api/public/candles/${activeTab}?timeframe=${timeframe}&days=7`);
+        const json = await res.json();
+        if (active && json.status === "ok" && Array.isArray(json.candles)) {
+          setCustomCandles(json.candles);
+        }
+      } catch (err) {
+        console.error("Failed to load candles:", err);
+      } finally {
+        if (active) setLoadingTf(false);
+      }
+    }
+    loadCandles();
+    return () => { active = false; };
+  }, [activeTab, timeframe]);
+
+  const streamCandles = activeTab === "BANKNIFTY" ? bankniftyCandles : activeTab === "SENSEX" ? sensexCandles : niftyCandles;
+  const currentCandles = (customCandles && customCandles.length > 0) ? customCandles : streamCandles;
+
   const currentPrice = activeTab === "BANKNIFTY" ? bankniftyPrice : activeTab === "SENSEX" ? sensexPrice : niftyPrice;
   const currentChange = activeTab === "BANKNIFTY" ? bankniftyChange : activeTab === "SENSEX" ? sensexChange : niftyChange;
   const currentChangePct = activeTab === "BANKNIFTY" ? bankniftyChangePct : activeTab === "SENSEX" ? sensexChangePct : niftyChangePct;
@@ -83,6 +109,22 @@ export function ChartModal({
                   BANKNIFTY
                 </button>
               </div>
+
+              {/* Timeframe Switcher Tabs */}
+              <div className="flex items-center gap-1 rounded-xl bg-surface2 p-1 border border-subtle">
+                {["1m", "3m", "5m", "15m", "1h", "1D"].map((tf) => (
+                  <button
+                    key={tf}
+                    onClick={() => setTimeframe(tf)}
+                    className={`rounded-lg px-2.5 py-1 text-xs font-bold transition ${
+                      timeframe === tf ? "bg-accent text-white shadow-sm" : "text-faint hover:text-primary"
+                    }`}
+                  >
+                    {tf}
+                  </button>
+                ))}
+              </div>
+              {loadingTf && <Loader2 className="h-3.5 w-3.5 animate-spin text-accent" />}
 
               {/* Exact Price for Active Tab */}
               <div className="flex items-baseline gap-2">

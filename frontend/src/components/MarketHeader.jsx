@@ -117,7 +117,7 @@ export function MarketHeader({ state }) {
             {mode === "live" && (
               <span className={`flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-bold ${fyers_authenticated ? "bg-cyan-500/15 text-cyan-400 border border-cyan-500/30" : "bg-amber-500/15 text-amber-400 border border-amber-500/30"}`}>
                 <ShieldCheck className="h-3 w-3" />
-                {fyers_authenticated ? "Fyers Connected" : "Awaiting Daily Login (08:50 AM)"}
+                {fyers_authenticated ? "Live Connected" : "Awaiting Daily Login (08:50 AM)"}
               </span>
             )}
 

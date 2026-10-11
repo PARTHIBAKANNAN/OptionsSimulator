@@ -219,6 +219,134 @@ async def fetch_contract_candles(request: Request):
     return {"status": "ok", "candles": results}
 
 
+@app.get("/api/public/candles/{index}")
+async def get_index_candles(index: str, timeframe: str = "5m", days: int = 5, request: Request = None):
+    """Returns resampled OHLCV + CVD delta candles for NIFTY, BANKNIFTY, or SENSEX
+    supporting timeframes: 1m, 3m, 5m, 15m, 1h, 1D."""
+    idx_upper = index.upper()
+    if idx_upper not in ("NIFTY", "BANKNIFTY", "SENSEX"):
+        raise HTTPException(status_code=400, detail="Invalid index. Choose NIFTY, BANKNIFTY, or SENSEX.")
+
+    engine: WebLiveEngine = request.app.state.live_engine
+    dm = engine.data_managers.get(idx_upper)
+    if not dm:
+        raise HTTPException(status_code=404, detail="DataManager not found")
+
+    from datetime import datetime, timedelta
+    from src.trader import IST
+    import pandas as pd
+
+    today = datetime.now(IST).date()
+    cutoff = today - timedelta(days=max(days, 1))
+
+    closed_candles = [c for c in dm.candles if c.timestamp.date() >= cutoff]
+    if not closed_candles and dm.candles:
+        closed_candles = list(dm.candles)
+
+    if not closed_candles:
+        return {"status": "ok", "index": idx_upper, "timeframe": timeframe, "candles": []}
+
+    df = pd.DataFrame([{
+        "Timestamp": c.timestamp, "Open": c.open, "High": c.high, "Low": c.low,
+        "Close": c.close, "Volume": c.volume, "Delta": c.delta,
+    } for c in closed_candles]).set_index("Timestamp")
+
+    try:
+        df = df.between_time("09:15", "15:30")
+    except Exception:
+        pass
+
+    tf_map = {
+        "1m": "1min",
+        "3m": "3min",
+        "5m": "5min",
+        "15m": "15min",
+        "1h": "1h",
+        "1D": "1D",
+    }
+    rule = tf_map.get(timeframe, "5min")
+
+    resampled = df.resample(rule).agg({
+        "Open": "first", "High": "max", "Low": "min", "Close": "last",
+        "Volume": "sum", "Delta": "sum",
+    }).dropna()
+
+    bars = []
+    for ts, row in resampled.iterrows():
+        bars.append({
+            "time": int(ts.timestamp()),
+            "open": round(float(row["Open"]), 2),
+            "high": round(float(row["High"]), 2),
+            "low": round(float(row["Low"]), 2),
+            "close": round(float(row["Close"]), 2),
+            "volume": float(row["Volume"]),
+            "delta": round(float(row["Delta"]), 1),
+        })
+
+    return {"status": "ok", "index": idx_upper, "timeframe": timeframe, "candles": bars}
+
+
+@app.get("/api/public/telemetry")
+async def get_telemetry(request: Request):
+    """Detailed latency and WebSocket diagnostic metrics for real-time verification."""
+    from datetime import datetime
+    import time
+    from src.trader import IST
+    engine: WebLiveEngine = request.app.state.live_engine
+    now = datetime.now(IST)
+
+    broker = getattr(getattr(engine, "config", None), "broker", "aliceblue")
+    ab = getattr(engine, "aliceblue", None)
+    ws = getattr(ab, "ws", None) if ab else None
+
+    quote_store = getattr(engine, "quote_store", None)
+    qs_snapshots = getattr(quote_store, "_snapshots_by_canonical", {}) if quote_store else {}
+
+    active_quotes_1s = quote_store.get_active_quote_count(1000.0) if quote_store else 0
+    active_quotes_2s = quote_store.get_active_quote_count(2000.0) if quote_store else 0
+
+    now_perf = time.time()
+    ages_ms = []
+    for snap in qs_snapshots.values():
+        if snap.last_update_ts > 0:
+            ages_ms.append(round((now_perf - snap.last_update_ts) * 1000.0, 1))
+
+    avg_age_ms = round(sum(ages_ms) / len(ages_ms), 1) if ages_ms else 0.0
+    min_age_ms = min(ages_ms) if ages_ms else 0.0
+
+    spot_info = {}
+    for idx in ("NIFTY", "BANKNIFTY", "SENSEX"):
+        dm = engine.data_managers.get(idx)
+        spot_info[idx] = {
+            "price": getattr(dm, "_live_ltp", None) or (dm.candles[-1].close if dm and dm.candles else None),
+            "candles_count": len(dm.candles) if dm else 0,
+            "latest_candle": dm.candles[-1].timestamp.isoformat() if dm and dm.candles else None,
+        }
+
+    return {
+        "status": "ok",
+        "timestamp": now.isoformat(),
+        "broker": broker,
+        "is_connected": getattr(engine, "_connected", False),
+        "is_authenticated": bool(getattr(ab, "is_authenticated", False)) if broker == "aliceblue" else bool(engine.fyers.access_token),
+        "readiness_stage": getattr(engine, "readiness_stage", "INIT"),
+        "corridor": {
+            "total_tokens_subscribed": len(getattr(ws, "_subscribed_keys", set())) if ws else len(getattr(engine, "_monitored_symbols", set())),
+            "instruments_registered": len(getattr(getattr(engine, "instrument_registry", None), "_by_canonical_id", {})),
+            "quotes_in_store": len(qs_snapshots),
+        },
+        "latency_telemetry": {
+            "target_window": "50ms - 150ms",
+            "active_quotes_within_1s": active_quotes_1s,
+            "active_quotes_within_2s": active_quotes_2s,
+            "avg_quote_age_ms": avg_age_ms,
+            "min_quote_age_ms": min_age_ms,
+            "ws_connected": bool(getattr(ws, "is_connected", False)) if ws else False,
+        },
+        "spot": spot_info,
+    }
+
+
 @app.get("/api/snapshot")
 async def snapshot(user: dict = Depends(security.require_login)):
     return shared_state.get()

@@ -8,6 +8,7 @@ import { LiveDashboardScreen } from "./screens/LiveDashboardScreen";
 import { BacktestReportScreen } from "./screens/BacktestReportScreen";
 import { PnlSummaryScreen } from "./screens/PnlSummaryScreen";
 import { StrategyLabScreen } from "./screens/StrategyLabScreen";
+import { TelemetryScreen } from "./screens/TelemetryScreen";
 import { LandingScreen } from "./screens/LandingScreen";
 import { useMarketStream } from "./hooks/useMarketStream";
 import { api } from "./hooks/usePaperTradingSync";
@@ -19,6 +20,7 @@ const TABS = [
   { key: "pnl", label: "P&L Summary", Component: PnlSummaryScreen },
   { key: "backtest", label: "Backtest", Component: BacktestReportScreen },
   { key: "lab", label: "Strategy Lab", Component: StrategyLabScreen },
+  { key: "telemetry", label: "WebSocket Health", Component: TelemetryScreen },
 ];
 
 function Dashboard({ user, onLogout }) {
