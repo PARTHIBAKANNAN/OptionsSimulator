@@ -525,6 +525,38 @@ class LiveTrader:
             now.weekday() < 5 and DAILY_LOGIN_TIME <= now.time() < DAILY_LOGIN_CUTOFF
         )
 
+        # Alice Blue broker workflow
+        if getattr(self, "aliceblue", None) and self.config.broker == "aliceblue":
+            if in_login_window and self._last_login_date != now.date():
+                if self.aliceblue.initialize():
+                    self._last_login_date = now.date()
+                    self.initialize_contracts()
+                    logger.info("Alice Blue daily session & contracts initialized.")
+
+            if market_open and not self._connected:
+                if not self.aliceblue.is_authenticated:
+                    self.aliceblue.initialize()
+                self.initialize_contracts()
+                self.aliceblue.connect_websocket()
+                for _ in range(15):
+                    if self.aliceblue.is_connected:
+                        break
+                    time.sleep(0.1)
+                if self.aliceblue.is_connected:
+                    self._connected = True
+                    self.readiness_stage = "SUBSCRIPTION_READY"
+                    spot_prices = {
+                        k: (getattr(dm.get_current_candle(), "close", 0.0) or (22500.0 if k == "NIFTY" else (55200.0 if k == "BANKNIFTY" else 81000.0)))
+                        for k, dm in self.data_managers.items()
+                    }
+                    self.aliceblue.subscribe_strike_corridor(spot_prices)
+                    logger.info("Readiness Stage -> SUBSCRIPTION_READY (Alice Blue strike corridor active)")
+            elif not market_open and self._connected:
+                self.aliceblue.disconnect()
+                self._connected = False
+                self.readiness_stage = "INIT"
+            return market_open
+
         if in_login_window and self._last_login_date != now.date():
             now_wall = time.time()
             last_ts = getattr(self, "_last_login_attempt_ts", 0.0)
@@ -567,32 +599,6 @@ class LiveTrader:
                     asyncio.create_task(self.telegram.send_alert(summary_msg))
             except Exception as e:
                 self.logger.log_error(f"Pre-market intelligence generation at 08:50 AM failed: {e}")
-
-        # Alice Blue connection & corridor subscription
-        if getattr(self, "aliceblue", None) and self.config.broker == "aliceblue":
-            if market_open and not self._connected:
-                if not self.aliceblue.is_authenticated:
-                    self.aliceblue.initialize()
-                self.initialize_contracts()
-                self.aliceblue.connect_websocket()
-                for _ in range(15):
-                    if self.aliceblue.is_connected:
-                        break
-                    time.sleep(0.1)
-                if self.aliceblue.is_connected:
-                    self._connected = True
-                    self.readiness_stage = "SUBSCRIPTION_READY"
-                    spot_prices = {
-                        k: (getattr(dm.get_current_candle(), "close", 0.0) or (22500.0 if k == "NIFTY" else (55200.0 if k == "BANKNIFTY" else 81000.0)))
-                        for k, dm in self.data_managers.items()
-                    }
-                    self.aliceblue.subscribe_strike_corridor(spot_prices)
-                    logger.info("Readiness Stage -> SUBSCRIPTION_READY (Alice Blue strike corridor active)")
-            elif not market_open and self._connected:
-                self.aliceblue.disconnect()
-                self._connected = False
-                self.readiness_stage = "INIT"
-            return market_open
 
         # Pre-Market / Market-Open Contract Discovery & Pre-Subscription
         if market_open and not self._connected and self.fyers.access_token:
@@ -714,6 +720,9 @@ class LiveTrader:
         so the WS feed can stay pruned to the ATM window without blinding any strategy.
         REST polling NEVER overwrites live WebSocket prices in QuoteStore.
         """
+        if getattr(self, "aliceblue", None) and self.config.broker == "aliceblue":
+            return
+
         for index, symbol in INDEX_SYMBOLS.items():
             try:
                 chain = self.fyers.get_option_chain(symbol, strike_count=self.strikecount)
