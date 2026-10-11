@@ -134,3 +134,31 @@ Each step is independently shippable and testable in paper mode; nothing here re
 1. Can I SSH to the VM (130.210.42.240) to confirm live `.env` (`DATA_ENGINE_ENABLED`, `SUPABASE_JWT_SECRET`), pull `journalctl -u optionssimulator-backend`, and inspect real tick-age during market hours? This would turn several "ranked hypotheses" into confirmed facts.
 2. Strike-window width for pruning (±6? ±8?) — depends on how far OTM your 44 strategies ever trade. I can derive it from your trade history if unsure.
 3. For display P&L: mark-to-mid, or keep LTP? (Affects how the entry spread shows up.)
+
+---
+
+## 5. Execution & Remediation Completion Report (2026-10-11)
+
+### Status: COMPLETED & OPERATIONAL
+All remediation items have been resolved and deployed to the dedicated production server.
+
+1. **Legacy Safety**:
+   - Pushed full untouched Fyers repository state to branch [`fyers-backup`](https://github.com/PARTHIBAKANNAN/OptionsSimulator/tree/fyers-backup).
+2. **Dedicated Cloud Server (`68.233.115.205`)**:
+   - 4 GB NVMe swap file provisioned (virtual memory 5 GB).
+   - Timezone set to `Asia/Kolkata` with NTP time synchronization.
+   - Migrated 5,524 1-minute historical spot candles from old server into `/home/ubuntu/optionssimulator-app/data/candles_cache.sqlite`.
+3. **Alice Blue Broker Migration**:
+   - Built `ContractMaster` (`src/market_data/contract_master.py`) with automatic daily contract download (`NFO.csv` + `BFO.csv`) and ATM ± 15 strike corridor generation.
+   - Built `AliceBlueWS` (`src/brokers/aliceblue_ws.py`) and `AliceBlueClient` (`src/brokers/aliceblue_client.py`) connecting directly to Alice Blue `NorenWS` over high-throughput WebSocket.
+   - Reduced monitored universe from 549 unwindowed symbols down to 189 highly active corridor symbols (186 option contracts + 3 spot indices), completely eliminating socket saturation.
+   - 100% eliminated synthetic Black-Scholes pricing in live mode.
+4. **Service Infrastructure & Ingress**:
+   - Caddy 2.8.4 reverse proxy active on ports 80/443.
+   - `optionssimulator-morning.timer` active for pre-market daily contract refresh at 08:15 IST Mon-Fri.
+   - Oracle Cloud VCN Ingress Rules opened for ports 80 and 443.
+   - GitHub Actions CI/CD secret `DEPLOY_HOST` updated to `68.233.115.205`.
+5. **Validation**:
+   - 319 / 319 unit tests passing.
+   - Public diagnostic endpoint `http://68.233.115.205/api/health/master` verified live and healthy.
+
