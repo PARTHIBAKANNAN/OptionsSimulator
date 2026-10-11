@@ -391,6 +391,8 @@ async def test_restore_state_only_queries_positions_opened_today():
 @pytest.mark.asyncio
 async def test_restore_candle_history_loads_todays_persisted_candles_with_delta():
     engine = _make_engine(data_engine_enabled=True)
+    for dm in engine.data_managers.values():
+        dm.candles = []
     today = date(2026, 8, 6)
     fake_pool = MagicMock()
     fake_pool.fetch = AsyncMock(side_effect=[
@@ -400,7 +402,8 @@ async def test_restore_candle_history_loads_todays_persisted_candles_with_delta(
         [],  # BANKNIFTY -- nothing persisted yet
     ])
 
-    await engine._restore_candle_history(fake_pool, today)
+    with patch("backend.app.live_engine.sqlite_cache.load_recent_candles", return_value=[]):
+        await engine._restore_candle_history(fake_pool, today)
 
     nifty_candles = engine.data_managers["NIFTY"].candles
     assert len(nifty_candles) == 1

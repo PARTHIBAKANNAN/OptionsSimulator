@@ -80,10 +80,18 @@ app.include_router(backtest_router)
 @app.get("/api/health")
 async def health(request: Request):
     engine: WebLiveEngine = request.app.state.live_engine
+    broker = getattr(getattr(engine, "config", None), "broker", "aliceblue")
+    is_auth = (
+        bool(getattr(getattr(engine, "aliceblue", None), "is_authenticated", False))
+        if broker == "aliceblue"
+        else (bool(engine.fyers.access_token) if engine.data_engine_enabled else None)
+    )
     return {
         "status": "ok",
         "mode": "live" if engine.data_engine_enabled else "replay",
-        "fyers_authenticated": bool(engine.fyers.access_token) if engine.data_engine_enabled else None,
+        "broker": broker,
+        "fyers_authenticated": is_auth,
+        "broker_authenticated": is_auth,
         "is_running": engine.is_running,
         "db_available": request.app.state.db_available,
     }
