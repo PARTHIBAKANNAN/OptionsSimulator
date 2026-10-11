@@ -308,11 +308,17 @@ async def get_telemetry(request: Request):
     now_perf = time.time()
     ages_ms = []
     for snap in qs_snapshots.values():
-        if snap.last_update_ts > 0:
-            ages_ms.append(round((now_perf - snap.last_update_ts) * 1000.0, 1))
+        try:
+            if hasattr(snap, "age_ms"):
+                ages_ms.append(round(snap.age_ms(), 1))
+            elif getattr(snap, "receive_epoch_timestamp", 0) > 0:
+                ages_ms.append(round((time.time() - snap.receive_epoch_timestamp) * 1000.0, 1))
+        except Exception:
+            pass
 
     avg_age_ms = round(sum(ages_ms) / len(ages_ms), 1) if ages_ms else 0.0
     min_age_ms = min(ages_ms) if ages_ms else 0.0
+
 
     spot_info = {}
     for idx in ("NIFTY", "BANKNIFTY", "SENSEX"):
