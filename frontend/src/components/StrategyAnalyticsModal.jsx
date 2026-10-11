@@ -316,15 +316,15 @@ export function StrategyAnalyticsModal({ strategy, mode = "live", onClose }) {
   const pageRows = rowsDesc.slice(page * pageSize, page * pageSize + pageSize);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-2 sm:p-4 backdrop-blur-md">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-1.5 sm:p-4 backdrop-blur-md">
       <motion.div
         initial={{ scale: 0.95, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.95, opacity: 0 }}
-        className="flex max-h-[92vh] w-full max-w-6xl flex-col rounded-2xl border border-subtle bg-surface shadow-2xl overflow-hidden"
+        className="flex max-h-[95dvh] sm:max-h-[92vh] w-full max-w-6xl flex-col rounded-2xl border border-subtle bg-surface shadow-2xl overflow-hidden"
       >
         {/* Modal Top Bar */}
-        <div className="flex items-center justify-between border-b border-subtle px-6 py-4 bg-surface2/50">
+        <div className="flex items-center justify-between border-b border-subtle px-3 sm:px-6 py-2.5 sm:py-4 bg-surface2/50">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent/15 text-accent border border-accent/20">
               <TrendingUp className="h-5 w-5" />

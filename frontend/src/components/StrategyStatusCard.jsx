@@ -603,60 +603,60 @@ export function StrategyStatusList({ strategies = [], pendingSignals = [] }) {
   return (
     <div className="space-y-4">
       {/* Header Controls & Filter Bar */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between rounded-2xl border border-subtle bg-surface p-3.5 sm:p-4 shadow-sm">
-        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+      <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between rounded-2xl border border-subtle bg-surface p-2.5 sm:p-4 shadow-sm">
+        <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar py-0.5 w-full sm:w-auto shrink-0">
           <button
             onClick={() => setFilterTab("all")}
-            className={`rounded-xl px-3 py-1.5 text-xs font-bold transition ${filterTab === "all" ? "bg-accent text-white shadow-sm" : "bg-surface2 text-muted hover:bg-surface3 hover:text-primary"}`}
+            className={`shrink-0 rounded-xl px-2.5 sm:px-3 py-1.5 text-xs font-bold transition ${filterTab === "all" ? "bg-accent text-white shadow-sm" : "bg-surface2 text-muted hover:bg-surface3 hover:text-primary"}`}
           >
             All ({strategies.length})
           </button>
           <button
             onClick={() => setFilterTab("nifty")}
-            className={`rounded-xl px-3 py-1.5 text-xs font-bold transition ${filterTab === "nifty" ? "bg-accent text-white shadow-sm" : "bg-surface2 text-muted hover:bg-surface3 hover:text-primary"}`}
+            className={`shrink-0 rounded-xl px-2.5 sm:px-3 py-1.5 text-xs font-bold transition ${filterTab === "nifty" ? "bg-accent text-white shadow-sm" : "bg-surface2 text-muted hover:bg-surface3 hover:text-primary"}`}
           >
             NIFTY ({niftyCount})
           </button>
           <button
             onClick={() => setFilterTab("sensex")}
-            className={`rounded-xl px-3 py-1.5 text-xs font-bold transition ${filterTab === "sensex" ? "bg-accent text-white shadow-sm" : "bg-surface2 text-muted hover:bg-surface3 hover:text-primary"}`}
+            className={`shrink-0 rounded-xl px-2.5 sm:px-3 py-1.5 text-xs font-bold transition ${filterTab === "sensex" ? "bg-accent text-white shadow-sm" : "bg-surface2 text-muted hover:bg-surface3 hover:text-primary"}`}
           >
             SENSEX ({sensexCount})
           </button>
           <button
             onClick={() => setFilterTab("banknifty")}
-            className={`rounded-xl px-3 py-1.5 text-xs font-bold transition ${filterTab === "banknifty" ? "bg-accent text-white shadow-sm" : "bg-surface2 text-muted hover:bg-surface3 hover:text-primary"}`}
+            className={`shrink-0 rounded-xl px-2.5 sm:px-3 py-1.5 text-xs font-bold transition ${filterTab === "banknifty" ? "bg-accent text-white shadow-sm" : "bg-surface2 text-muted hover:bg-surface3 hover:text-primary"}`}
           >
             BANKNIFTY ({bankNiftyCount})
           </button>
           <button
             onClick={() => setFilterTab("5m")}
-            className={`rounded-xl px-3 py-1.5 text-xs font-bold transition ${filterTab === "5m" ? "bg-accent text-white shadow-sm" : "bg-surface2 text-muted hover:bg-surface3 hover:text-primary"}`}
+            className={`shrink-0 rounded-xl px-2.5 sm:px-3 py-1.5 text-xs font-bold transition ${filterTab === "5m" ? "bg-accent text-white shadow-sm" : "bg-surface2 text-muted hover:bg-surface3 hover:text-primary"}`}
           >
             5M ITM ({fiveMCount})
           </button>
           <button
             onClick={() => setFilterTab("1m")}
-            className={`rounded-xl px-3 py-1.5 text-xs font-bold transition ${filterTab === "1m" ? "bg-accent text-white shadow-sm" : "bg-surface2 text-muted hover:bg-surface3 hover:text-primary"}`}
+            className={`shrink-0 rounded-xl px-2.5 sm:px-3 py-1.5 text-xs font-bold transition ${filterTab === "1m" ? "bg-accent text-white shadow-sm" : "bg-surface2 text-muted hover:bg-surface3 hover:text-primary"}`}
           >
             1M ATM ({oneMCount})
           </button>
           <button
             onClick={() => setFilterTab("ce")}
-            className={`rounded-xl px-3 py-1.5 text-xs font-bold transition ${filterTab === "ce" ? "bg-bull text-white shadow-sm" : "bg-surface2 text-muted hover:bg-surface3 hover:text-primary"}`}
+            className={`shrink-0 rounded-xl px-2.5 sm:px-3 py-1.5 text-xs font-bold transition ${filterTab === "ce" ? "bg-bull text-white shadow-sm" : "bg-surface2 text-muted hover:bg-surface3 hover:text-primary"}`}
           >
             Bullish (CE)
           </button>
           <button
             onClick={() => setFilterTab("pe")}
-            className={`rounded-xl px-3 py-1.5 text-xs font-bold transition ${filterTab === "pe" ? "bg-bear text-white shadow-sm" : "bg-surface2 text-muted hover:bg-surface3 hover:text-primary"}`}
+            className={`shrink-0 rounded-xl px-2.5 sm:px-3 py-1.5 text-xs font-bold transition ${filterTab === "pe" ? "bg-bear text-white shadow-sm" : "bg-surface2 text-muted hover:bg-surface3 hover:text-primary"}`}
           >
             Bearish (PE)
           </button>
           {activeCount > 0 && (
             <button
               onClick={() => setFilterTab("active")}
-              className={`rounded-xl px-3 py-1.5 text-xs font-bold flex items-center gap-1.5 transition ${filterTab === "active" ? "bg-bull text-white" : "bg-bull/15 text-bull border border-bull/30"}`}
+              className={`shrink-0 rounded-xl px-2.5 sm:px-3 py-1.5 text-xs font-bold flex items-center gap-1.5 transition ${filterTab === "active" ? "bg-bull text-white" : "bg-bull/15 text-bull border border-bull/30"}`}
             >
               <StatusBeacon entered={true} />
               In Trade ({activeCount})
@@ -665,9 +665,10 @@ export function StrategyStatusList({ strategies = [], pendingSignals = [] }) {
         </div>
 
         {/* Search & View Switcher */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center justify-between sm:justify-end gap-2 w-full sm:w-auto">
           <div className="relative flex-1 sm:w-60">
             <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-faint" />
+
             <input
               type="text"
               placeholder="Search strategies…"

@@ -60,7 +60,7 @@ export function StrategyDetailModal({ strategy, onClose }) {
         exit={{ opacity: 0 }}
       >
         <motion.div
-          className="flex max-h-[88vh] w-full max-w-3xl flex-col rounded-3xl border border-subtle bg-surface p-5 sm:p-7 shadow-2xl overflow-y-auto"
+          className="flex max-h-[92dvh] sm:max-h-[88vh] w-full max-w-3xl flex-col rounded-2xl sm:rounded-3xl border border-subtle bg-surface p-3.5 sm:p-7 shadow-2xl overflow-y-auto"
           onClick={(e) => e.stopPropagation()}
           initial={{ opacity: 0, scale: 0.96, y: 15 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}

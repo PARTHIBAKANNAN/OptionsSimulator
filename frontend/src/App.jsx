@@ -36,7 +36,7 @@ function Dashboard({ user, onLogout }) {
         tabs={TABS} activeTab={activeTab} onSelect={setActiveTab}
         user={user} theme={theme} onToggleTheme={toggle} onLogout={onLogout}
       />
-      <main className="bg-surface2 p-2 sm:p-4 lg:p-6 min-h-[calc(100vh-64px)]">
+      <main className="bg-surface2 p-2 sm:p-4 lg:p-6 min-h-[calc(100vh-64px)] pb-[calc(env(safe-area-inset-bottom)+4.5rem)] md:pb-6">
         <div className="mx-auto max-w-[1720px] w-full">
           <AnimatePresence mode="wait">
             <motion.div

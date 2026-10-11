@@ -64,7 +64,7 @@ export function ChartModal({
   return createPortal(
     <AnimatePresence>
       <motion.div
-        className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/80 p-3 sm:p-5 backdrop-blur-md"
+        className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/85 p-0 sm:p-4 backdrop-blur-md"
         onClick={onClose}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -72,89 +72,95 @@ export function ChartModal({
         transition={{ duration: 0.15 }}
       >
         <motion.div
-          className="flex h-[95vh] w-[98vw] max-w-[98vw] flex-col rounded-3xl border border-subtle bg-surface p-3 sm:p-5 shadow-2xl overflow-hidden"
+          className="flex h-[100dvh] sm:h-[95vh] w-full sm:w-[98vw] max-w-[98vw] flex-col rounded-none sm:rounded-3xl border-0 sm:border border-subtle bg-surface p-2 sm:p-5 shadow-2xl overflow-hidden pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]"
           onClick={(e) => e.stopPropagation()}
-          initial={{ opacity: 0, scale: 0.96, y: 15 }}
+          initial={{ opacity: 0, scale: 0.98, y: 15 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.96, y: 15 }}
+          exit={{ opacity: 0, scale: 0.98, y: 15 }}
           transition={{ duration: 0.18, ease: "easeOut" }}
         >
           {/* Top Control Header */}
-          <div className="mb-3 flex flex-wrap items-center justify-between gap-3 border-b border-subtle pb-3">
-            <div className="flex flex-wrap items-center gap-3">
+          <div className="mb-2 sm:mb-3 flex flex-col gap-2 border-b border-subtle pb-2 sm:pb-3">
+            {/* Row 1: Active Index & Price + Action Buttons */}
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                <span className="text-sm sm:text-base font-black text-primary truncate">
+                  {activeTab}
+                </span>
+
+                <div className="flex items-baseline gap-1.5 sm:gap-2">
+                  <span className="font-mono text-base sm:text-2xl font-black text-primary tabular-nums">
+                    {fmtNum(currentPrice)}
+                  </span>
+                  {currentChange != null && (
+                    <span className={`font-mono text-[11px] sm:text-xs font-bold tabular-nums flex items-center gap-0.5 ${positive ? "text-bull" : "text-bear"}`}>
+                      {positive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+                      {positive ? "+" : ""}{fmtNum(currentChange)} ({positive ? "+" : ""}{Number(currentChangePct).toFixed(2)}%)
+                    </span>
+                  )}
+                </div>
+
+                <span className="hidden lg:inline-flex items-center gap-1 rounded-full bg-cyan-500/10 px-2.5 py-0.5 text-[10px] font-bold text-cyan-400 border border-cyan-500/20">
+                  <Layers className="h-3 w-3" />
+                  EMA 20 (Cyan) • EMA 50 (Orange)
+                </span>
+              </div>
+
+              {/* Right: Dual View Toggle + Close Button */}
+              <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+                <button
+                  onClick={() => setDualView(!dualView)}
+                  title={dualView ? "Switch to single chart view" : "Switch to dual chart view"}
+                  className="hidden sm:flex items-center gap-1 rounded-xl border border-subtle bg-surface2 px-2.5 py-1 text-xs font-bold text-muted hover:bg-surface3 hover:text-primary transition"
+                >
+                  {dualView ? <Square className="h-3.5 w-3.5" /> : <Columns2 className="h-3.5 w-3.5" />}
+                  <span>{dualView ? "Single" : "Dual"}</span>
+                </button>
+
+                <button
+                  onClick={onClose}
+                  className="rounded-xl p-2 text-faint hover:bg-surface2 hover:text-primary transition min-h-[44px] min-w-[44px] flex items-center justify-center"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Row 2: Selectors (Index tabs + Timeframe pills) */}
+            <div className="flex items-center justify-between gap-2 overflow-x-auto no-scrollbar py-0.5">
               {/* Index Switcher Tabs */}
-              <div className="flex items-center gap-1 rounded-xl bg-surface2 p-1 border border-subtle">
-                <button
-                  onClick={() => setActiveTab("NIFTY")}
-                  className={`rounded-lg px-3.5 py-1 text-xs font-bold transition ${
-                    activeTab === "NIFTY" ? "bg-accent text-white shadow-sm" : "text-faint hover:text-primary"
-                  }`}
-                >
-                  NIFTY 50
-                </button>
-                <button
-                  onClick={() => setActiveTab("SENSEX")}
-                  className={`rounded-lg px-3.5 py-1 text-xs font-bold transition ${
-                    activeTab === "SENSEX" ? "bg-accent text-white shadow-sm" : "text-faint hover:text-primary"
-                  }`}
-                >
-                  SENSEX
-                </button>
-                <button
-                  onClick={() => setActiveTab("BANKNIFTY")}
-                  className={`rounded-lg px-3.5 py-1 text-xs font-bold transition ${
-                    activeTab === "BANKNIFTY" ? "bg-accent text-white shadow-sm" : "text-faint hover:text-primary"
-                  }`}
-                >
-                  BANKNIFTY
-                </button>
+              <div className="flex items-center gap-1 rounded-xl bg-surface2 p-0.5 sm:p-1 border border-subtle shrink-0">
+                {["NIFTY", "SENSEX", "BANKNIFTY"].map((idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setActiveTab(idx)}
+                    className={`rounded-lg px-2.5 sm:px-3 py-1 text-[11px] sm:text-xs font-bold transition ${
+                      activeTab === idx ? "bg-accent text-white shadow-sm" : "text-faint hover:text-primary"
+                    }`}
+                  >
+                    {idx === "NIFTY" ? "NIFTY 50" : idx}
+                  </button>
+                ))}
               </div>
 
               {/* Timeframe Switcher Tabs */}
-              <div className="flex items-center gap-1 rounded-xl bg-surface2 p-1 border border-subtle">
+              <div className="flex items-center gap-1 rounded-xl bg-surface2 p-0.5 sm:p-1 border border-subtle shrink-0">
                 {["1m", "3m", "5m", "15m", "1h", "1D"].map((tf) => (
                   <button
                     key={tf}
                     onClick={() => setTimeframe(tf)}
-                    className={`rounded-lg px-2.5 py-1 text-xs font-bold transition ${
+                    className={`rounded-lg px-2 sm:px-2.5 py-1 text-[11px] sm:text-xs font-bold transition ${
                       timeframe === tf ? "bg-accent text-white shadow-sm" : "text-faint hover:text-primary"
                     }`}
                   >
                     {tf}
                   </button>
                 ))}
+                {loadingTf && <Loader2 className="h-3 w-3 animate-spin text-accent ml-1" />}
               </div>
-              {loadingTf && <Loader2 className="h-3.5 w-3.5 animate-spin text-accent" />}
-
-              {/* Exact Price for Active Tab */}
-              <div className="flex items-baseline gap-2">
-                <span className="font-mono text-xl sm:text-2xl font-black text-primary tabular-nums">
-                  {fmtNum(currentPrice)}
-                </span>
-                {currentChange != null && (
-                  <span className={`font-mono text-xs font-bold tabular-nums flex items-center gap-0.5 ${positive ? "text-bull" : "text-bear"}`}>
-                    {positive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-                    {positive ? "+" : ""}{fmtNum(currentChange)} ({positive ? "+" : ""}{Number(currentChangePct).toFixed(2)}%)
-                  </span>
-                )}
-              </div>
-
-              <span className="hidden md:inline-flex items-center gap-1 rounded-full bg-cyan-500/10 px-2.5 py-0.5 text-[10px] font-bold text-cyan-400 border border-cyan-500/20">
-                <Layers className="h-3 w-3" />
-                EMA 20 (Cyan) • EMA 50 (Orange)
-              </span>
-            </div>
-
-            {/* Right: Close Button */}
-            <div className="flex items-center gap-2">
-              <button
-                onClick={onClose}
-                className="rounded-xl p-1.5 text-faint hover:bg-surface2 hover:text-primary transition"
-              >
-                <X className="h-5 w-5" />
-              </button>
             </div>
           </div>
+
 
           {/* Main Chart Canvas Area */}
           <div className="min-h-0 flex-1 relative">

@@ -21,29 +21,35 @@ function IndexCard({ label, price, prevClose, change, changePct, exchangeOpen, o
   const positive = (change ?? 0) >= 0;
 
   return (
-    <div className="flex items-center gap-3.5 rounded-xl border border-subtle/80 bg-surface2/70 px-4 py-2.5 backdrop-blur-md shadow-sm transition hover:border-border-strong">
-      <div>
-        <div className="flex items-center gap-1.5">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-faint">{label}</span>
+    <div 
+      onClick={onOpenChart}
+      className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-3.5 rounded-xl border border-subtle/80 bg-surface2/70 p-2 sm:px-4 sm:py-2.5 backdrop-blur-md shadow-sm transition hover:border-border-strong cursor-pointer"
+    >
+      <div className="min-w-0">
+        <div className="flex items-center gap-1">
+          <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-faint truncate">{label}</span>
           <button
-            onClick={onOpenChart}
+            onClick={(e) => {
+              e.stopPropagation();
+              onOpenChart();
+            }}
             title={`Open interactive ${label} chart`}
-            className="text-faint hover:text-accent transition ml-1"
+            className="text-faint hover:text-accent transition shrink-0"
           >
-            <BarChart2 className="h-3.5 w-3.5" />
+            <BarChart2 className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
           </button>
         </div>
-        <div className="font-mono text-xl sm:text-2xl font-black text-primary tracking-tight tabular-nums">
+        <div className="font-mono text-sm sm:text-xl md:text-2xl font-black text-primary tracking-tight tabular-nums truncate">
           {hasPrice ? fmtRupee(price) : "24,823.15"}
         </div>
       </div>
 
-      <div className={`flex flex-col text-right font-mono text-xs font-bold tabular-nums ${positive ? "text-bull" : "text-bear"}`}>
-        <span className="flex items-center justify-end gap-0.5">
-          {positive ? <TrendingUp className="h-3.5 w-3.5" /> : <TrendingDown className="h-3.5 w-3.5" />}
+      <div className={`flex flex-col sm:text-right font-mono text-[10px] sm:text-xs font-bold tabular-nums ${positive ? "text-bull" : "text-bear"}`}>
+        <span className="flex items-center sm:justify-end gap-0.5 truncate">
+          {positive ? <TrendingUp className="h-3 w-3 sm:h-3.5 sm:w-3.5" /> : <TrendingDown className="h-3 w-3 sm:h-3.5 sm:w-3.5" />}
           {positive ? "+" : ""}{change != null ? fmtRupee(change) : "+124.75"}
         </span>
-        <span className="text-[11px] opacity-90">
+        <span className="text-[9px] sm:text-[11px] opacity-90">
           ({positive ? "+" : ""}{changePct != null ? changePct.toFixed(2) : "0.51"}%)
         </span>
       </div>
@@ -78,12 +84,12 @@ export function MarketHeader({ state }) {
   }
 
   return (
-    <div className="rounded-2xl border border-subtle bg-surface p-3.5 sm:p-4 shadow-sm backdrop-blur-sm">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        {/* Left: Index Price Blocks */}
-        <div className="flex flex-wrap items-center gap-3">
+    <div className="rounded-2xl border border-subtle bg-surface p-2.5 sm:p-4 shadow-sm backdrop-blur-sm">
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 sm:gap-4">
+        {/* Left: 3 Index Tickers (3-column on mobile, flex on desktop) */}
+        <div className="grid grid-cols-3 gap-1.5 sm:gap-3 lg:flex lg:flex-wrap lg:items-center">
           <IndexCard
-            label="NIFTY 50" price={nifty_price} prevClose={nifty_prev_close} change={nifty_change}
+            label="NIFTY" price={nifty_price} prevClose={nifty_prev_close} change={nifty_change}
             changePct={nifty_change_pct} exchangeOpen={exchange_open} onOpenChart={() => setChartFor("NIFTY")}
           />
           <IndexCard
@@ -97,58 +103,64 @@ export function MarketHeader({ state }) {
         </div>
 
         {/* Right: Market Status & System Diagnostics */}
-        <div className="flex flex-col items-end gap-1.5 text-right">
-          <div className="flex flex-wrap items-center justify-end gap-2">
-            {exchange_open ? (
-              <span className="flex items-center gap-1.5 rounded-full bg-bull/15 px-3 py-1 text-xs font-bold text-bull border border-bull/30">
-                <span className="relative flex h-2 w-2">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-bull opacity-75" />
-                  <span className="relative inline-flex h-2 w-2 rounded-full bg-bull" />
+        <div className="flex flex-col items-start lg:items-end gap-1.5 pt-2 border-t border-subtle/60 lg:border-t-0 lg:pt-0">
+          <div className="flex flex-wrap items-center justify-between w-full lg:w-auto lg:justify-end gap-1.5 sm:gap-2">
+            <div className="flex items-center gap-1.5">
+              {exchange_open ? (
+                <span className="flex items-center gap-1 rounded-full bg-bull/15 px-2.5 py-0.5 sm:px-3 sm:py-1 text-[11px] sm:text-xs font-bold text-bull border border-bull/30">
+                  <span className="relative flex h-2 w-2">
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-bull opacity-75" />
+                    <span className="relative inline-flex h-2 w-2 rounded-full bg-bull" />
+                  </span>
+                  LIVE
                 </span>
-                LIVE MARKET
-              </span>
-            ) : (
-              <span className="flex items-center gap-1.5 rounded-full bg-surface3 px-3 py-1 text-xs font-bold text-muted border border-subtle">
-                <Clock className="h-3.5 w-3.5 text-faint" />
-                {isWeekend ? "WEEKEND (Market Closed)" : "AFTER-HOURS (Closed at 15:30 IST)"}
-              </span>
-            )}
+              ) : (
+                <span className="flex items-center gap-1 rounded-full bg-surface3 px-2.5 py-0.5 sm:px-3 sm:py-1 text-[11px] sm:text-xs font-bold text-muted border border-subtle">
+                  <Clock className="h-3 w-3 text-faint" />
+                  {isWeekend ? "WEEKEND" : "AFTER-HOURS"}
+                </span>
+              )}
 
-            {mode === "live" && (
-              <span className={`flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-bold ${fyers_authenticated ? "bg-cyan-500/15 text-cyan-400 border border-cyan-500/30" : "bg-amber-500/15 text-amber-400 border border-amber-500/30"}`}>
-                <ShieldCheck className="h-3 w-3" />
-                {fyers_authenticated ? "Live Connected" : "Awaiting Daily Login (08:50 AM)"}
-              </span>
-            )}
+              {mode === "live" && (
+                <span className={`flex items-center gap-1 rounded-full px-2 py-0.5 sm:px-2.5 sm:py-1 text-[11px] sm:text-xs font-bold ${fyers_authenticated ? "bg-cyan-500/15 text-cyan-400 border border-cyan-500/30" : "bg-amber-500/15 text-amber-400 border border-amber-500/30"}`}>
+                  <ShieldCheck className="h-3 w-3" />
+                  <span className="hidden sm:inline">{fyers_authenticated ? "Live Connected" : "Awaiting Login"}</span>
+                  <span className="sm:hidden">{fyers_authenticated ? "Live" : "Auth"}</span>
+                </span>
+              )}
+            </div>
 
-            {/* Audio Alert Toggle Button */}
-            <button
-              onClick={() => setSoundMuted(soundEngine.toggleMute())}
-              title={soundMuted ? "Sound alerts muted. Click to enable audio FX" : "Sound alerts active. Click to mute"}
-              className={`flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold transition border ${
-                soundMuted
-                  ? "border-subtle bg-surface2 text-faint hover:text-primary"
-                  : "border-accent/40 bg-accent/15 text-accent shadow-sm"
-              }`}
-            >
-              {soundMuted ? <VolumeX className="h-3.5 w-3.5" /> : <Volume2 className="h-3.5 w-3.5" />}
-              <span>{soundMuted ? "Muted" : "Sound On"}</span>
-            </button>
+            <div className="flex items-center gap-1.5">
+              {/* Audio Alert Toggle Button */}
+              <button
+                onClick={() => setSoundMuted(soundEngine.toggleMute())}
+                title={soundMuted ? "Sound alerts muted" : "Sound alerts active"}
+                className={`flex items-center gap-1 rounded-full px-2.5 py-0.5 sm:px-3 sm:py-1 text-[11px] sm:text-xs font-bold transition border ${
+                  soundMuted
+                    ? "border-subtle bg-surface2 text-faint hover:text-primary"
+                    : "border-accent/40 bg-accent/15 text-accent shadow-sm"
+                }`}
+              >
+                {soundMuted ? <VolumeX className="h-3 w-3" /> : <Volume2 className="h-3 w-3" />}
+                <span className="hidden sm:inline">{soundMuted ? "Muted" : "Sound On"}</span>
+              </button>
 
-            <button
-              onClick={handleSquareOffAll}
-              disabled={squaringOff}
-              className="rounded-full border border-bear/50 bg-bear/10 px-3.5 py-1 text-xs font-bold text-bear hover:bg-bear hover:text-white transition disabled:opacity-50"
-            >
-              {squaringOff ? "Squaring off…" : "Square Off All"}
-            </button>
+              <button
+                onClick={handleSquareOffAll}
+                disabled={squaringOff}
+                className="rounded-full border border-bear/50 bg-bear/10 px-2.5 py-0.5 sm:px-3.5 sm:py-1 text-[11px] sm:text-xs font-bold text-bear hover:bg-bear hover:text-white transition disabled:opacity-50"
+              >
+                {squaringOff ? "Closing…" : "Square Off"}
+              </button>
+            </div>
           </div>
 
-          <div className="text-[11px] text-faint font-mono font-medium">
+          <div className="text-[10px] sm:text-[11px] text-faint font-mono font-medium">
             Last Sync: {fmtTime(timestamp || new Date().toISOString())} IST
           </div>
         </div>
       </div>
+
 
       {chartFor && (
         <ChartModal
