@@ -76,3 +76,137 @@ def test_aliceblue_client_tick_dispatch():
     assert snap.bid == 189.15
     assert snap.ask == 189.25
     assert snap.source == "ws"
+
+
+def test_aliceblue_session_date_rollover_rejection(tmp_path):
+    import json
+    import base64
+    import time
+    from datetime import datetime, timedelta
+    from zoneinfo import ZoneInfo
+    IST = ZoneInfo("Asia/Kolkata")
+
+    cache_file = tmp_path / "aliceblue_token.json"
+    yesterday = datetime.now(IST) - timedelta(days=1)
+    
+    # Create fake JWT with iat from yesterday but exp in future
+    header = base64.b64encode(json.dumps({"alg": "HS256", "typ": "JWT"}).encode()).decode()
+    payload = base64.b64encode(json.dumps({
+        "userId": "2628887",
+        "iat": int(yesterday.timestamp()),
+        "exp": int(time.time() + 3600),
+    }).encode()).decode()
+    fake_token = f"{header}.{payload}.signature"
+
+    cache_file.write_text(json.dumps({
+        "user_session": fake_token,
+        "date": yesterday.date().isoformat(),
+        "updated_at": yesterday.isoformat(),
+    }), encoding="utf-8")
+
+    client = AliceBlueClient(
+        user_id="2628887",
+        token_cache_path=cache_file,
+    )
+    # Must reject yesterday's cached token
+    assert client._restore_session() is False
+    assert client.is_authenticated is False
+
+
+def test_aliceblue_session_same_day_restore(tmp_path):
+    import json
+    import base64
+    import time
+    from datetime import datetime
+    from zoneinfo import ZoneInfo
+    IST = ZoneInfo("Asia/Kolkata")
+
+    cache_file = tmp_path / "aliceblue_token.json"
+    today = datetime.now(IST)
+    
+    header = base64.b64encode(json.dumps({"alg": "HS256", "typ": "JWT"}).encode()).decode()
+    payload = base64.b64encode(json.dumps({
+        "userId": "2628887",
+        "iat": int(today.timestamp()),
+        "exp": int(time.time() + 3600),
+    }).encode()).decode()
+    fake_token = f"{header}.{payload}.signature"
+
+    cache_file.write_text(json.dumps({
+        "user_session": fake_token,
+        "date": today.date().isoformat(),
+        "updated_at": today.isoformat(),
+    }), encoding="utf-8")
+
+    client = AliceBlueClient(
+        user_id="2628887",
+        token_cache_path=cache_file,
+    )
+    # Must restore today's cached token
+    assert client._restore_session() is True
+    assert client.is_authenticated is True
+
+
+def test_aliceblue_auto_login_flow_with_totp_key(tmp_path, monkeypatch):
+    import base64
+    import time
+    from unittest.mock import MagicMock
+    import pyotp
+
+    # Generate test TOTP key
+    test_totp_key = pyotp.random_base32()
+    client = AliceBlueClient(
+        user_id="2628887",
+        password="MySecretPassword123",
+        totp_key=test_totp_key,
+        token_cache_path=tmp_path / "aliceblue_token.json",
+    )
+
+    # Mock requests.Session
+    mock_session = MagicMock()
+    
+    # Step 1: verify/user response
+    r1 = MagicMock(status_code=200)
+    r1.json.return_value = {"status": "success"}
+
+    # Step 2: enckey response
+    r2 = MagicMock(status_code=200)
+    r2.json.return_value = {"result": [{"encKey": "mock_encryption_key_12345"}]}
+
+    # Step 3: pwd/validate response
+    r3 = MagicMock(status_code=200)
+    r3.json.return_value = {"result": [{"token": "step3_web_token_abc"}]}
+
+    from datetime import datetime
+    from zoneinfo import ZoneInfo
+    import json
+    today = datetime.now(ZoneInfo("Asia/Kolkata"))
+    header = base64.b64encode(b'{"alg":"HS256"}').decode()
+    payload = base64.b64encode(json.dumps({"userId": "2628887", "iat": int(today.timestamp()), "exp": int(time.time() + 86400)}).encode()).decode()
+    access_token = f"{header}.{payload}.signature"
+
+    r4 = MagicMock(status_code=200)
+    r4.json.return_value = {"result": [{"accessToken": access_token}]}
+
+    mock_session.post.side_effect = [r1, r2, r3, r4]
+    monkeypatch.setattr("requests.Session", lambda: mock_session)
+
+    # Auto-login with totp=None should auto-generate TOTP code and succeed
+    success = client.authenticate(totp=None)
+    assert success is True
+    assert client.is_authenticated is True
+    assert client._user_session == access_token
+    assert (tmp_path / "aliceblue_token.json").exists()
+
+
+def test_aliceblue_auto_login_failure_falls_back_to_unauthenticated(tmp_path):
+    client = AliceBlueClient(
+        user_id="2628887",
+        password="MySecretPassword123",
+        totp_key="",  # No TOTP key configured
+        token_cache_path=tmp_path / "aliceblue_token.json",
+    )
+    # When auto-login runs without TOTP key, it should fail gracefully
+    success = client.authenticate(totp=None)
+    assert success is False
+    assert client.is_authenticated is False

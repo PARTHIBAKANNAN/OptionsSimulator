@@ -528,29 +528,42 @@ class LiveTrader:
         # Alice Blue broker workflow
         if getattr(self, "aliceblue", None) and self.config.broker == "aliceblue":
             if in_login_window and self._last_login_date != now.date():
-                if self.aliceblue.initialize():
-                    self._last_login_date = now.date()
-                    self.initialize_contracts()
-                    logger.info("Alice Blue daily session & contracts initialized.")
+                now_wall = time.time()
+                last_ts = getattr(self, "_last_alice_attempt_ts", 0.0)
+                if (now_wall - last_ts) >= 15.0:
+                    self._last_alice_attempt_ts = now_wall
+                    logger.info("Attempting automatic Alice Blue daily login and contract initialization...")
+                    if self.aliceblue.initialize():
+                        self._last_login_date = now.date()
+                        self.initialize_contracts()
+                        logger.info("Alice Blue daily session & contracts initialized successfully.")
+                    else:
+                        logger.warning("Alice Blue auto-login attempt failed or awaiting manual TOTP.")
 
             if market_open and not self._connected:
                 if not self.aliceblue.is_authenticated:
-                    self.aliceblue.initialize()
-                self.initialize_contracts()
-                self.aliceblue.connect_websocket()
-                for _ in range(15):
+                    now_wall = time.time()
+                    last_ts = getattr(self, "_last_alice_attempt_ts", 0.0)
+                    if (now_wall - last_ts) >= 15.0:
+                        self._last_alice_attempt_ts = now_wall
+                        self.aliceblue.initialize()
+                if self.aliceblue.is_authenticated:
+                    self.initialize_contracts()
+                    self.aliceblue.connect_websocket()
+                    for _ in range(25):
+                        if self.aliceblue.is_connected:
+                            break
+                        time.sleep(0.1)
                     if self.aliceblue.is_connected:
-                        break
-                    time.sleep(0.1)
-                if self.aliceblue.is_connected:
-                    self._connected = True
-                    self.readiness_stage = "SUBSCRIPTION_READY"
-                    spot_prices = {
-                        k: (getattr(dm.get_current_candle(), "close", 0.0) or (22500.0 if k == "NIFTY" else (55200.0 if k == "BANKNIFTY" else 81000.0)))
-                        for k, dm in self.data_managers.items()
-                    }
-                    self.aliceblue.subscribe_strike_corridor(spot_prices)
-                    logger.info("Readiness Stage -> SUBSCRIPTION_READY (Alice Blue strike corridor active)")
+                        self._connected = True
+                        self._last_login_date = now.date()
+                        self.readiness_stage = "SUBSCRIPTION_READY"
+                        spot_prices = {
+                            k: (getattr(dm.get_current_candle(), "close", 0.0) or (22500.0 if k == "NIFTY" else (55200.0 if k == "BANKNIFTY" else 81000.0)))
+                            for k, dm in self.data_managers.items()
+                        }
+                        self.aliceblue.subscribe_strike_corridor(spot_prices)
+                        logger.info("Readiness Stage -> SUBSCRIPTION_READY (Alice Blue strike corridor active)")
             elif not market_open and self._connected:
                 self.aliceblue.disconnect()
                 self._connected = False

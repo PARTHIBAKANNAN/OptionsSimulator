@@ -127,20 +127,35 @@ class AliceBlueClient:
             payload_bytes = base64.b64decode(parts[1] + "==")
             payload = json.loads(payload_bytes.decode("utf-8"))
             exp = payload.get("exp", 0)
-            return exp > (time.time() + 300)  # At least 5 mins remaining
+            if exp <= (time.time() + 300):
+                return False
+            # Check issued-at date in IST: broker sessions do not survive across calendar days
+            iat = payload.get("iat", 0)
+            if iat:
+                iat_date = datetime.fromtimestamp(iat, tz=IST).date()
+                today_date = datetime.now(IST).date()
+                if iat_date < today_date:
+                    logger.info("Alice Blue session was issued on %s (< today %s) - expired for morning login.", iat_date, today_date)
+                    return False
+            return True
         except Exception:
             return False
 
     def _restore_session(self) -> bool:
+        today_date = datetime.now(IST).date()
         if self._user_session and self._is_token_valid(self._user_session):
             return True
         if self.token_cache_path.exists():
             try:
                 data = json.loads(self.token_cache_path.read_text(encoding="utf-8"))
+                cached_date = data.get("date")
+                if cached_date and cached_date != today_date.isoformat():
+                    logger.info("Cached Alice Blue session is from %s (< today %s) - requiring fresh daily login.", cached_date, today_date)
+                    return False
                 token = data.get("user_session") or data.get("userSession") or ""
                 if self._is_token_valid(token):
                     self._user_session = token
-                    logger.info("Restored valid Alice Blue session from %s", self.token_cache_path.name)
+                    logger.info("Restored valid Alice Blue session for today (%s)", today_date)
                     return True
             except Exception as e:
                 logger.warning("Failed to restore session from cache: %s", e)
@@ -291,12 +306,14 @@ class AliceBlueClient:
 
     def _save_session(self, token: str) -> None:
         try:
+            now_ist = datetime.now(IST)
             self.token_cache_path.parent.mkdir(parents=True, exist_ok=True)
             self.token_cache_path.write_text(
                 json.dumps({
                     "user_session": token,
                     "userSession": token,
-                    "updated_at": datetime.now(IST).isoformat(),
+                    "date": now_ist.date().isoformat(),
+                    "updated_at": now_ist.isoformat(),
                 }, indent=2),
                 encoding="utf-8"
             )

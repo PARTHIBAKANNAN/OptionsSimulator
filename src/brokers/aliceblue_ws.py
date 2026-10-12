@@ -142,8 +142,8 @@ class AliceBlueWS:
                 logger.error("Failed to send subscription: %e", e)
 
     def _run_loop(self) -> None:
-        susertoken = self._compute_susertoken()
         while self._running:
+            susertoken = self._compute_susertoken()
             try:
                 def on_open(ws):
                     logger.info("Alice Blue WebSocket connected! Sending handshake...")

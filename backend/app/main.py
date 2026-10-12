@@ -416,6 +416,9 @@ async def aliceblue_login(request: Request):
 
     engine.initialize_contracts()
     engine.aliceblue.connect_websocket()
+    now_ist = datetime.now(IST)
+    engine._last_login_date = now_ist.date()
+    engine._connected = True
     return {"status": "ok", "message": "Alice Blue logged in and streaming live"}
 
 
