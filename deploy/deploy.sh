@@ -73,7 +73,7 @@ log "polling $HEALTH_URL"
 IST_HHMM=$(TZ=Asia/Kolkata date +%H%M)
 IST_DOW=$(TZ=Asia/Kolkata date +%u)  # 1=Monday .. 7=Sunday
 PAST_LOGIN_GATE=0
-if [ "$IST_DOW" -le 5 ] && [ "$IST_HHMM" -ge 0850 ]; then
+if [ "$IST_DOW" -le 5 ] && [ "$IST_HHMM" -ge 0850 ] && [ "$IST_HHMM" -lt 1535 ]; then
   PAST_LOGIN_GATE=1
 fi
 

@@ -69,6 +69,9 @@ class AliceBlueClient:
             1: "SENSEX",
         }
 
+        # Attempt to restore cached session from disk on startup
+        self._restore_session()
+
     @property
     def is_authenticated(self) -> bool:
         return bool(self._user_session and self._is_token_valid(self._user_session))
