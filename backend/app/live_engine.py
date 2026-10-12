@@ -211,7 +211,9 @@ class WebLiveEngine(LiveTrader):
             "pending_signals": pending_signals.list_pending(),
             "positions": [self._order_dict(o, current_prices) for o in self.paper_trader.get_positions()],
             "pnl": pnl,
-            "fyers_authenticated": bool(getattr(self.aliceblue, "is_authenticated", False) if getattr(self.config, "broker", "aliceblue") == "aliceblue" else self.fyers.access_token) if self.data_engine_enabled else None,
+            "broker": getattr(self.config, "broker", "aliceblue"),
+            "aliceblue_authenticated": bool(getattr(self.aliceblue, "is_authenticated", False) if getattr(self.config, "broker", "aliceblue") == "aliceblue" else self.fyers.access_token) if self.data_engine_enabled else None,
+            "broker_authenticated": bool(getattr(self.aliceblue, "is_authenticated", False) if getattr(self.config, "broker", "aliceblue") == "aliceblue" else self.fyers.access_token) if self.data_engine_enabled else None,
             "strategy_status": self._strategy_status_list(current_prices),
         })
 

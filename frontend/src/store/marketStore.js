@@ -16,6 +16,8 @@ let state = {
   pending_signals: [],
   positions: [],
   pnl: {},
+  aliceblue_authenticated: null,
+  broker_authenticated: null,
   fyers_authenticated: null,
   strategy_status: [],
 };

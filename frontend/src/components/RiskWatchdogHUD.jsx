@@ -137,7 +137,7 @@ export function RiskWatchdogHUD({ state = {} }) {
             <span className="text-accent font-bold">44 Strats</span>
           </div>
           <div className="mt-2 text-[10px] text-faint flex justify-between">
-            <span>Fyers Real-Time Stream</span>
+            <span>Alice Blue Real-Time Stream</span>
             <span>Auto Ref-Count: Active</span>
           </div>
         </div>

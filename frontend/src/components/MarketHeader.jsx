@@ -67,8 +67,9 @@ export function MarketHeader({ state }) {
     nifty_price, nifty_prev_close, nifty_change, nifty_change_pct, nifty_candles_5m,
     sensex_price, sensex_prev_close, sensex_change, sensex_change_pct, sensex_candles_5m,
     banknifty_price, banknifty_prev_close, banknifty_change, banknifty_change_pct, banknifty_candles_5m,
-    mode, exchange_open, fyers_authenticated, timestamp,
+    mode, exchange_open, fyers_authenticated, aliceblue_authenticated, broker_authenticated, timestamp,
   } = state;
+  const isAuth = Boolean(aliceblue_authenticated ?? broker_authenticated ?? fyers_authenticated);
 
   const now = new Date();
   const isWeekend = now.getDay() === 0 || now.getDay() === 6;
@@ -127,12 +128,16 @@ export function MarketHeader({ state }) {
                 <button
                   type="button"
                   onClick={() => setShowAliceModal(true)}
-                  title="Click to authenticate Alice Blue with daily TOTP"
-                  className={`flex items-center gap-1 rounded-full px-2 py-0.5 sm:px-2.5 sm:py-1 text-[11px] sm:text-xs font-bold transition hover:opacity-90 cursor-pointer ${fyers_authenticated ? "bg-cyan-500/15 text-cyan-400 border border-cyan-500/30" : "bg-amber-500/15 text-amber-400 border border-amber-500/30"}`}
+                  title="Click to view Alice Blue connection & submit daily morning TOTP"
+                  className={`flex items-center gap-1.5 rounded-full px-2.5 py-0.5 sm:px-3 sm:py-1 text-[11px] sm:text-xs font-bold transition hover:opacity-90 cursor-pointer ${
+                    isAuth
+                      ? "bg-cyan-500/15 text-cyan-400 border border-cyan-500/30"
+                      : "bg-amber-500/15 text-amber-400 border border-amber-500/30 animate-pulse"
+                  }`}
                 >
-                  <ShieldCheck className="h-3 w-3" />
-                  <span className="hidden sm:inline">{fyers_authenticated ? "Live Connected" : "Awaiting Login"}</span>
-                  <span className="sm:hidden">{fyers_authenticated ? "Live" : "Auth"}</span>
+                  <ShieldCheck className="h-3.5 w-3.5" />
+                  <span className="hidden sm:inline">{isAuth ? "Alice Blue Connected" : "Connect Alice Blue"}</span>
+                  <span className="sm:hidden">{isAuth ? "Alice Blue" : "Login"}</span>
                 </button>
               )}
             </div>

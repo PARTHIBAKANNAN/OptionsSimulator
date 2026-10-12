@@ -90,7 +90,7 @@ async def health(request: Request):
         "status": "ok",
         "mode": "live" if engine.data_engine_enabled else "replay",
         "broker": broker,
-        "fyers_authenticated": is_auth,
+        "aliceblue_authenticated": is_auth,
         "broker_authenticated": is_auth,
         "is_running": engine.is_running,
         "db_available": request.app.state.db_available,
@@ -167,7 +167,7 @@ async def master_health(request: Request):
         "db_available": request.app.state.db_available,
         "market_data": market_data_diag,
         "broker": getattr(getattr(engine, "config", None), "broker", "aliceblue"),
-        "fyers": {
+        "aliceblue": {
             "authenticated": bool(getattr(getattr(engine, "aliceblue", None), "is_authenticated", False) if getattr(getattr(engine, "config", None), "broker", "aliceblue") == "aliceblue" else (engine.fyers.access_token if engine.data_engine_enabled else False)),
             "connected": getattr(engine, "_connected", False),
             "monitored_symbols_count": len(getattr(getattr(getattr(engine, "aliceblue", None), "ws", None), "_subscribed_keys", set()) if getattr(getattr(engine, "config", None), "broker", "aliceblue") == "aliceblue" else getattr(engine, "_monitored_symbols", set())),
@@ -434,28 +434,31 @@ async def get_public_market_summary():
             if market_file.exists():
                 cached = json.loads(market_file.read_text(encoding="utf-8"))
                 return {
-                    "nifty_price": cached.get("nifty_price", 24252.00),
-                    "nifty_change": cached.get("nifty_change", 20.15),
-                    "nifty_change_pct": cached.get("nifty_change_pct", 0.08),
-                    "sensex_price": cached.get("sensex_price", 77540.83),
-                    "sensex_change": cached.get("sensex_change", 3.11),
-                    "sensex_change_pct": cached.get("sensex_change_pct", 0.00),
+                    "nifty_price": cached.get("nifty_price", 22363.35),
+                    "nifty_change": cached.get("nifty_change", -157.10),
+                    "nifty_change_pct": cached.get("nifty_change_pct", -0.70),
+                    "sensex_price": cached.get("sensex_price", 71924.68),
+                    "sensex_change": cached.get("sensex_change", -547.65),
+                    "sensex_change_pct": cached.get("sensex_change_pct", -0.76),
+                    "banknifty_price": cached.get("banknifty_price", 54918.00),
+                    "banknifty_change": cached.get("banknifty_change", -338.65),
+                    "banknifty_change_pct": cached.get("banknifty_change_pct", -0.61),
                     "market_open": current_state.get("market_open", False),
-                    "strategies_count": 21,
+                    "strategies_count": 44,
                 }
         except Exception:
             pass
 
     return {
-        "nifty_price": nifty or 24252.00,
-        "nifty_change": current_state.get("nifty_change") or 20.15,
-        "nifty_change_pct": current_state.get("nifty_change_pct") or 0.08,
-        "sensex_price": sensex or 77540.83,
-        "sensex_change": current_state.get("sensex_change") or 3.11,
-        "sensex_change_pct": current_state.get("sensex_change_pct") or 0.00,
-        "banknifty_price": current_state.get("banknifty_price") or 57496.30,
-        "banknifty_change": current_state.get("banknifty_change") or -13.65,
-        "banknifty_change_pct": current_state.get("banknifty_change_pct") or -0.02,
+        "nifty_price": nifty or 22363.35,
+        "nifty_change": current_state.get("nifty_change") or -157.10,
+        "nifty_change_pct": current_state.get("nifty_change_pct") or -0.70,
+        "sensex_price": sensex or 71924.68,
+        "sensex_change": current_state.get("sensex_change") or -547.65,
+        "sensex_change_pct": current_state.get("sensex_change_pct") or -0.76,
+        "banknifty_price": current_state.get("banknifty_price") or 54918.00,
+        "banknifty_change": current_state.get("banknifty_change") or -338.65,
+        "banknifty_change_pct": current_state.get("banknifty_change_pct") or -0.61,
         "market_open": current_state.get("market_open", False),
         "strategies_count": 44,
     }
@@ -487,23 +490,29 @@ async def ws_public_ticker(websocket: WebSocket):
                 if market_file.exists():
                     cached = json.loads(market_file.read_text(encoding="utf-8"))
                     return {
-                        "nifty_price": cached.get("nifty_price", 24252.00),
-                        "nifty_change": cached.get("nifty_change", 20.15),
-                        "nifty_change_pct": cached.get("nifty_change_pct", 0.08),
-                        "sensex_price": cached.get("sensex_price", 77540.83),
-                        "sensex_change": cached.get("sensex_change", 3.11),
-                        "sensex_change_pct": cached.get("sensex_change_pct", 0.00),
+                        "nifty_price": cached.get("nifty_price", 22363.35),
+                        "nifty_change": cached.get("nifty_change", -157.10),
+                        "nifty_change_pct": cached.get("nifty_change_pct", -0.70),
+                        "sensex_price": cached.get("sensex_price", 71924.68),
+                        "sensex_change": cached.get("sensex_change", -547.65),
+                        "sensex_change_pct": cached.get("sensex_change_pct", -0.76),
+                        "banknifty_price": cached.get("banknifty_price", 54918.00),
+                        "banknifty_change": cached.get("banknifty_change", -338.65),
+                        "banknifty_change_pct": cached.get("banknifty_change_pct", -0.61),
                         "market_open": current_state.get("market_open", False),
                     }
             except Exception:
                 pass
         return {
-            "nifty_price": nifty or 24252.00,
-            "nifty_change": current_state.get("nifty_change") or 20.15,
-            "nifty_change_pct": current_state.get("nifty_change_pct") or 0.08,
-            "sensex_price": sensex or 77540.83,
-            "sensex_change": current_state.get("sensex_change") or 3.11,
-            "sensex_change_pct": current_state.get("sensex_change_pct") or 0.00,
+            "nifty_price": nifty or 22363.35,
+            "nifty_change": current_state.get("nifty_change") or -157.10,
+            "nifty_change_pct": current_state.get("nifty_change_pct") or -0.70,
+            "sensex_price": sensex or 71924.68,
+            "sensex_change": current_state.get("sensex_change") or -547.65,
+            "sensex_change_pct": current_state.get("sensex_change_pct") or -0.76,
+            "banknifty_price": current_state.get("banknifty_price") or 54918.00,
+            "banknifty_change": current_state.get("banknifty_change") or -338.65,
+            "banknifty_change_pct": current_state.get("banknifty_change_pct") or -0.61,
             "market_open": current_state.get("market_open", False),
         }
 

@@ -143,7 +143,7 @@ export function ExecutiveDashboardScreen() {
                 </span>
               </div>
               <p className="text-xs text-faint mt-0.5">
-                Multi-Index Execution Engine · 44 Systematic Strategies · Fyers Live Broker Feed
+                Multi-Index Execution Engine · 44 Systematic Strategies · Alice Blue Live Broker Feed
               </p>
             </div>
           </div>
