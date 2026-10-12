@@ -38,7 +38,13 @@ export function ConnectAliceBlueModal({ isOpen, onClose, onConnected }) {
         }),
       });
 
-      const data = await res.json();
+      const text = await res.text();
+      let data = {};
+      try {
+        data = JSON.parse(text);
+      } catch {
+        data = { detail: text };
+      }
       if (!res.ok) {
         throw new Error(data.detail || data.message || "Authentication failed");
       }

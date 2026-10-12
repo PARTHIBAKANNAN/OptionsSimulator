@@ -4,6 +4,10 @@ innermost layer), Supabase-JWT login bridge, WebSocket streaming, and the paper-
 routers. Lifespan starts the DB pool, the live engine (or replay fallback), and the broadcaster.
 """
 import asyncio
+from datetime import datetime
+from zoneinfo import ZoneInfo
+
+IST = ZoneInfo("Asia/Kolkata")
 
 from fastapi import Depends, FastAPI, HTTPException, Request, WebSocket, WebSocketDisconnect
 from contextlib import asynccontextmanager
