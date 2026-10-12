@@ -387,6 +387,38 @@ async def me(request: Request):
     return user
 
 
+@app.post("/api/auth/aliceblue/login")
+async def aliceblue_login(request: Request):
+    """Direct in-app Alice Blue login: validates TOTP and starts live broker streaming."""
+    engine: WebLiveEngine = request.app.state.live_engine
+    if not engine or not getattr(engine, "aliceblue", None):
+        raise HTTPException(status_code=400, detail="Alice Blue broker not configured on this instance")
+
+    body = {}
+    try:
+        body = await request.json()
+    except Exception:
+        pass
+
+    totp = (body.get("totp") or "").strip()
+    password = (body.get("password") or "").strip()
+    user_id = (body.get("user_id") or "").strip()
+
+    if user_id:
+        engine.aliceblue.user_id = user_id
+
+    loop = asyncio.get_running_loop()
+    success = await loop.run_in_executor(
+        None, engine.aliceblue.authenticate, totp, password
+    )
+    if not success:
+        raise HTTPException(status_code=401, detail="Alice Blue authentication failed. Check credentials or TOTP.")
+
+    engine.initialize_contracts()
+    engine.aliceblue.connect_websocket()
+    return {"status": "ok", "message": "Alice Blue logged in and streaming live"}
+
+
 @app.get("/api/public/market-summary")
 async def get_public_market_summary():
     """Returns unauthenticated high-level market overview (NIFTY & SENSEX LTPs, market status)."""

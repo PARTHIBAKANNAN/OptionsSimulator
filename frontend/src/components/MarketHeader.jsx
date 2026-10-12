@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { TrendingUp, TrendingDown, Clock, ShieldCheck, BarChart2, AlertCircle, Volume2, VolumeX } from "lucide-react";
 import { Badge } from "./ui/Badge";
 import { ChartModal } from "./ChartModal";
+import { ConnectAliceBlueModal } from "./ConnectAliceBlueModal";
 import { closeAllPositions } from "../hooks/usePaperTradingSync";
 import { soundEngine } from "../utils/audioAlerts";
 
@@ -61,6 +62,7 @@ export function MarketHeader({ state }) {
   const [chartFor, setChartFor] = useState(null);
   const [squaringOff, setSquaringOff] = useState(false);
   const [soundMuted, setSoundMuted] = useState(soundEngine.isMuted());
+  const [showAliceModal, setShowAliceModal] = useState(false);
   const {
     nifty_price, nifty_prev_close, nifty_change, nifty_change_pct, nifty_candles_5m,
     sensex_price, sensex_prev_close, sensex_change, sensex_change_pct, sensex_candles_5m,
@@ -122,11 +124,16 @@ export function MarketHeader({ state }) {
               )}
 
               {mode === "live" && (
-                <span className={`flex items-center gap-1 rounded-full px-2 py-0.5 sm:px-2.5 sm:py-1 text-[11px] sm:text-xs font-bold ${fyers_authenticated ? "bg-cyan-500/15 text-cyan-400 border border-cyan-500/30" : "bg-amber-500/15 text-amber-400 border border-amber-500/30"}`}>
+                <button
+                  type="button"
+                  onClick={() => setShowAliceModal(true)}
+                  title="Click to authenticate Alice Blue with daily TOTP"
+                  className={`flex items-center gap-1 rounded-full px-2 py-0.5 sm:px-2.5 sm:py-1 text-[11px] sm:text-xs font-bold transition hover:opacity-90 cursor-pointer ${fyers_authenticated ? "bg-cyan-500/15 text-cyan-400 border border-cyan-500/30" : "bg-amber-500/15 text-amber-400 border border-amber-500/30"}`}
+                >
                   <ShieldCheck className="h-3 w-3" />
                   <span className="hidden sm:inline">{fyers_authenticated ? "Live Connected" : "Awaiting Login"}</span>
                   <span className="sm:hidden">{fyers_authenticated ? "Live" : "Auth"}</span>
-                </span>
+                </button>
               )}
             </div>
 
@@ -180,6 +187,11 @@ export function MarketHeader({ state }) {
           onClose={() => setChartFor(null)}
         />
       )}
+
+      <ConnectAliceBlueModal
+        isOpen={showAliceModal}
+        onClose={() => setShowAliceModal(false)}
+      />
     </div>
   );
 }

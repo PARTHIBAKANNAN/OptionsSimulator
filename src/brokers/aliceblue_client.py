@@ -77,12 +77,12 @@ class AliceBlueClient:
     def is_connected(self) -> bool:
         return bool(self.ws and self.ws.is_connected())
 
-    def initialize(self) -> bool:
+    def initialize(self, totp: Optional[str] = None, password: Optional[str] = None) -> bool:
         """Loads cached session or logs in, loads contract master, and sets up WebSocket."""
         # 1. Authenticate / Restore Session
         if not self._restore_session():
             logger.info("No valid cached session found. Attempting login...")
-            if not self.authenticate():
+            if not self.authenticate(totp=totp, password=password):
                 logger.error("Alice Blue authentication failed.")
                 return False
 
@@ -91,7 +91,7 @@ class AliceBlueClient:
             self.contract_master.load_contracts()
             self._sync_instruments_to_registry()
         except Exception as e:
-            logger.error("Error loading ContractMaster: %e", e)
+            logger.error("Error loading ContractMaster: %s", e)
             return False
 
         # 3. Create WebSocket client
@@ -105,10 +105,11 @@ class AliceBlueClient:
 
     def connect_websocket(self) -> None:
         """Connects the WebSocket and begins streaming."""
-        if not self.ws:
+        if not self.ws or not self._user_session:
             if not self.initialize():
                 return
         if self.ws:
+            self.ws.user_session = self._user_session
             self.ws.connect()
             self._connected = True
 
@@ -136,32 +137,171 @@ class AliceBlueClient:
         if self.token_cache_path.exists():
             try:
                 data = json.loads(self.token_cache_path.read_text(encoding="utf-8"))
-                token = data.get("user_session", "")
+                token = data.get("user_session") or data.get("userSession") or ""
                 if self._is_token_valid(token):
                     self._user_session = token
                     logger.info("Restored valid Alice Blue session from %s", self.token_cache_path.name)
                     return True
             except Exception as e:
-                logger.warning("Failed to restore session from cache: %e", e)
+                logger.warning("Failed to restore session from cache: %s", e)
         return False
 
-    def authenticate(self) -> bool:
-        """Performs authentication or validates session."""
+    def _evp_bytes_to_key(self, password: bytes, salt: bytes, key_len: int = 32, iv_len: int = 16):
+        d = b""
+        d_i = b""
+        while len(d) < key_len + iv_len:
+            d_i = hashlib.md5(d_i + password + salt).digest()
+            d += d_i
+        return d[:key_len], d[key_len: key_len + iv_len]
+
+    def _encrypt_password_cryptojs(self, password: str, enc_key: str) -> str:
+        try:
+            from Crypto.Cipher import AES
+            from Crypto.Util.Padding import pad
+        except ImportError:
+            raise RuntimeError("pycryptodome required: pip install pycryptodome")
+        import base64, os
+        salt = os.urandom(8)
+        key, iv = self._evp_bytes_to_key(enc_key.encode("utf-8"), salt, 32, 16)
+        cipher = AES.new(key, AES.MODE_CBC, iv)
+        ct = cipher.encrypt(pad(password.encode("utf-8"), AES.block_size))
+        return base64.b64encode(b"Salted__" + salt + ct).decode("utf-8")
+
+    def generate_totp(self, totp_key: Optional[str] = None) -> str:
+        key = (totp_key or self.totp_key).strip()
+        if not key:
+            raise ValueError("No TOTP key configured")
+        return pyotp.TOTP(key).now()
+
+    def authenticate(self, totp: Optional[str] = None, password: Optional[str] = None) -> bool:
+        """
+        Performs 4-step direct login flow to acquire a 24-hr session token.
+        Can be called with an explicit TOTP or will generate TOTP using self.totp_key.
+        """
         if self._user_session and self._is_token_valid(self._user_session):
             self._save_session(self._user_session)
             return True
-        logger.error("No active Alice Blue session token available.")
-        return False
+
+        user_id = self.user_id
+        pwd = (password or self.password).strip()
+        if not user_id or not pwd:
+            logger.error("Alice Blue authentication failed: user_id or password missing.")
+            return False
+
+        otp = (totp or "").strip()
+        if not otp:
+            if self.totp_key:
+                try:
+                    otp = self.generate_totp()
+                except Exception as e:
+                    logger.error("Error generating TOTP: %s", e)
+                    return False
+            else:
+                logger.error("Alice Blue authentication requires TOTP code or ALICEBLUE_TOTP_KEY.")
+                return False
+
+        BASE = "https://ant.aliceblueonline.com/omk"
+        session = requests.Session()
+        session.headers.update({
+            "Content-Type": "application/json",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+            "Origin": "https://ant.aliceblueonline.com",
+            "Referer": "https://ant.aliceblueonline.com/",
+        })
+
+        try:
+            # Step 1: verify/user
+            r1 = session.post(f"{BASE}/auth/access/verify/user", json={"userId": user_id}, timeout=15)
+            if r1.status_code != 200 or r1.json().get("status", "").lower() not in ("ok", "success", "true"):
+                logger.error("verify/user failed: %s %s", r1.status_code, r1.text[:200])
+                return False
+
+            # Step 2: enckey
+            r2 = session.post(f"{BASE}/auth/access/client/enckey", json={"userId": user_id}, timeout=15)
+            if r2.status_code != 200:
+                logger.error("enckey failed: %s %s", r2.status_code, r2.text[:200])
+                return False
+            d2 = r2.json()
+            enc_key = None
+            if isinstance(d2.get("result"), list) and len(d2["result"]) > 0:
+                enc_key = d2["result"][0].get("encKey")
+            if not enc_key:
+                enc_key = d2.get("encKey") or d2.get("data", {}).get("encKey")
+            if not enc_key:
+                logger.error("encKey missing in response: %s", d2)
+                return False
+
+            # Step 3: pwd/validate
+            encrypted_pwd = self._encrypt_password_cryptojs(pwd, enc_key)
+            payload3 = {
+                "userId": user_id,
+                "userData": encrypted_pwd,
+                "source": "WEB",
+            }
+            r3 = session.post(f"{BASE}/auth/access/v2/pwd/validate", json=payload3, timeout=15)
+            if r3.status_code != 200:
+                logger.error("pwd/validate failed: %s %s", r3.status_code, r3.text[:200])
+                return False
+            d3 = r3.json()
+            step3_token = None
+            if isinstance(d3.get("result"), list) and len(d3["result"]) > 0:
+                step3_token = d3["result"][0].get("token")
+            if not step3_token:
+                step3_token = d3.get("token")
+            if not step3_token:
+                logger.error("pwd/validate missing token: %s", d3)
+                return False
+
+            # Step 4: topt/verify
+            payload4 = {
+                "userId": user_id,
+                "totp": otp,
+                "source": "WEB",
+                "deviceId": "web_browser",
+                "deviceNumber": "web_browser",
+            }
+            headers4 = {
+                "Authorization": f"Bearer {user_id} WEB {step3_token}",
+            }
+            r4 = session.post(f"{BASE}/auth/access/topt/verify", json=payload4, headers=headers4, timeout=15)
+            if r4.status_code != 200:
+                logger.error("topt/verify failed: %s %s", r4.status_code, r4.text[:200])
+                return False
+            d4 = r4.json()
+            access_token = None
+            if isinstance(d4.get("result"), list) and len(d4["result"]) > 0:
+                access_token = d4["result"][0].get("accessToken") or d4["result"][0].get("userSession")
+            if not access_token:
+                access_token = d4.get("accessToken") or d4.get("userSession")
+
+            if not access_token:
+                logger.error("topt/verify missing accessToken: %s", d4)
+                return False
+
+            self._user_session = access_token
+            if self.ws:
+                self.ws.user_session = access_token
+            self._save_session(access_token)
+            logger.info("Alice Blue direct login successful - session saved.")
+            return True
+
+        except Exception as e:
+            logger.error("Exception during Alice Blue authenticate: %s", e)
+            return False
 
     def _save_session(self, token: str) -> None:
         try:
             self.token_cache_path.parent.mkdir(parents=True, exist_ok=True)
             self.token_cache_path.write_text(
-                json.dumps({"user_session": token, "updated_at": datetime.now(IST).isoformat()}),
+                json.dumps({
+                    "user_session": token,
+                    "userSession": token,
+                    "updated_at": datetime.now(IST).isoformat(),
+                }, indent=2),
                 encoding="utf-8"
             )
         except Exception as e:
-            logger.warning("Could not cache session token: %e", e)
+            logger.warning("Could not cache session token: %s", e)
 
     def _sync_instruments_to_registry(self) -> None:
         """Syncs all active contract options into InstrumentRegistry and internal reverse map."""
