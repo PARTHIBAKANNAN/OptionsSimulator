@@ -16,8 +16,12 @@ data/positions.json
 data/trade_history.csv
 data/daily_summary.json
 data/*.sqlite*
+data/*.db*
 data/contracts/
 data/aliceblue_token.json
+data/market_analysis/
+scratch/
+alice_login_test.py
 fyers_token_cache.json
 *.egg-info/
 .vscode/

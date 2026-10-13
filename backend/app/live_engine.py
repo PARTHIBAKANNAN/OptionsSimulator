@@ -216,6 +216,12 @@ class WebLiveEngine(LiveTrader):
             "broker_authenticated": bool(getattr(self.aliceblue, "is_authenticated", False) if getattr(self.config, "broker", "aliceblue") == "aliceblue" else self.fyers.access_token) if self.data_engine_enabled else None,
             "is_connected": getattr(self, "_connected", False),
             "corridor_subscribed": bool(getattr(self, "_connected", False) and getattr(getattr(self, "aliceblue", None), "ws", None) and len(getattr(self.aliceblue.ws, "_subscribed_keys", set())) > 0),
+            "ws_latency_ms": (
+                round((time.time() - getattr(getattr(getattr(self, "aliceblue", None), "ws", None), "last_tick_time", 0.0)) * 1000.0, 1)
+                if (getattr(self, "_connected", False) and getattr(getattr(getattr(self, "aliceblue", None), "ws", None), "last_tick_time", 0.0) > 0)
+                else None
+            ),
+            "active_quotes_count": len(self.quote_store.get_all_snapshots()) if hasattr(self, "quote_store") else 0,
             "strategy_status": self._strategy_status_list(current_prices),
         })
 

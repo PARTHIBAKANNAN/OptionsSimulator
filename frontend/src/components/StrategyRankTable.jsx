@@ -79,16 +79,32 @@ export function StrategyRankTable({ title, rows, dailyBreakdown = {}, capitalReq
               const is5M = r.strategy.includes("_5M_");
               const isITM = r.strategy.includes("_ITM");
 
+              const isTop3 = i < 3;
+              const alphaBadge = i === 0 ? "🏆 Alpha 1" : i === 1 ? "🥈 Alpha 2" : i === 2 ? "🥉 Alpha 3" : null;
+              const isLaggard = r.total_pnl < 0;
+
               return (
                 <Fragment key={r.strategy}>
-                  <tr className="hover:bg-surface2/40 transition">
-                    <td className="py-2.5 px-3 text-faint">{i + 1}</td>
+                  <tr className={`transition ${isTop3 ? "bg-amber-500/[0.04] hover:bg-amber-500/[0.08]" : "hover:bg-surface2/40"}`}>
+                    <td className="py-2.5 px-3">
+                      <span className={`font-bold ${isTop3 ? "text-amber-400" : "text-faint"}`}>{i + 1}</span>
+                    </td>
                     <td className="py-2.5 px-3 font-sans font-medium text-primary">
                       <div className="flex items-center gap-1.5">
-                        <span>{r.strategy}</span>
-                        <span className="rounded bg-bull/15 px-1 py-0.2 text-[9px] font-bold text-bull">
-                          ACTIVE
-                        </span>
+                        <span className={isTop3 ? "font-bold text-primary" : ""}>{r.strategy}</span>
+                        {alphaBadge ? (
+                          <span className="rounded bg-amber-500/20 border border-amber-500/40 px-1.5 py-0.5 text-[9px] font-bold text-amber-400">
+                            {alphaBadge}
+                          </span>
+                        ) : isLaggard ? (
+                          <span className="rounded bg-bear/15 border border-bear/30 px-1 py-0.2 text-[9px] font-bold text-bear">
+                            LAGGARD
+                          </span>
+                        ) : (
+                          <span className="rounded bg-bull/15 px-1 py-0.2 text-[9px] font-bold text-bull">
+                            ACTIVE
+                          </span>
+                        )}
                       </div>
                     </td>
                     <td className="py-2.5 px-3">

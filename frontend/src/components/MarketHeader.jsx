@@ -69,6 +69,7 @@ export function MarketHeader({ state }) {
     banknifty_price, banknifty_prev_close, banknifty_change, banknifty_change_pct, banknifty_candles_5m,
     mode, exchange_open, fyers_authenticated, aliceblue_authenticated, broker_authenticated,
     is_connected, corridor_subscribed, timestamp,
+    ws_latency_ms, active_quotes_count,
   } = state;
   const isStreaming = Boolean(is_connected);
   const isSessionActive = Boolean(aliceblue_authenticated || broker_authenticated || corridor_subscribed);
@@ -183,8 +184,15 @@ export function MarketHeader({ state }) {
             </div>
           </div>
 
-          <div className="text-[10px] sm:text-[11px] text-faint font-mono font-medium">
-            Last Sync: {fmtTime(timestamp || new Date().toISOString())} IST
+          <div className="flex flex-wrap items-center gap-2 text-[10px] sm:text-[11px] text-faint font-mono font-medium">
+            {isStreaming && (
+              <span className="flex items-center gap-1.5 text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                Alice Blue WS: {ws_latency_ms != null ? `${ws_latency_ms}ms` : "Connected"}
+                {active_quotes_count > 0 && ` | Quotes: ${active_quotes_count}`}
+              </span>
+            )}
+            <span>Last Sync: {fmtTime(timestamp || new Date().toISOString())} IST</span>
           </div>
         </div>
       </div>

@@ -600,17 +600,30 @@ class LiveTrader:
         # Trigger Pre-Market Catalyst AI Intelligence at 08:50 AM IST
         if in_login_window and self._last_premarket_intel_date != now.date():
             try:
-                from backend.app.ai_intelligence import generate_live_premarket_intel
-                intel = generate_live_premarket_intel()
-                self._last_premarket_intel_date = now.date()
-                if self.telegram and intel:
-                    summary_msg = (
-                        f"⚡ <b>[OptionsSimulator] Pre-Market Intelligence (08:50 AM)</b>\n\n"
-                        f"📊 <b>Market Bias:</b> {intel.get('market_bias', 'BULLISH').replace('_', ' ')} ({intel.get('sentiment_score', 68)}%)\n"
-                        f"🎯 <b>Expected Open:</b> {intel.get('expected_gap', 'NIFTY')}\n"
-                        f"💡 <i>{intel.get('summary', '')}</i>"
+                # Import is guarded: if backend/ is not on PYTHONPATH on the Oracle VM
+                # this will log a clear error instead of silently doing nothing.
+                try:
+                    from backend.app.ai_intelligence import generate_live_premarket_intel
+                except ImportError as ie:
+                    self.logger.log_error(
+                        f"Pre-market intel module not importable (check PYTHONPATH includes project root): {ie}"
                     )
-                    asyncio.create_task(self.telegram.send_alert(summary_msg))
+                    generate_live_premarket_intel = None
+
+                if generate_live_premarket_intel is not None:
+                    intel = generate_live_premarket_intel()
+                    self._last_premarket_intel_date = now.date()
+                    if self.telegram and intel:
+                        summary_msg = (
+                            f"⚡ <b>[OptionsSimulator] Pre-Market Intelligence (08:50 AM)</b>\n\n"
+                            f"📊 <b>Market Bias:</b> {intel.get('market_bias', 'BULLISH').replace('_', ' ')} ({intel.get('sentiment_score', 68)}%)\n"
+                            f"🎯 <b>Expected Open:</b> {intel.get('expected_gap', 'NIFTY')}\n"
+                            f"💡 <i>{intel.get('summary', '')}</i>"
+                        )
+                        # Use _schedule_async (not asyncio.create_task) — this method
+                        # is called from ensure_connection_state() which may be running
+                        # inside asyncio.to_thread(), so create_task() raises RuntimeError.
+                        self._schedule_async(self.telegram.send_alert(summary_msg))
             except Exception as e:
                 self.logger.log_error(f"Pre-market intelligence generation at 08:50 AM failed: {e}")
 
@@ -643,6 +656,13 @@ class LiveTrader:
             self._connected = False
             self._monitored_symbols = set()
             self.readiness_stage = "INIT"
+            # Flush + truncate the WAL log at market close so the .wal file
+            # doesn't accumulate unbounded data on the long-running Oracle VM.
+            try:
+                self.state_manager.checkpoint()
+                logger.info("SQLite WAL checkpoint completed at market close.")
+            except Exception as e:
+                self.logger.log_error(f"WAL checkpoint failed at market close: {e}")
 
         return market_open
 
@@ -983,31 +1003,47 @@ class LiveTrader:
     def check_exits(self) -> None:
         """
         Evaluates stop-loss/take-profit/time exits against latest live QuoteSnapshots.
-        Fills exit orders strictly at validated live Bid.
+        Fills exit orders strictly at validated live Bid (same QuoteValidator protection
+        as entries). REST-sourced LTPs are deliberately excluded — they bypass the
+        stale-quote gate and were causing exits at prices from minutes ago.
         """
         snapshots = self.quote_store.get_all_snapshots()
         by_symbol = self.quote_store.get_all_snapshots_by_symbol()
+        # Start from verified WS QuoteSnapshot objects only (never raw REST floats)
         combined_quotes: Dict = dict(snapshots)
         combined_quotes.update(by_symbol)
 
-        # Include clean aliases
+        # Register clean aliases for all instruments that have a live WS snapshot.
+        # This ensures paper_trader.update_positions() can resolve positions by
+        # clean alias (e.g. "NIFTY24500CE") in addition to canonical_id / fyers_symbol.
         for inst in self.instrument_registry.get_all_instruments():
             snap = self.quote_store.get_snapshot(inst.canonical_id)
             if snap:
                 combined_quotes[inst.clean_alias] = snap
 
-        # Fallback / merge DataManager quotes
+        # WS-sourced DataManager quotes (source == "ws") are acceptable as a
+        # secondary live source when QuoteStore hasn't yet indexed the instrument.
+        # REST-sourced quotes (source == "rest" or missing) are EXCLUDED — they
+        # bypass QuoteValidator's stale-tick check and caused exit distortions.
         for data_manager in self.data_managers.values():
             for sym, q in data_manager.get_option_chain().items():
-                if q.ltp > 0 and getattr(q, "source", "rest") != "ws":
+                if sym in combined_quotes:
+                    continue  # WS QuoteStore already has a fresh snapshot — don't overwrite
+                if q.ltp > 0 and getattr(q, "source", "rest") == "ws":
+                    # Only WS-sourced DataManager quotes are allowed as fallback
                     combined_quotes[sym] = q.ltp
-                    inst = self.instrument_registry.resolve_by_clean_alias(sym) or self.instrument_registry.resolve_by_symbol(sym)
+                    inst = (
+                        self.instrument_registry.resolve_by_clean_alias(sym)
+                        or self.instrument_registry.resolve_by_symbol(sym)
+                    )
                     if inst:
                         combined_quotes[inst.canonical_id] = q.ltp
                         combined_quotes[inst.clean_alias] = q.ltp
                         combined_quotes[inst.fyers_symbol] = q.ltp
-                elif sym not in combined_quotes:
-                    combined_quotes[sym] = q.ltp
+                # REST-sourced quotes: intentionally NOT added to combined_quotes.
+                # A position will not exit until a fresh WS tick arrives for its contract,
+                # which is the correct behavior — better to delay an exit by 1 tick than
+                # to exit at a stale price.
 
         closed = self.paper_trader.update_positions(
             combined_quotes,
