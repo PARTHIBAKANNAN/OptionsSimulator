@@ -12,7 +12,8 @@ import {
   Menu, 
   X,
   ChevronRight,
-  ShieldCheck
+  ShieldCheck,
+  RefreshCw
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { NukeBoxLogo } from "./NukeBoxLogo";
@@ -29,8 +30,29 @@ const TAB_ICONS = {
 // Primary 4 tabs displayed on mobile bottom bar
 const MOBILE_BOTTOM_TABS = ["live", "dashboard", "pnl", "telemetry"];
 
-export function TopNavbar({ tabs, activeTab, onSelect, user, theme, onToggleTheme, onLogout }) {
+export function TopNavbar({ tabs, activeTab, onSelect, user, theme, onToggleTheme, onLogout, onRefresh }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  async function handleManualRefresh() {
+    if (isRefreshing || !onRefresh) return;
+    setIsRefreshing(true);
+    if (navigator.vibrate) {
+      try {
+        navigator.vibrate(20);
+      } catch {
+        // ignore
+      }
+    }
+    try {
+      await Promise.all([
+        onRefresh(),
+        new Promise((resolve) => setTimeout(resolve, 600)),
+      ]);
+    } finally {
+      setIsRefreshing(false);
+    }
+  }
 
   return (
     <>
@@ -66,6 +88,16 @@ export function TopNavbar({ tabs, activeTab, onSelect, user, theme, onToggleThem
           {/* Right Action Icons */}
           <div className="flex shrink-0 items-center gap-2 sm:gap-3">
             <span className="hidden truncate text-xs font-medium text-faint lg:inline">{user?.email}</span>
+            {onRefresh && (
+              <button
+                onClick={handleManualRefresh}
+                disabled={isRefreshing}
+                title="Refresh market data & live connection"
+                className="rounded-xl border border-subtle bg-surface2 p-2 text-muted hover:bg-surface3 hover:text-accent transition active:scale-95 disabled:opacity-60"
+              >
+                <RefreshCw className={`h-3.5 w-3.5 ${isRefreshing ? "animate-spin text-accent" : ""}`} />
+              </button>
+            )}
             <button
               onClick={onToggleTheme}
               title="Toggle theme"

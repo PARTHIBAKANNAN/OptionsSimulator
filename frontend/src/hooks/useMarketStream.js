@@ -100,3 +100,31 @@ export function useMarketStream() {
 export function useMarketState() {
   return useSyncExternalStore(subscribe, getSnapshot);
 }
+
+/** Force an immediate re-sync: requests a fresh snapshot if WS is open, or reconnects if dead. Also updates spot prices. */
+export async function resyncMarketStream() {
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify({ type: "resync" }));
+  } else {
+    ws?.close();
+    ws = null;
+    connect();
+  }
+
+  try {
+    const res = await fetch(`${API_BASE}/public/telemetry`);
+    if (res.ok) {
+      const data = await res.json();
+      if (data && data.spot) {
+        applyDelta({
+          nifty_price: data.spot.NIFTY?.price,
+          banknifty_price: data.spot.BANKNIFTY?.price,
+          sensex_price: data.spot.SENSEX?.price,
+          timestamp: data.timestamp,
+        });
+      }
+    }
+  } catch (err) {
+    console.warn("Telemetry fetch during resync:", err);
+  }
+}

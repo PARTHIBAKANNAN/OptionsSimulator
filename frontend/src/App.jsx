@@ -10,9 +10,10 @@ import { PnlSummaryScreen } from "./screens/PnlSummaryScreen";
 import { StrategyLabScreen } from "./screens/StrategyLabScreen";
 import { TelemetryScreen } from "./screens/TelemetryScreen";
 import { LandingScreen } from "./screens/LandingScreen";
-import { useMarketStream } from "./hooks/useMarketStream";
+import { useMarketStream, resyncMarketStream } from "./hooks/useMarketStream";
 import { api } from "./hooks/usePaperTradingSync";
 import { supabase } from "./lib/supabaseClient";
+import { PullToRefresh } from "./components/PullToRefresh";
 
 const TABS = [
   { key: "dashboard", label: "Dashboard", Component: ExecutiveDashboardScreen },
@@ -35,22 +36,25 @@ function Dashboard({ user, onLogout }) {
       <TopNavbar
         tabs={TABS} activeTab={activeTab} onSelect={setActiveTab}
         user={user} theme={theme} onToggleTheme={toggle} onLogout={onLogout}
+        onRefresh={resyncMarketStream}
       />
-      <main className="bg-surface2 p-2 sm:p-4 lg:p-6 min-h-[calc(100vh-64px)] pb-[calc(env(safe-area-inset-bottom)+4.5rem)] md:pb-6">
-        <div className="mx-auto max-w-[1720px] w-full">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={activeTab}
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -6 }}
-              transition={{ duration: 0.18 }}
-            >
-              <ActiveComponent />
-            </motion.div>
-          </AnimatePresence>
-        </div>
-      </main>
+      <PullToRefresh onRefresh={resyncMarketStream}>
+        <main className="bg-surface2 p-2 sm:p-4 lg:p-6 min-h-[calc(100vh-64px)] pb-[calc(env(safe-area-inset-bottom)+4.5rem)] md:pb-6">
+          <div className="mx-auto max-w-[1720px] w-full">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeTab}
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -6 }}
+                transition={{ duration: 0.18 }}
+              >
+                <ActiveComponent />
+              </motion.div>
+            </AnimatePresence>
+          </div>
+        </main>
+      </PullToRefresh>
     </div>
   );
 }
