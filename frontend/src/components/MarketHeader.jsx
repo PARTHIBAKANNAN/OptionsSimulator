@@ -70,7 +70,8 @@ export function MarketHeader({ state }) {
     mode, exchange_open, fyers_authenticated, aliceblue_authenticated, broker_authenticated,
     is_connected, corridor_subscribed, timestamp,
   } = state;
-  const isAuth = Boolean(is_connected || corridor_subscribed || (aliceblue_authenticated && is_connected));
+  const isStreaming = Boolean(is_connected);
+  const isSessionActive = Boolean(aliceblue_authenticated || broker_authenticated || corridor_subscribed);
 
   const now = new Date();
   const isWeekend = now.getDay() === 0 || now.getDay() === 6;
@@ -131,14 +132,28 @@ export function MarketHeader({ state }) {
                   onClick={() => setShowAliceModal(true)}
                   title="Click to view Alice Blue connection & submit daily morning TOTP"
                   className={`flex items-center gap-1.5 rounded-full px-2.5 py-0.5 sm:px-3 sm:py-1 text-[11px] sm:text-xs font-bold transition hover:opacity-90 cursor-pointer ${
-                    isAuth
+                    isStreaming
+                      ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30"
+                      : isSessionActive
                       ? "bg-cyan-500/15 text-cyan-400 border border-cyan-500/30"
                       : "bg-amber-500/15 text-amber-400 border border-amber-500/30 animate-pulse"
                   }`}
                 >
                   <ShieldCheck className="h-3.5 w-3.5" />
-                  <span className="hidden sm:inline">{isAuth ? "Alice Blue Connected" : "Connect Alice Blue"}</span>
-                  <span className="sm:hidden">{isAuth ? "Alice Blue" : "Login"}</span>
+                  <span className="hidden sm:inline">
+                    {isStreaming
+                      ? "Alice Blue Streaming"
+                      : isSessionActive
+                      ? "Alice Blue Active"
+                      : "Connect Alice Blue"}
+                  </span>
+                  <span className="sm:hidden">
+                    {isStreaming
+                      ? "Live"
+                      : isSessionActive
+                      ? "Active"
+                      : "Login"}
+                  </span>
                 </button>
               )}
             </div>

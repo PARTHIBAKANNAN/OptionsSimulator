@@ -55,6 +55,16 @@ log "building frontend"
 log "running today's market backfill to seed candles and market state"
 python3 scripts/backfill_today_oct12.py || true
 
+log "ensuring Alice Blue environment variables are present in .env"
+if [ -f .env ]; then
+  grep -q "^BROKER=" .env && sed -i 's/^BROKER=.*/BROKER=aliceblue/' .env || echo "BROKER=aliceblue" >> .env
+  grep -q "^ALICEBLUE_USER_ID=" .env || echo "ALICEBLUE_USER_ID=2628887" >> .env
+  grep -q "^ALICEBLUE_PASSWORD=" .env || echo "ALICEBLUE_PASSWORD=Thalamsd&7781" >> .env
+  grep -q "^ALICEBLUE_TOTP_KEY=" .env || echo "ALICEBLUE_TOTP_KEY=NDAWXZFBTOUJKUBDGOSJMJBYZKFYGPDR" >> .env
+  grep -q "^ALICEBLUE_APP_CODE=" .env || echo "ALICEBLUE_APP_CODE=82a1c6alep" >> .env
+  grep -q "^ALICEBLUE_API_KEY=" .env || echo "ALICEBLUE_API_KEY=8G93PYak2ciy9jBAW9vjV6v7bLUJPvf8kVmFXySPcYqjkclvtKuYc5WIZi7gEQUyDkqfiNsX2lmc7XOpQ1WriuYA3m6D3cKxfZYE" >> .env
+fi
+
 log "restarting $SERVICE"
 sudo systemctl restart "$SERVICE"
 
