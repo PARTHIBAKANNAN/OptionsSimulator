@@ -351,7 +351,7 @@ async def get_telemetry(request: Request):
             "active_quotes_within_2s": active_quotes_2s,
             "avg_quote_age_ms": avg_age_ms,
             "min_quote_age_ms": min_age_ms,
-            "ws_connected": bool(getattr(ws, "is_connected", False)) if ws else False,
+            "ws_connected": bool(ws.is_connected() if callable(getattr(ws, "is_connected", None)) else getattr(ws, "is_connected", False)) if ws else False,
         },
         "spot": spot_info,
     }
@@ -391,9 +391,100 @@ async def me(request: Request):
     return user
 
 
+def _activate_corridor_subscription(engine: WebLiveEngine):
+    now_ist = datetime.now(IST)
+    engine._last_login_date = now_ist.date()
+    engine._connected = True
+    engine.readiness_stage = "SUBSCRIPTION_READY"
+    spot_prices = {
+        k: (getattr(dm.get_current_candle(), "close", 0.0) or (22500.0 if k == "NIFTY" else (55200.0 if k == "BANKNIFTY" else 81000.0)))
+        for k, dm in engine.data_managers.items()
+    }
+    if hasattr(engine, "aliceblue") and engine.aliceblue:
+        engine.aliceblue.subscribe_strike_corridor(spot_prices)
+
+
+@app.get("/api/auth/aliceblue/login-url")
+async def aliceblue_login_url(request: Request):
+    """Returns official Alice Blue OAuth login URL for 1-click browser SSO."""
+    engine: WebLiveEngine = request.app.state.live_engine
+    app_code = getattr(getattr(engine, "aliceblue", None), "app_code", "82a1c6alep")
+    return {
+        "status": "ok",
+        "app_code": app_code,
+        "login_url": f"https://ant.aliceblueonline.com/?appcode={app_code}"
+    }
+
+
+@app.get("/api/auth/aliceblue/callback")
+async def aliceblue_callback(request: Request):
+    """Handles OAuth redirect from Alice Blue (https://ant.aliceblueonline.com/?appcode=...)."""
+    from fastapi.responses import RedirectResponse
+    auth_code = (
+        request.query_params.get("authCode")
+        or request.query_params.get("auth_code")
+        or request.query_params.get("code")
+        or ""
+    ).strip()
+
+    if not auth_code:
+        return RedirectResponse(url="/?aliceblue_error=Missing+authCode", status_code=302)
+
+    engine: WebLiveEngine = request.app.state.live_engine
+    if not engine or not getattr(engine, "aliceblue", None):
+        return RedirectResponse(url="/?aliceblue_error=Broker+not+configured", status_code=302)
+
+    loop = asyncio.get_running_loop()
+    success = await loop.run_in_executor(None, engine.aliceblue.exchange_auth_code, auth_code)
+    if not success:
+        return RedirectResponse(url="/?aliceblue_error=Auth+exchange+failed", status_code=302)
+
+    _activate_corridor_subscription(engine)
+    logger.info("Alice Blue OAuth callback successful! Subscribed strike corridor.")
+    return RedirectResponse(url="/?aliceblue_success=1", status_code=302)
+
+
+@app.post("/api/auth/aliceblue/exchange")
+async def aliceblue_exchange(request: Request):
+    """JSON API to exchange authCode captured on the client side (SPA callback)."""
+    body = {}
+    try:
+        body = await request.json()
+    except Exception:
+        pass
+
+    auth_code = (
+        body.get("authCode")
+        or body.get("auth_code")
+        or body.get("code")
+        or request.query_params.get("authCode")
+        or ""
+    ).strip()
+
+    if not auth_code:
+        raise HTTPException(status_code=400, detail="Missing authCode parameter")
+
+    engine: WebLiveEngine = request.app.state.live_engine
+    if not engine or not getattr(engine, "aliceblue", None):
+        raise HTTPException(status_code=400, detail="Alice Blue broker not configured on this instance")
+
+    loop = asyncio.get_running_loop()
+    success = await loop.run_in_executor(None, engine.aliceblue.exchange_auth_code, auth_code)
+    if not success:
+        raise HTTPException(status_code=401, detail="Alice Blue auth code exchange failed with broker")
+
+    _activate_corridor_subscription(engine)
+    logger.info("Alice Blue authCode exchanged via API! Subscribed strike corridor.")
+    return {
+        "status": "ok",
+        "message": "Alice Blue authenticated and streaming live",
+        "readiness_stage": engine.readiness_stage,
+    }
+
+
 @app.post("/api/auth/aliceblue/login")
 async def aliceblue_login(request: Request):
-    """Direct in-app Alice Blue login: validates TOTP and starts live broker streaming."""
+    """Direct in-app Alice Blue login fallback: validates credentials and starts live broker streaming."""
     engine: WebLiveEngine = request.app.state.live_engine
     if not engine or not getattr(engine, "aliceblue", None):
         raise HTTPException(status_code=400, detail="Alice Blue broker not configured on this instance")
@@ -420,9 +511,7 @@ async def aliceblue_login(request: Request):
 
     engine.initialize_contracts()
     engine.aliceblue.connect_websocket()
-    now_ist = datetime.now(IST)
-    engine._last_login_date = now_ist.date()
-    engine._connected = True
+    _activate_corridor_subscription(engine)
     return {"status": "ok", "message": "Alice Blue logged in and streaming live"}
 
 

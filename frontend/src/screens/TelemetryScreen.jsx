@@ -142,7 +142,7 @@ export function TelemetryScreen() {
           <div className="my-3">
             <div className="flex items-baseline gap-1.5">
               <span className="font-mono text-3xl font-black text-primary">
-                {corridor?.total_tokens_subscribed ?? 189}
+                {corridor?.total_tokens_subscribed ?? 0}
               </span>
               <span className="text-xs font-bold text-faint">/ 189</span>
             </div>
@@ -159,7 +159,7 @@ export function TelemetryScreen() {
         <div className="flex flex-col justify-between rounded-2xl border border-subtle bg-surface p-5 shadow-md">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-faint uppercase tracking-wider">Broker Live Stream</span>
-            <ShieldCheck className="h-4 w-4 text-bull" />
+            <ShieldCheck className={`h-4 w-4 ${telemetry?.is_connected ? "text-bull" : "text-amber-400"}`} />
           </div>
           <div className="my-3">
             <div className="flex items-baseline gap-1.5">
@@ -168,12 +168,16 @@ export function TelemetryScreen() {
               </span>
             </div>
             <div className="mt-1 text-[11px] text-muted font-mono">
-              Stage: {telemetry?.readiness_stage ?? "SUBSCRIPTION_READY"}
+              Stage: {telemetry?.readiness_stage ?? "INIT"}
             </div>
           </div>
-          <div className="flex items-center gap-1.5 text-[11px] font-bold text-bull">
-            <span className="h-2 w-2 rounded-full bg-bull" />
-            <span>Session Authenticated</span>
+          <div className={`flex items-center gap-1.5 text-[11px] font-bold ${
+            telemetry?.is_connected ? "text-bull" : "text-amber-400"
+          }`}>
+            <span className={`h-2 w-2 rounded-full ${
+              telemetry?.is_connected ? "bg-bull" : "bg-amber-400 animate-pulse"
+            }`} />
+            <span>{telemetry?.is_connected ? "Stream Live" : telemetry?.is_authenticated ? "Authenticated (Offline)" : "Awaiting Login"}</span>
           </div>
         </div>
       </div>

@@ -35,6 +35,7 @@ class AliceBlueClient:
         password: str = "",
         totp_key: str = "",
         api_key: str = "",
+        app_code: str = "82a1c6alep",
         session_token: str = "",
         token_cache_path: Optional[Path] = None,
         quote_store: Optional[QuoteStore] = None,
@@ -45,6 +46,7 @@ class AliceBlueClient:
         self.password = str(password).strip()
         self.totp_key = str(totp_key).strip()
         self.api_key = str(api_key).strip()
+        self.app_code = str(app_code or "82a1c6alep").strip()
         self._user_session = str(session_token).strip()
 
         self.token_cache_path = token_cache_path or (
@@ -305,6 +307,79 @@ class AliceBlueClient:
 
         except Exception as e:
             logger.error("Exception during Alice Blue authenticate: %s", e)
+            return False
+
+    def get_login_url(self) -> str:
+        """Returns official Alice Blue OAuth login URL."""
+        return f"https://ant.aliceblueonline.com/?appcode={self.app_code}"
+
+    def exchange_auth_code(self, auth_code: str) -> bool:
+        """
+        Exchanges official Alice Blue OAuth authCode for a userSession token
+        using the vendor/getUserDetails API endpoint (Quantman SSO flow).
+        """
+        auth_code = str(auth_code or "").strip()
+        if not auth_code:
+            logger.error("exchange_auth_code called with empty auth_code")
+            return False
+
+        user_id = self.user_id or "2628887"
+        app_secret = (self.api_key or "8G93PYak2ciy9jBAW9vjV6v7bLUJPvf8kVmFXySPcYqjkclvtKuYc5WIZi7gEQUyDkqfiNsX2lmc7XOpQ1WriuYA3m6D3cKxfZYE").strip()
+
+        # Checksum = SHA256(userId + authCode + apiSecret)
+        raw_str = f"{user_id}{auth_code}{app_secret}"
+        checksum = hashlib.sha256(raw_str.encode("utf-8")).hexdigest()
+        logger.info("Exchanging Alice Blue authCode for session (checksum=%s...)", checksum[:16])
+
+        url = "https://a3.aliceblueonline.com/open-api/od/v1/vendor/getUserDetails"
+        payload = {"checkSum": checksum}
+        headers = {"Content-Type": "application/json"}
+
+        try:
+            resp = requests.post(url, json=payload, headers=headers, timeout=15)
+            if resp.status_code != 200:
+                logger.error("getUserDetails failed with HTTP %d: %s", resp.status_code, resp.text[:300])
+                return False
+
+            data = resp.json()
+            user_session = data.get("userSession") or data.get("user_session") or data.get("sessionID")
+            if not user_session and isinstance(data.get("result"), list) and len(data["result"]) > 0:
+                user_session = data["result"][0].get("userSession")
+            if not user_session and isinstance(data.get("data"), dict):
+                user_session = data["data"].get("userSession")
+
+            if not user_session:
+                logger.error("No userSession found in getUserDetails response: %s", data)
+                return False
+
+            self._user_session = user_session
+            self._save_session(user_session)
+            logger.info("Successfully exchanged authCode for Alice Blue session token!")
+
+            # 2. Load Contract Master and index active contracts
+            try:
+                self.contract_master.load_contracts()
+                self._sync_instruments_to_registry()
+            except Exception as e:
+                logger.error("Error loading ContractMaster: %s", e)
+
+            # 3. Create or update WebSocket client
+            if not self.ws:
+                self.ws = AliceBlueWS(
+                    user_id=self.user_id,
+                    user_session=self._user_session,
+                    on_tick_callback=self._on_ws_tick,
+                    on_connect_callback=self._on_ws_connected,
+                )
+            else:
+                self.ws.user_session = self._user_session
+
+            # 4. Connect WebSocket
+            self.connect_websocket()
+            return True
+
+        except Exception as e:
+            logger.error("Exception in exchange_auth_code: %s", e)
             return False
 
     def _save_session(self, token: str) -> None:

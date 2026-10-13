@@ -153,6 +153,7 @@ class LiveTrader:
                 password=config.aliceblue_password,
                 totp_key=config.aliceblue_totp_key,
                 api_key=config.aliceblue_api_key,
+                app_code=getattr(config, "aliceblue_app_code", "82a1c6alep"),
                 session_token=config.aliceblue_session_token,
                 quote_store=self.quote_store,
                 instrument_registry=self.instrument_registry,

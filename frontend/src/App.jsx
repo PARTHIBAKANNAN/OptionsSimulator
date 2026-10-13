@@ -127,6 +127,49 @@ function AppInner() {
     };
   }, []);
 
+  const [aliceAuthNotice, setAliceAuthNotice] = useState(null);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const authCode = params.get("authCode") || params.get("auth_code") || params.get("code");
+    const abSuccess = params.get("aliceblue_success");
+    const abError = params.get("aliceblue_error");
+
+    if (abSuccess) {
+      setAliceAuthNotice({ type: "success", message: "Alice Blue connected & strike corridor streaming live!" });
+      window.history.replaceState({}, document.title, window.location.pathname.replace(/\/callback\/?/, "/"));
+      setTimeout(() => setAliceAuthNotice(null), 6000);
+      return;
+    }
+
+    if (abError) {
+      setAliceAuthNotice({ type: "error", message: `Alice Blue login failed: ${abError}` });
+      window.history.replaceState({}, document.title, window.location.pathname.replace(/\/callback\/?/, "/"));
+      setTimeout(() => setAliceAuthNotice(null), 8000);
+      return;
+    }
+
+    if (authCode) {
+      setAliceAuthNotice({ type: "loading", message: "Exchanging Alice Blue authCode & initializing live corridor..." });
+
+      api("/api/auth/aliceblue/exchange", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ authCode }),
+      })
+        .then(() => {
+          setAliceAuthNotice({ type: "success", message: "Alice Blue connected & strike corridor streaming live!" });
+          window.history.replaceState({}, document.title, window.location.pathname.replace(/\/callback\/?/, "/"));
+          setTimeout(() => setAliceAuthNotice(null), 6000);
+        })
+        .catch((err) => {
+          setAliceAuthNotice({ type: "error", message: err.message || "Failed to exchange Alice Blue authCode" });
+          window.history.replaceState({}, document.title, window.location.pathname.replace(/\/callback\/?/, "/"));
+          setTimeout(() => setAliceAuthNotice(null), 8000);
+        });
+    }
+  }, []);
+
   async function handleLogout() {
     try {
       await api("/api/auth/logout", { method: "POST" });
@@ -137,7 +180,6 @@ function AppInner() {
     setUser(null);
   }
 
-
   if (user === undefined) {
     return <div className="flex min-h-screen items-center justify-center text-faint">Loading OptionsSimulator…</div>;
   }
@@ -145,6 +187,19 @@ function AppInner() {
   if (user === null) {
     return (
       <>
+        {aliceAuthNotice && (
+          <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[200] max-w-md w-full px-4">
+            <div className={`p-3 rounded-2xl text-xs font-bold shadow-xl border backdrop-blur-md ${
+              aliceAuthNotice.type === "success"
+                ? "bg-emerald-500/15 text-emerald-300 border-emerald-500/30"
+                : aliceAuthNotice.type === "error"
+                ? "bg-rose-500/15 text-rose-300 border-rose-500/30"
+                : "bg-blue-500/15 text-blue-300 border-blue-500/30 animate-pulse"
+            }`}>
+              {aliceAuthNotice.message}
+            </div>
+          </div>
+        )}
         <LandingScreen onLoginClick={() => setShowLoginModal(true)} />
         {showLoginModal && (
           <Login
@@ -159,7 +214,24 @@ function AppInner() {
     );
   }
 
-  return <Dashboard user={user} onLogout={handleLogout} />;
+  return (
+    <>
+      {aliceAuthNotice && (
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[200] max-w-md w-full px-4">
+          <div className={`p-3 rounded-2xl text-xs font-bold shadow-xl border backdrop-blur-md ${
+            aliceAuthNotice.type === "success"
+              ? "bg-emerald-500/15 text-emerald-300 border-emerald-500/30"
+              : aliceAuthNotice.type === "error"
+              ? "bg-rose-500/15 text-rose-300 border-rose-500/30"
+              : "bg-blue-500/15 text-blue-300 border-blue-500/30 animate-pulse"
+          }`}>
+            {aliceAuthNotice.message}
+          </div>
+        </div>
+      )}
+      <Dashboard user={user} onLogout={handleLogout} />
+    </>
+  );
 }
 
 export default function App() {

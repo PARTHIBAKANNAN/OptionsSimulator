@@ -67,9 +67,10 @@ export function MarketHeader({ state }) {
     nifty_price, nifty_prev_close, nifty_change, nifty_change_pct, nifty_candles_5m,
     sensex_price, sensex_prev_close, sensex_change, sensex_change_pct, sensex_candles_5m,
     banknifty_price, banknifty_prev_close, banknifty_change, banknifty_change_pct, banknifty_candles_5m,
-    mode, exchange_open, fyers_authenticated, aliceblue_authenticated, broker_authenticated, timestamp,
+    mode, exchange_open, fyers_authenticated, aliceblue_authenticated, broker_authenticated,
+    is_connected, corridor_subscribed, timestamp,
   } = state;
-  const isAuth = Boolean(aliceblue_authenticated ?? broker_authenticated ?? fyers_authenticated);
+  const isAuth = Boolean(is_connected || corridor_subscribed || (aliceblue_authenticated && is_connected));
 
   const now = new Date();
   const isWeekend = now.getDay() === 0 || now.getDay() === 6;

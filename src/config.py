@@ -21,7 +21,8 @@ class Config:
     telegram_chat_id: str
     force_market_open: bool
     broker: str = "fyers"
-    aliceblue_user_id: str = ""
+    aliceblue_user_id: str = "2628887"
+    aliceblue_app_code: str = "82a1c6alep"
     aliceblue_password: str = ""
     aliceblue_totp_key: str = ""
     aliceblue_api_key: str = ""
@@ -48,9 +49,10 @@ class Config:
             force_market_open=os.getenv("FORCE_MARKET_OPEN", "false").strip().lower() == "true",
             broker=os.getenv("BROKER", "aliceblue").strip().lower(),
             aliceblue_user_id=os.getenv("ALICEBLUE_USER_ID", "2628887"),
+            aliceblue_app_code=os.getenv("ALICEBLUE_APP_CODE", "82a1c6alep"),
             aliceblue_password=os.getenv("ALICEBLUE_PASSWORD", ""),
             aliceblue_totp_key=os.getenv("ALICEBLUE_TOTP_KEY", ""),
-            aliceblue_api_key=os.getenv("ALICEBLUE_API_KEY", ""),
+            aliceblue_api_key=os.getenv("ALICEBLUE_API_KEY", "8G93PYak2ciy9jBAW9vjV6v7bLUJPvf8kVmFXySPcYqjkclvtKuYc5WIZi7gEQUyDkqfiNsX2lmc7XOpQ1WriuYA3m6D3cKxfZYE"),
             aliceblue_session_token=os.getenv("ALICEBLUE_SESSION_TOKEN", ""),
             risk_params=risk_params,
         )

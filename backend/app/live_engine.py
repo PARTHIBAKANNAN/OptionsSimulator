@@ -214,6 +214,8 @@ class WebLiveEngine(LiveTrader):
             "broker": getattr(self.config, "broker", "aliceblue"),
             "aliceblue_authenticated": bool(getattr(self.aliceblue, "is_authenticated", False) if getattr(self.config, "broker", "aliceblue") == "aliceblue" else self.fyers.access_token) if self.data_engine_enabled else None,
             "broker_authenticated": bool(getattr(self.aliceblue, "is_authenticated", False) if getattr(self.config, "broker", "aliceblue") == "aliceblue" else self.fyers.access_token) if self.data_engine_enabled else None,
+            "is_connected": getattr(self, "_connected", False),
+            "corridor_subscribed": bool(getattr(self, "_connected", False) and getattr(getattr(self, "aliceblue", None), "ws", None) and len(getattr(self.aliceblue.ws, "_subscribed_keys", set())) > 0),
             "strategy_status": self._strategy_status_list(current_prices),
         })
 

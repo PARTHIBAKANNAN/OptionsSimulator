@@ -89,8 +89,8 @@ export function ConnectAliceBlueModal({ isOpen, onClose, onConnected }) {
                 <ShieldCheck size={18} />
               </div>
               <div>
-                <h3 className="text-sm font-bold text-primary">Alice Blue Login</h3>
-                <p className="text-[11px] text-faint">Direct daily TOTP session authorization</p>
+                <h3 className="text-sm font-bold text-primary">Connect Alice Blue</h3>
+                <p className="text-[11px] text-faint">Daily broker OAuth session authorization</p>
               </div>
             </div>
             <button
@@ -101,8 +101,32 @@ export function ConnectAliceBlueModal({ isOpen, onClose, onConnected }) {
             </button>
           </div>
 
+          {/* Primary Method: Quantman SSO 1-Click Button */}
+          <div className="pt-4">
+            <a
+              href="https://ant.aliceblueonline.com/?appcode=82a1c6alep"
+              className="flex items-center justify-center gap-2 w-full rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 py-3 px-4 text-xs font-bold text-white shadow-lg shadow-blue-500/25 hover:opacity-95 transition text-center"
+            >
+              <Zap size={15} className="fill-white" />
+              <span>Login via Alice Blue Portal (1-Click SSO)</span>
+            </a>
+            <p className="mt-2 text-center text-[10px] text-faint leading-relaxed">
+              Opens Alice Blue's official site. Enter your Password &amp; TOTP there — it will automatically redirect back and start live streaming with zero copy-pasting.
+            </p>
+          </div>
+
+          {/* Divider */}
+          <div className="relative my-4">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-subtle" />
+            </div>
+            <div className="relative flex justify-center text-[10px] uppercase">
+              <span className="bg-surface px-2 text-faint font-semibold">Or Direct Modal Login</span>
+            </div>
+          </div>
+
           {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-3.5 pt-4">
+          <form onSubmit={handleSubmit} className="space-y-3.5">
             {/* User ID */}
             <div>
               <label className="block text-[11px] font-semibold text-muted mb-1">
