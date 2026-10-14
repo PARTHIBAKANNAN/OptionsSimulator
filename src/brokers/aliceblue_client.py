@@ -7,7 +7,7 @@ Manages:
 3. High-throughput NorenWS WebSocket streaming for Spot Indices and Option Corridor.
 4. Seamless routing of live ticks directly to DataManager and QuoteStore.
 """
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 import hashlib
 import json
 import logging
@@ -480,7 +480,11 @@ class AliceBlueClient:
                 und = self._spot_token_to_und[token]
                 dm = self.data_managers.get(und)
                 if dm:
-                    dm.on_tick(ltp, volume=int(data.get("v", 0) or 0))
+                    now_ist = datetime.now(IST)
+                    if hasattr(dm, "on_tick"):
+                        dm.on_tick(ltp, volume=int(data.get("v", 0) or 0), timestamp=now_ist)
+                    elif hasattr(dm, "on_nifty_tick"):
+                        dm.on_nifty_tick({"ltp": ltp, "volume": int(data.get("v", 0) or 0), "timestamp": now_ist})
                 return
 
             # 2. Option Contract Tick
@@ -500,24 +504,42 @@ class AliceBlueClient:
                     )
                     self._token_to_inst[token] = inst
 
-            if inst and self.quote_store:
+            if inst:
                 bid = float(data.get("bp1", ltp) or ltp)
                 ask = float(data.get("sp1", ltp) or ltp)
                 oi = int(data.get("oi", 0) or 0)
                 vol = int(data.get("v", 0) or 0)
                 prev_close = float(data.get("c", 0.0) or 0.0)
 
-                self.quote_store.update_tick(
-                    canonical_id=inst.canonical_id,
-                    fyers_symbol=inst.fyers_symbol,
-                    ltp=ltp,
-                    bid=bid,
-                    ask=ask,
-                    oi=oi,
-                    volume=vol,
-                    prev_close=prev_close,
-                    source="ws",
-                )
+                if self.quote_store:
+                    self.quote_store.update_tick(
+                        canonical_id=inst.canonical_id,
+                        fyers_symbol=inst.fyers_symbol,
+                        ltp=ltp,
+                        bid=bid,
+                        ask=ask,
+                        oi=oi,
+                        volume=vol,
+                        prev_close=prev_close,
+                        source="ws",
+                    )
+
+                dm = self.data_managers.get(inst.underlying)
+                if dm:
+                    from src.data_manager import OptionQuote
+                    quote = dm.option_chain.get(inst.clean_alias)
+                    if quote is None:
+                        quote = OptionQuote(symbol=inst.fyers_symbol)
+                    quote.ltp = ltp
+                    quote.bid = bid
+                    quote.ask = ask
+                    quote.oi = oi
+                    quote.volume = vol
+                    quote.source = "ws"
+                    quote.updated_at = datetime.now(timezone.utc)
+                    dm.option_chain[inst.clean_alias] = quote
+                    dm.option_chain[inst.canonical_id] = quote
+                    dm.option_chain[inst.fyers_symbol] = quote
 
         except Exception as e:
             logger.debug("Error processing tick: %e", e)

@@ -67,6 +67,12 @@ class DataManager:
 
     # ---- Candle building from live ticks ----------------------------------
 
+    def on_tick(self, price: float, volume: int = 0, timestamp: Optional[datetime] = None) -> None:
+        """Universal tick handler for live spot index ticks."""
+        from zoneinfo import ZoneInfo
+        ts = timestamp or datetime.now(ZoneInfo("Asia/Kolkata"))
+        self.on_nifty_tick({"ltp": price, "volume": volume, "timestamp": ts})
+
     def on_nifty_tick(self, tick: dict) -> None:
         """tick: {'ltp': float, 'volume': int (cumulative or delta), 'timestamp': datetime}"""
         ts = tick.get("timestamp") or datetime.now()
