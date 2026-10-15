@@ -340,11 +340,13 @@ class DataManager:
     def _resample(df: pd.DataFrame, rule: str) -> pd.DataFrame:
         if df.empty or "Timestamp" not in df.columns:
             return pd.DataFrame(columns=["Open", "High", "Low", "Close", "Volume"])
+        from zoneinfo import ZoneInfo
         indexed = df.copy()
-        indexed["Timestamp"] = pd.to_datetime(indexed["Timestamp"])
+        try:
+            indexed["Timestamp"] = pd.to_datetime(indexed["Timestamp"], utc=True).dt.tz_convert(ZoneInfo("Asia/Kolkata"))
+        except Exception:
+            indexed["Timestamp"] = pd.to_datetime(indexed["Timestamp"])
         indexed = indexed.set_index("Timestamp")
-        if not isinstance(indexed.index, pd.DatetimeIndex):
-            indexed.index = pd.to_datetime(indexed.index)
         return indexed.resample(rule).agg({
             "Open": "first", "High": "max", "Low": "min", "Close": "last", "Volume": "sum",
         }).dropna()
@@ -543,10 +545,12 @@ class DataManager:
         } for c in closed_candles])
         if df.empty or "Timestamp" not in df.columns:
             return []
-        df["Timestamp"] = pd.to_datetime(df["Timestamp"])
+        from zoneinfo import ZoneInfo
+        try:
+            df["Timestamp"] = pd.to_datetime(df["Timestamp"], utc=True).dt.tz_convert(ZoneInfo("Asia/Kolkata"))
+        except Exception:
+            df["Timestamp"] = pd.to_datetime(df["Timestamp"])
         df = df.set_index("Timestamp")
-        if not isinstance(df.index, pd.DatetimeIndex):
-            df.index = pd.to_datetime(df.index)
 
         # Exclude pre-market uncrossing artifacts (e.g. 09:07 indicative prices) to prevent distorted candles
         try:

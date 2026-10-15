@@ -181,7 +181,7 @@ class WebLiveEngine(LiveTrader):
                 }
                 self._last_5m_resample_time = now_ts
             except Exception as e:
-                logger.error("Error computing 5m candles: %s", e)
+                self.logger.log_error(f"Error computing 5m candles: {e}")
 
         cached_5m = getattr(self, "_cached_5m_candles", {})
         nifty_candles_5m = cached_5m.get("nifty", [])
