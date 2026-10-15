@@ -328,24 +328,27 @@ class DataManager:
 
     # ---- Indicators -----------------------------------------------------------
 
+    @staticmethod
+    def _normalize_timestamp(ts):
+        if hasattr(ts, "tzinfo") and ts.tzinfo is not None:
+            from zoneinfo import ZoneInfo
+            return ts.astimezone(ZoneInfo("Asia/Kolkata")).replace(tzinfo=None)
+        return ts
+
     def _closed_candles_df(self) -> pd.DataFrame:
         """Only fully-closed 1-min candles — excludes the still-forming `self._current`, so
         resampling this never mixes a partial higher-timeframe bar into the result."""
         return pd.DataFrame([{
-            "Timestamp": c.timestamp, "Open": c.open, "High": c.high,
+            "Timestamp": self._normalize_timestamp(c.timestamp), "Open": c.open, "High": c.high,
             "Low": c.low, "Close": c.close, "Volume": c.volume,
         } for c in self.candles])
 
-    @staticmethod
-    def _resample(df: pd.DataFrame, rule: str) -> pd.DataFrame:
+    @classmethod
+    def _resample(cls, df: pd.DataFrame, rule: str) -> pd.DataFrame:
         if df.empty or "Timestamp" not in df.columns:
             return pd.DataFrame(columns=["Open", "High", "Low", "Close", "Volume"])
-        from zoneinfo import ZoneInfo
         indexed = df.copy()
-        try:
-            indexed["Timestamp"] = pd.to_datetime(indexed["Timestamp"], utc=True).dt.tz_convert(ZoneInfo("Asia/Kolkata"))
-        except Exception:
-            indexed["Timestamp"] = pd.to_datetime(indexed["Timestamp"])
+        indexed["Timestamp"] = pd.to_datetime(indexed["Timestamp"].apply(cls._normalize_timestamp))
         indexed = indexed.set_index("Timestamp")
         return indexed.resample(rule).agg({
             "Open": "first", "High": "max", "Low": "min", "Close": "last", "Volume": "sum",
@@ -540,16 +543,12 @@ class DataManager:
             return []
 
         df = pd.DataFrame([{
-            "Timestamp": c.timestamp, "Open": c.open, "High": c.high, "Low": c.low,
+            "Timestamp": self._normalize_timestamp(c.timestamp), "Open": c.open, "High": c.high, "Low": c.low,
             "Close": c.close, "Volume": c.volume, "Delta": c.delta,
         } for c in closed_candles])
         if df.empty or "Timestamp" not in df.columns:
             return []
-        from zoneinfo import ZoneInfo
-        try:
-            df["Timestamp"] = pd.to_datetime(df["Timestamp"], utc=True).dt.tz_convert(ZoneInfo("Asia/Kolkata"))
-        except Exception:
-            df["Timestamp"] = pd.to_datetime(df["Timestamp"])
+        df["Timestamp"] = pd.to_datetime(df["Timestamp"])
         df = df.set_index("Timestamp")
 
         # Exclude pre-market uncrossing artifacts (e.g. 09:07 indicative prices) to prevent distorted candles
