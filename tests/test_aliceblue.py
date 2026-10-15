@@ -210,3 +210,81 @@ def test_aliceblue_auto_login_failure_falls_back_to_unauthenticated(tmp_path):
     success = client.authenticate(totp=None)
     assert success is False
     assert client.is_authenticated is False
+
+
+def test_aliceblue_on_tick_hook_and_data_manager_integration():
+    from src.data_manager import DataManager
+    from unittest.mock import MagicMock
+    registry = InstrumentRegistry()
+    quote_store = QuoteStore()
+    dm = DataManager(underlying="NIFTY")
+    hook_called = False
+
+    def on_tick_hook():
+        nonlocal hook_called
+        hook_called = True
+
+    client = AliceBlueClient(
+        user_id="2628887",
+        session_token="fake.jwt.token",
+        quote_store=quote_store,
+        instrument_registry=registry,
+        data_managers={"NIFTY": dm},
+        on_tick_hook=on_tick_hook,
+    )
+    client.contract_master.load_contracts()
+
+    # 1. Test Spot Tick routing
+    spot_tick = {"t": "tk", "tk": "26000", "lp": "24850.50", "v": "100"}
+    client._on_ws_tick(spot_tick)
+
+    assert dm._live_ltp == 24850.50
+    assert dm.get_state()["nifty_price"] == 24850.50
+    assert hook_called is True
+
+    # 2. Test Option Tick routing into dm.option_chain
+    hook_called = False
+    token = client.contract_master.get_token_by_alias("NIFTY22500CE")
+    meta = client.contract_master.get_by_token(token)
+    opt_tick = {
+        "t": "tk",
+        "tk": str(token),
+        "lp": "150.25",
+        "bp1": "150.10",
+        "sp1": "150.35",
+        "oi": "45000",
+        "v": "1200",
+    }
+    client._on_ws_tick(opt_tick)
+
+    assert hook_called is True
+    chain = dm.get_option_chain()
+    assert "NIFTY22500CE" in chain
+    assert chain["NIFTY22500CE"].ltp == 150.25
+    assert chain["NIFTY22500CE"].bid == 150.10
+    assert chain["NIFTY22500CE"].ask == 150.35
+
+
+def test_data_manager_resample_stability():
+    from src.data_manager import DataManager, Candle
+    from datetime import datetime, timedelta
+    from zoneinfo import ZoneInfo
+    IST = ZoneInfo("Asia/Kolkata")
+    dm = DataManager(underlying="NIFTY")
+
+    now = datetime.now(IST)
+    base = now.replace(hour=9, minute=30, second=0, microsecond=0)
+    for i in range(30):
+        t = base + timedelta(minutes=i)
+        dm.replay_candle(Candle(
+            timestamp=t, open=24000.0, high=24050.0, low=23950.0, close=24010.0, volume=500
+        ))
+
+    # Ensure calculate_indicators() and get_candles_5m_with_delta() run without TypeError
+    indicators = dm.calculate_indicators()
+    assert isinstance(indicators, dict)
+
+    bars_5m = dm.get_candles_5m_with_delta(today=now.date(), days=1)
+    assert isinstance(bars_5m, list)
+    assert len(bars_5m) > 0
+

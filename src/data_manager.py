@@ -338,7 +338,13 @@ class DataManager:
 
     @staticmethod
     def _resample(df: pd.DataFrame, rule: str) -> pd.DataFrame:
-        indexed = df.set_index("Timestamp")
+        if df.empty or "Timestamp" not in df.columns:
+            return pd.DataFrame(columns=["Open", "High", "Low", "Close", "Volume"])
+        indexed = df.copy()
+        indexed["Timestamp"] = pd.to_datetime(indexed["Timestamp"])
+        indexed = indexed.set_index("Timestamp")
+        if not isinstance(indexed.index, pd.DatetimeIndex):
+            indexed.index = pd.to_datetime(indexed.index)
         return indexed.resample(rule).agg({
             "Open": "first", "High": "max", "Low": "min", "Close": "last", "Volume": "sum",
         }).dropna()
@@ -534,7 +540,13 @@ class DataManager:
         df = pd.DataFrame([{
             "Timestamp": c.timestamp, "Open": c.open, "High": c.high, "Low": c.low,
             "Close": c.close, "Volume": c.volume, "Delta": c.delta,
-        } for c in closed_candles]).set_index("Timestamp")
+        } for c in closed_candles])
+        if df.empty or "Timestamp" not in df.columns:
+            return []
+        df["Timestamp"] = pd.to_datetime(df["Timestamp"])
+        df = df.set_index("Timestamp")
+        if not isinstance(df.index, pd.DatetimeIndex):
+            df.index = pd.to_datetime(df.index)
 
         # Exclude pre-market uncrossing artifacts (e.g. 09:07 indicative prices) to prevent distorted candles
         try:

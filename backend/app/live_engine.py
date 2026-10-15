@@ -172,13 +172,16 @@ class WebLiveEngine(LiveTrader):
 
         now_ts = now.timestamp()
         if not hasattr(self, "_last_5m_resample_time") or (now_ts - getattr(self, "_last_5m_resample_time", 0.0) >= 5.0):
-            self._cached_5m_candles = {
-                "nifty": self.data_manager.get_candles_5m_with_delta(today),
-                "sensex": self.data_managers["SENSEX"].get_candles_5m_with_delta(today),
-                "banknifty": self.data_managers["BANKNIFTY"].get_candles_5m_with_delta(today),
-                "sparkline": [c.close for c in self.data_manager.get_today_candles(today)],
-            }
-            self._last_5m_resample_time = now_ts
+            try:
+                self._cached_5m_candles = {
+                    "nifty": self.data_manager.get_candles_5m_with_delta(today),
+                    "sensex": self.data_managers["SENSEX"].get_candles_5m_with_delta(today),
+                    "banknifty": self.data_managers["BANKNIFTY"].get_candles_5m_with_delta(today),
+                    "sparkline": [c.close for c in self.data_manager.get_today_candles(today)],
+                }
+                self._last_5m_resample_time = now_ts
+            except Exception as e:
+                logger.error("Error computing 5m candles: %s", e)
 
         cached_5m = getattr(self, "_cached_5m_candles", {})
         nifty_candles_5m = cached_5m.get("nifty", [])

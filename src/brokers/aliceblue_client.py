@@ -41,6 +41,7 @@ class AliceBlueClient:
         quote_store: Optional[QuoteStore] = None,
         instrument_registry: Optional[InstrumentRegistry] = None,
         data_managers: Optional[Dict[str, any]] = None,
+        on_tick_hook: Optional[Callable[[], None]] = None,
     ):
         self.user_id = str(user_id).strip()
         self.password = str(password).strip()
@@ -55,6 +56,7 @@ class AliceBlueClient:
         self.quote_store = quote_store
         self.instrument_registry = instrument_registry
         self.data_managers = data_managers or {}
+        self.on_tick_hook = on_tick_hook
 
         # Components
         self.contract_master = ContractMaster()
@@ -485,6 +487,11 @@ class AliceBlueClient:
                         dm.on_tick(ltp, volume=int(data.get("v", 0) or 0), timestamp=now_ist)
                     elif hasattr(dm, "on_nifty_tick"):
                         dm.on_nifty_tick({"ltp": ltp, "volume": int(data.get("v", 0) or 0), "timestamp": now_ist})
+                if self.on_tick_hook:
+                    try:
+                        self.on_tick_hook()
+                    except Exception as hook_err:
+                        logger.debug("Error in on_tick_hook: %s", hook_err)
                 return
 
             # 2. Option Contract Tick
@@ -540,6 +547,12 @@ class AliceBlueClient:
                     dm.option_chain[inst.clean_alias] = quote
                     dm.option_chain[inst.canonical_id] = quote
                     dm.option_chain[inst.fyers_symbol] = quote
+
+            if self.on_tick_hook:
+                try:
+                    self.on_tick_hook()
+                except Exception as hook_err:
+                    logger.debug("Error in on_tick_hook: %s", hook_err)
 
         except Exception as e:
             logger.debug("Error processing tick: %e", e)

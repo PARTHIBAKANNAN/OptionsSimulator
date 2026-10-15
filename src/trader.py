@@ -158,6 +158,7 @@ class LiveTrader:
                 quote_store=self.quote_store,
                 instrument_registry=self.instrument_registry,
                 data_managers=self.data_managers,
+                on_tick_hook=self._on_alice_tick_received,
             )
 
         self.fyers = FyersAPIClient(
@@ -399,12 +400,23 @@ class LiveTrader:
         if self.paper_trader.get_positions():
             self.check_exits()
 
+    def _on_alice_tick_received(self) -> None:
+        """Invoked synchronously on every incoming Alice Blue spot or option tick."""
+        self._last_tick_time = time.time()
+        self._check_readiness_transition()
+        if self.paper_trader.get_positions():
+            self.check_exits()
+
     def _check_readiness_transition(self) -> None:
         """Transitions readiness gates based on live feed telemetry."""
         if self.readiness_stage == "SUBSCRIPTION_READY":
             active_quotes = self.quote_store.get_active_quote_count(max_age_ms=2000.0)
             total_registered = len(self.instrument_registry.get_all_instruments())
-            has_spot = all(dm.get_current_candle() is not None for dm in self.data_managers.values())
+            has_spot = (
+                getattr(self.data_manager, "_live_ltp", None) is not None
+                or self.data_manager.get_current_candle() is not None
+                or any(getattr(dm, "_live_ltp", None) is not None or dm.get_current_candle() is not None for dm in self.data_managers.values())
+            )
 
             # If spot ticks arriving and quotes are streaming in
             if has_spot and (active_quotes >= max(1, int(total_registered * 0.1)) or active_quotes >= 10):

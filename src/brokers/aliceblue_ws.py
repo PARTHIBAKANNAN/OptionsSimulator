@@ -204,6 +204,7 @@ class AliceBlueWS:
                     with self._lock:
                         self._connected = False
                         self._handshake_done = False
+                        self._last_close_status = close_status
 
                 self._ws = websocket.WebSocketApp(
                     WS_URL,
@@ -218,5 +219,9 @@ class AliceBlueWS:
                 logger.error("WebSocket run loop error: %e", e)
 
             if self._running:
-                logger.info("Reconnecting Alice Blue WebSocket in 3 seconds...")
-                time.sleep(3)
+                delay = 30.0 if getattr(self, "_last_close_status", None) == 1008 else 3.0
+                if delay > 3.0:
+                    logger.warning("WebSocket closed due to auth/policy (1008). Backing off for %.0fs before retrying...", delay)
+                else:
+                    logger.info("Reconnecting Alice Blue WebSocket in %.0fs...", delay)
+                time.sleep(delay)
