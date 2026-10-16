@@ -3,7 +3,16 @@
 // snapshot if a delta arrives out of order). Ref-counted so multiple mounted components share one
 // socket instead of each opening their own.
 import { useEffect, useSyncExternalStore } from "react";
-import { applyDelta, applySnapshot, getSnapshot, subscribe } from "../store/marketStore";
+import {
+  applyDelta,
+  applySnapshot,
+  getSnapshot,
+  getSpotSnapshot,
+  getStrategySnapshot,
+  subscribe,
+  subscribeSpot,
+  subscribeStrategy,
+} from "../store/marketStore";
 import { API_BASE } from "../lib/apiBase";
 
 const HEARTBEAT_TIMEOUT_MS = 30_000;
@@ -99,6 +108,16 @@ export function useMarketStream() {
 /** Call from any component that just wants to read the current live state. */
 export function useMarketState() {
   return useSyncExternalStore(subscribe, getSnapshot);
+}
+
+/** Subscribes ONLY to fast spot ticks and connection telemetry (10 FPS real-time ticks). */
+export function useSpotPrices() {
+  return useSyncExternalStore(subscribeSpot, getSpotSnapshot);
+}
+
+/** Subscribes ONLY to strategy status, open positions, and running P&L updates. */
+export function useStrategyStatus() {
+  return useSyncExternalStore(subscribeStrategy, getStrategySnapshot);
 }
 
 /** Force an immediate re-sync: requests a fresh snapshot if WS is open, or reconnects if dead. Also updates spot prices. */

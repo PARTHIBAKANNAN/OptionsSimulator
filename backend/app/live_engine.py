@@ -69,6 +69,49 @@ class WebLiveEngine(LiveTrader):
                     keys.add(k)
         return keys
 
+    def _publish_spot_tick(self) -> None:
+        """Fast path: updates spot prices in shared_state immediately from incoming ticks
+        without re-running 5m candle computations or 44-strategy serialization."""
+        updates = {}
+        if hasattr(self, "aliceblue") and getattr(self.aliceblue, "fast_spot_cache", None):
+            cache = self.aliceblue.fast_spot_cache
+            if "NIFTY" in cache:
+                c = cache["NIFTY"]
+                updates["nifty_price"] = c["price"]
+                updates["nifty_prev_close"] = c["prev_close"]
+                updates["nifty_change"] = c["change"]
+                updates["nifty_change_pct"] = c["change_pct"]
+            if "BANKNIFTY" in cache:
+                c = cache["BANKNIFTY"]
+                updates["banknifty_price"] = c["price"]
+                updates["banknifty_prev_close"] = c["prev_close"]
+                updates["banknifty_change"] = c["change"]
+                updates["banknifty_change_pct"] = c["change_pct"]
+            if "SENSEX" in cache:
+                c = cache["SENSEX"]
+                updates["sensex_price"] = c["price"]
+                updates["sensex_prev_close"] = c["prev_close"]
+                updates["sensex_change"] = c["change"]
+                updates["sensex_change_pct"] = c["change_pct"]
+
+        positions = self.paper_trader.get_positions()
+        if positions:
+            current_prices = {}
+            if hasattr(self, "quote_store"):
+                for o in positions:
+                    for k in (getattr(o, "canonical_id", None), getattr(o, "fyers_symbol", None), getattr(o, "symbol", None)):
+                        if k:
+                            snap = self.quote_store.get_snapshot(k) or self.quote_store.get_snapshot_by_symbol(k)
+                            if snap and snap.ltp > 0:
+                                current_prices[k] = snap.ltp
+            pnl = self.paper_trader.get_pnl(current_prices)
+            updates["pnl"] = pnl
+            updates["positions"] = [self._order_dict(o, current_prices) for o in positions]
+
+        if updates:
+            updates["timestamp"] = datetime.now(IST).isoformat()
+            shared_state.update(updates)
+
     def _publish_state(self) -> None:
         state = self.data_manager.get_state()
         current_prices = {}
@@ -268,6 +311,21 @@ class WebLiveEngine(LiveTrader):
                 last_closed_by_strategy[order.strategy] = order
 
 
+        def _format_order_contract(order):
+            if not order:
+                return ""
+            exp_date = None
+            if getattr(order, "canonical_id", None) and "|" in order.canonical_id:
+                try:
+                    parts = order.canonical_id.split("|")
+                    if len(parts) >= 2:
+                        exp_date = date.fromisoformat(parts[1])
+                except Exception:
+                    pass
+            if exp_date is None:
+                exp_date = next_weekly_expiry_date(order.entry_time, index=order.underlying)
+            return format_display_symbol(order.symbol, exp_date)
+
         rows = []
         all_strategies = [s for engine in self.strategy_engines.values() for s in engine.strategies]
         for strategy in all_strategies:
@@ -291,7 +349,7 @@ class WebLiveEngine(LiveTrader):
                     today_pnl += trade_pnl - (latest.entry_charges or 0.0)
                 entry = {
                     "order_id": latest.order_id,
-                    "contract": format_display_symbol(latest.symbol, next_weekly_expiry_date(latest.entry_time, index=latest.underlying)),
+                    "contract": _format_order_contract(latest),
                     "qty": latest.qty,
                     "lot_size": latest.lot_size,
                     "entry_price": latest.entry_price,
@@ -305,7 +363,7 @@ class WebLiveEngine(LiveTrader):
                 last = last_closed_by_strategy.get(name)
                 if last is not None:
                     last_closed = {
-                        "contract": format_display_symbol(last.symbol, next_weekly_expiry_date(last.entry_time, index=last.underlying)),
+                        "contract": _format_order_contract(last),
                         "qty": last.qty,
                         "lot_size": last.lot_size,
                         "entry_price": last.entry_price,
@@ -329,7 +387,7 @@ class WebLiveEngine(LiveTrader):
                 ) if current_prices else None
                 open_list.append({
                     "order_id": o.order_id,
-                    "contract": format_display_symbol(o.symbol, next_weekly_expiry_date(o.entry_time, index=o.underlying)),
+                    "contract": _format_order_contract(o),
                     "qty": o.qty,
                     "lot_size": o.lot_size,
                     "entry_price": o.entry_price,
@@ -342,7 +400,7 @@ class WebLiveEngine(LiveTrader):
 
             closed_list = [
                 {
-                    "contract": format_display_symbol(o.symbol, next_weekly_expiry_date(o.entry_time, index=o.underlying)),
+                    "contract": _format_order_contract(o),
                     "qty": o.qty,
                     "lot_size": o.lot_size,
                     "entry_price": o.entry_price,
@@ -386,13 +444,25 @@ class WebLiveEngine(LiveTrader):
             or current_prices.get(order.canonical_id)
             or current_prices.get(order.symbol)
         ) if current_prices else None
-        trade_pnl = order.unrealized_pnl(ltp) if ltp is not None else 0.0
+        exp_date = None
+        if getattr(order, "canonical_id", None) and "|" in order.canonical_id:
+            try:
+                parts = order.canonical_id.split("|")
+                if len(parts) >= 2:
+                    exp_date = date.fromisoformat(parts[1])
+            except Exception:
+                pass
+        if exp_date is None:
+            exp_date = next_weekly_expiry_date(order.entry_time, index=order.underlying)
+
         return {
             "order_id": order.order_id, "symbol": order.symbol, "qty": order.qty,
             "entry_price": order.entry_price, "stop_loss": order.stop_loss,
             "take_profit": order.take_profit, "strategy": order.strategy,
             "entry_time": order.entry_time.isoformat(),
-            "contract": format_display_symbol(order.symbol, next_weekly_expiry_date(order.entry_time, index=order.underlying)),
+            "contract": format_display_symbol(order.symbol, exp_date),
+            "canonical_id": getattr(order, "canonical_id", None),
+            "fyers_symbol": getattr(order, "fyers_symbol", None),
             "ltp": ltp,
             "trade_pnl": round(trade_pnl, 2),
         }

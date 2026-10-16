@@ -404,6 +404,11 @@ class LiveTrader:
         """Invoked synchronously on every incoming Alice Blue spot or option tick."""
         self._last_tick_time = time.time()
         self._check_readiness_transition()
+        if hasattr(self, "_publish_spot_tick"):
+            try:
+                self._publish_spot_tick()
+            except Exception as e:
+                logger.debug("Error in _publish_spot_tick: %s", e)
         if self.paper_trader.get_positions():
             self.check_exits()
 
@@ -866,17 +871,24 @@ class LiveTrader:
         # This is critical on big trend days: the market crashes 1000+ pts into strikes that
         # weren't in the initial subscription universe. Without this, QuoteStore has no live
         # ticks and the trade would execute at a stale/phantom price.
+        # --- Auto-subscribe contract if not already in the WebSocket feed ---
+        # This is critical on big trend days: the market crashes 1000+ pts into strikes that
+        # weren't in the initial subscription universe. Without this, QuoteStore has no live
+        # ticks and the trade would execute at a stale/phantom price.
         # Only applies when live WebSocket is connected (not in unit tests/backtests).
-        if self._connected and inst.fyers_symbol not in self._monitored_symbols:
-            try:
-                self.fyers.subscribe_symbols([inst.fyers_symbol])
-                self._monitored_symbols.add(inst.fyers_symbol)
-                logger.info(
-                    "Auto-subscribed new contract %s (%s) before trade execution",
-                    inst.fyers_symbol, inst.canonical_id,
-                )
-            except Exception as e:
-                self.logger.log_error(f"Auto-subscribe failed for {inst.fyers_symbol}: {e}")
+        if self._connected:
+            if getattr(self, "aliceblue", None) and self.config.broker == "aliceblue":
+                self.aliceblue.subscribe_symbol(inst.canonical_id)
+            elif inst.fyers_symbol not in self._monitored_symbols:
+                try:
+                    self.fyers.subscribe_symbols([inst.fyers_symbol])
+                    self._monitored_symbols.add(inst.fyers_symbol)
+                    logger.info(
+                        "Auto-subscribed new contract %s (%s) before trade execution",
+                        inst.fyers_symbol, inst.canonical_id,
+                    )
+                except Exception as e:
+                    self.logger.log_error(f"Auto-subscribe failed for {inst.fyers_symbol}: {e}")
 
         # Query latest live snapshot from QuoteStore
         snapshot = self.quote_store.get_snapshot(inst.canonical_id)
@@ -895,7 +907,11 @@ class LiveTrader:
         if not is_live_ws:
             # Allow DataManager WS quotes as a secondary live source
             dm = self.data_managers.get(underlying, self.data_manager)
-            quote = dm.option_chain.get(inst.fyers_symbol) or dm.option_chain.get(signal.strike)
+            quote = dm.option_chain.get(inst.canonical_id) or dm.option_chain.get(inst.fyers_symbol)
+            # Only check clean_alias if it belongs to the active expiry for this index
+            active_exp = self.instrument_registry.get_active_expiry(underlying)
+            if not quote and (active_exp is None or inst.expiry == active_exp):
+                quote = dm.option_chain.get(signal.strike) or dm.option_chain.get(inst.clean_alias)
             if quote and getattr(quote, "source", "rest") == "ws" and quote.ltp > 0:
                 snapshot = self.quote_store.update_tick(
                     canonical_id=inst.canonical_id,
@@ -1031,7 +1047,9 @@ class LiveTrader:
         for inst in self.instrument_registry.get_all_instruments():
             snap = self.quote_store.get_snapshot(inst.canonical_id)
             if snap:
-                combined_quotes[inst.clean_alias] = snap
+                active_exp = self.instrument_registry.get_active_expiry(inst.underlying)
+                if active_exp is None or inst.expiry == active_exp:
+                    combined_quotes[inst.clean_alias] = snap
 
         # WS-sourced DataManager quotes (source == "ws") are acceptable as a
         # secondary live source when QuoteStore hasn't yet indexed the instrument.

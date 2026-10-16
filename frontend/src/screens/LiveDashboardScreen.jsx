@@ -1,4 +1,4 @@
-import { useMarketState } from "../hooks/useMarketStream";
+import { useStrategyStatus } from "../hooks/useMarketStream";
 import { PnlSummaryCard } from "../components/PnlSummaryCard";
 import { StrategyStatusList } from "../components/StrategyStatusCard";
 import { MarketHeader } from "../components/MarketHeader";
@@ -8,7 +8,7 @@ import { PreMarketIntelligenceCard } from "../components/PreMarketIntelligenceCa
 import { PostMarketJournalCard } from "../components/PostMarketJournalCard";
 
 export function LiveDashboardScreen() {
-  const state = useMarketState();
+  const state = useStrategyStatus();
 
   const totalTodayPnl = state.strategy_status?.reduce((acc, s) => acc + (s.today_pnl || 0), 0) || 0;
   const activePositions = state.positions || [];

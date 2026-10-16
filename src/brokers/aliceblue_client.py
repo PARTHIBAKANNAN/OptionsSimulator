@@ -72,6 +72,7 @@ class AliceBlueClient:
             26009: "BANKNIFTY",
             1: "SENSEX",
         }
+        self.fast_spot_cache: Dict[str, dict] = {}
 
         # Attempt to restore cached session from disk on startup
         self._restore_session()
@@ -406,6 +407,9 @@ class AliceBlueClient:
             return
 
         with self.instrument_registry._lock:
+            active_expiries = dict(self.contract_master._active_expiry_by_underlying)
+            self.instrument_registry._active_expiry_by_underlying.update(active_expiries)
+
             for token, meta in self.contract_master._by_token.items():
                 inst = Instrument(
                     underlying=meta.underlying,
@@ -418,10 +422,18 @@ class AliceBlueClient:
                     tick_size=meta.tick_size,
                 )
                 self.instrument_registry._by_canonical_id[inst.canonical_id] = inst
-                self.instrument_registry._clean_alias_to_canonical[inst.clean_alias] = inst.canonical_id
                 self._token_to_inst[token] = inst
 
-        logger.info("Synced %d instruments to InstrumentRegistry.", len(self._token_to_inst))
+                # Strictly map clean alias (e.g. BANKNIFTY55600PE) ONLY for the active (nearest) expiry
+                active_exp = active_expiries.get(meta.underlying)
+                if active_exp and meta.expiry == active_exp:
+                    self.instrument_registry._clean_alias_to_canonical[inst.clean_alias] = inst.canonical_id
+
+        logger.info(
+            "Synced %d instruments to InstrumentRegistry. Active expiries: %s",
+            len(self._token_to_inst),
+            {k: str(v) for k, v in active_expiries.items()},
+        )
 
     def subscribe_strike_corridor(self, spot_prices: Dict[str, float]) -> None:
         """Subscribes ATM ± 15 strikes for active indices + spot tokens."""
@@ -480,13 +492,29 @@ class AliceBlueClient:
             # 1. Check if this is an Index Spot Tick
             if token in self._spot_token_to_und:
                 und = self._spot_token_to_und[token]
+                now_ist = datetime.now(IST)
+                c_val = data.get("c")
+                prev_close = float(c_val) if c_val is not None else 0.0
+                vol = int(data.get("v", 0) or 0)
+                change = round(ltp - prev_close, 2) if prev_close > 0 else 0.0
+                change_pct = round((change / prev_close) * 100.0, 2) if prev_close > 0 else 0.0
+
+                self.fast_spot_cache[und] = {
+                    "price": ltp,
+                    "prev_close": prev_close,
+                    "change": change,
+                    "change_pct": change_pct,
+                    "volume": vol,
+                    "timestamp": now_ist.isoformat(),
+                    "epoch": time.time(),
+                }
+
                 dm = self.data_managers.get(und)
                 if dm:
-                    now_ist = datetime.now(IST)
                     if hasattr(dm, "on_tick"):
-                        dm.on_tick(ltp, volume=int(data.get("v", 0) or 0), timestamp=now_ist)
+                        dm.on_tick(ltp, volume=vol, timestamp=now_ist)
                     elif hasattr(dm, "on_nifty_tick"):
-                        dm.on_nifty_tick({"ltp": ltp, "volume": int(data.get("v", 0) or 0), "timestamp": now_ist})
+                        dm.on_nifty_tick({"ltp": ltp, "volume": vol, "timestamp": now_ist})
                 if self.on_tick_hook:
                     try:
                         self.on_tick_hook()
@@ -534,9 +562,7 @@ class AliceBlueClient:
                 dm = self.data_managers.get(inst.underlying)
                 if dm:
                     from src.data_manager import OptionQuote
-                    quote = dm.option_chain.get(inst.clean_alias)
-                    if quote is None:
-                        quote = OptionQuote(symbol=inst.fyers_symbol)
+                    quote = OptionQuote(symbol=inst.fyers_symbol)
                     quote.ltp = ltp
                     quote.bid = bid
                     quote.ask = ask
@@ -544,9 +570,15 @@ class AliceBlueClient:
                     quote.volume = vol
                     quote.source = "ws"
                     quote.updated_at = datetime.now(timezone.utc)
-                    dm.option_chain[inst.clean_alias] = quote
+                    
+                    # Always index by canonical ID and fyers/broker symbol
                     dm.option_chain[inst.canonical_id] = quote
                     dm.option_chain[inst.fyers_symbol] = quote
+
+                    # Only map clean alias (e.g. BANKNIFTY55600PE) if this contract belongs to the ACTIVE expiry
+                    active_exp = self.contract_master._active_expiry_by_underlying.get(inst.underlying)
+                    if active_exp and inst.expiry == active_exp:
+                        dm.option_chain[inst.clean_alias] = quote
 
             if self.on_tick_hook:
                 try:

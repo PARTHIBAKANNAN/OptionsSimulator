@@ -288,3 +288,42 @@ def test_data_manager_resample_stability():
     assert isinstance(bars_5m, list)
     assert len(bars_5m) > 0
 
+
+def test_clean_alias_maps_only_active_expiry():
+    from datetime import date
+    from src.market_data.contract_master import ContractMeta
+    from src.market_data.instrument_registry import InstrumentRegistry
+    from src.market_data.quote_store import QuoteStore
+
+    registry = InstrumentRegistry()
+    quote_store = QuoteStore()
+    client = AliceBlueClient(
+        user_id="2628887",
+        session_token="fake.token",
+        quote_store=quote_store,
+        instrument_registry=registry,
+    )
+
+    oct_exp = date(2026, 10, 27)
+    nov_exp = date(2026, 11, 23)
+
+    # Mock contract master with October and November contracts for same strike
+    c_oct = ContractMeta(
+        exchange="NFO", exchange_segment="nse_fo", underlying="BANKNIFTY",
+        token=1001, strike=55600.0, option_type="PE", expiry=oct_exp,
+        trading_symbol="BANKNIFTY26OCT55600PE", lot_size=30, tick_size=0.05
+    )
+    c_nov = ContractMeta(
+        exchange="NFO", exchange_segment="nse_fo", underlying="BANKNIFTY",
+        token=1002, strike=55600.0, option_type="PE", expiry=nov_exp,
+        trading_symbol="BANKNIFTY26NOV55600PE", lot_size=30, tick_size=0.05
+    )
+
+    client.contract_master._by_token = {1001: c_oct, 1002: c_nov}
+    client.contract_master._active_expiry_by_underlying = {"BANKNIFTY": oct_exp}
+
+    client._sync_instruments_to_registry()
+
+    # Clean alias must strictly point to October (active expiry), NOT November!
+    assert registry._clean_alias_to_canonical["BANKNIFTY55600PE"] == "BANKNIFTY|2026-10-27|55600|PE"
+

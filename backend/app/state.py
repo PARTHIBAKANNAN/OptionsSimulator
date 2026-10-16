@@ -14,7 +14,7 @@ class SharedState:
 
     def update(self, snapshot: dict) -> None:
         with self._lock:
-            self._snapshot = snapshot
+            self._snapshot.update(snapshot)
 
     def get(self) -> dict:
         with self._lock:

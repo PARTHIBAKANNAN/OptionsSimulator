@@ -57,12 +57,11 @@ class Broadcaster:
                 self._seq += 1
                 self._fanout(json.dumps({"type": "delta", "seq": self._seq, "data": changed}))
                 last_change_time = now
+                self._prev_snapshot = copy.deepcopy(curr)
             elif now - last_change_time >= HEARTBEAT_SECS:
                 self._seq += 1
                 self._fanout(json.dumps({"type": "heartbeat", "seq": self._seq}))
                 last_change_time = now
-
-            self._prev_snapshot = copy.deepcopy(curr)
 
     def _fanout(self, frame: str) -> None:
         for queue in list(self._subscribers):

@@ -277,8 +277,21 @@ def format_display_symbol(symbol: str, expiry: date = None) -> str:
     return f"{prefix}{expiry.day:02d}{expiry.strftime('%b')}{expiry.year}{int(strike)}{option_type}"
 
 
-def format_readable_contract(symbol: str, expiry: date = None, timestamp: datetime = None) -> str:
+def format_readable_contract(symbol: str, expiry: date = None, timestamp: datetime = None, canonical_id: str = None) -> str:
     """'BANKNIFTY56300CE' -> 'BANKNIFTY 29-SEP-2026 56300 CE'."""
+    cid = canonical_id or (symbol if (symbol and "|" in symbol) else None)
+    if cid and "|" in cid:
+        try:
+            parts = cid.split("|")
+            if len(parts) >= 4:
+                prefix = parts[0]
+                exp_dt = date.fromisoformat(parts[1])
+                strike = int(float(parts[2]))
+                opt_type = parts[3]
+                return f"{prefix} {exp_dt.day:02d}-{exp_dt.strftime('%b').upper()}-{exp_dt.year} {strike} {opt_type}"
+        except Exception:
+            pass
+
     strike, option_type = parse_option_symbol(symbol)
     if strike is None:
         return symbol

@@ -187,7 +187,9 @@ class TelegramAlertsManager:
     async def send_trade_execution(self, order) -> None:
         if not self.bot_token or not self.chat_id:
             return
-        contract_name = format_readable_contract(order.symbol, timestamp=order.entry_time)
+        contract_name = format_readable_contract(
+            order.symbol, timestamp=order.entry_time, canonical_id=getattr(order, "canonical_id", None)
+        )
         text = (
             f"🚀 <b>ORDER EXECUTED</b>\n"
             f"━━━━━━━━━━━━━━━━━━━━\n"
@@ -207,7 +209,9 @@ class TelegramAlertsManager:
     async def send_trailing_update(self, order, new_sl: float, stage_label: str) -> None:
         if not self.bot_token or not self.chat_id:
             return
-        contract_name = format_readable_contract(order.symbol, timestamp=order.entry_time)
+        contract_name = format_readable_contract(
+            order.symbol, timestamp=order.entry_time, canonical_id=getattr(order, "canonical_id", None)
+        )
         text = (
             f"🔒 <b>TRAILING STOP-LOSS UPDATED ({stage_label})</b>\n"
             f"━━━━━━━━━━━━━━━━━━━━\n"
@@ -225,7 +229,9 @@ class TelegramAlertsManager:
     async def send_position_exit(self, order, pnl: float, reason: str) -> None:
         if not self.bot_token or not self.chat_id:
             return
-        contract_name = format_readable_contract(order.symbol, timestamp=order.entry_time)
+        contract_name = format_readable_contract(
+            order.symbol, timestamp=order.entry_time, canonical_id=getattr(order, "canonical_id", None)
+        )
         pnl_emoji = "💰" if pnl > 0 else "🛑"
         text = (
             f"{pnl_emoji} <b>POSITION CLOSED: {order.strategy}</b>\n"

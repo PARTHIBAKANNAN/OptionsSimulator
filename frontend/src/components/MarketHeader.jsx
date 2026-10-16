@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { memo, useState } from "react";
 import { motion } from "framer-motion";
 import { TrendingUp, TrendingDown, Clock, ShieldCheck, BarChart2, AlertCircle, Volume2, VolumeX } from "lucide-react";
 import { Badge } from "./ui/Badge";
@@ -6,6 +6,7 @@ import { ChartModal } from "./ChartModal";
 import { ConnectAliceBlueModal } from "./ConnectAliceBlueModal";
 import { closeAllPositions } from "../hooks/usePaperTradingSync";
 import { soundEngine } from "../utils/audioAlerts";
+import { useSpotPrices } from "../hooks/useMarketStream";
 
 function fmtRupee(v) {
   if (v == null) return "—";
@@ -17,7 +18,7 @@ function fmtTime(iso) {
   return new Date(iso).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
 }
 
-function IndexCard({ label, price, prevClose, change, changePct, exchangeOpen, onOpenChart }) {
+const IndexCard = memo(function IndexCard({ label, price, prevClose, change, changePct, exchangeOpen, onOpenChart }) {
   const hasPrice = price != null;
   const positive = (change ?? 0) >= 0;
 
@@ -56,9 +57,11 @@ function IndexCard({ label, price, prevClose, change, changePct, exchangeOpen, o
       </div>
     </div>
   );
-}
+});
 
-export function MarketHeader({ state }) {
+export function MarketHeader({ state: propState }) {
+  const liveSpot = useSpotPrices();
+  const state = propState ? { ...propState, ...liveSpot } : liveSpot;
   const [chartFor, setChartFor] = useState(null);
   const [squaringOff, setSquaringOff] = useState(false);
   const [soundMuted, setSoundMuted] = useState(soundEngine.isMuted());
