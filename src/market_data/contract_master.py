@@ -216,6 +216,10 @@ class ContractMaster:
         """Resolves clean alias like 'NIFTY22500CE' to numeric token for current active expiry."""
         return self._clean_alias_to_token.get(alias)
 
+    def get_active_expiry(self, underlying: str) -> Optional[date]:
+        """Returns nearest weekly active expiry date for the underlying (e.g. NIFTY -> 2026-10-19)."""
+        return self._active_expiry_by_underlying.get(underlying)
+
     def get_corridor_tokens(
         self,
         spot_prices: Dict[str, float],

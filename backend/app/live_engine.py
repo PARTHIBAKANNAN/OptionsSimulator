@@ -329,10 +329,9 @@ class WebLiveEngine(LiveTrader):
                 except Exception:
                     pass
             if exp_date is None:
-                if hasattr(self, "contract_master") and self.contract_master:
-                    exp_date = self.contract_master.get_active_expiry(order.underlying)
-                elif hasattr(self, "aliceblue") and getattr(self.aliceblue, "contract_master", None):
-                    exp_date = self.aliceblue.contract_master.get_active_expiry(order.underlying)
+                cm = getattr(self, "contract_master", None) or getattr(getattr(self, "aliceblue", None), "contract_master", None)
+                if cm and hasattr(cm, "get_active_expiry"):
+                    exp_date = cm.get_active_expiry(order.underlying)
             if exp_date is None:
                 exp_date = next_weekly_expiry_date(order.entry_time, index=order.underlying)
             return format_display_symbol(order.symbol, exp_date, canonical_id=cid)
