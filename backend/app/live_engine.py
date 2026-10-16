@@ -444,6 +444,7 @@ class WebLiveEngine(LiveTrader):
             or current_prices.get(order.canonical_id)
             or current_prices.get(order.symbol)
         ) if current_prices else None
+        trade_pnl = order.unrealized_pnl(ltp) if ltp is not None else 0.0
         exp_date = None
         if getattr(order, "canonical_id", None) and "|" in order.canonical_id:
             try:
