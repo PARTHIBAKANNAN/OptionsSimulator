@@ -104,6 +104,11 @@ class WebLiveEngine(LiveTrader):
                             snap = self.quote_store.get_snapshot(k) or self.quote_store.get_snapshot_by_symbol(k)
                             if snap and snap.ltp > 0:
                                 current_prices[k] = snap.ltp
+                    if getattr(o, "symbol", None) and o.symbol not in current_prices:
+                        dm = self.data_managers.get(o.underlying, self.data_manager)
+                        q = dm.option_chain.get(o.symbol) or (dm.option_chain.get(o.canonical_id) if getattr(o, "canonical_id", None) else None)
+                        if q and q.ltp > 0:
+                            current_prices[o.symbol] = q.ltp
             pnl = self.paper_trader.get_pnl(current_prices)
             updates["pnl"] = pnl
             updates["positions"] = [self._order_dict(o, current_prices) for o in positions]
@@ -314,17 +319,23 @@ class WebLiveEngine(LiveTrader):
         def _format_order_contract(order):
             if not order:
                 return ""
+            cid = getattr(order, "canonical_id", None)
             exp_date = None
-            if getattr(order, "canonical_id", None) and "|" in order.canonical_id:
+            if cid and "|" in cid:
                 try:
-                    parts = order.canonical_id.split("|")
+                    parts = cid.split("|")
                     if len(parts) >= 2:
                         exp_date = date.fromisoformat(parts[1])
                 except Exception:
                     pass
             if exp_date is None:
+                if hasattr(self, "contract_master") and self.contract_master:
+                    exp_date = self.contract_master.get_active_expiry(order.underlying)
+                elif hasattr(self, "aliceblue") and getattr(self.aliceblue, "contract_master", None):
+                    exp_date = self.aliceblue.contract_master.get_active_expiry(order.underlying)
+            if exp_date is None:
                 exp_date = next_weekly_expiry_date(order.entry_time, index=order.underlying)
-            return format_display_symbol(order.symbol, exp_date)
+            return format_display_symbol(order.symbol, exp_date, canonical_id=cid)
 
         rows = []
         all_strategies = [s for engine in self.strategy_engines.values() for s in engine.strategies]
@@ -445,12 +456,21 @@ class WebLiveEngine(LiveTrader):
             or current_prices.get(order.symbol)
         ) if current_prices else None
         trade_pnl = order.unrealized_pnl(ltp) if ltp is not None else 0.0
+        cid = getattr(order, "canonical_id", None)
         exp_date = None
-        if getattr(order, "canonical_id", None) and "|" in order.canonical_id:
+        if cid and "|" in cid:
             try:
-                parts = order.canonical_id.split("|")
+                parts = cid.split("|")
                 if len(parts) >= 2:
                     exp_date = date.fromisoformat(parts[1])
+            except Exception:
+                pass
+        if exp_date is None:
+            try:
+                from src.brokers.contract_master import get_contract_master
+                cm = get_contract_master()
+                if cm:
+                    exp_date = cm.get_active_expiry(order.underlying)
             except Exception:
                 pass
         if exp_date is None:
@@ -461,8 +481,8 @@ class WebLiveEngine(LiveTrader):
             "entry_price": order.entry_price, "stop_loss": order.stop_loss,
             "take_profit": order.take_profit, "strategy": order.strategy,
             "entry_time": order.entry_time.isoformat(),
-            "contract": format_display_symbol(order.symbol, exp_date),
-            "canonical_id": getattr(order, "canonical_id", None),
+            "contract": format_display_symbol(order.symbol, exp_date, canonical_id=cid),
+            "canonical_id": cid,
             "fyers_symbol": getattr(order, "fyers_symbol", None),
             "ltp": ltp,
             "trade_pnl": round(trade_pnl, 2),
@@ -1020,6 +1040,10 @@ class WebLiveEngine(LiveTrader):
             quote = dm.option_chain.get(raw_sym)
             if quote and quote.ltp == 0.0:
                 quote.ltp = exec_price
+
+        if hasattr(self, "aliceblue") and self.aliceblue:
+            if hasattr(self.aliceblue, "subscribe_symbol"):
+                self.aliceblue.subscribe_symbol(canonical_id or raw_sym or signal.strike)
 
         self._publish_state()
 

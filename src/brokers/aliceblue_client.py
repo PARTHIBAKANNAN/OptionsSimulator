@@ -493,9 +493,20 @@ class AliceBlueClient:
             if token in self._spot_token_to_und:
                 und = self._spot_token_to_und[token]
                 now_ist = datetime.now(IST)
+                cached = self.fast_spot_cache.get(und, {})
                 c_val = data.get("c")
-                prev_close = float(c_val) if c_val is not None else 0.0
+                if c_val is not None and float(c_val) > 0:
+                    prev_close = float(c_val)
+                elif cached.get("prev_close", 0.0) > 0:
+                    prev_close = cached["prev_close"]
+                else:
+                    dm = self.data_managers.get(und)
+                    prev_close = float((dm.get_prev_close(now_ist.date()) if (dm and hasattr(dm, "get_prev_close")) else 0.0) or 0.0)
+
                 vol = int(data.get("v", 0) or 0)
+                if vol == 0 and cached.get("volume", 0) > 0:
+                    vol = cached["volume"]
+
                 change = round(ltp - prev_close, 2) if prev_close > 0 else 0.0
                 change_pct = round((change / prev_close) * 100.0, 2) if prev_close > 0 else 0.0
 

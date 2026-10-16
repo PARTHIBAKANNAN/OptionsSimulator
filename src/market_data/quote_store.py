@@ -110,6 +110,14 @@ class QuoteStore:
             )
             self._snapshots_by_canonical[canonical_id] = snapshot
             self._snapshots_by_symbol[fyers_symbol] = snapshot
+            if canonical_id and "|" in canonical_id:
+                parts = canonical_id.split("|")
+                if len(parts) >= 4:
+                    try:
+                        clean_alias = f"{parts[0]}{int(float(parts[2]))}{parts[3]}"
+                        self._snapshots_by_symbol[clean_alias] = snapshot
+                    except Exception:
+                        pass
             return snapshot
 
     def get_snapshot(self, canonical_id: str) -> Optional[QuoteSnapshot]:

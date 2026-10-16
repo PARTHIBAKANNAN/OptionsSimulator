@@ -1025,6 +1025,9 @@ class LiveTrader:
             return
 
         self.state_manager.save_positions(self.paper_trader.get_positions())
+        if hasattr(self, "broker_client") and self.broker_client:
+            if hasattr(self.broker_client, "subscribe_symbol"):
+                self.broker_client.subscribe_symbol(inst.canonical_id or inst.clean_alias)
         if self.telegram:
             await self.telegram.send_trade_execution(order)
 

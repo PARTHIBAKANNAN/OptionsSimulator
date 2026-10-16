@@ -177,3 +177,14 @@ def test_to_fyers_symbol():
     assert to_fyers_symbol("NIFTY24600CE", date(2026, 10, 6)) == "NSE:NIFTY26O0624600CE"
     assert to_fyers_symbol("SENSEX75000CE", date(2026, 12, 17)) == "BSE:SENSEX26D1775000CE"
 
+
+def test_format_display_symbol_uses_canonical_id():
+    # Authentic Monday Oct 19 expiry passed via canonical_id
+    res = format_display_symbol("NIFTY23050CE", canonical_id="NIFTY|2026-10-19|23050|CE")
+    assert res == "NIFTY19Oct202623050CE"
+
+    # Also works when the symbol itself is the canonical string
+    res2 = format_display_symbol("NIFTY|2026-10-19|23050|CE")
+    assert res2 == "NIFTY19Oct202623050CE"
+
+

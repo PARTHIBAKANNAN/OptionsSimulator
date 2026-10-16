@@ -259,10 +259,23 @@ def next_weekly_expiry_date(from_date: datetime, index: str = "NIFTY") -> date:
     return from_date.date()
 
 
-def format_display_symbol(symbol: str, expiry: date = None) -> str:
+def format_display_symbol(symbol: str, expiry: date = None, canonical_id: str = None) -> str:
     """'BANKNIFTY56300CE' -> 'BANKNIFTY29Sep202656300CE'
        'SENSEX75100CE'    -> 'SENSEX10Sep202675100CE'
        'NIFTY24600CE'     -> 'NIFTY15Sep202624600CE'"""
+    cid = canonical_id or (symbol if (symbol and "|" in symbol) else None)
+    if cid and "|" in cid:
+        try:
+            parts = cid.split("|")
+            if len(parts) >= 4:
+                prefix = parts[0]
+                exp_dt = date.fromisoformat(parts[1])
+                strike = int(float(parts[2]))
+                opt_type = parts[3]
+                return f"{prefix}{exp_dt.day:02d}{exp_dt.strftime('%b')}{exp_dt.year}{strike}{opt_type}"
+        except Exception:
+            pass
+
     strike, option_type = parse_option_symbol(symbol)
     if strike is None:
         return symbol
@@ -272,6 +285,16 @@ def format_display_symbol(symbol: str, expiry: date = None) -> str:
         prefix = "SENSEX"
     else:
         prefix = "NIFTY"
+    if expiry is None:
+        try:
+            from src.brokers.contract_master import get_contract_master
+            cm = get_contract_master()
+            if cm:
+                act_exp = cm.get_active_expiry(prefix)
+                if act_exp:
+                    expiry = act_exp
+        except Exception:
+            pass
     if expiry is None:
         expiry = next_weekly_expiry_date(datetime.now(IST), index=prefix)
     return f"{prefix}{expiry.day:02d}{expiry.strftime('%b')}{expiry.year}{int(strike)}{option_type}"
