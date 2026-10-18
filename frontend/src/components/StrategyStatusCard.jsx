@@ -4,6 +4,7 @@ import { ChevronDown, ChevronRight, Search, LayoutGrid, List, Table, RotateCcw }
 import { Badge } from "./ui/Badge";
 import { StrategyAnalyticsModal } from "./StrategyAnalyticsModal";
 import { approveSignal, closePosition, rejectSignal, restartStrategy } from "../hooks/usePaperTradingSync";
+import { useSpotPrices } from "../hooks/useMarketStream";
 
 function fmtRupee(v) {
   if (v == null) return "—";
@@ -171,11 +172,28 @@ function SteppedTslProgressGauge({ entryPrice, ltp, stopLoss, takeProfit, closed
 
 // QuantMan exact instrument panel box
 function QuantManInstrumentBox({ contract, qty, entryTime, entryPrice, ltp, pnl, grossPnl, charges, stopLoss, takeProfit, exitTime, strategy = "", lotSize }) {
+  const spotData = useSpotPrices();
+  const closed = Boolean(exitTime);
+
+  // Fast-path live LTP binding: if position is open, check if fast spot/positions stream has a newer tick
+  let effectiveLtp = ltp;
+  let effectivePnl = pnl;
+  if (!closed && spotData?.positions) {
+    const livePos = spotData.positions.find(
+      (p) => (strategy && p.strategy === strategy) || (contract && p.contract === contract)
+    );
+    if (livePos && livePos.ltp > 0) {
+      effectiveLtp = livePos.ltp;
+      if (livePos.trade_pnl != null) {
+        effectivePnl = livePos.trade_pnl;
+      }
+    }
+  }
+
   const fallbackLot = (contract?.includes("SENSEX") || strategy?.includes("SENSEX")) ? 20 : ((contract?.includes("BANKNIFTY") || strategy?.includes("BANKNIFTY")) ? 30 : 65);
   const effectiveLotSize = lotSize || fallbackLot;
   const investedCapital = (entryPrice || 0) * (qty || 1) * effectiveLotSize;
-  const netReturnPct = investedCapital > 0 && pnl != null ? (pnl / investedCapital) * 100 : null;
-  const closed = Boolean(exitTime);
+  const netReturnPct = investedCapital > 0 && effectivePnl != null ? (effectivePnl / investedCapital) * 100 : null;
 
   return (
     <div className="rounded-xl border border-subtle/80 bg-surface2/90 p-3.5 backdrop-blur-sm shadow-inner">
@@ -185,11 +203,11 @@ function QuantManInstrumentBox({ contract, qty, entryTime, entryPrice, ltp, pnl,
           <div className="text-xs text-faint mt-0.5">Qty : {qty ?? 1} (Lot: {effectiveLotSize})</div>
         </div>
         <div className="text-right">
-          <span className={`text-xs font-bold ${pnlClass(pnl)}`}>
+          <span className={`text-xs font-bold ${pnlClass(effectivePnl)}`}>
             {netReturnPct != null ? `${netReturnPct >= 0 ? "+" : ""}${netReturnPct.toFixed(1)}%` : ""}
           </span>
-          <div className={`text-sm font-extrabold tabular-nums ${pnlClass(pnl)}`}>
-            {pnl < 0 ? `- ₹ ${Math.abs(pnl).toLocaleString("en-IN", { maximumFractionDigits: 2 })}` : fmtRupee(pnl)}
+          <div className={`text-sm font-extrabold tabular-nums ${pnlClass(effectivePnl)}`}>
+            {effectivePnl < 0 ? `- ₹ ${Math.abs(effectivePnl).toLocaleString("en-IN", { maximumFractionDigits: 2 })}` : fmtRupee(effectivePnl)}
           </div>
         </div>
       </div>
@@ -206,7 +224,7 @@ function QuantManInstrumentBox({ contract, qty, entryTime, entryPrice, ltp, pnl,
           <span className={`rounded px-1.5 py-0.5 text-[9px] font-bold ${closed ? "bg-bear/15 text-bear" : "bg-surface3 text-faint"}`}>
             {closed ? "SELL" : "LTP"}
           </span>
-          <span className="font-mono font-semibold text-primary">{fmtRupee(ltp)}</span>
+          <span className="font-mono font-semibold text-primary">{fmtRupee(effectiveLtp)}</span>
           {closed && charges != null && (
             <span className="text-[10px] text-faint ml-1">
               (Fees: {fmtRupee(charges)})
@@ -218,7 +236,7 @@ function QuantManInstrumentBox({ contract, qty, entryTime, entryPrice, ltp, pnl,
       {/* Stepped TSL Animated Progress Gauge */}
       <SteppedTslProgressGauge
         entryPrice={entryPrice}
-        ltp={ltp}
+        ltp={effectiveLtp}
         stopLoss={stopLoss}
         takeProfit={takeProfit}
         closed={closed}

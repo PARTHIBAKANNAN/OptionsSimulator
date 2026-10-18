@@ -15,7 +15,7 @@ export function LiveDashboardScreen() {
 
   return (
     <div className="space-y-4">
-      <MarketHeader state={state} />
+      <MarketHeader />
 
       {/* 08:50 AM Pre-Market Catalyst & Sentiment Card */}
       <PreMarketIntelligenceCard />

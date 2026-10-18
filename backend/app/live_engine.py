@@ -111,7 +111,45 @@ class WebLiveEngine(LiveTrader):
                             current_prices[o.symbol] = q.ltp
             pnl = self.paper_trader.get_pnl(current_prices)
             updates["pnl"] = pnl
-            updates["positions"] = [self._order_dict(o, current_prices) for o in positions]
+            order_dicts = [self._order_dict(o, current_prices) for o in positions]
+            updates["positions"] = order_dicts
+
+            # Immediate patch into strategy_status so position cards display live exchange LTP
+            # without waiting for the 1-second strategy evaluation cycle
+            current_state = shared_state.get()
+            if current_state and "strategy_status" in current_state:
+                pos_by_strategy = {}
+                for od in order_dicts:
+                    strat = od.get("strategy")
+                    if strat:
+                        pos_by_strategy.setdefault(strat, []).append(od)
+
+                updated_rows = []
+                for row in current_state["strategy_status"]:
+                    row_strat = row.get("strategy")
+                    strat_positions = pos_by_strategy.get(row_strat)
+                    if strat_positions:
+                        # Copy row to avoid mutating state in place
+                        new_row = dict(row)
+                        new_row["status"] = "SIGNAL_ENTERED"
+                        latest_pos = strat_positions[-1]
+                        new_row["entry"] = {
+                            "order_id": latest_pos.get("order_id"),
+                            "contract": latest_pos.get("contract"),
+                            "qty": latest_pos.get("qty"),
+                            "lot_size": latest_pos.get("lot_size"),
+                            "entry_price": latest_pos.get("entry_price"),
+                            "entry_time": latest_pos.get("entry_time"),
+                            "ltp": latest_pos.get("ltp"),
+                            "trade_pnl": latest_pos.get("trade_pnl"),
+                            "stop_loss": latest_pos.get("stop_loss"),
+                            "take_profit": latest_pos.get("take_profit"),
+                        }
+                        new_row["open_positions"] = strat_positions
+                        updated_rows.append(new_row)
+                    else:
+                        updated_rows.append(row)
+                updates["strategy_status"] = updated_rows
 
         if updates:
             updates["timestamp"] = datetime.now(IST).isoformat()
