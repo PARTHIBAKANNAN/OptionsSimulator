@@ -39,7 +39,7 @@ export function ChartModal({
         setLoadingTf(true);
         const res = await fetch(`${API_BASE}/api/public/candles/${activeTab}?timeframe=${timeframe}&days=7`);
         const json = await res.json();
-        if (active && json.status === "ok" && Array.isArray(json.candles)) {
+        if (active && Array.isArray(json.candles) && json.candles.length > 0) {
           setCustomCandles(json.candles);
         }
       } catch (err) {
@@ -99,9 +99,9 @@ export function ChartModal({
                   )}
                 </div>
 
-                <span className="hidden lg:inline-flex items-center gap-1 rounded-full bg-cyan-500/10 px-2.5 py-0.5 text-[10px] font-bold text-cyan-400 border border-cyan-500/20">
+                <span className="hidden sm:inline-flex items-center gap-1 rounded-full bg-cyan-500/10 px-2.5 py-0.5 text-[10px] font-bold text-cyan-400 border border-cyan-500/20">
                   <Layers className="h-3 w-3" />
-                  EMA 20 (Cyan) • EMA 50 (Orange)
+                  EMA 20 • EMA 50 • VWAP • BB (20,2) • Vol+MA
                 </span>
               </div>
 

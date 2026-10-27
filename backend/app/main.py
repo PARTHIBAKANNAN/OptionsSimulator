@@ -226,42 +226,17 @@ async def fetch_contract_candles(request: Request):
 @app.get("/api/public/candles/{index}")
 async def get_index_candles(index: str, timeframe: str = "5m", days: int = 5, request: Request = None):
     """Returns resampled OHLCV + CVD delta candles for NIFTY, BANKNIFTY, or SENSEX
-    supporting timeframes: 1m, 3m, 5m, 15m, 1h, 1D."""
+    supporting timeframes: 1m, 3m, 5m, 15m, 1h, 1D. Seamlessly falls back to recent
+    historical cache if exchange is closed or engine is pre-market."""
     idx_upper = index.upper()
     if idx_upper not in ("NIFTY", "BANKNIFTY", "SENSEX"):
         raise HTTPException(status_code=400, detail="Invalid index. Choose NIFTY, BANKNIFTY, or SENSEX.")
 
-    engine: WebLiveEngine = request.app.state.live_engine
-    dm = engine.data_managers.get(idx_upper)
-    if not dm:
-        raise HTTPException(status_code=404, detail="DataManager not found")
-
     from datetime import datetime, timedelta
+    from pathlib import Path
     from src.trader import IST
     import pandas as pd
-
     import src.db.sqlite_candle_cache as sqlite_cache
-
-    # Load all available SQLite historical candles (up to 30 days) and merge with live memory
-    sqlite_candles = sqlite_cache.load_recent_candles(idx_upper, days=max(days, 30))
-    candle_dict = {c.timestamp: c for c in sqlite_candles}
-    for c in getattr(dm, "candles", []):
-        candle_dict[c.timestamp] = c
-
-    closed_candles = sorted(candle_dict.values(), key=lambda c: c.timestamp)
-
-    if not closed_candles:
-        return {"status": "ok", "index": idx_upper, "timeframe": timeframe, "candles": []}
-
-    df = pd.DataFrame([{
-        "Timestamp": c.timestamp, "Open": c.open, "High": c.high, "Low": c.low,
-        "Close": c.close, "Volume": c.volume, "Delta": c.delta,
-    } for c in closed_candles]).set_index("Timestamp")
-
-    try:
-        df = df.between_time("09:15", "15:30")
-    except Exception:
-        pass
 
     tf_map = {
         "1m": "1min",
@@ -273,24 +248,86 @@ async def get_index_candles(index: str, timeframe: str = "5m", days: int = 5, re
     }
     rule = tf_map.get(timeframe, "5min")
 
-    resampled = df.resample(rule).agg({
-        "Open": "first", "High": "max", "Low": "min", "Close": "last",
-        "Volume": "sum", "Delta": "sum",
-    }).dropna()
+    # 1. Check live memory + SQLite cache
+    closed_candles = []
+    try:
+        engine = getattr(getattr(request, "app", None), "state", None)
+        engine_obj = getattr(engine, "live_engine", None)
+        dm = getattr(engine_obj, "data_managers", {}).get(idx_upper) if engine_obj else None
 
-    bars = []
-    for ts, row in resampled.iterrows():
-        bars.append({
-            "time": int(ts.timestamp()),
-            "open": round(float(row["Open"]), 2),
-            "high": round(float(row["High"]), 2),
-            "low": round(float(row["Low"]), 2),
-            "close": round(float(row["Close"]), 2),
-            "volume": float(row["Volume"]),
-            "delta": round(float(row["Delta"]), 1),
-        })
+        sqlite_candles = sqlite_cache.load_recent_candles(idx_upper, days=max(days, 30))
+        candle_dict = {c.timestamp: c for c in sqlite_candles}
+        if dm and hasattr(dm, "candles"):
+            for c in getattr(dm, "candles", []):
+                candle_dict[c.timestamp] = c
+        closed_candles = sorted(candle_dict.values(), key=lambda c: c.timestamp)
+    except Exception:
+        pass
 
-    return {"status": "ok", "index": idx_upper, "timeframe": timeframe, "candles": bars}
+    # 2. If live memory has sufficient bars, resample and return
+    if len(closed_candles) >= 10:
+        df = pd.DataFrame([{
+            "Timestamp": c.timestamp, "Open": c.open, "High": c.high, "Low": c.low,
+            "Close": c.close, "Volume": c.volume, "Delta": c.delta,
+        } for c in closed_candles]).set_index("Timestamp")
+
+        try:
+            df = df.between_time("09:15", "15:30")
+        except Exception:
+            pass
+
+        resampled = df.resample(rule).agg({
+            "Open": "first", "High": "max", "Low": "min", "Close": "last",
+            "Volume": "sum", "Delta": "sum",
+        }).dropna()
+
+        bars = []
+        for ts, row in resampled.iterrows():
+            bars.append({
+                "time": int(ts.timestamp()),
+                "open": round(float(row["Open"]), 2),
+                "high": round(float(row["High"]), 2),
+                "low": round(float(row["Low"]), 2),
+                "close": round(float(row["Close"]), 2),
+                "volume": float(row["Volume"]),
+                "delta": round(float(row["Delta"]), 1),
+            })
+        if bars:
+            return {"status": "ok", "index": idx_upper, "timeframe": timeframe, "candles": bars}
+
+    # 3. Off-market or initial startup fallback: load recent historical dataset
+    try:
+        file_map = {
+            "NIFTY": Path("data/historical/nifty_365days.csv"),
+            "BANKNIFTY": Path("data/historical/banknifty_1year.csv"),
+            "SENSEX": Path("data/historical/sensex_1year.csv"),
+        }
+        csv_path = file_map.get(idx_upper)
+        if csv_path and csv_path.exists():
+            hist_df = pd.read_csv(csv_path)
+            hist_df["Timestamp"] = pd.to_datetime(hist_df["Timestamp"], errors="coerce", utc=True)
+            hist_df = hist_df.dropna(subset=["Timestamp"]).sort_values("Timestamp").set_index("Timestamp")
+            hist_tail = hist_df.tail(1500)
+            resampled = hist_tail.resample(rule).agg({
+                "Open": "first", "High": "max", "Low": "min", "Close": "last", "Volume": "sum"
+            }).dropna()
+            bars = []
+            for ts, row in resampled.iterrows():
+                bars.append({
+                    "time": int(ts.timestamp()),
+                    "open": round(float(row["Open"]), 2),
+                    "high": round(float(row["High"]), 2),
+                    "low": round(float(row["Low"]), 2),
+                    "close": round(float(row["Close"]), 2),
+                    "volume": float(row.get("Volume", 0)),
+                    "delta": 0.0,
+                })
+            if bars:
+                return {"status": "ok", "index": idx_upper, "timeframe": timeframe, "candles": bars}
+    except Exception:
+        pass
+
+    return {"status": "ok", "index": idx_upper, "timeframe": timeframe, "candles": []}
 
 
 @app.get("/api/public/telemetry")
@@ -562,14 +599,6 @@ async def get_public_market_summary():
         "strategies_count": 44,
     }
 
-
-@app.get("/api/public/candles/{index}")
-async def get_public_candles(index: str):
-    idx = index.upper()
-    current_state = shared_state.get()
-    key = f"{idx.lower()}_candles_5m"
-    candles = current_state.get(key, [])
-    return {"index": idx, "count": len(candles), "candles": candles}
 
 
 @app.websocket("/ws/public-ticker")
