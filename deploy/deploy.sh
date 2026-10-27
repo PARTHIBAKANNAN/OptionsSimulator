@@ -52,8 +52,8 @@ pip install -q -r backend/requirements.txt
 log "building frontend"
 (cd frontend && npm ci && npm run build)
 
-log "running today's market backfill to seed candles and market state"
-python3 scripts/backfill_today_oct12.py || true
+log "running recent market backfill to seed candles and market state"
+python3 scripts/backfill_recent_candles.py || true
 
 log "ensuring Alice Blue environment variables are present in .env"
 if [ -f .env ]; then

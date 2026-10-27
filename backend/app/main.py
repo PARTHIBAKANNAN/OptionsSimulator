@@ -264,53 +264,21 @@ async def get_index_candles(index: str, timeframe: str = "5m", days: int = 5, re
     except Exception:
         pass
 
-    # 2. If live memory has sufficient bars, resample and return
+    # 2. If live memory + SQLite has sufficient bars, resample and return
     if len(closed_candles) >= 10:
-        df = pd.DataFrame([{
-            "Timestamp": c.timestamp, "Open": c.open, "High": c.high, "Low": c.low,
-            "Close": c.close, "Volume": c.volume, "Delta": c.delta,
-        } for c in closed_candles]).set_index("Timestamp")
-
         try:
-            df = df.between_time("09:15", "15:30")
-        except Exception:
-            pass
+            df = pd.DataFrame([{
+                "Timestamp": c.timestamp, "Open": c.open, "High": c.high, "Low": c.low,
+                "Close": c.close, "Volume": c.volume, "Delta": c.delta,
+            } for c in closed_candles])
+            df["Timestamp"] = pd.to_datetime(df["Timestamp"], utc=True, errors="coerce")
+            df = df.dropna(subset=["Timestamp"]).sort_values("Timestamp").set_index("Timestamp")
 
-        resampled = df.resample(rule).agg({
-            "Open": "first", "High": "max", "Low": "min", "Close": "last",
-            "Volume": "sum", "Delta": "sum",
-        }).dropna()
-
-        bars = []
-        for ts, row in resampled.iterrows():
-            bars.append({
-                "time": int(ts.timestamp()),
-                "open": round(float(row["Open"]), 2),
-                "high": round(float(row["High"]), 2),
-                "low": round(float(row["Low"]), 2),
-                "close": round(float(row["Close"]), 2),
-                "volume": float(row["Volume"]),
-                "delta": round(float(row["Delta"]), 1),
-            })
-        if bars:
-            return {"status": "ok", "index": idx_upper, "timeframe": timeframe, "candles": bars}
-
-    # 3. Off-market or initial startup fallback: load recent historical dataset
-    try:
-        file_map = {
-            "NIFTY": Path("data/historical/nifty_365days.csv"),
-            "BANKNIFTY": Path("data/historical/banknifty_1year.csv"),
-            "SENSEX": Path("data/historical/sensex_1year.csv"),
-        }
-        csv_path = file_map.get(idx_upper)
-        if csv_path and csv_path.exists():
-            hist_df = pd.read_csv(csv_path)
-            hist_df["Timestamp"] = pd.to_datetime(hist_df["Timestamp"], errors="coerce", utc=True)
-            hist_df = hist_df.dropna(subset=["Timestamp"]).sort_values("Timestamp").set_index("Timestamp")
-            hist_tail = hist_df.tail(1500)
-            resampled = hist_tail.resample(rule).agg({
-                "Open": "first", "High": "max", "Low": "min", "Close": "last", "Volume": "sum"
+            resampled = df.resample(rule).agg({
+                "Open": "first", "High": "max", "Low": "min", "Close": "last",
+                "Volume": "sum", "Delta": "sum",
             }).dropna()
+
             bars = []
             for ts, row in resampled.iterrows():
                 bars.append({
@@ -319,11 +287,47 @@ async def get_index_candles(index: str, timeframe: str = "5m", days: int = 5, re
                     "high": round(float(row["High"]), 2),
                     "low": round(float(row["Low"]), 2),
                     "close": round(float(row["Close"]), 2),
-                    "volume": float(row.get("Volume", 0)),
-                    "delta": 0.0,
+                    "volume": float(row["Volume"]),
+                    "delta": round(float(row["Delta"]), 1),
                 })
             if bars:
                 return {"status": "ok", "index": idx_upper, "timeframe": timeframe, "candles": bars}
+        except Exception:
+            pass
+
+    # 3. Off-market or initial startup fallback: query live exchange via yfinance
+    try:
+        import yfinance as yf
+        ticker_map = {"NIFTY": "^NSEI", "SENSEX": "^BSESN", "BANKNIFTY": "^NSEBANK"}
+        ticker = ticker_map.get(idx_upper)
+        if ticker:
+            ydf = yf.download(ticker, period="5d", interval="1m", progress=False)
+            if not ydf.empty:
+                clean_df = pd.DataFrame({
+                    "Open": ydf["Open"].to_numpy().flatten().astype(float),
+                    "High": ydf["High"].to_numpy().flatten().astype(float),
+                    "Low": ydf["Low"].to_numpy().flatten().astype(float),
+                    "Close": ydf["Close"].to_numpy().flatten().astype(float),
+                    "Volume": ydf["Volume"].to_numpy().flatten().astype(float),
+                }, index=pd.to_datetime(ydf.index, utc=True))
+
+                resampled = clean_df.resample(rule).agg({
+                    "Open": "first", "High": "max", "Low": "min", "Close": "last", "Volume": "sum"
+                }).dropna()
+
+                bars = []
+                for ts, row in resampled.iterrows():
+                    bars.append({
+                        "time": int(ts.timestamp()),
+                        "open": round(float(row["Open"]), 2),
+                        "high": round(float(row["High"]), 2),
+                        "low": round(float(row["Low"]), 2),
+                        "close": round(float(row["Close"]), 2),
+                        "volume": float(row.get("Volume", 0)),
+                        "delta": 0.0,
+                    })
+                if bars:
+                    return {"status": "ok", "index": idx_upper, "timeframe": timeframe, "candles": bars}
     except Exception:
         pass
 
