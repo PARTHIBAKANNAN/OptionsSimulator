@@ -240,12 +240,15 @@ async def get_index_candles(index: str, timeframe: str = "5m", days: int = 5, re
     from src.trader import IST
     import pandas as pd
 
-    today = datetime.now(IST).date()
-    cutoff = today - timedelta(days=max(days, 1))
+    import src.db.sqlite_candle_cache as sqlite_cache
 
-    closed_candles = [c for c in dm.candles if c.timestamp.date() >= cutoff]
-    if not closed_candles and dm.candles:
-        closed_candles = list(dm.candles)
+    # Load all available SQLite historical candles (up to 30 days) and merge with live memory
+    sqlite_candles = sqlite_cache.load_recent_candles(idx_upper, days=max(days, 30))
+    candle_dict = {c.timestamp: c for c in sqlite_candles}
+    for c in getattr(dm, "candles", []):
+        candle_dict[c.timestamp] = c
+
+    closed_candles = sorted(candle_dict.values(), key=lambda c: c.timestamp)
 
     if not closed_candles:
         return {"status": "ok", "index": idx_upper, "timeframe": timeframe, "candles": []}

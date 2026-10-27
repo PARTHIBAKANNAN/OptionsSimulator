@@ -46,11 +46,17 @@ export function PnlSummaryScreen() {
   const [sortOrder, setSortOrder] = useState("desc");
 
   const params = { range, ...(range === "custom" ? { start: customStart, end: customEnd } : {}) };
-  const canQuery = range !== "custom" || (customStart && customEnd);
+  const canQuery = range !== "custom" || (customStart && customEnd && customStart <= customEnd);
 
   useEffect(() => {
     if (!canQuery) return;
-    fetchPnlReport(params).then(setReport).catch((e) => setError(e.message));
+    setError(null);
+    fetchPnlReport(params)
+      .then((data) => {
+        setReport(data);
+        setError(null);
+      })
+      .catch((e) => setError(e.message));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [range, customStart, customEnd]);
 
@@ -357,8 +363,8 @@ export function PnlSummaryScreen() {
             </div>
           </div>
 
-          {/* Table */}
-          <div className="overflow-x-auto rounded-xl border border-subtle">
+          {/* Desktop Table View */}
+          <div className="hidden md:block overflow-x-auto rounded-xl border border-subtle">
             <table className="w-full text-xs">
               <thead className="bg-surface2 text-faint">
                 <tr>
@@ -412,7 +418,73 @@ export function PnlSummaryScreen() {
             </table>
           </div>
 
-          {/* Individual Trades Log Table */}
+          {/* Mobile Card View (Zero Horizontal Scroll) */}
+          <div className="block md:hidden space-y-2.5">
+            {sortedStrategies.map((s) => {
+              const is5M = s.strategy.includes("_5M_");
+              const isSensex = s.strategy.startsWith("SENSEX");
+              const pnl = s.net_pnl ?? 0;
+
+              return (
+                <div
+                  key={s.strategy}
+                  className="rounded-xl border border-subtle bg-surface2/60 p-3.5 space-y-2.5 shadow-sm"
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className={`h-2 w-2 rounded-full shrink-0 ${isSensex ? "bg-purple-400" : "bg-cyan-400"}`} />
+                        <span className="font-sans font-bold text-xs text-primary truncate max-w-[210px]" title={s.strategy}>
+                          {s.strategy}
+                        </span>
+                        <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${is5M ? "bg-amber-500/15 text-amber-400" : "bg-surface3 text-faint"}`}>
+                          {is5M ? "5M" : "1M"}
+                        </span>
+                      </div>
+                      <div className="text-[10px] text-faint mt-1">
+                        Wallet: <span className="font-mono text-primary font-medium">{fmt(s.wallet_balance)}</span>
+                      </div>
+                    </div>
+
+                    <div className="text-right shrink-0">
+                      <div className={`font-mono text-sm font-extrabold tabular-nums ${pnlClass(pnl)}`}>
+                        {pnl > 0 ? "+" : ""}{fmt(pnl)}
+                      </div>
+                      <div className="text-[10px] text-faint font-mono mt-0.5">
+                        Gross: {fmt(s.gross_pnl)}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-2 rounded-lg bg-surface3/40 p-2 text-center text-[11px] font-mono border border-subtle/40">
+                    <div>
+                      <div className="text-[9px] uppercase font-sans font-semibold text-faint">Trades</div>
+                      <div className="font-bold text-primary">{s.trades}</div>
+                    </div>
+                    <div>
+                      <div className="text-[9px] uppercase font-sans font-semibold text-faint">Win Rate</div>
+                      <div className={`font-bold ${s.win_rate >= 50 ? "text-bull" : s.win_rate > 0 ? "text-amber-400" : "text-faint"}`}>
+                        {s.win_rate}%
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-[9px] uppercase font-sans font-semibold text-faint">Charges</div>
+                      <div className="text-faint">{fmt(s.charges)}</div>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => setDetailsFor(s.strategy)}
+                    className="w-full rounded-lg bg-accent/15 hover:bg-accent/25 border border-accent/30 py-2 text-xs font-semibold text-accent transition flex items-center justify-center gap-1.5 active:scale-95"
+                  >
+                    <span>View Strategy Analytics</span>
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Individual Trades Log */}
           <div className="rounded-xl border border-subtle bg-surface p-4 sm:p-5 space-y-3">
             <div className="flex items-center justify-between">
               <div>
@@ -420,11 +492,12 @@ export function PnlSummaryScreen() {
                 <p className="text-xs text-faint">Detailed record of every trade executed within selected date range</p>
               </div>
               <span className="rounded-full bg-accent/15 px-2.5 py-1 text-xs font-mono font-bold text-accent">
-                {(report?.trades || []).length} Executed Trades
+                {(report?.trades || []).length} Trades
               </span>
             </div>
 
-            <div className="overflow-x-auto rounded-xl border border-subtle">
+            {/* Desktop Trades Table */}
+            <div className="hidden md:block overflow-x-auto rounded-xl border border-subtle">
               <table className="w-full text-xs">
                 <thead className="bg-surface2 text-faint">
                   <tr>
@@ -472,6 +545,48 @@ export function PnlSummaryScreen() {
                   )}
                 </tbody>
               </table>
+            </div>
+
+            {/* Mobile Trades Cards */}
+            <div className="block md:hidden space-y-2">
+              {(report?.trades || []).length === 0 ? (
+                <div className="py-6 text-center text-xs text-faint">
+                  No individual trades executed for the selected date range.
+                </div>
+              ) : (
+                (report?.trades || []).map((t, idx) => {
+                  const pnl = (t.realized_pnl || 0) - (t.entry_charges || 0) - (t.exit_charges || 0);
+                  return (
+                    <div key={t.order_id || idx} className="rounded-xl border border-subtle bg-surface2/60 p-3 space-y-2 text-xs font-mono shadow-sm">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0 flex-1">
+                          <span className="font-sans font-bold text-primary truncate block text-xs" title={t.symbol}>
+                            {t.symbol}
+                          </span>
+                          <span className="text-[10px] text-faint truncate block font-sans">
+                            {t.strategy}
+                          </span>
+                        </div>
+                        <div className={`font-bold tabular-nums text-right text-xs shrink-0 ${pnlClass(pnl)}`}>
+                          {pnl > 0 ? "+" : ""}{fmt(pnl)}
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2 text-[10px] text-faint pt-1 border-t border-subtle/40">
+                        <div>Entry: <span className="text-primary font-medium">{t.entry_price ? fmt(t.entry_price) : "—"}</span> ({t.entry_time ? t.entry_time.slice(11, 16) : "—"})</div>
+                        <div className="text-right">Exit: <span className="text-primary font-medium">{t.exit_price ? fmt(t.exit_price) : "—"}</span> ({t.exit_time ? t.exit_time.slice(11, 16) : "—"})</div>
+                      </div>
+
+                      <div className="flex items-center justify-between text-[10px] text-faint pt-0.5">
+                        <span className="rounded bg-surface3 px-1.5 py-0.5 text-[9px] font-sans font-bold uppercase border border-subtle text-muted">
+                          {t.exit_reason || "TSL"}
+                        </span>
+                        <span className="text-[9px] text-muted">{t.order_id}</span>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
             </div>
           </div>
         </div>

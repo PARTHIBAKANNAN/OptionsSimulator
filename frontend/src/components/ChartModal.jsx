@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Columns2, Square, TrendingUp, TrendingDown, Layers, Loader2 } from "lucide-react";
+import { X, TrendingUp, TrendingDown, Layers, Loader2 } from "lucide-react";
 import { CandleChart } from "./CandleChart";
 import { API_BASE } from "../lib/apiBase";
 
@@ -25,7 +25,6 @@ export function ChartModal({
   bankniftyChangePct,
   onClose,
 }) {
-  const [dualView, setDualView] = useState(false);
   const [activeTab, setActiveTab] = useState(
     initialIndex?.includes("BANKNIFTY") ? "BANKNIFTY" : initialIndex?.includes("SENSEX") ? "SENSEX" : "NIFTY"
   );
@@ -106,17 +105,8 @@ export function ChartModal({
                 </span>
               </div>
 
-              {/* Right: Dual View Toggle + Close Button */}
-              <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-                <button
-                  onClick={() => setDualView(!dualView)}
-                  title={dualView ? "Switch to single chart view" : "Switch to dual chart view"}
-                  className="hidden sm:flex items-center gap-1 rounded-xl border border-subtle bg-surface2 px-2.5 py-1 text-xs font-bold text-muted hover:bg-surface3 hover:text-primary transition"
-                >
-                  {dualView ? <Square className="h-3.5 w-3.5" /> : <Columns2 className="h-3.5 w-3.5" />}
-                  <span>{dualView ? "Single" : "Dual"}</span>
-                </button>
-
+              {/* Right: Close Button */}
+              <div className="flex items-center shrink-0">
                 <button
                   onClick={onClose}
                   className="rounded-xl p-2 text-faint hover:bg-surface2 hover:text-primary transition min-h-[44px] min-w-[44px] flex items-center justify-center"
@@ -164,41 +154,15 @@ export function ChartModal({
 
           {/* Main Chart Canvas Area */}
           <div className="min-h-0 flex-1 relative">
-            {dualView ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 h-full">
-                {/* Left Chart (NIFTY) */}
-                <div className="flex flex-col h-full rounded-2xl border border-subtle/80 bg-surface2/30 p-2 overflow-hidden">
-                  <div className="flex items-center justify-between px-2 py-1 mb-1">
-                    <span className="font-bold text-xs text-cyan-400">NIFTY 50 (5M)</span>
-                    <span className="font-mono text-xs font-bold text-primary">{fmtNum(niftyPrice)}</span>
-                  </div>
-                  <div className="flex-1 min-h-0">
-                    <CandleChart candles={niftyCandles} height="100%" />
-                  </div>
+            <div className="h-full">
+              {currentCandles && currentCandles.length > 0 ? (
+                <CandleChart candles={currentCandles} height="100%" />
+              ) : (
+                <div className="flex h-full flex-col items-center justify-center text-faint gap-2">
+                  <span>No candle data available for this session</span>
                 </div>
-
-                {/* Right Chart (SENSEX) */}
-                <div className="flex flex-col h-full rounded-2xl border border-subtle/80 bg-surface2/30 p-2 overflow-hidden">
-                  <div className="flex items-center justify-between px-2 py-1 mb-1">
-                    <span className="font-bold text-xs text-purple-400">SENSEX (5M)</span>
-                    <span className="font-mono text-xs font-bold text-primary">{fmtNum(sensexPrice)}</span>
-                  </div>
-                  <div className="flex-1 min-h-0">
-                    <CandleChart candles={sensexCandles} height="100%" />
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="h-full">
-                {currentCandles && currentCandles.length > 0 ? (
-                  <CandleChart candles={currentCandles} height="100%" />
-                ) : (
-                  <div className="flex h-full flex-col items-center justify-center text-faint gap-2">
-                    <span>No candle data available for this session</span>
-                  </div>
-                )}
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </motion.div>
       </motion.div>

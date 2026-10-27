@@ -6,20 +6,13 @@ import {
   LineSeries,
   createSeriesMarkers,
 } from "lightweight-charts";
+import { Eye, EyeOff, BarChart2 } from "lucide-react";
 import { useTheme } from "../contexts/ThemeContext";
 
 function bucketToTime(bucket) {
   const now = new Date();
   const utcMidnight = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
   return Math.floor(utcMidnight / 1000) + bucket * 60;
-}
-
-function formatDelta(value) {
-  const abs = Math.abs(value);
-  const sign = value < 0 ? "-" : "";
-  if (abs >= 1_000_000) return `${sign}${(abs / 1_000_000).toFixed(1)}M`;
-  if (abs >= 1_000) return `${sign}${(abs / 1_000).toFixed(1)}K`;
-  return `${sign}${Math.round(abs)}`;
 }
 
 function computeEmaSeries(data, span) {
@@ -35,7 +28,64 @@ function computeEmaSeries(data, span) {
   return result;
 }
 
-const MIN_PX_PER_BAR_FOR_LABELS = 32;
+function computeVwapSeries(data) {
+  if (!data || data.length === 0) return [];
+  const result = [];
+  let cumVol = 0;
+  let cumPv = 0;
+  let currentDay = null;
+
+  for (let i = 0; i < data.length; i++) {
+    const d = new Date(data[i].time * 1000);
+    const dayKey = d.toDateString();
+    if (dayKey !== currentDay) {
+      currentDay = dayKey;
+      cumVol = 0;
+      cumPv = 0;
+    }
+    const typicalPrice = (data[i].high + data[i].low + data[i].close) / 3;
+    const vol = Math.max(data[i].volume || 1, 1);
+    cumPv += typicalPrice * vol;
+    cumVol += vol;
+    result.push({ time: data[i].time, value: Number((cumPv / cumVol).toFixed(2)) });
+  }
+  return result;
+}
+
+function computeVolumeMa(data, period = 20) {
+  if (!data || data.length === 0) return [];
+  const result = [];
+  let sum = 0;
+  for (let i = 0; i < data.length; i++) {
+    const v = data[i].volume || 0;
+    sum += v;
+    if (i >= period) {
+      sum -= (data[i - period].volume || 0);
+      result.push({ time: data[i].time, value: Number((sum / period).toFixed(0)) });
+    } else {
+      result.push({ time: data[i].time, value: Number((sum / (i + 1)).toFixed(0)) });
+    }
+  }
+  return result;
+}
+
+function computeBollingerBands(data, period = 20, mult = 2) {
+  if (!data || data.length < period) return { upper: [], lower: [] };
+  const upper = [];
+  const lower = [];
+  for (let i = 0; i < data.length; i++) {
+    if (i < period - 1) continue;
+    let sum = 0;
+    for (let j = i - period + 1; j <= i; j++) sum += data[j].close;
+    const sma = sum / period;
+    let sqDiffSum = 0;
+    for (let j = i - period + 1; j <= i; j++) sqDiffSum += Math.pow(data[j].close - sma, 2);
+    const stdDev = Math.sqrt(sqDiffSum / period);
+    upper.push({ time: data[i].time, value: Number((sma + mult * stdDev).toFixed(2)) });
+    lower.push({ time: data[i].time, value: Number((sma - mult * stdDev).toFixed(2)) });
+  }
+  return { upper, lower };
+}
 
 function readCandleColors() {
   const styles = getComputedStyle(document.documentElement);
@@ -55,24 +105,47 @@ function readCandleColors() {
   return { up, down };
 }
 
-export function CandleChart({ candles = [], tradeMarkers = [], height = 400 }) {
+export function CandleChart({ candles = [], height = 400 }) {
   const { theme } = useTheme() || {};
   const containerRef = useRef(null);
   const chartRef = useRef(null);
   const seriesRef = useRef(null);
-  const ema20SeriesRef = useRef(null);
-  const ema50SeriesRef = useRef(null);
-  const candleMarkersRef = useRef(null);
-  const deltaSeriesRef = useRef(null);
-  const deltaMarkersRef = useRef(null);
-  const deltaDataRef = useRef([]);
-  const labelsVisibleRef = useRef(false);
-  const candlesInitializedRef = useRef(false);
-  const prevCandleCountRef = useRef(0);
-  const [showEma, setShowEma] = useState(true);
-  const [hoveredDelta, setHoveredDelta] = useState(null);
-  const [latestDelta, setLatestDelta] = useState(0);
 
+  // Indicators references
+  const ema20Ref = useRef(null);
+  const ema50Ref = useRef(null);
+  const vwapRef = useRef(null);
+  const bbUpperRef = useRef(null);
+  const bbLowerRef = useRef(null);
+  const volumeSeriesRef = useRef(null);
+  const volumeMaRef = useRef(null);
+
+  // Indicator visibility toggles (TradingView Eye style)
+  const [visibilities, setVisibilities] = useState(() => {
+    try {
+      const saved = localStorage.getItem("nukebox_chart_indicators");
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return {
+      ema20: true,
+      ema50: true,
+      vwap: true,
+      bb: false,
+      volume: true,
+    };
+  });
+
+  function toggleIndicator(key) {
+    setVisibilities((prev) => {
+      const next = { ...prev, [key]: !prev[key] };
+      try {
+        localStorage.setItem("nukebox_chart_indicators", JSON.stringify(next));
+      } catch {}
+      return next;
+    });
+  }
+
+  // Initialize Lightweight Charts Canvas
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
@@ -82,7 +155,10 @@ export function CandleChart({ candles = [], tradeMarkers = [], height = 400 }) {
 
     const chart = createChart(container, {
       autoSize: true,
-      layout: { background: { color: "transparent" }, textColor: isDark ? "rgb(158, 165, 176)" : "rgb(86, 91, 100)" },
+      layout: {
+        background: { color: "transparent" },
+        textColor: isDark ? "rgb(158, 165, 176)" : "rgb(86, 91, 100)",
+      },
       grid: {
         vertLines: { visible: false },
         horzLines: { color: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)" },
@@ -107,29 +183,25 @@ export function CandleChart({ candles = [], tradeMarkers = [], height = 400 }) {
       timeScale: {
         timeVisible: true,
         secondsVisible: false,
-        barSpacing: 8,
+        barSpacing: 9,
         minBarSpacing: 3,
         fixLeftEdge: true,
         rightOffset: 12,
-        tickMarkFormatter: (time, tickMarkType) => {
-          const date = new Date(time * 1000);
-          const hours = date.toLocaleTimeString("en-IN", { timeZone: "Asia/Kolkata", hour: "2-digit", hour12: false });
-          const mins = date.toLocaleTimeString("en-IN", { timeZone: "Asia/Kolkata", minute: "2-digit" });
-          if (tickMarkType < 3 || (hours === "09" && mins === "15")) {
-            return date.toLocaleDateString("en-IN", { timeZone: "Asia/Kolkata", day: "2-digit", month: "short" });
-          }
-          return `${hours}:${mins}`;
-        },
       },
     });
 
+    // Main Candlestick Series
     const series = chart.addSeries(CandlestickSeries, {
-      upColor: up, downColor: down,
-      borderUpColor: up, borderDownColor: down,
-      wickUpColor: up, wickDownColor: down,
+      upColor: up,
+      downColor: down,
+      borderUpColor: up,
+      borderDownColor: down,
+      wickUpColor: up,
+      wickDownColor: down,
     });
 
-    const ema20Series = chart.addSeries(LineSeries, {
+    // Indicators on Main Pane
+    const ema20 = chart.addSeries(LineSeries, {
       color: "#06b6d4",
       lineWidth: 1.5,
       priceLineVisible: false,
@@ -137,7 +209,7 @@ export function CandleChart({ candles = [], tradeMarkers = [], height = 400 }) {
       title: "EMA 20",
     });
 
-    const ema50Series = chart.addSeries(LineSeries, {
+    const ema50 = chart.addSeries(LineSeries, {
       color: "#f97316",
       lineWidth: 1.5,
       priceLineVisible: false,
@@ -145,109 +217,217 @@ export function CandleChart({ candles = [], tradeMarkers = [], height = 400 }) {
       title: "EMA 50",
     });
 
-    const deltaSeries = chart.addSeries(
+    const vwap = chart.addSeries(LineSeries, {
+      color: "#eab308",
+      lineWidth: 1.5,
+      priceLineVisible: false,
+      lastValueVisible: false,
+      title: "VWAP",
+    });
+
+    const bbUpper = chart.addSeries(LineSeries, {
+      color: "rgba(56, 189, 248, 0.6)",
+      lineWidth: 1,
+      lineStyle: 2,
+      priceLineVisible: false,
+      lastValueVisible: false,
+      title: "BB Upper",
+    });
+
+    const bbLower = chart.addSeries(LineSeries, {
+      color: "rgba(56, 189, 248, 0.6)",
+      lineWidth: 1,
+      lineStyle: 2,
+      priceLineVisible: false,
+      lastValueVisible: false,
+      title: "BB Lower",
+    });
+
+    // Total Volume Histogram & 20-MA in Pane 1
+    const volumeSeries = chart.addSeries(
       HistogramSeries,
-      { priceFormat: { type: "volume" }, priceLineVisible: false, lastValueVisible: false },
-      1,
+      {
+        priceFormat: { type: "volume" },
+        priceLineVisible: false,
+        lastValueVisible: false,
+        title: "Volume",
+      },
+      1
+    );
+
+    const volumeMa = chart.addSeries(
+      LineSeries,
+      {
+        color: "#818cf8",
+        lineWidth: 1.5,
+        priceLineVisible: false,
+        lastValueVisible: false,
+        title: "Vol MA 20",
+      },
+      1
     );
 
     const panes = chart.panes();
-    if (panes[0]) panes[0].setStretchFactor(3);
+    if (panes[0]) panes[0].setStretchFactor(3.5);
     if (panes[1]) panes[1].setStretchFactor(1);
-
-    const candleMarkers = createSeriesMarkers(series, []);
-    const deltaMarkers = createSeriesMarkers(deltaSeries, []);
-
-    const onCrosshairMove = (param) => {
-      if (!param.time) {
-        setHoveredDelta(null);
-        return;
-      }
-      const point = param.seriesData.get(deltaSeries);
-      setHoveredDelta(typeof point?.value === "number" ? point.value : null);
-    };
-    chart.subscribeCrosshairMove(onCrosshairMove);
 
     chartRef.current = chart;
     seriesRef.current = series;
-    ema20SeriesRef.current = ema20Series;
-    ema50SeriesRef.current = ema50Series;
-    deltaSeriesRef.current = deltaSeries;
-    candleMarkersRef.current = candleMarkers;
+    ema20Ref.current = ema20;
+    ema50Ref.current = ema50;
+    vwapRef.current = vwap;
+    bbUpperRef.current = bbUpper;
+    bbLowerRef.current = bbLower;
+    volumeSeriesRef.current = volumeSeries;
+    volumeMaRef.current = volumeMa;
 
     return () => {
       chart.remove();
       chartRef.current = null;
       seriesRef.current = null;
-      deltaSeriesRef.current = null;
-      ema20SeriesRef.current = null;
-      ema50SeriesRef.current = null;
-      candleMarkersRef.current = null;
+      ema20Ref.current = null;
+      ema50Ref.current = null;
+      vwapRef.current = null;
+      bbUpperRef.current = null;
+      bbLowerRef.current = null;
+      volumeSeriesRef.current = null;
+      volumeMaRef.current = null;
     };
   }, []);
 
-  // Update Candles and EMAs
+  // Update Data and Client-Side Indicators
   useEffect(() => {
     if (!seriesRef.current) return;
-    const data = (candles || [])
+
+    const formattedData = (candles || [])
       .map((c) => ({
         time: c.time ?? bucketToTime(c.bucket),
         open: c.open,
         high: c.high,
         low: c.low,
         close: c.close,
+        volume: c.volume || 0,
       }))
       .sort((a, b) => a.time - b.time);
 
-    if (data.length === 0) return;
+    if (formattedData.length === 0) return;
 
-    seriesRef.current.setData(data);
+    seriesRef.current.setData(formattedData);
 
-    if (ema20SeriesRef.current && showEma) {
-      ema20SeriesRef.current.setData(computeEmaSeries(data, 20));
+    // EMAs
+    if (ema20Ref.current) {
+      ema20Ref.current.setData(computeEmaSeries(formattedData, 20));
+      ema20Ref.current.applyOptions({ visible: visibilities.ema20 });
     }
-    if (ema50SeriesRef.current && showEma) {
-      ema50SeriesRef.current.setData(computeEmaSeries(data, 50));
+    if (ema50Ref.current) {
+      ema50Ref.current.setData(computeEmaSeries(formattedData, 50));
+      ema50Ref.current.applyOptions({ visible: visibilities.ema50 });
     }
 
-    if (deltaSeriesRef.current) {
+    // VWAP
+    if (vwapRef.current) {
+      vwapRef.current.setData(computeVwapSeries(formattedData));
+      vwapRef.current.applyOptions({ visible: visibilities.vwap });
+    }
+
+    // Bollinger Bands
+    if (bbUpperRef.current && bbLowerRef.current) {
+      const { upper, lower } = computeBollingerBands(formattedData, 20, 2);
+      bbUpperRef.current.setData(upper);
+      bbLowerRef.current.setData(lower);
+      bbUpperRef.current.applyOptions({ visible: visibilities.bb });
+      bbLowerRef.current.applyOptions({ visible: visibilities.bb });
+    }
+
+    // Volume Histogram + 20-MA
+    if (volumeSeriesRef.current && volumeMaRef.current) {
       const { up, down } = readCandleColors();
-      const deltaData = (candles || [])
-        .map((c) => ({
-          time: c.time ?? bucketToTime(c.bucket),
-          value: c.delta ?? 0,
-          color: (c.delta ?? 0) >= 0 ? up : down,
-        }))
-        .sort((a, b) => a.time - b.time);
-      deltaSeriesRef.current.setData(deltaData);
-    }
+      const volData = formattedData.map((d) => ({
+        time: d.time,
+        value: d.volume,
+        color: d.close >= d.open ? "rgba(34, 197, 94, 0.65)" : "rgba(239, 68, 68, 0.65)",
+      }));
+      volumeSeriesRef.current.setData(volData);
+      volumeMaRef.current.setData(computeVolumeMa(formattedData, 20));
 
-    if (!candlesInitializedRef.current) {
-      chartRef.current?.timeScale().scrollToPosition(0, false);
-      candlesInitializedRef.current = true;
+      volumeSeriesRef.current.applyOptions({ visible: visibilities.volume });
+      volumeMaRef.current.applyOptions({ visible: visibilities.volume });
     }
-  }, [candles, showEma]);
+  }, [candles, visibilities]);
 
   return (
     <div className="relative w-full rounded-2xl overflow-hidden border border-subtle bg-surface" style={{ height }}>
-      {/* Top Chart Controls */}
-      <div className="absolute top-2 left-3 z-10 flex items-center gap-2">
+      {/* TradingView-Style Interactive Legend with Eye Toggles */}
+      <div className="absolute top-2 left-3 z-10 flex flex-wrap items-center gap-1.5 bg-surface/90 backdrop-blur-md p-1.5 rounded-xl border border-subtle shadow-md max-w-[calc(100%-2rem)]">
+        {/* EMA 20 */}
         <button
-          onClick={() => setShowEma((v) => !v)}
-          className={`rounded-lg px-2.5 py-1 text-[11px] font-bold border transition ${
-            showEma
-              ? "bg-accent/15 text-accent border-accent/30"
-              : "bg-surface2 text-faint border-subtle hover:text-primary"
+          onClick={() => toggleIndicator("ema20")}
+          className={`flex items-center gap-1 rounded-lg px-2 py-0.5 text-[10px] font-mono font-bold transition border ${
+            visibilities.ema20
+              ? "bg-cyan-500/15 text-cyan-400 border-cyan-500/30"
+              : "bg-surface2 text-faint border-subtle opacity-60"
           }`}
+          title="Toggle EMA 20"
         >
-          EMA (20, 50)
+          {visibilities.ema20 ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
+          <span>EMA 20</span>
         </button>
-        {showEma && (
-          <div className="flex items-center gap-2 text-[10px] font-mono font-semibold">
-            <span className="text-cyan-400">● EMA20</span>
-            <span className="text-orange-400">● EMA50</span>
-          </div>
-        )}
+
+        {/* EMA 50 */}
+        <button
+          onClick={() => toggleIndicator("ema50")}
+          className={`flex items-center gap-1 rounded-lg px-2 py-0.5 text-[10px] font-mono font-bold transition border ${
+            visibilities.ema50
+              ? "bg-orange-500/15 text-orange-400 border-orange-500/30"
+              : "bg-surface2 text-faint border-subtle opacity-60"
+          }`}
+          title="Toggle EMA 50"
+        >
+          {visibilities.ema50 ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
+          <span>EMA 50</span>
+        </button>
+
+        {/* VWAP */}
+        <button
+          onClick={() => toggleIndicator("vwap")}
+          className={`flex items-center gap-1 rounded-lg px-2 py-0.5 text-[10px] font-mono font-bold transition border ${
+            visibilities.vwap
+              ? "bg-yellow-500/15 text-yellow-400 border-yellow-500/30"
+              : "bg-surface2 text-faint border-subtle opacity-60"
+          }`}
+          title="Toggle VWAP"
+        >
+          {visibilities.vwap ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
+          <span>VWAP</span>
+        </button>
+
+        {/* Bollinger Bands */}
+        <button
+          onClick={() => toggleIndicator("bb")}
+          className={`flex items-center gap-1 rounded-lg px-2 py-0.5 text-[10px] font-mono font-bold transition border ${
+            visibilities.bb
+              ? "bg-sky-500/15 text-sky-400 border-sky-500/30"
+              : "bg-surface2 text-faint border-subtle opacity-60"
+          }`}
+          title="Toggle Bollinger Bands (20, 2)"
+        >
+          {visibilities.bb ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
+          <span>BB (20,2)</span>
+        </button>
+
+        {/* Volume + 20-MA */}
+        <button
+          onClick={() => toggleIndicator("volume")}
+          className={`flex items-center gap-1 rounded-lg px-2 py-0.5 text-[10px] font-mono font-bold transition border ${
+            visibilities.volume
+              ? "bg-indigo-500/15 text-indigo-400 border-indigo-500/30"
+              : "bg-surface2 text-faint border-subtle opacity-60"
+          }`}
+          title="Toggle Volume & 20-MA"
+        >
+          {visibilities.volume ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
+          <span>Vol + 20MA</span>
+        </button>
       </div>
 
       <div ref={containerRef} style={{ height: "100%" }} className="w-full" />

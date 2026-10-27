@@ -56,7 +56,7 @@ export function StrategyRankTable({ title, rows, dailyBreakdown = {}, capitalReq
   return (
     <div>
       {title && <div className="mb-2 text-sm font-medium text-muted">{title}</div>}
-      <div className="overflow-x-auto rounded-xl border border-subtle bg-surface">
+      <div className="hidden md:block overflow-x-auto rounded-xl border border-subtle bg-surface">
         <table className="w-full min-w-[720px] text-xs">
           <thead>
             <tr className="bg-surface2/60 text-left text-faint text-[11px]">
@@ -151,6 +151,95 @@ export function StrategyRankTable({ title, rows, dailyBreakdown = {}, capitalReq
             })}
           </tbody>
         </table>
+      </div>
+
+      {/* Mobile Ranked Cards (Zero Horizontal Scroll) */}
+      <div className="block md:hidden space-y-2.5">
+        {ranked.map((r, i) => {
+          const is5M = r.strategy.includes("_5M_");
+          const isITM = r.strategy.includes("_ITM");
+          const isTop3 = i < 3;
+          const alphaBadge = i === 0 ? "🏆 Alpha 1" : i === 1 ? "🥈 Alpha 2" : i === 2 ? "🥉 Alpha 3" : null;
+
+          return (
+            <div
+              key={r.strategy}
+              className={`rounded-xl border border-subtle bg-surface p-3.5 space-y-2.5 shadow-sm ${
+                isTop3 ? "border-amber-500/30 bg-amber-500/[0.02]" : ""
+              }`}
+            >
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className={`font-mono text-xs font-bold px-1.5 py-0.5 rounded ${isTop3 ? "bg-amber-500/20 text-amber-400" : "bg-surface3 text-faint"}`}>
+                      #{i + 1}
+                    </span>
+                    <span className="font-sans font-bold text-xs text-primary truncate max-w-[210px]" title={r.strategy}>
+                      {r.strategy}
+                    </span>
+                    {alphaBadge && (
+                      <span className="rounded bg-amber-500/20 border border-amber-500/40 px-1.5 py-0.2 text-[9px] font-bold text-amber-400">
+                        {alphaBadge}
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-1.5 text-[10px] text-faint mt-1">
+                    <span className={`px-1.5 py-0.2 rounded font-bold ${is5M ? "bg-amber-500/15 text-amber-400" : "bg-surface3 text-faint"}`}>
+                      {is5M ? "5M" : "1M"}
+                    </span>
+                    <span className={`px-1.5 py-0.2 rounded font-bold ${isITM ? "bg-indigo-500/15 text-indigo-400" : "bg-surface3 text-faint"}`}>
+                      {isITM ? "ITM" : "ATM"}
+                    </span>
+                    <span>· DD: {r.max_drawdown_pct}%</span>
+                  </div>
+                </div>
+
+                <div className="text-right shrink-0">
+                  <div className={`font-mono text-sm font-extrabold tabular-nums ${r.total_pnl >= 0 ? "text-bull" : "text-bear"}`}>
+                    {r.total_pnl >= 0 ? "+" : ""}{fmtRupee(r.total_pnl)}
+                  </div>
+                  <div className="text-[10px] text-faint font-mono">
+                    PF: {r.profit_factor >= 900 ? "inf" : r.profit_factor}
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-2 rounded-lg bg-surface2/60 p-2 text-center text-[11px] font-mono border border-subtle/40">
+                <div>
+                  <div className="text-[9px] uppercase font-sans font-semibold text-faint">Trades</div>
+                  <div className="font-bold text-primary">{r.total_trades}</div>
+                </div>
+                <div>
+                  <div className="text-[9px] uppercase font-sans font-semibold text-faint">Win Rate</div>
+                  <div className="font-bold text-bull">{r.win_rate}%</div>
+                </div>
+                <div>
+                  <div className="text-[9px] uppercase font-sans font-semibold text-faint">Max DD</div>
+                  <div className="text-faint">{r.max_drawdown_pct}%</div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 pt-0.5">
+                <button
+                  onClick={() => setActiveSpecStrategy({
+                    ...r,
+                    capital: capitalRequirements[r.strategy],
+                    daily: dailyBreakdown[r.strategy],
+                  })}
+                  className="rounded-lg bg-indigo-500/15 text-indigo-400 border border-indigo-500/30 py-1.5 text-xs font-bold hover:bg-indigo-500 hover:text-white transition flex items-center justify-center gap-1 active:scale-95"
+                >
+                  <BookOpen className="h-3.5 w-3.5" /> Specs
+                </button>
+                <button
+                  onClick={() => setActiveModalStrategy(r.strategy)}
+                  className="rounded-lg bg-accent text-white py-1.5 text-xs font-bold hover:bg-accent/90 transition flex items-center justify-center gap-1 shadow-sm active:scale-95"
+                >
+                  <BarChart2 className="h-3.5 w-3.5" /> Analytics
+                </button>
+              </div>
+            </div>
+          );
+        })}
       </div>
 
       {activeModalStrategy && (

@@ -324,26 +324,26 @@ export function StrategyAnalyticsModal({ strategy, mode = "live", onClose }) {
         className="flex max-h-[95dvh] sm:max-h-[92vh] w-full max-w-6xl flex-col rounded-2xl border border-subtle bg-surface shadow-2xl overflow-hidden"
       >
         {/* Modal Top Bar */}
-        <div className="flex items-center justify-between border-b border-subtle px-3 sm:px-6 py-2.5 sm:py-4 bg-surface2/50">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent/15 text-accent border border-accent/20">
-              <TrendingUp className="h-5 w-5" />
+        <div className="flex items-start justify-between border-b border-subtle px-3 sm:px-6 py-2.5 sm:py-4 bg-surface2/50 gap-2">
+          <div className="flex items-start gap-2.5 sm:gap-3 min-w-0 flex-1">
+            <div className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-xl bg-accent/15 text-accent border border-accent/20 shrink-0 mt-0.5">
+              <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5" />
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h3 className="font-bold text-lg text-primary">{strategy}</h3>
-                <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${mode === "backtest" ? "bg-purple-500/15 text-purple-400 border border-purple-500/20" : "bg-cyan-500/15 text-cyan-400 border border-cyan-500/20"}`}>
-                  {mode === "backtest" ? "1-Year Backtest Analytics" : "Live Session Monitor"}
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                <h3 className="font-bold text-sm sm:text-base text-primary truncate max-w-full" title={strategy}>{strategy}</h3>
+                <span className={`rounded-full px-2 py-0.5 text-[10px] sm:text-xs font-semibold whitespace-nowrap ${mode === "backtest" ? "bg-purple-500/15 text-purple-400 border border-purple-500/20" : "bg-cyan-500/15 text-cyan-400 border border-cyan-500/20"}`}>
+                  {mode === "backtest" ? "1-Year Backtest" : "Live Session Monitor"}
                 </span>
               </div>
-              <p className="text-xs text-faint mt-0.5">
-                {mode === "backtest" ? "Comprehensive QuantMan Historical Backtest Breakdown" : "Real-Time Paper Trading & Live Wallet State"}
+              <p className="text-[11px] sm:text-xs text-faint mt-0.5 truncate">
+                {mode === "backtest" ? "Comprehensive Historical Backtest Breakdown" : "Real-Time Paper Trading & Live Wallet State"}
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="rounded-lg p-2 text-faint hover:bg-surface3 hover:text-primary transition"
+            className="rounded-lg p-1.5 sm:p-2 text-faint hover:bg-surface3 hover:text-primary transition shrink-0"
           >
             <X className="h-5 w-5" />
           </button>
@@ -472,7 +472,8 @@ export function StrategyAnalyticsModal({ strategy, mode = "live", onClose }) {
                   </div>
                 </div>
 
-                <div className="overflow-x-auto rounded-lg border border-subtle bg-surface">
+                {/* Desktop Trades Table */}
+                <div className="hidden md:block overflow-x-auto rounded-lg border border-subtle bg-surface">
                   <table className="w-full text-xs">
                     <thead className="bg-surface3 text-faint">
                       <tr>
@@ -520,6 +521,46 @@ export function StrategyAnalyticsModal({ strategy, mode = "live", onClose }) {
                       })}
                     </tbody>
                   </table>
+                </div>
+
+                {/* Mobile Trades Cards (Zero Horizontal Scroll) */}
+                <div className="block md:hidden space-y-2">
+                  {pageRows.map((t) => {
+                    const pnl = Number(t.net_pnl ?? t.realized_pnl ?? 0);
+                    return (
+                      <div key={t.order_id || t.caseNo} className="rounded-xl border border-subtle bg-surface p-3 space-y-2 font-mono text-xs shadow-sm">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="min-w-0 flex-1">
+                            <div className="font-sans font-bold text-primary text-xs truncate" title={t.contract || t.symbol}>
+                              {t.contract || t.symbol}
+                            </div>
+                            <div className="text-[10px] text-faint font-sans mt-0.5">
+                              Case #{t.caseNo} · {t.order_id}
+                            </div>
+                          </div>
+                          <div className="text-right shrink-0">
+                            <div className={`font-bold tabular-nums ${pnlClass(pnl)}`}>
+                              {pnl > 0 ? "+" : ""}{fmtRupee(pnl)}
+                            </div>
+                            <div className={`text-[10px] tabular-nums ${pnlClass(t.cumulativeProfit)}`}>
+                              Cum: {t.cumulativeProfit > 0 ? "+" : ""}{fmtRupee(t.cumulativeProfit)}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2 text-[10px] text-faint pt-1 border-t border-subtle/40">
+                          <div>In: <span className="text-primary font-medium">{t.entry_price != null ? fmtRupee(t.entry_price) : "—"}</span> ({fmtDate(t.entry_time)})</div>
+                          <div className="text-right">Out: <span className="text-primary font-medium">{t.exit_price != null ? fmtRupee(t.exit_price) : "—"}</span> ({fmtDate(t.exit_time)})</div>
+                        </div>
+
+                        <div className="flex items-center justify-between text-[10px] text-faint pt-0.5">
+                          <span className="rounded px-1.5 py-0.5 text-[9px] font-sans font-bold uppercase bg-surface3 text-muted border border-subtle">
+                            {fmtReason(t.exit_reason)}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
 
                 <div className="mt-3 flex items-center justify-between text-xs text-faint">

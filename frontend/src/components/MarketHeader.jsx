@@ -4,7 +4,6 @@ import { TrendingUp, TrendingDown, Clock, ShieldCheck, BarChart2, AlertCircle, V
 import { Badge } from "./ui/Badge";
 import { ChartModal } from "./ChartModal";
 import { ConnectAliceBlueModal } from "./ConnectAliceBlueModal";
-import { closeAllPositions } from "../hooks/usePaperTradingSync";
 import { soundEngine } from "../utils/audioAlerts";
 import { useSpotPrices } from "../hooks/useMarketStream";
 
@@ -63,7 +62,6 @@ export function MarketHeader({ state: propState }) {
   const liveSpot = useSpotPrices();
   const state = propState ? { ...propState, ...liveSpot } : liveSpot;
   const [chartFor, setChartFor] = useState(null);
-  const [squaringOff, setSquaringOff] = useState(false);
   const [soundMuted, setSoundMuted] = useState(soundEngine.isMuted());
   const [showAliceModal, setShowAliceModal] = useState(false);
   const {
@@ -79,18 +77,6 @@ export function MarketHeader({ state: propState }) {
 
   const now = new Date();
   const isWeekend = now.getDay() === 0 || now.getDay() === 6;
-
-  async function handleSquareOffAll() {
-    if (!window.confirm("Square off ALL open positions across every strategy? This cannot be undone.")) return;
-    setSquaringOff(true);
-    try {
-      await closeAllPositions();
-    } catch (e) {
-      window.alert(e.message || "Square off failed");
-    } finally {
-      setSquaringOff(false);
-    }
-  }
 
   return (
     <div className="rounded-2xl border border-subtle bg-surface p-2.5 sm:p-4 shadow-sm backdrop-blur-sm">
@@ -175,14 +161,6 @@ export function MarketHeader({ state: propState }) {
               >
                 {soundMuted ? <VolumeX className="h-3 w-3" /> : <Volume2 className="h-3 w-3" />}
                 <span className="hidden sm:inline">{soundMuted ? "Muted" : "Sound On"}</span>
-              </button>
-
-              <button
-                onClick={handleSquareOffAll}
-                disabled={squaringOff}
-                className="rounded-full border border-bear/50 bg-bear/10 px-2.5 py-0.5 sm:px-3.5 sm:py-1 text-[11px] sm:text-xs font-bold text-bear hover:bg-bear hover:text-white transition disabled:opacity-50"
-              >
-                {squaringOff ? "Closing…" : "Square Off"}
               </button>
             </div>
           </div>

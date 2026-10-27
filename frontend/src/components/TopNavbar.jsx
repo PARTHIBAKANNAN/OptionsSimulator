@@ -13,7 +13,8 @@ import {
   X,
   ChevronRight,
   ShieldCheck,
-  RefreshCw
+  RefreshCw,
+  Settings
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { NukeBoxLogo } from "./NukeBoxLogo";
@@ -25,6 +26,7 @@ const TAB_ICONS = {
   backtest: LineChart,
   lab: FlaskConical,
   telemetry: Wifi,
+  settings: Settings,
 };
 
 // Primary 4 tabs displayed on mobile bottom bar
@@ -187,10 +189,10 @@ export function TopNavbar({ tabs, activeTab, onSelect, user, theme, onToggleThem
 
               <div className="flex items-center justify-between mb-4 border-b border-subtle pb-3">
                 <div className="flex items-center gap-2">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-accent/15 text-accent">
-                    <NukeBoxLogo size="xs" />
+                  <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-accent/15 text-accent shrink-0">
+                    <NukeBoxLogo size="sm" showText={false} />
                   </div>
-                  <div>
+                  <div className="min-w-0">
                     <div className="text-xs font-bold text-primary">All Modules</div>
                     <div className="text-[10px] text-faint truncate max-w-[200px]">{user?.email || "Signed In"}</div>
                   </div>

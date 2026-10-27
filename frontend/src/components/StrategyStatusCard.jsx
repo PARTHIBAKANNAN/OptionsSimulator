@@ -120,50 +120,77 @@ function SteppedTslProgressGauge({ entryPrice, ltp, stopLoss, takeProfit, closed
     nextMilestonePts = stage1Pts;
   }
 
+  const hardSlPts = entryPrice * (hardSlPct / 100);
+  const isLoss = deltaPts < 0;
+  const slDrawdownPct = Math.min(100, Math.max(0, (Math.abs(Math.min(0, deltaPts)) / hardSlPts) * 100));
+  const profitExpansionPct = Math.min(100, Math.max(0, (Math.max(0, deltaPts) / targetPts) * 100));
   const ptsToNext = Math.max(0, nextMilestonePts - deltaPts);
-  const progressPct = Math.min(100, Math.max(5, (Math.max(0, deltaPts) / targetPts) * 100));
+  const ptsToSl = Math.max(0, hardSlPts - Math.abs(Math.min(0, deltaPts)));
 
   return (
     <div className="mt-3 rounded-xl border border-subtle/80 bg-surface/80 p-2.5 font-mono text-xs">
       <div className="flex items-center justify-between text-[11px] mb-1.5">
         <div className="flex items-center gap-1.5">
           <span className="font-bold text-gray-400 font-sans">Dynamic TSL:</span>
-          <span className={`font-bold ${currentStep >= 2 ? "text-cyan-400" : currentStep === 1 ? "text-emerald-400" : "text-amber-400"}`}>
-            {closed ? "Position Closed" : stepLabel}
+          <span className={`font-bold ${
+            isLoss
+              ? "text-rose-400"
+              : currentStep >= 2
+                ? "text-cyan-400"
+                : currentStep === 1
+                  ? "text-emerald-400"
+                  : "text-amber-400"
+          }`}>
+            {closed ? "Position Closed" : isLoss ? `Drawdown (${ptsToSl.toFixed(1)} pts to SL)` : stepLabel}
           </span>
         </div>
-        <div className="font-bold text-accent">
+        <div className={`font-bold tabular-nums ${deltaPts >= 0 ? "text-bull" : "text-bear"}`}>
           {deltaPts >= 0 ? `+${deltaPts.toFixed(1)}` : deltaPts.toFixed(1)} pts
         </div>
       </div>
 
-      {/* Progress Track */}
-      <div className="relative h-2 w-full rounded-full bg-surface3/80 overflow-hidden">
-        <div
-          className={`h-full rounded-full transition-all duration-300 ${
-            currentStep >= 3
-              ? "bg-gradient-to-r from-emerald-500 via-cyan-500 to-indigo-500 shadow-[0_0_8px_rgba(59,130,246,0.6)]"
-              : currentStep >= 1
-                ? "bg-gradient-to-r from-emerald-500 to-cyan-500"
-                : isProfit
-                  ? "bg-emerald-500"
-                  : "bg-rose-500"
-          }`}
-          style={{ width: `${progressPct}%` }}
-        />
+      {/* Bi-Directional Dual-Zone Slider */}
+      <div className="relative h-2.5 w-full rounded-full bg-surface3/80 overflow-hidden flex">
+        {/* Left Zone: Drawdown toward Hard SL (Fills Right-to-Left from Center Axis) */}
+        <div className="relative w-1/2 h-full flex justify-end bg-surface2/50 border-r border-subtle/80">
+          <div
+            className="h-full bg-gradient-to-l from-amber-500 to-rose-500 rounded-l-full transition-all duration-300"
+            style={{ width: `${slDrawdownPct}%` }}
+          />
+        </div>
+
+        {/* Right Zone: Profit Expansion toward Target (Fills Left-to-Right from Center Axis) */}
+        <div className="relative w-1/2 h-full flex justify-start bg-surface2/30">
+          <div
+            className={`h-full rounded-r-full transition-all duration-300 ${
+              currentStep >= 3
+                ? "bg-gradient-to-r from-emerald-500 via-cyan-500 to-indigo-500 shadow-[0_0_8px_rgba(59,130,246,0.6)]"
+                : currentStep >= 1
+                  ? "bg-gradient-to-r from-emerald-500 to-cyan-500"
+                  : "bg-emerald-500"
+            }`}
+            style={{ width: `${profitExpansionPct}%` }}
+          />
+        </div>
       </div>
 
       {/* Milestone Points */}
       <div className="mt-2 flex items-center justify-between text-[10px] text-gray-400">
-        <span className={currentStep >= 1 ? "text-emerald-400 font-bold" : ""}>+{costLockPts}pt (Cost)</span>
-        <span className={currentStep >= 2 ? "text-cyan-400 font-bold" : ""}>+{stage1Pts}pt (Trail 1)</span>
-        <span className={currentStep >= 3 ? "text-indigo-400 font-bold" : ""}>+{stage2Pts}pt (Runner)</span>
-        <span className={deltaPts >= targetPts ? "text-indigo-400 font-bold" : ""}>+{targetPts}pt (Target)</span>
+        <span className={isLoss ? "text-rose-400 font-bold" : ""}>-SL (-{hardSlPct}%)</span>
+        <span className="text-muted font-bold">Entry (0)</span>
+        <span className={currentStep >= 1 ? "text-emerald-400 font-bold" : ""}>+{costLockPts}pt (Lock)</span>
+        <span className={currentStep >= 2 ? "text-cyan-400 font-bold" : ""}>+{stage1Pts}pt</span>
+        <span className={deltaPts >= targetPts ? "text-indigo-400 font-bold" : ""}>+{targetPts}pt</span>
       </div>
 
-      {!closed && ptsToNext > 0 && (
+      {!closed && (
         <div className="mt-1.5 text-[10px] text-faint font-sans text-right">
-          <span className="text-accent font-semibold">{ptsToNext.toFixed(1)} pts</span> to next expansion tier
+          {isLoss ? (
+            <span className="text-rose-400 font-semibold">{ptsToSl.toFixed(1)} pts</span>
+          ) : (
+            <span className="text-accent font-semibold">{ptsToNext.toFixed(1)} pts</span>
+          )}
+          {isLoss ? " to Hard SL stop-out" : " to next expansion tier"}
         </div>
       )}
     </div>

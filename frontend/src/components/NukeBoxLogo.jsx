@@ -73,14 +73,14 @@ export function NukeBoxLogo({ size = "md", showText = true, className = "" }) {
       {showText && (
         <div className="flex flex-col justify-center">
           <div className="flex items-center gap-1.5 leading-none">
-            <span className={`font-black tracking-tight text-white font-sans ${textSize}`}>
+            <span className={`font-black tracking-tight text-slate-900 dark:text-white font-sans ${textSize}`}>
               NUKE<span className="bg-gradient-to-r from-cyan-400 via-blue-400 to-indigo-400 bg-clip-text text-transparent">BOX</span>
             </span>
-            <span className="rounded-full bg-cyan-500/15 px-1.5 py-0.5 text-[8px] font-black uppercase tracking-widest text-cyan-300 border border-cyan-500/30 font-mono">
+            <span className="rounded-full bg-cyan-500/15 px-1.5 py-0.5 text-[8px] font-black uppercase tracking-widest text-cyan-500 dark:text-cyan-300 border border-cyan-500/30 font-mono">
               QUANT
             </span>
           </div>
-          <span className={`font-extrabold text-cyan-400 tracking-wider font-mono mt-1 uppercase ${sloganSize}`}>
+          <span className={`font-extrabold text-cyan-600 dark:text-cyan-400 tracking-wider font-mono mt-1 uppercase ${sloganSize}`}>
             PRECISION IN EVERY TICK
           </span>
         </div>

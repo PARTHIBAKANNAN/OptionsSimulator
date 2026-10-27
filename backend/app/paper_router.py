@@ -251,6 +251,20 @@ async def restart_strategy(name: str, request: Request):
     return {"status": "restarted", "strategy": name}
 
 
+@router.post("/strategies/restart-all")
+async def restart_all_strategies(request: Request):
+    """Restarts all 44 strategies, resetting their intraday signal latches and cooldown locks."""
+    engine = _get_engine(request)
+    restarted_count = 0
+    for index, strat_engine in getattr(engine, "strategy_engines", {}).items():
+        for s in getattr(strat_engine, "strategies", []):
+            s.last_signal_time = None
+            if hasattr(s, "_last_signal_bar"):
+                s._last_signal_bar = None
+            restarted_count += 1
+    return {"status": "all_restarted", "restarted_count": restarted_count}
+
+
 RESULTS_DIR = Path(__file__).resolve().parent.parent.parent / "data" / "backtest_results"
 
 

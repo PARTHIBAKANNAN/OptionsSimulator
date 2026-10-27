@@ -85,12 +85,33 @@ export function TelemetryScreen() {
         </div>
       </div>
 
+      {/* Post-Market or Live Exchange Session Status Banner */}
+      <div className={`flex items-center gap-3 rounded-2xl border p-4 text-xs font-semibold ${
+        telemetry?.is_connected
+          ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-400"
+          : "border-amber-500/30 bg-amber-500/10 text-amber-300"
+      }`}>
+        <span className="flex h-3 w-3 shrink-0 items-center justify-center">
+          <span className="h-2 w-2 rounded-full bg-current animate-ping" />
+        </span>
+        <div className="flex-1">
+          <div className="font-bold text-sm text-primary">
+            {telemetry?.is_connected ? "🟢 Live Exchange Stream Active" : "🌙 Post-Market Keepalive Session (Server Heartbeat Active)"}
+          </div>
+          <p className="text-faint text-[11px] mt-0.5">
+            {telemetry?.is_connected
+              ? "All 189 option & spot contracts are streaming live sub-second price updates directly from Alice Blue."
+              : "Exchange is currently closed (03:30 PM – 09:15 AM IST). WebSocket heartbeat remains active to preserve memory caches and system health."}
+          </p>
+        </div>
+      </div>
+
       {/* Primary Latency & Verification Grid */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         {/* Metric 1: Ping / RTT */}
         <div className="flex flex-col justify-between rounded-2xl border border-subtle bg-surface p-5 shadow-md">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-faint uppercase tracking-wider">Network RTT (Ping)</span>
+            <span className="text-xs font-bold text-faint uppercase tracking-wider">Cloud Server Latency (Ping)</span>
             <Wifi className="h-4 w-4 text-cyan-400" />
           </div>
           <div className="my-3">
@@ -101,19 +122,19 @@ export function TelemetryScreen() {
               <span className="text-xs font-bold text-faint">ms</span>
             </div>
             <div className="mt-1 text-[11px] text-muted">
-              HTTP Round-Trip to dedicated VM
+              Client Browser &harr; Dedicated VM Round-Trip
             </div>
           </div>
           <div className="flex items-center gap-1.5 text-[11px] font-bold text-bull">
             <CheckCircle2 className="h-3 w-3" />
-            <span>Under 100ms baseline</span>
+            <span>Optimal (&lt; 100ms)</span>
           </div>
         </div>
 
-        {/* Metric 2: Tick Render Latency */}
+        {/* Metric 2: Tick Freshness Latency */}
         <div className="flex flex-col justify-between rounded-2xl border border-subtle bg-surface p-5 shadow-md">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-faint uppercase tracking-wider">Quote Age (Freshness)</span>
+            <span className="text-xs font-bold text-faint uppercase tracking-wider">Contract Tick Recency</span>
             <Clock className="h-4 w-4 text-accent" />
           </div>
           <div className="my-3">
@@ -123,13 +144,13 @@ export function TelemetryScreen() {
               </span>
               <span className="text-xs font-bold text-faint">ms</span>
             </div>
-            <div className="mt-1 text-[11px] text-muted">
+            <div className="mt-1 text-[11px] text-muted" title="Active ATM strikes tick in 0.5ms–50ms. OTM strikes update when trades occur on exchange.">
               Fastest tick: <span className="font-mono font-bold text-primary">{latency?.min_quote_age_ms ?? 0} ms</span>
             </div>
           </div>
           <div className="flex items-center gap-1.5 text-[11px] font-bold text-bull">
             <span className="h-2 w-2 rounded-full bg-bull animate-pulse" />
-            <span>Target 50ms – 150ms active</span>
+            <span>Exchange Tick Corridor Active</span>
           </div>
         </div>
 
