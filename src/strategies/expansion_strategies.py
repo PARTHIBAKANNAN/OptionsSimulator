@@ -36,14 +36,18 @@ class NiftyVwapPocPullbackCE(BaseStrategy):
         if ts is None or not self.can_trigger(ts):
             return None
 
-        indicators = data_state.get("indicators", {})
+        indicators = data_state.get("indicators") or {}
         candles = data_state.get("candles", [])
         if len(candles) < 2:
             return None
 
         vwap_5m = indicators.get("vwap_5m")
         rsi_val = indicators.get("rsi_14_5m")
+        vol_ratio = indicators.get("volume_ratio_5m") or indicators.get("volume_ratio")
         if vwap_5m is None or rsi_val is None:
+            return None
+
+        if not self.is_volume_acceptable(vol_ratio, ts, min_morning=1.0, min_midday=1.35):
             return None
 
         current, prev = candles[-1], candles[-2]
@@ -51,7 +55,7 @@ class NiftyVwapPocPullbackCE(BaseStrategy):
         if rng <= 0 or current.close <= 0:
             return None
 
-        if prev.low <= vwap_5m and current.close > vwap_5m and rsi_val > 50.0:
+        if prev.low <= vwap_5m and current.close > vwap_5m and 52.0 <= rsi_val <= 65.0:
             spot = current.close
             symbol, strike = self.select_strike(spot, "CE", timestamp=ts)
             price = self.get_option_price(symbol, strike, spot, "CE", data_state)
@@ -82,14 +86,18 @@ class NiftyVwapPocBreakdownPE(BaseStrategy):
         if ts is None or not self.can_trigger(ts):
             return None
 
-        indicators = data_state.get("indicators", {})
+        indicators = data_state.get("indicators") or {}
         candles = data_state.get("candles", [])
         if len(candles) < 2:
             return None
 
         vwap_5m = indicators.get("vwap_5m")
         rsi_val = indicators.get("rsi_14_5m")
+        vol_ratio = indicators.get("volume_ratio_5m") or indicators.get("volume_ratio")
         if vwap_5m is None or rsi_val is None:
+            return None
+
+        if not self.is_volume_acceptable(vol_ratio, ts, min_morning=1.0, min_midday=1.35):
             return None
 
         current, prev = candles[-1], candles[-2]
@@ -97,7 +105,7 @@ class NiftyVwapPocBreakdownPE(BaseStrategy):
         if rng <= 0 or current.close <= 0:
             return None
 
-        if prev.high >= vwap_5m and current.close < vwap_5m and rsi_val < 45.0:
+        if prev.high >= vwap_5m and current.close < vwap_5m and 35.0 <= rsi_val <= 48.0:
             spot = current.close
             symbol, strike = self.select_strike(spot, "PE", timestamp=ts)
             price = self.get_option_price(symbol, strike, spot, "PE", data_state)
@@ -130,16 +138,24 @@ class NiftySupertrendCmfBullishCE(BaseStrategy):
         if ts is None or not self.can_trigger(ts):
             return None
 
-        indicators = data_state.get("indicators", {})
+        indicators = data_state.get("indicators") or {}
         candles = data_state.get("candles", [])
         spot = data_state.get("nifty_price") or (candles[-1].close if candles else None)
         st_10_3_dir = indicators.get("supertrend_10_3_direction")
         st_7_2_dir = indicators.get("supertrend_7_2_direction")
         cmf = indicators.get("cmf_20_5m")
+        vol_ratio = indicators.get("volume_ratio_5m") or indicators.get("volume_ratio")
+        adx_val = indicators.get("adx_14_5m") or indicators.get("adx_14_1m")
         if spot is None or spot <= 0 or st_10_3_dir is None or st_7_2_dir is None or cmf is None:
             return None
 
-        if st_10_3_dir == 1 and st_7_2_dir == 1 and cmf > 0:
+        if not self.is_trend_confirmed(adx_val, min_adx=20.0):
+            return None
+
+        if not self.is_volume_acceptable(vol_ratio, ts, min_morning=1.0, min_midday=1.35):
+            return None
+
+        if st_10_3_dir == 1 and st_7_2_dir == 1 and cmf >= 0.05:
             symbol, strike = self.select_strike(spot, "CE", timestamp=ts)
             price = self.get_option_price(symbol, strike, spot, "CE", data_state)
             self.last_signal_time = ts
@@ -169,16 +185,24 @@ class NiftySupertrendCmfBearishPE(BaseStrategy):
         if ts is None or not self.can_trigger(ts):
             return None
 
-        indicators = data_state.get("indicators", {})
+        indicators = data_state.get("indicators") or {}
         candles = data_state.get("candles", [])
         spot = data_state.get("nifty_price") or (candles[-1].close if candles else None)
         st_10_3_dir = indicators.get("supertrend_10_3_direction")
         st_7_2_dir = indicators.get("supertrend_7_2_direction")
         cmf = indicators.get("cmf_20_5m")
+        vol_ratio = indicators.get("volume_ratio_5m") or indicators.get("volume_ratio")
+        adx_val = indicators.get("adx_14_5m") or indicators.get("adx_14_1m")
         if spot is None or spot <= 0 or st_10_3_dir is None or st_7_2_dir is None or cmf is None:
             return None
 
-        if st_10_3_dir == -1 and st_7_2_dir == -1 and cmf < 0:
+        if not self.is_trend_confirmed(adx_val, min_adx=20.0):
+            return None
+
+        if not self.is_volume_acceptable(vol_ratio, ts, min_morning=1.0, min_midday=1.35):
+            return None
+
+        if st_10_3_dir == -1 and st_7_2_dir == -1 and cmf <= -0.05:
             symbol, strike = self.select_strike(spot, "PE", timestamp=ts)
             price = self.get_option_price(symbol, strike, spot, "PE", data_state)
             self.last_signal_time = ts
@@ -215,7 +239,7 @@ class SensexBbSqueezeExplosionCE(BaseStrategy):
         if ts is None or not self.can_trigger(ts):
             return None
 
-        indicators = data_state.get("indicators", {})
+        indicators = data_state.get("indicators") or {}
         candles = data_state.get("candles", [])
         if len(candles) < 2:
             return None
@@ -224,7 +248,11 @@ class SensexBbSqueezeExplosionCE(BaseStrategy):
         bb_upper = indicators.get("bb_upper_5m")
         squeeze_prev = indicators.get("bb_squeeze_ratio_5m_prev")
         expansion = indicators.get("bb_bandwidth_expansion_5m")
+        vol_ratio = indicators.get("volume_ratio_5m") or indicators.get("volume_ratio")
         if bb_upper is None or squeeze_prev is None or expansion is None or current.close <= 0:
+            return None
+
+        if not self.is_volume_acceptable(vol_ratio, ts, min_morning=1.0, min_midday=1.35):
             return None
 
         if squeeze_prev < 0.85 and expansion > 1.15 and current.close > bb_upper:
@@ -258,7 +286,7 @@ class SensexBbSqueezeExplosionPE(BaseStrategy):
         if ts is None or not self.can_trigger(ts):
             return None
 
-        indicators = data_state.get("indicators", {})
+        indicators = data_state.get("indicators") or {}
         candles = data_state.get("candles", [])
         if len(candles) < 2:
             return None
@@ -267,7 +295,11 @@ class SensexBbSqueezeExplosionPE(BaseStrategy):
         bb_lower = indicators.get("bb_lower_5m")
         squeeze_prev = indicators.get("bb_squeeze_ratio_5m_prev")
         expansion = indicators.get("bb_bandwidth_expansion_5m")
+        vol_ratio = indicators.get("volume_ratio_5m") or indicators.get("volume_ratio")
         if bb_lower is None or squeeze_prev is None or expansion is None or current.close <= 0:
+            return None
+
+        if not self.is_volume_acceptable(vol_ratio, ts, min_morning=1.0, min_midday=1.35):
             return None
 
         if squeeze_prev < 0.85 and expansion > 1.15 and current.close < bb_lower:
@@ -327,7 +359,7 @@ class SensexOiShortSqueezeCE(BaseStrategy):
         if ts is None or not self.can_trigger(ts):
             return None
 
-        indicators = data_state.get("indicators", {})
+        indicators = data_state.get("indicators") or {}
         candles = data_state.get("candles", [])
         spot = data_state.get("sensex_price") or (candles[-1].close if candles else None)
         ema20 = indicators.get("ema_20_5m")
@@ -388,7 +420,7 @@ class SensexOiLongUnwindingPE(BaseStrategy):
         if ts is None or not self.can_trigger(ts):
             return None
 
-        indicators = data_state.get("indicators", {})
+        indicators = data_state.get("indicators") or {}
         candles = data_state.get("candles", [])
         spot = data_state.get("sensex_price") or (candles[-1].close if candles else None)
         ema20 = indicators.get("ema_20_5m")
@@ -451,17 +483,25 @@ class BankNiftyDualSupertrendBbCE(BaseStrategy):
         if ts is None or not self.can_trigger(ts):
             return None
 
-        indicators = data_state.get("indicators", {})
+        indicators = data_state.get("indicators") or {}
         candles = data_state.get("candles", [])
         spot = data_state.get("banknifty_price") or (candles[-1].close if candles else None)
         st_10_3_dir = indicators.get("supertrend_10_3_direction")
         st_7_2_dir = indicators.get("supertrend_7_2_direction")
         cmf = indicators.get("cmf_20_5m")
         expansion = indicators.get("bb_bandwidth_expansion_5m")
+        vol_ratio = indicators.get("volume_ratio_5m") or indicators.get("volume_ratio")
+        adx_val = indicators.get("adx_14_5m") or indicators.get("adx_14_1m")
         if None in (spot, st_10_3_dir, st_7_2_dir, cmf, expansion) or spot <= 0:
             return None
 
-        if st_10_3_dir == 1 and st_7_2_dir == 1 and cmf > 0 and expansion > 1.05:
+        if not self.is_trend_confirmed(adx_val, min_adx=20.0):
+            return None
+
+        if not self.is_volume_acceptable(vol_ratio, ts, min_morning=1.0, min_midday=1.35):
+            return None
+
+        if st_10_3_dir == 1 and st_7_2_dir == 1 and cmf >= 0.05 and expansion > 1.05:
             symbol, strike = self.select_strike(spot, "CE", timestamp=ts)
             price = self.get_option_price(symbol, strike, spot, "CE", data_state)
             self.last_signal_time = ts
@@ -491,17 +531,25 @@ class BankNiftyDualSupertrendBbPE(BaseStrategy):
         if ts is None or not self.can_trigger(ts):
             return None
 
-        indicators = data_state.get("indicators", {})
+        indicators = data_state.get("indicators") or {}
         candles = data_state.get("candles", [])
         spot = data_state.get("banknifty_price") or (candles[-1].close if candles else None)
         st_10_3_dir = indicators.get("supertrend_10_3_direction")
         st_7_2_dir = indicators.get("supertrend_7_2_direction")
         cmf = indicators.get("cmf_20_5m")
         expansion = indicators.get("bb_bandwidth_expansion_5m")
+        vol_ratio = indicators.get("volume_ratio_5m") or indicators.get("volume_ratio")
+        adx_val = indicators.get("adx_14_5m") or indicators.get("adx_14_1m")
         if None in (spot, st_10_3_dir, st_7_2_dir, cmf, expansion) or spot <= 0:
             return None
 
-        if st_10_3_dir == -1 and st_7_2_dir == -1 and cmf < 0 and expansion > 1.05:
+        if not self.is_trend_confirmed(adx_val, min_adx=20.0):
+            return None
+
+        if not self.is_volume_acceptable(vol_ratio, ts, min_morning=1.0, min_midday=1.35):
+            return None
+
+        if st_10_3_dir == -1 and st_7_2_dir == -1 and cmf <= -0.05 and expansion > 1.05:
             symbol, strike = self.select_strike(spot, "PE", timestamp=ts)
             price = self.get_option_price(symbol, strike, spot, "PE", data_state)
             self.last_signal_time = ts
@@ -533,7 +581,7 @@ class BankNiftyVwapBbLiquidityReboundCE(BaseStrategy):
         if ts is None or not self.can_trigger(ts):
             return None
 
-        indicators = data_state.get("indicators", {})
+        indicators = data_state.get("indicators") or {}
         candles = data_state.get("candles", [])
         if len(candles) < 2:
             return None
@@ -541,7 +589,11 @@ class BankNiftyVwapBbLiquidityReboundCE(BaseStrategy):
         current, prev = candles[-1], candles[-2]
         bb_lower = indicators.get("bb_lower_5m")
         vwap_5m = indicators.get("vwap_5m")
+        vol_ratio = indicators.get("volume_ratio_5m") or indicators.get("volume_ratio")
         if bb_lower is None or vwap_5m is None:
+            return None
+
+        if not self.is_volume_acceptable(vol_ratio, ts, min_morning=1.0, min_midday=1.35):
             return None
 
         rng = current.high - current.low
@@ -586,7 +638,7 @@ class BankNiftyGammaWallBreakoutPE(BaseStrategy):
         if ts is None or not self.can_trigger(ts):
             return None
 
-        indicators = data_state.get("indicators", {})
+        indicators = data_state.get("indicators") or {}
         candles = data_state.get("candles", [])
         if len(candles) < 2:
             return None
@@ -594,7 +646,11 @@ class BankNiftyGammaWallBreakoutPE(BaseStrategy):
         current, prev = candles[-1], candles[-2]
         bb_upper = indicators.get("bb_upper_5m")
         vwap_5m = indicators.get("vwap_5m")
+        vol_ratio = indicators.get("volume_ratio_5m") or indicators.get("volume_ratio")
         if bb_upper is None or vwap_5m is None or current.close <= 0:
+            return None
+
+        if not self.is_volume_acceptable(vol_ratio, ts, min_morning=1.0, min_midday=1.35):
             return None
 
         if prev.high >= bb_upper and current.close < vwap_5m:

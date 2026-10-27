@@ -8,7 +8,7 @@ class RSIOverboughtBearish(BaseStrategy):
         super().__init__(name="RSI_OVERBOUGHT_BEARISH", direction="PE")
 
     def evaluate(self, data_state: dict):
-        indicators = data_state.get("indicators", {})
+        indicators = data_state.get("indicators") or {}
         nifty = data_state.get("nifty_price")
         if nifty is None:
             return None

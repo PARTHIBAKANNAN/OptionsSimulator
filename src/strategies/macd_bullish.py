@@ -14,9 +14,19 @@ class MACDBullish(BaseStrategy):
         if ts is None or not self.can_trigger(ts):
             return None
 
-        indicators = data_state.get("indicators", {})
+        indicators = data_state.get("indicators") or {}
         spot = data_state.get(f"{self.underlying.lower()}_price") or data_state.get("nifty_price")
         if spot is None or spot <= 0:
+            return None
+
+        # Filter: avoid chasing extended moves
+        vwap_val = indicators.get("vwap_5m") or indicators.get("vwap")
+        if not self.is_vwap_acceptable(spot, vwap_val, max_dist_pct=0.40):
+            return None
+
+        # Filter: volume surge requirement during midday chop
+        vol_ratio = indicators.get("volume_ratio_5m") or indicators.get("volume_ratio")
+        if not self.is_volume_acceptable(vol_ratio, ts, min_morning=1.0, min_midday=1.35):
             return None
 
         macd_hist = indicators.get("macd_histogram_15m")

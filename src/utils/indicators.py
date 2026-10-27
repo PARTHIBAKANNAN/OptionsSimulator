@@ -156,3 +156,37 @@ def heikin_ashi(df: pd.DataFrame) -> pd.DataFrame:
     ha_high = pd.concat([df["High"], ha_open, ha_close], axis=1).max(axis=1)
     ha_low = pd.concat([df["Low"], ha_open, ha_close], axis=1).min(axis=1)
     return pd.DataFrame({"ha_open": ha_open, "ha_high": ha_high, "ha_low": ha_low, "ha_close": ha_close})
+
+
+def adx(high: pd.Series, low: pd.Series, close: pd.Series, period: int = 14) -> pd.Series:
+    """Average Directional Index (ADX) 14 with +DI/-DI using Wilder's smoothing.
+    Quantifies trend strength regardless of trend direction.
+    ADX >= 20/25 confirms trending conditions; ADX < 20 indicates sideways/choppy market."""
+    prev_close = close.shift(1)
+    prev_high = high.shift(1)
+    prev_low = low.shift(1)
+
+    tr = pd.concat([
+        high - low,
+        (high - prev_close).abs(),
+        (low - prev_close).abs(),
+    ], axis=1).max(axis=1)
+
+    up_move = high - prev_high
+    down_move = prev_low - low
+
+    plus_dm = np.where((up_move > down_move) & (up_move > 0), up_move, 0.0)
+    minus_dm = np.where((down_move > up_move) & (down_move > 0), down_move, 0.0)
+
+    tr_smooth = tr.ewm(alpha=1 / period, adjust=False).mean()
+    plus_dm_smooth = pd.Series(plus_dm, index=high.index).ewm(alpha=1 / period, adjust=False).mean()
+    minus_dm_smooth = pd.Series(minus_dm, index=low.index).ewm(alpha=1 / period, adjust=False).mean()
+
+    plus_di = 100 * (plus_dm_smooth / tr_smooth.replace(0, np.nan)).fillna(0)
+    minus_di = 100 * (minus_dm_smooth / tr_smooth.replace(0, np.nan)).fillna(0)
+
+    di_sum = plus_di + minus_di
+    dx = 100 * ((plus_di - minus_di).abs() / di_sum.replace(0, np.nan)).fillna(0)
+    adx_series = dx.ewm(alpha=1 / period, adjust=False).mean()
+    return adx_series.fillna(20.0)
+

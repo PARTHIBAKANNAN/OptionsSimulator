@@ -96,6 +96,7 @@ class PaperTrader:
         charges_rates: dict = None,
         enable_wallets: bool = False,
         post_loss_cooldown_mins: int = 0,
+        strike_loss_lockout_mins: int = 60,
         min_entry_premium: float = None,
         tiered_trailing_enabled: bool = False,
         tiered_rules: dict = None,
@@ -128,8 +129,8 @@ class PaperTrader:
                 "itm": {"min_entry_price": 350.0, "cost_lock_pts": 35.0, "trail_stage1_pts": 30.0, "stage1_threshold_pts": 60.0, "trail_stage2_pts": 45.0, "stage2_threshold_pts": 120.0, "target_pts": 180.0},
             },
             "SENSEX": {
-                "atm": {"max_entry_price": 450.0, "cost_lock_pts": 30.0, "trail_stage1_pts": 28.0, "stage1_threshold_pts": 55.0, "trail_stage2_pts": 40.0, "stage2_threshold_pts": 110.0, "target_pts": 150.0},
-                "itm": {"min_entry_price": 450.0, "cost_lock_pts": 40.0, "trail_stage1_pts": 36.0, "stage1_threshold_pts": 75.0, "trail_stage2_pts": 55.0, "stage2_threshold_pts": 150.0, "target_pts": 220.0},
+                "atm": {"max_entry_price": 450.0, "cost_lock_pts": 25.0, "trail_stage1_pts": 22.0, "stage1_threshold_pts": 45.0, "trail_stage2_pts": 32.0, "stage2_threshold_pts": 90.0, "target_pts": 120.0},
+                "itm": {"min_entry_price": 450.0, "cost_lock_pts": 35.0, "trail_stage1_pts": 30.0, "stage1_threshold_pts": 60.0, "trail_stage2_pts": 45.0, "stage2_threshold_pts": 120.0, "target_pts": 180.0},
             },
         }
         self.trailing_stop_enabled = trailing_stop_enabled
@@ -145,9 +146,11 @@ class PaperTrader:
         self.capital_by_strategy = capital_by_strategy or {}
         self.charges_rates = charges_rates
         self.post_loss_cooldown_mins = post_loss_cooldown_mins
+        self.strike_loss_lockout_mins = strike_loss_lockout_mins
         self.logger = logger
         self.audit_logger = audit_logger
         self._strategy_last_exit: dict[str, dict] = {}
+        self._strike_last_loss: dict[tuple[str, str], datetime] = {}
 
         self.wallet_balance: dict[str, float] = dict(self.capital_by_strategy) if enable_wallets else {}
 
@@ -168,6 +171,7 @@ class PaperTrader:
             self._realized_pnl_today = 0.0
             self._strategy_trades_today = {}
             self._strategy_last_exit = {}
+            self._strike_last_loss = {}
 
     def restore_daily_counts(
         self,
@@ -332,6 +336,17 @@ class PaperTrader:
                             f"Strategy '{strategy}' in {self.post_loss_cooldown_mins}-min post-loss cooldown until {cooldown_expiry.strftime('%H:%M:%S')}",
                         )
 
+            if self.strike_loss_lockout_mins > 0:
+                strike_key = (strategy, symbol)
+                strike_last_loss = getattr(self, "_strike_last_loss", {}).get(strike_key)
+                if strike_last_loss is not None:
+                    strike_expiry = strike_last_loss + timedelta(minutes=self.strike_loss_lockout_mins)
+                    if timestamp < strike_expiry:
+                        _reject(
+                            "REJECTED_STRIKE_LOSS_LOCKOUT",
+                            f"Strategy '{strategy}' hit stop loss on {symbol}; strike locked out until {strike_expiry.strftime('%H:%M:%S')}",
+                        )
+
         if self.min_entry_premium is not None and price < self.min_entry_premium:
             _reject(
                 "REJECTED_MIN_PREMIUM_FLOOR",
@@ -435,6 +450,10 @@ class PaperTrader:
                 "realized_pnl": order.realized_pnl,
                 "reason": reason,
             }
+            if reason == "STOP_LOSS" and order.symbol is not None:
+                if not hasattr(self, "_strike_last_loss"):
+                    self._strike_last_loss = {}
+                self._strike_last_loss[(order.strategy, order.symbol)] = order.exit_time
             self._update_circuit_breakers(order.strategy, order.realized_pnl, order.exit_time.date())
             if order.strategy in self.wallet_balance:
                 self.wallet_balance[order.strategy] += exit_value - order.exit_charges

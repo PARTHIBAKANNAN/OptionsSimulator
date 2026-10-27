@@ -7,6 +7,9 @@ from src.utils.options_pricing import black_scholes_price, next_weekly_expiry_da
 
 OPENING_CUTOFF_TIME = dtime(9, 25)
 EOD_CUTOFF_TIME = dtime(15, 15)
+ORB_ENTRY_CUTOFF_TIME = dtime(10, 30)
+MIDDAY_START_TIME = dtime(10, 30)
+MIDDAY_END_TIME = dtime(13, 0)
 
 
 @dataclass
@@ -45,6 +48,53 @@ class BaseStrategy:
             return True
         elapsed_seconds = (current_time - self.last_signal_time).total_seconds()
         return elapsed_seconds >= self.min_cooldown_mins * 60
+
+    @staticmethod
+    def is_midday(current_time: datetime) -> bool:
+        """Returns True if current timestamp is within the 10:30 AM to 13:00 PM consolidation window."""
+        if current_time is None:
+            return False
+        t = current_time.time() if hasattr(current_time, "time") else None
+        return t is not None and (MIDDAY_START_TIME <= t < MIDDAY_END_TIME)
+
+    @staticmethod
+    def is_orb_allowed(current_time: datetime) -> bool:
+        """ORB entries are strictly allowed only between 09:30 and 10:30 AM IST."""
+        if current_time is None:
+            return False
+        t = current_time.time() if hasattr(current_time, "time") else None
+        return t is not None and (OPENING_CUTOFF_TIME <= t < ORB_ENTRY_CUTOFF_TIME)
+
+    @staticmethod
+    def is_vwap_acceptable(spot: float, vwap_price: Optional[float], max_dist_pct: float = 0.40) -> bool:
+        """Rejects chasing extended moves if spot is stretched more than max_dist_pct from VWAP."""
+        if vwap_price is None or vwap_price <= 0 or spot <= 0:
+            return True
+        dist_pct = (abs(spot - vwap_price) / vwap_price) * 100.0
+        return dist_pct <= max_dist_pct
+
+    @staticmethod
+    def is_volume_acceptable(volume_ratio: Optional[float], current_time: datetime,
+                              min_morning: float = 1.0, min_midday: float = 1.4,
+                              current_volume: Optional[float] = None,
+                              avg_volume: Optional[float] = None) -> bool:
+        """Requires higher volume surge during midday (10:30 - 13:00) to filter chop."""
+        if volume_ratio is None:
+            if current_volume is not None and avg_volume is not None and avg_volume > 0:
+                volume_ratio = current_volume / avg_volume
+            else:
+                return True
+        if BaseStrategy.is_midday(current_time):
+            return volume_ratio >= min_midday
+        return volume_ratio >= min_morning
+
+    @staticmethod
+    def is_trend_confirmed(adx_val: Optional[float], min_adx: float = 20.0) -> bool:
+        """Confirms market is in trending regime (ADX >= 20.0). Defaults to True if ADX not computed yet."""
+        if adx_val is None:
+            return True
+        return adx_val >= min_adx
+
 
     def evaluate(self, data_state: dict) -> Optional[Signal]:
         raise NotImplementedError

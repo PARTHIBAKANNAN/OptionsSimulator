@@ -38,6 +38,10 @@ class ORBBearish(BaseStrategy):
             self._range_low = current.low if self._range_low is None else min(self._range_low, current.low)
             return None
 
+        # Hard Cutoff: ORB breakouts strictly permitted only between 09:30 and 10:30 AM IST
+        if not self.is_orb_allowed(current.timestamp):
+            return None
+
         if self._range_low is None:
             # Reconstruct morning range from today's historical candles if starting/restarted mid-session
             morning_candles = [
@@ -50,13 +54,13 @@ class ORBBearish(BaseStrategy):
             else:
                 return None
 
-        indicators = data_state.get("indicators", {})
+        indicators = data_state.get("indicators") or {}
         avg_volume = indicators.get("avg_volume")
-        if avg_volume is None:
+        if avg_volume is None or avg_volume <= 0:
             return None
 
         crossed_now = (prev.close >= self._range_low > current.close) or (prev.timestamp.time() < ORB_WINDOW_END and current.close < self._range_low)
-        volume_confirmed = avg_volume is None or avg_volume == 0 or current.volume > avg_volume
+        volume_confirmed = current.volume >= (1.25 * avg_volume)
         if crossed_now and volume_confirmed:
             spot = current.close
             if spot <= 0:

@@ -31,14 +31,20 @@ class NiftySupportBounce5MITM(BaseStrategy):
         if ts is None or not self.can_trigger(ts):
             return None
 
-        indicators = data_state.get("indicators", {})
+        indicators = data_state.get("indicators") or {}
         candles = data_state.get("candles", [])
         if len(candles) < 2:
+            return None
+
+        # RSI check: avoid buying overbought bounces (RSI > 60)
+        rsi_val = indicators.get("rsi_14_5m") or indicators.get("rsi_1h")
+        if rsi_val is not None and rsi_val > 60.0:
             return None
 
         ema20_5m = indicators.get("ema_20_5m")
         ema50_1h = indicators.get("ema_50_1h") or indicators.get("ema_50_5m") or indicators.get("ema_20_5m")
         avg_volume = indicators.get("avg_volume")
+        vol_ratio = indicators.get("volume_ratio_5m") or indicators.get("volume_ratio")
         if ema20_5m is None or ema50_1h is None:
             return None
 
@@ -48,7 +54,7 @@ class NiftySupportBounce5MITM(BaseStrategy):
             return None
 
         closes_strong = (current.close - current.low) / rng >= 0.60
-        volume_confirmed = avg_volume is None or avg_volume == 0 or current.volume > avg_volume
+        volume_confirmed = self.is_volume_acceptable(vol_ratio, ts, min_morning=1.0, min_midday=1.35, current_volume=current.volume, avg_volume=avg_volume)
 
         if prev.low <= ema20_5m and current.close > ema20_5m and current.close > ema50_1h and closes_strong and volume_confirmed:
             spot = current.close
@@ -81,10 +87,25 @@ class NiftyHeikinAshiBullish5MITM(BaseStrategy):
         if ts is None or not self.can_trigger(ts):
             return None
 
-        indicators = data_state.get("indicators", {})
+        indicators = data_state.get("indicators") or {}
         candles = data_state.get("candles", [])
         spot = data_state.get("nifty_price") or (candles[-1].close if candles else None)
         if spot is None or spot <= 0:
+            return None
+
+        # 1. ADX Trend Strength Filter
+        adx_val = indicators.get("adx_14_5m") or indicators.get("adx_14_1m")
+        if not self.is_trend_confirmed(adx_val, min_adx=20.0):
+            return None
+
+        # 2. VWAP Proximity Filter (avoid chasing extended moves)
+        vwap_val = indicators.get("vwap_5m") or indicators.get("vwap")
+        if not self.is_vwap_acceptable(spot, vwap_val, max_dist_pct=0.40):
+            return None
+
+        # 3. Midday Volume Filter
+        vol_ratio = indicators.get("volume_ratio_5m") or indicators.get("volume_ratio")
+        if not self.is_volume_acceptable(vol_ratio, ts, min_morning=1.0, min_midday=1.4):
             return None
 
         ha = indicators.get("heikin_ashi_5m")
@@ -149,6 +170,10 @@ class NiftyORBBullish5MITM(BaseStrategy):
             self._range_low = current.low if self._range_low is None else min(self._range_low, current.low)
             return None
 
+        # Hard Cutoff: ORB breakouts strictly permitted only between 09:30 and 10:30 AM IST
+        if not self.is_orb_allowed(current.timestamp):
+            return None
+
         if self._range_high is None:
             morning_candles = [
                 c for c in candles
@@ -160,12 +185,14 @@ class NiftyORBBullish5MITM(BaseStrategy):
             else:
                 return None
 
-        indicators = data_state.get("indicators", {})
+        indicators = data_state.get("indicators") or {}
         ema50 = indicators.get("ema_50_1h") or indicators.get("ema_50_5m") or indicators.get("ema_20_5m")
         avg_volume = indicators.get("avg_volume")
+        if avg_volume is None or avg_volume <= 0:
+            return None
 
         crossed_now = (prev.close <= self._range_high < current.close) or (prev.timestamp.time() < ORB_WINDOW_END and current.close > self._range_high)
-        volume_confirmed = avg_volume is None or avg_volume == 0 or current.volume > avg_volume
+        volume_confirmed = current.volume >= (1.25 * avg_volume)
         if crossed_now and volume_confirmed and (ema50 is not None and current.close > ema50):
             spot = current.close
             symbol, strike = self.select_strike(spot, "CE", timestamp=ts)
@@ -197,14 +224,20 @@ class NiftyResistanceRejection5MITM(BaseStrategy):
         if ts is None or not self.can_trigger(ts):
             return None
 
-        indicators = data_state.get("indicators", {})
+        indicators = data_state.get("indicators") or {}
         candles = data_state.get("candles", [])
         if len(candles) < 2:
+            return None
+
+        # RSI check: avoid selling into oversold dumps (RSI < 40)
+        rsi_val = indicators.get("rsi_14_5m") or indicators.get("rsi_1h")
+        if rsi_val is not None and rsi_val < 40.0:
             return None
 
         ema20_5m = indicators.get("ema_20_5m")
         ema50_1h = indicators.get("ema_50_1h") or indicators.get("ema_50_5m") or indicators.get("ema_20_5m")
         avg_volume = indicators.get("avg_volume")
+        vol_ratio = indicators.get("volume_ratio_5m") or indicators.get("volume_ratio")
         if ema20_5m is None or ema50_1h is None:
             return None
 
@@ -214,7 +247,7 @@ class NiftyResistanceRejection5MITM(BaseStrategy):
             return None
 
         closes_weak = (current.high - current.close) / rng >= 0.60
-        volume_confirmed = avg_volume is None or avg_volume == 0 or current.volume > avg_volume
+        volume_confirmed = self.is_volume_acceptable(vol_ratio, ts, min_morning=1.0, min_midday=1.35, current_volume=current.volume, avg_volume=avg_volume)
         if prev.high >= ema20_5m and current.close < ema20_5m and current.close < ema50_1h and closes_weak and volume_confirmed:
             spot = current.close
             symbol, strike = self.select_strike(spot, "PE", timestamp=ts)
@@ -246,10 +279,25 @@ class NiftyHeikinAshiBearish5MITM(BaseStrategy):
         if ts is None or not self.can_trigger(ts):
             return None
 
-        indicators = data_state.get("indicators", {})
+        indicators = data_state.get("indicators") or {}
         candles = data_state.get("candles", [])
         spot = data_state.get("nifty_price") or (candles[-1].close if candles else None)
         if spot is None or spot <= 0:
+            return None
+
+        # 1. ADX Trend Strength Filter
+        adx_val = indicators.get("adx_14_5m") or indicators.get("adx_14_1m")
+        if not self.is_trend_confirmed(adx_val, min_adx=20.0):
+            return None
+
+        # 2. VWAP Proximity Filter (avoid chasing extended moves)
+        vwap_val = indicators.get("vwap_5m") or indicators.get("vwap")
+        if not self.is_vwap_acceptable(spot, vwap_val, max_dist_pct=0.40):
+            return None
+
+        # 3. Midday Volume Filter
+        vol_ratio = indicators.get("volume_ratio_5m") or indicators.get("volume_ratio")
+        if not self.is_volume_acceptable(vol_ratio, ts, min_morning=1.0, min_midday=1.4):
             return None
 
         ha = indicators.get("heikin_ashi_5m")
@@ -314,6 +362,10 @@ class NiftyORBBearish5MITM(BaseStrategy):
             self._range_low = current.low if self._range_low is None else min(self._range_low, current.low)
             return None
 
+        # Hard Cutoff: ORB breakouts strictly permitted only between 09:30 and 10:30 AM IST
+        if not self.is_orb_allowed(current.timestamp):
+            return None
+
         if self._range_low is None:
             morning_candles = [
                 c for c in candles
@@ -325,12 +377,14 @@ class NiftyORBBearish5MITM(BaseStrategy):
             else:
                 return None
 
-        indicators = data_state.get("indicators", {})
+        indicators = data_state.get("indicators") or {}
         ema50 = indicators.get("ema_50_1h") or indicators.get("ema_50_5m") or indicators.get("ema_20_5m")
         avg_volume = indicators.get("avg_volume")
+        if avg_volume is None or avg_volume <= 0:
+            return None
 
         crossed_now = (prev.close >= self._range_low > current.close) or (prev.timestamp.time() < ORB_WINDOW_END and current.close < self._range_low)
-        volume_confirmed = avg_volume is None or avg_volume == 0 or current.volume > avg_volume
+        volume_confirmed = current.volume >= (1.25 * avg_volume)
         if crossed_now and volume_confirmed and (ema50 is not None and current.close < ema50):
             spot = current.close
             symbol, strike = self.select_strike(spot, "PE", timestamp=ts)

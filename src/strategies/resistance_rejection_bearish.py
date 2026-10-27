@@ -14,14 +14,20 @@ class ResistanceRejectionBearish(BaseStrategy):
         if ts is None or not self.can_trigger(ts):
             return None
 
-        indicators = data_state.get("indicators", {})
+        indicators = data_state.get("indicators") or {}
         candles = data_state.get("candles", [])
         if len(candles) < 2:
+            return None
+
+        # RSI check: avoid selling into oversold dumps (RSI < 40)
+        rsi_val = indicators.get("rsi_14_5m") or indicators.get("rsi_1h")
+        if rsi_val is not None and rsi_val < 40.0:
             return None
 
         ema20 = indicators.get("ema_20_1h") or indicators.get("ema_20_5m") or indicators.get("ema_20")
         ema50 = indicators.get("ema_50_1h") or indicators.get("ema_50_5m") or indicators.get("ema_20_5m")
         avg_volume = indicators.get("avg_volume")
+        vol_ratio = indicators.get("volume_ratio_5m") or indicators.get("volume_ratio")
         if ema20 is None or ema50 is None:
             return None
 
@@ -31,7 +37,7 @@ class ResistanceRejectionBearish(BaseStrategy):
             return None
 
         closes_strong = (current.high - current.close) / candle_range >= 0.60
-        volume_confirmed = avg_volume is None or avg_volume == 0 or current.volume > avg_volume
+        volume_confirmed = self.is_volume_acceptable(vol_ratio, ts, min_morning=1.0, min_midday=1.35, current_volume=current.volume, avg_volume=avg_volume)
 
         if (prev.high >= ema20 and current.close < ema20 and current.close < ema50
                 and volume_confirmed and closes_strong):

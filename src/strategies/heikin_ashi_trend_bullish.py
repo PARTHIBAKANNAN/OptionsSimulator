@@ -22,13 +22,28 @@ class HeikinAshiTrendBullish(BaseStrategy):
         # re-qualifies on every tick a real uptrend is intact.
         if not self.can_trigger(timestamp):
             return None
-        indicators = data_state.get("indicators", {})
-        nifty = data_state.get("nifty_price")
-        if nifty is None:
+        indicators = data_state.get("indicators") or {}
+        nifty = data_state.get(f"{self.underlying.lower()}_price") or data_state.get("nifty_price")
+        if nifty is None or nifty <= 0:
             return None
 
-        ha = indicators.get("heikin_ashi_15m")
-        ema50 = indicators.get("ema_50_1h")
+        # 1. ADX Trend Strength Filter
+        adx_val = indicators.get("adx_14_5m") or indicators.get("adx_14_1m")
+        if not self.is_trend_confirmed(adx_val, min_adx=20.0):
+            return None
+
+        # 2. VWAP Proximity Filter (avoid chasing extended moves)
+        vwap_val = indicators.get("vwap_5m") or indicators.get("vwap")
+        if not self.is_vwap_acceptable(nifty, vwap_val, max_dist_pct=0.40):
+            return None
+
+        # 3. Midday Volume Filter
+        vol_ratio = indicators.get("volume_ratio_5m") or indicators.get("volume_ratio")
+        if not self.is_volume_acceptable(vol_ratio, timestamp, min_morning=1.0, min_midday=1.4):
+            return None
+
+        ha = indicators.get("heikin_ashi_15m") or indicators.get("heikin_ashi_5m")
+        ema50 = indicators.get("ema_50_1h") or indicators.get("ema_50_5m")
         if ha is None or ema50 is None:
             return None
 

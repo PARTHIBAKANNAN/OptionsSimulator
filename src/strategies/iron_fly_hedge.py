@@ -99,7 +99,7 @@ class IronFlyHedge:
             return None  # already ran (and possibly already exited) an Iron Fly today
 
         if self.max_vol_regime_ratio_to_enter is not None:
-            vol_regime_ratio = data_state.get("indicators", {}).get("vol_regime_ratio")
+            vol_regime_ratio = (data_state.get("indicators") or {}).get("vol_regime_ratio")
             if vol_regime_ratio is not None and vol_regime_ratio > self.max_vol_regime_ratio_to_enter:
                 # Too volatile this morning — skip the whole day rather than retry every candle
                 # hoping it calms down; the entry decision is a morning-of regime call, not

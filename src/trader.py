@@ -134,6 +134,8 @@ class LiveTrader:
             drawdown_breaker_grace_trades=breaker.get("drawdown_breaker_grace_trades", 3),
             capital_by_strategy=capital_by_strategy,
             charges_rates=config.risk_params.get("charges"),
+            post_loss_cooldown_mins=breaker.get("post_loss_cooldown_mins", 0),
+            strike_loss_lockout_mins=breaker.get("strike_loss_lockout_mins", 60),
             enable_wallets=True,
             logger=self.logger,
             audit_logger=self.audit_logger,

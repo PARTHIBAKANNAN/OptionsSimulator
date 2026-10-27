@@ -474,6 +474,11 @@ class DataManager:
                     out["supertrend_7_2"] = float(st_7_2["supertrend"].iloc[-1])
                     out["supertrend_7_2_direction"] = float(st_7_2["direction"].iloc[-1])
 
+                if len(resampled) >= 15:
+                    out["adx_14_5m"] = float(
+                        ind.adx(resampled["High"], resampled["Low"], resampled["Close"], period=14).iloc[-1]
+                    )
+
                 if len(resampled) >= 20:
                     out["cmf_20_5m"] = float(
                         ind.chaikin_money_flow(resampled["High"], resampled["Low"], resampled["Close"],
@@ -508,6 +513,16 @@ class DataManager:
             avg_volume = sum(c.volume for c in recent) / 20
             out["avg_volume"] = avg_volume
             out["volume_ratio"] = (self.candles[-1].volume / avg_volume) if avg_volume else 1.0
+
+        if len(self.candles) >= 15:
+            recent_candles = self.candles[-30:]
+            c_high = pd.Series([c.high for c in recent_candles])
+            c_low = pd.Series([c.low for c in recent_candles])
+            c_close = pd.Series([c.close for c in recent_candles])
+            out["adx_14_1m"] = float(ind.adx(c_high, c_low, c_close, period=14).iloc[-1])
+
+        if "vwap_5m" in out:
+            out["vwap"] = out["vwap_5m"]
 
         self._cached_values = out
         return out

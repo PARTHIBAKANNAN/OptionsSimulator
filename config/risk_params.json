@@ -64,22 +64,22 @@
         "atm": {
           "max_entry_price": 450.0,
           "stop_loss_pct": 20.0,
-          "cost_lock_pts": 30.0,
-          "trail_stage1_pts": 28.0,
-          "stage1_threshold_pts": 55.0,
-          "trail_stage2_pts": 40.0,
-          "stage2_threshold_pts": 110.0,
-          "target_pts": 150.0
+          "cost_lock_pts": 25.0,
+          "trail_stage1_pts": 22.0,
+          "stage1_threshold_pts": 45.0,
+          "trail_stage2_pts": 32.0,
+          "stage2_threshold_pts": 90.0,
+          "target_pts": 120.0
         },
         "itm": {
           "min_entry_price": 450.0,
           "stop_loss_pct": 15.0,
-          "cost_lock_pts": 40.0,
-          "trail_stage1_pts": 36.0,
-          "stage1_threshold_pts": 75.0,
-          "trail_stage2_pts": 55.0,
-          "stage2_threshold_pts": 150.0,
-          "target_pts": 220.0
+          "cost_lock_pts": 35.0,
+          "trail_stage1_pts": 30.0,
+          "stage1_threshold_pts": 60.0,
+          "trail_stage2_pts": 45.0,
+          "stage2_threshold_pts": 120.0,
+          "target_pts": 180.0
         }
       }
     }
@@ -110,7 +110,8 @@
     "consecutive_loss_cooldown_days": 1,
     "max_drawdown_pct_of_capital": 25,
     "drawdown_cooldown_days": 3,
-    "drawdown_breaker_grace_trades": 3
+    "drawdown_breaker_grace_trades": 3,
+    "strike_loss_lockout_mins": 60
   },
   "live_mode": {
     "auto_approve": true
