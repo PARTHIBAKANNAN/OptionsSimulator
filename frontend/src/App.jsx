@@ -8,7 +8,6 @@ import { LiveDashboardScreen } from "./screens/LiveDashboardScreen";
 import { BacktestReportScreen } from "./screens/BacktestReportScreen";
 import { PnlSummaryScreen } from "./screens/PnlSummaryScreen";
 import { StrategyLabScreen } from "./screens/StrategyLabScreen";
-import { TelemetryScreen } from "./screens/TelemetryScreen";
 import { SettingsScreen } from "./screens/SettingsScreen";
 import { LandingScreen } from "./screens/LandingScreen";
 import { useMarketStream, resyncMarketStream } from "./hooks/useMarketStream";
@@ -22,7 +21,6 @@ const TABS = [
   { key: "pnl", label: "P&L Summary", Component: PnlSummaryScreen },
   { key: "backtest", label: "Backtest", Component: BacktestReportScreen },
   { key: "lab", label: "Strategy Lab", Component: StrategyLabScreen },
-  { key: "telemetry", label: "WebSocket Health", Component: TelemetryScreen },
   { key: "settings", label: "Settings", Component: SettingsScreen },
 ];
 

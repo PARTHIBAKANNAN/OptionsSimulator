@@ -25,12 +25,11 @@ const TAB_ICONS = {
   pnl: Wallet,
   backtest: LineChart,
   lab: FlaskConical,
-  telemetry: Wifi,
   settings: Settings,
 };
 
 // Primary 4 tabs displayed on mobile bottom bar
-const MOBILE_BOTTOM_TABS = ["live", "dashboard", "pnl", "telemetry"];
+const MOBILE_BOTTOM_TABS = ["live", "dashboard", "pnl", "settings"];
 
 export function TopNavbar({ tabs, activeTab, onSelect, user, theme, onToggleTheme, onLogout, onRefresh }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
