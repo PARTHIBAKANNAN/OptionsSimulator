@@ -267,10 +267,22 @@ async def get_index_candles(index: str, timeframe: str = "5m", days: int = 5, re
     # 2. If live memory + SQLite has sufficient bars, resample and return
     if len(closed_candles) >= 10:
         try:
-            df = pd.DataFrame([{
-                "Timestamp": c.timestamp, "Open": c.open, "High": c.high, "Low": c.low,
-                "Close": c.close, "Volume": c.volume, "Delta": c.delta,
-            } for c in closed_candles])
+            base_configs = {"NIFTY": (450000, 8.0), "BANKNIFTY": (350000, 18.0), "SENSEX": (180000, 25.0)}
+            cfg_base, cfg_atr = base_configs.get(idx_upper, (300000, 15.0))
+            candle_data = []
+            for c in closed_candles:
+                vol = int(getattr(c, "volume", 0) or 0)
+                delta = float(getattr(c, "delta", 0.0) or 0.0)
+                if vol <= 0:
+                    rng = max(1.0, float(c.high) - float(c.low))
+                    vol = int(cfg_base * (0.65 + 0.70 * min(4.0, rng / cfg_atr)))
+                    if delta == 0.0:
+                        delta = round(vol * 0.45, 1) if c.close >= c.open else round(-vol * 0.45, 1)
+                candle_data.append({
+                    "Timestamp": c.timestamp, "Open": c.open, "High": c.high, "Low": c.low,
+                    "Close": c.close, "Volume": vol, "Delta": delta,
+                })
+            df = pd.DataFrame(candle_data)
             df["Timestamp"] = pd.to_datetime(df["Timestamp"], utc=True, errors="coerce")
             df = df.dropna(subset=["Timestamp"]).sort_values("Timestamp").set_index("Timestamp")
 

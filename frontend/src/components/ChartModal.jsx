@@ -116,15 +116,15 @@ export function ChartModal({
               </div>
             </div>
 
-            {/* Row 2: Selectors (Index tabs + Timeframe pills) */}
-            <div className="flex items-center justify-between gap-2 overflow-x-auto no-scrollbar py-0.5">
+            {/* Row 2: Selectors (Index tabs + Timeframe pills) - Wrap cleanly on mobile, 0 horizontal scroll */}
+            <div className="flex flex-wrap items-center justify-between gap-1.5 sm:gap-2 py-0.5">
               {/* Index Switcher Tabs */}
-              <div className="flex items-center gap-1 rounded-xl bg-surface2 p-0.5 sm:p-1 border border-subtle shrink-0">
+              <div className="flex items-center gap-1 rounded-xl bg-surface2 p-0.5 sm:p-1 border border-subtle">
                 {["NIFTY", "SENSEX", "BANKNIFTY"].map((idx) => (
                   <button
                     key={idx}
                     onClick={() => setActiveTab(idx)}
-                    className={`rounded-lg px-2.5 sm:px-3 py-1 text-[11px] sm:text-xs font-bold transition ${
+                    className={`rounded-lg px-2 sm:px-3 py-1 text-[11px] sm:text-xs font-bold transition ${
                       activeTab === idx ? "bg-accent text-white shadow-sm" : "text-faint hover:text-primary"
                     }`}
                   >
@@ -134,19 +134,19 @@ export function ChartModal({
               </div>
 
               {/* Timeframe Switcher Tabs */}
-              <div className="flex items-center gap-1 rounded-xl bg-surface2 p-0.5 sm:p-1 border border-subtle shrink-0">
+              <div className="flex items-center gap-0.5 sm:gap-1 rounded-xl bg-surface2 p-0.5 sm:p-1 border border-subtle">
                 {["1m", "3m", "5m", "15m", "1h", "1D"].map((tf) => (
                   <button
                     key={tf}
                     onClick={() => setTimeframe(tf)}
-                    className={`rounded-lg px-2 sm:px-2.5 py-1 text-[11px] sm:text-xs font-bold transition ${
+                    className={`rounded-lg px-1.5 sm:px-2.5 py-1 text-[10px] sm:text-xs font-bold transition ${
                       timeframe === tf ? "bg-accent text-white shadow-sm" : "text-faint hover:text-primary"
                     }`}
                   >
                     {tf}
                   </button>
                 ))}
-                {loadingTf && <Loader2 className="h-3 w-3 animate-spin text-accent ml-1" />}
+                {loadingTf && <Loader2 className="h-3 w-3 animate-spin text-accent ml-0.5" />}
               </div>
             </div>
           </div>
