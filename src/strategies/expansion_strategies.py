@@ -1,4 +1,4 @@
-"""
+﻿"""
 12 New Expansion Strategies (Supertrend, Bollinger Bands, Volume Profile/VWAP, CMF, OI Squeezes)
 ===========================================================================================
 - 4 NIFTY Strategies (2 CE, 2 PE)
@@ -18,7 +18,7 @@ from src.strategies.base_strategy import BaseStrategy, Signal
 
 class NiftyVwapPocPullbackCE(BaseStrategy):
     """NIFTY 5m VWAP Pullback & Bounce (CE). VWAP itself is the liquidity/"POC" reference level
-    here — a real volume-profile Point of Control needs binned volume-at-price, which isn't built;
+    here ΓÇö a real volume-profile Point of Control needs binned volume-at-price, which isn't built;
     session VWAP is the standard, honest substitute institutional desks use for the same purpose."""
     def __init__(self):
         super().__init__(
@@ -55,7 +55,12 @@ class NiftyVwapPocPullbackCE(BaseStrategy):
         if rng <= 0 or current.close <= 0:
             return None
 
-        if prev.low <= vwap_5m and current.close > vwap_5m and 52.0 <= rsi_val <= 65.0:
+        # ADX regime filter: VWAP bounces only reliable when trending (ADX >= 22)
+        adx_val = indicators.get("adx_14_5m") or indicators.get("adx_14_1m")
+        if not self.is_trend_confirmed(adx_val, min_adx=22.0):
+            return None
+
+        if prev.low <= vwap_5m and current.close > vwap_5m and 50.0 <= rsi_val <= 60.0:
             spot = current.close
             symbol, strike = self.select_strike(spot, "CE", timestamp=ts)
             price = self.get_option_price(symbol, strike, spot, "CE", data_state)
@@ -69,7 +74,7 @@ class NiftyVwapPocPullbackCE(BaseStrategy):
 
 
 class NiftyVwapPocBreakdownPE(BaseStrategy):
-    """NIFTY 5m VWAP Breakdown (PE) — mirror of NiftyVwapPocPullbackCE; see its docstring."""
+    """NIFTY 5m VWAP Breakdown (PE) ΓÇö mirror of NiftyVwapPocPullbackCE; see its docstring."""
     def __init__(self):
         super().__init__(
             name="NIFTY_VWAP_POC_BREAKDOWN_PE",
@@ -105,7 +110,12 @@ class NiftyVwapPocBreakdownPE(BaseStrategy):
         if rng <= 0 or current.close <= 0:
             return None
 
-        if prev.high >= vwap_5m and current.close < vwap_5m and 35.0 <= rsi_val <= 48.0:
+        # ADX regime filter: VWAP breakdowns only reliable when trending (ADX >= 22)
+        adx_val = indicators.get("adx_14_5m") or indicators.get("adx_14_1m")
+        if not self.is_trend_confirmed(adx_val, min_adx=22.0):
+            return None
+
+        if prev.high >= vwap_5m and current.close < vwap_5m and 38.0 <= rsi_val <= 50.0:
             spot = current.close
             symbol, strike = self.select_strike(spot, "PE", timestamp=ts)
             price = self.get_option_price(symbol, strike, spot, "PE", data_state)
@@ -121,7 +131,7 @@ class NiftyVwapPocBreakdownPE(BaseStrategy):
 class NiftySupertrendCmfBullishCE(BaseStrategy):
     """NIFTY 5m Dual Supertrend (10,3 / 7,2) + Chaikin Money Flow, bullish (CE). Fires only when
     BOTH Supertrend periods agree the trend just flipped up AND money flow confirms buying
-    pressure — real ATR-band-flip Supertrend and real CMF, not an EMA-alignment proxy."""
+    pressure ΓÇö real ATR-band-flip Supertrend and real CMF, not an EMA-alignment proxy."""
     def __init__(self):
         super().__init__(
             name="NIFTY_SUPERTREND_CMF_BULLISH_CE",
@@ -155,7 +165,7 @@ class NiftySupertrendCmfBullishCE(BaseStrategy):
         if not self.is_volume_acceptable(vol_ratio, ts, min_morning=1.0, min_midday=1.35):
             return None
 
-        if st_10_3_dir == 1 and st_7_2_dir == 1 and cmf >= 0.05:
+        if st_10_3_dir == 1 and st_7_2_dir == 1 and cmf >= 0.08:  # tightened 0.05->0.08
             symbol, strike = self.select_strike(spot, "CE", timestamp=ts)
             price = self.get_option_price(symbol, strike, spot, "CE", data_state)
             self.last_signal_time = ts
@@ -168,7 +178,7 @@ class NiftySupertrendCmfBullishCE(BaseStrategy):
 
 
 class NiftySupertrendCmfBearishPE(BaseStrategy):
-    """Mirror of NiftySupertrendCmfBullishCE — see its docstring."""
+    """Mirror of NiftySupertrendCmfBullishCE ΓÇö see its docstring."""
     def __init__(self):
         super().__init__(
             name="NIFTY_SUPERTREND_CMF_BEARISH_PE",
@@ -202,7 +212,7 @@ class NiftySupertrendCmfBearishPE(BaseStrategy):
         if not self.is_volume_acceptable(vol_ratio, ts, min_morning=1.0, min_midday=1.35):
             return None
 
-        if st_10_3_dir == -1 and st_7_2_dir == -1 and cmf <= -0.05:
+        if st_10_3_dir == -1 and st_7_2_dir == -1 and cmf <= -0.08:  # tightened -0.05->-0.08
             symbol, strike = self.select_strike(spot, "PE", timestamp=ts)
             price = self.get_option_price(symbol, strike, spot, "PE", data_state)
             self.last_signal_time = ts
@@ -221,7 +231,7 @@ class NiftySupertrendCmfBearishPE(BaseStrategy):
 class SensexBbSqueezeExplosionCE(BaseStrategy):
     """SENSEX 5m Bollinger Squeeze Volatility Explosion (CE): band width was compressed (squeeze,
     ratio to its own 20-bar average < 0.85 last bar) and is now expanding sharply, with price
-    actually breaking above the upper band — not just "price above two EMAs", a real squeeze-then-
+    actually breaking above the upper band ΓÇö not just "price above two EMAs", a real squeeze-then-
     breakout, using the actual band levels."""
     def __init__(self):
         super().__init__(
@@ -269,7 +279,7 @@ class SensexBbSqueezeExplosionCE(BaseStrategy):
 
 
 class SensexBbSqueezeExplosionPE(BaseStrategy):
-    """Mirror of SensexBbSqueezeExplosionCE — see its docstring."""
+    """Mirror of SensexBbSqueezeExplosionCE ΓÇö see its docstring."""
     def __init__(self):
         super().__init__(
             name="SENSEX_BB_SQUEEZE_EXPLOSION_PE",
@@ -381,8 +391,8 @@ class SensexOiShortSqueezeCE(BaseStrategy):
                 return None
             current = candles[-1]
             rng = current.high - current.low
-            strong_close = rng > 0 and ((current.close - current.low) / rng) >= 0.55
-            is_squeeze = spot > ema20 and (ema50_1h is None or spot > ema50_1h) and vol_ratio >= 1.20 and strong_close
+            strong_close = rng > 0 and ((current.close - current.low) / rng) >= 0.65  # tightened 0.55->0.65
+            is_squeeze = spot > ema20 and (ema50_1h is None or spot > ema50_1h) and vol_ratio >= 1.40 and strong_close  # vol 1.20->1.40
             rationale = f"SENSEX Volume Surge Squeeze (Vol: {vol_ratio:.2f}x avg, >20-EMA)"
 
         if is_squeeze:
@@ -398,7 +408,7 @@ class SensexOiShortSqueezeCE(BaseStrategy):
 
 
 class SensexOiLongUnwindingPE(BaseStrategy):
-    """SENSEX Long Unwinding Put Buying (PE) — mirror of SensexOiShortSqueezeCE.
+    """SENSEX Long Unwinding Put Buying (PE) ΓÇö mirror of SensexOiShortSqueezeCE.
     
     LIVE MARKET LOGIC: Reads live Option Chain Open Interest. Detects Put unwinding & Call resistance
     (PCR < 0.90) with spot breaking below 20-EMA.
@@ -443,7 +453,15 @@ class SensexOiLongUnwindingPE(BaseStrategy):
             current = candles[-1]
             rng = current.high - current.low
             weak_close = rng > 0 and ((current.high - current.close) / rng) >= 0.55
-            is_unwinding = spot < ema20 and (ema50_1h is None or spot < ema50_1h) and vol_ratio >= 1.20 and weak_close
+            # 2-bar confirmation: require 2 consecutive closes below 20-EMA (not just 1 poke)
+            prev_bar = candles[-2] if len(candles) >= 2 else None
+            two_bar_confirmed = prev_bar is not None and prev_bar.close < ema20
+            # Wick rejection: big lower wick = buyers absorbing at the low — skip trade
+            lower_wick = current.close - current.low
+            absorbing_buyers = rng > 0 and (lower_wick / rng) > 0.30
+            is_unwinding = (spot < ema20 and two_bar_confirmed and not absorbing_buyers
+                            and (ema50_1h is None or spot < ema50_1h)
+                            and vol_ratio >= 1.40 and weak_close)  # vol 1.20->1.40
             rationale = f"SENSEX Volume Breakdown Unwinding (Vol: {vol_ratio:.2f}x avg, <20-EMA)"
 
         if is_unwinding:
@@ -463,7 +481,7 @@ class SensexOiLongUnwindingPE(BaseStrategy):
 # =============================================================================
 
 class BankNiftyDualSupertrendBbCE(BaseStrategy):
-    """BANKNIFTY 5m Dual Supertrend (10,3 / 7,2) + CMF + BB Trend Lock (CE) — the superset of
+    """BANKNIFTY 5m Dual Supertrend (10,3 / 7,2) + CMF + BB Trend Lock (CE) ΓÇö the superset of
     NiftySupertrendCmfBullishCE: both Supertrend periods flipped up, money flow confirms, AND
     Bollinger band width is actively expanding (the move has real volatility behind it, not just
     directional agreement on a quiet tape)."""
@@ -501,7 +519,7 @@ class BankNiftyDualSupertrendBbCE(BaseStrategy):
         if not self.is_volume_acceptable(vol_ratio, ts, min_morning=1.0, min_midday=1.35):
             return None
 
-        if st_10_3_dir == 1 and st_7_2_dir == 1 and cmf >= 0.05 and expansion > 1.05:
+        if st_10_3_dir == 1 and st_7_2_dir == 1 and cmf >= 0.08 and expansion > 1.05:  # tightened 0.05->0.08
             symbol, strike = self.select_strike(spot, "CE", timestamp=ts)
             price = self.get_option_price(symbol, strike, spot, "CE", data_state)
             self.last_signal_time = ts
@@ -514,7 +532,7 @@ class BankNiftyDualSupertrendBbCE(BaseStrategy):
 
 
 class BankNiftyDualSupertrendBbPE(BaseStrategy):
-    """Mirror of BankNiftyDualSupertrendBbCE — see its docstring."""
+    """Mirror of BankNiftyDualSupertrendBbCE ΓÇö see its docstring."""
     def __init__(self):
         super().__init__(
             name="BANKNIFTY_DUAL_SUPERTREND_BB_PE",
@@ -549,7 +567,7 @@ class BankNiftyDualSupertrendBbPE(BaseStrategy):
         if not self.is_volume_acceptable(vol_ratio, ts, min_morning=1.0, min_midday=1.35):
             return None
 
-        if st_10_3_dir == -1 and st_7_2_dir == -1 and cmf <= -0.05 and expansion > 1.05:
+        if st_10_3_dir == -1 and st_7_2_dir == -1 and cmf <= -0.08 and expansion > 1.05:  # tightened -0.05->-0.08
             symbol, strike = self.select_strike(spot, "PE", timestamp=ts)
             price = self.get_option_price(symbol, strike, spot, "PE", data_state)
             self.last_signal_time = ts
@@ -563,7 +581,7 @@ class BankNiftyDualSupertrendBbPE(BaseStrategy):
 
 class BankNiftyVwapBbLiquidityReboundCE(BaseStrategy):
     """BANKNIFTY 5m VWAP + BB Liquidity Sweep Rebound (CE): price sweeps below the lower Bollinger
-    Band (a genuine liquidity grab below the band — stops/resting liquidity there) then rejects
+    Band (a genuine liquidity grab below the band ΓÇö stops/resting liquidity there) then rejects
     and reclaims back inside the lower band with bullish rejection momentum while holding below/near VWAP."""
     def __init__(self):
         super().__init__(
@@ -605,6 +623,10 @@ class BankNiftyVwapBbLiquidityReboundCE(BaseStrategy):
         reclaimed_band = current.close > bb_lower
         bullish_close = (current.close - current.low) / rng >= 0.50 and current.close > current.open
         not_overextended_above_vwap = current.close <= vwap_5m * 1.01  # Room to run to VWAP
+
+        adx_val_bb = indicators.get("adx_14_5m") or indicators.get("adx_14_1m")
+        if not self.is_trend_confirmed(adx_val_bb, min_adx=20.0):
+            return None
 
         if swept_lower_band and reclaimed_band and bullish_close and not_overextended_above_vwap:
             spot = current.close
@@ -650,7 +672,7 @@ class BankNiftyGammaWallBreakoutPE(BaseStrategy):
         if bb_upper is None or vwap_5m is None or current.close <= 0:
             return None
 
-        if not self.is_volume_acceptable(vol_ratio, ts, min_morning=1.0, min_midday=1.35):
+        if not self.is_volume_acceptable(vol_ratio, ts, min_morning=1.20, min_midday=1.40):
             return None
 
         if prev.high >= bb_upper and current.close < vwap_5m:

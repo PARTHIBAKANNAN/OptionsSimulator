@@ -130,7 +130,7 @@ class ContractMaster:
             target_path.write_text(resp.text, encoding="utf-8")
             logger.info("Saved %s (%.2f MB)", target_path.name, len(resp.text) / (1024 * 1024))
         except Exception as e:
-            logger.error("Failed to download contract file from %s: %e", url, e)
+            logger.error("Failed to download contract file from %s: %s", url, e)
 
     def _prune_old_csvs(self) -> None:
         today_str = datetime.now(IST).strftime("%Y%m%d")

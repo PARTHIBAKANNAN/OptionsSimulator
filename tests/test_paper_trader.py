@@ -363,7 +363,7 @@ def test_wallet_compounds_losses_across_trades():
 
 def test_order_rejected_when_wallet_balance_insufficient():
     trader = PaperTrader(slippage_pct=0, lot_size=65,
-                          capital_by_strategy={"MACD_BULLISH": 1000.0}, enable_wallets=True)
+                          capital_by_strategy={"MACD_BULLISH": 1000.0}, enable_wallets=True, enforce_wallet_limits=True)
     with pytest.raises(RiskLimitExceeded, match="wallet balance"):
         trader.place_order("NIFTY24500CE", "BUY", qty=1, price=100.0,
                             strategy="MACD_BULLISH", timestamp=datetime(2026, 1, 5, 9, 20))
@@ -431,32 +431,32 @@ def test_expanding_dynamic_tsl_nifty_atm_cost_lock_and_stage1_trail():
     trader = PaperTrader(slippage_pct=0, trailing_stop_enabled=True, expanding_dynamic_tsl_enabled=True)
     order = trader.place_order("NIFTY23900PE", "BUY", qty=1, price=100.0, strategy="NIFTY_ORB_BULLISH_1M_ATM")
 
-    # +12 pts: Cost Lock activates (SL -> 100.0)
-    trader.update_positions({"NIFTY23900PE": 112.0})
+    # +35 pts: Cost Lock activates with spread buffer floor (SL -> Entry 100 + 8 = 108.0)
+    trader.update_positions({"NIFTY23900PE": 135.0})
     assert order.trailing_active is True
 
-    # +25 pts: Trend Building Trail (Peak 125 - 10 = 115.0 locked)
-    trader.update_positions({"NIFTY23900PE": 125.0})
+    # +55 pts: Stage 1 Trail (Peak 155 - 18 = 137.0 locked)
+    trader.update_positions({"NIFTY23900PE": 155.0})
 
-    # Pullback to 114 should exit at 115.0
-    closed = trader.update_positions({"NIFTY23900PE": 114.0})
+    # Pullback to 130 should exit at 137.0
+    closed = trader.update_positions({"NIFTY23900PE": 130.0})
     assert len(closed) == 1
     assert closed[0].exit_reason == "TRAILING_STOP"
-    assert closed[0].exit_price == pytest.approx(115.0)
+    assert closed[0].exit_price == pytest.approx(137.0)
 
 
 def test_expanding_dynamic_tsl_nifty_super_trend_runner_trail():
     trader = PaperTrader(slippage_pct=0, trailing_stop_enabled=True, expanding_dynamic_tsl_enabled=True)
-    order = trader.place_order("NIFTY23900PE", "BUY", qty=1, price=194.89, strategy="NIFTY_RESISTANCE_REJECTION_5M_ITM")
+    order = trader.place_order("NIFTY23900PE", "BUY", qty=1, price=200.0, strategy="NIFTY_RESISTANCE_REJECTION_5M_ITM")
 
-    # +45 pts run on ITM: Hits 239.89 (>= stage1_threshold 30.0) -> TSL is Peak (239.89) - 14.0 = 225.89
-    trader.update_positions({"NIFTY23900PE": 239.89})
+    # +70 pts run on ITM: Hits 270.0 (>= stage1_threshold 65.0) -> TSL is Peak (270.0) - 22.0 = 248.0
+    trader.update_positions({"NIFTY23900PE": 270.0})
     assert order.trailing_active is True
 
-    # Pullback to 220 should exit at 225.89
-    closed = trader.update_positions({"NIFTY23900PE": 220.0})
+    # Pullback to 240 should exit at 248.0
+    closed = trader.update_positions({"NIFTY23900PE": 240.0})
     assert len(closed) == 1
     assert closed[0].exit_reason == "TRAILING_STOP"
-    assert closed[0].exit_price == pytest.approx(225.89)
+    assert closed[0].exit_price == pytest.approx(248.0)
 
 

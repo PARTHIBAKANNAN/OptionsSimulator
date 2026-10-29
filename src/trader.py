@@ -999,9 +999,14 @@ class LiveTrader:
         is_itm = "_ITM" in (signal.strategy or "") or (ep >= index_rule.get("itm", {}).get("min_entry_price", 200.0))
         rule = index_rule.get("itm" if is_itm else "atm", {})
 
-        sl_pct = rule.get("stop_loss_pct", self.stop_loss_pct)
+        sl_pts = rule.get("stop_loss_pts")
+        if sl_pts is not None:
+            stop_loss = max(ep - sl_pts, 0.05)
+        else:
+            sl_pct = rule.get("stop_loss_pct", self.stop_loss_pct)
+            stop_loss = max(ep * (1 - sl_pct / 100.0), 0.05)
+
         tp_pts = rule.get("target_pts", None)
-        stop_loss = max(ep * (1 - sl_pct / 100.0), 0.05)
         take_profit = ep + tp_pts if tp_pts is not None else ep * (1 + self.take_profit_pct / 100.0)
         lot_size = LOT_SIZE_BY_INDEX.get(signal.underlying, self.paper_trader.lot_size)
 

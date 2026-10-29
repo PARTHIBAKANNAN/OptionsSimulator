@@ -276,31 +276,31 @@ def test_p3_sensex_points_tsl_cost_lock_and_trailing():
         side="BUY",
         qty=1,
         price=300.0,
-        stop_loss=240.0,  # 20% SL
+        stop_loss=240.0,  # 60 pts SL
         strategy="SENSEX_TEST_ATM",
         timestamp=t0,
     )
     assert order_atm.stop_loss == 240.0
 
-    # +15 pts gain (LTP 315) -> Cost-lock not yet hit (needs +25)
-    pt.update_positions({order_atm.symbol: 315.0}, timestamp=t0 + timedelta(minutes=1))
+    # +30 pts gain (LTP 330) -> Cost-lock not yet hit (needs +50)
+    pt.update_positions({order_atm.symbol: 330.0}, timestamp=t0 + timedelta(minutes=1))
     assert order_atm.trailing_active is False
     assert getattr(order_atm, "_highest_trailing_stop", None) is None
 
-    # +26 pts gain (LTP 326) -> Cost-lock activates: SL moved to entry price (300.0)
-    pt.update_positions({order_atm.symbol: 326.0}, timestamp=t0 + timedelta(minutes=2))
+    # +51 pts gain (LTP 351) -> Cost-lock activates with spread buffer floor: SL moved to Entry + 15 = 315.0
+    pt.update_positions({order_atm.symbol: 351.0}, timestamp=t0 + timedelta(minutes=2))
     assert order_atm.trailing_active is True
-    assert order_atm._highest_trailing_stop == 300.0
+    assert order_atm._highest_trailing_stop == 315.0
 
-    # +50 pts gain (LTP 350) -> Stage 1 threshold (+45 pts) triggered; trails by 22 pts: 350 - 22 = 328
-    pt.update_positions({order_atm.symbol: 350.0}, timestamp=t0 + timedelta(minutes=3))
-    assert order_atm._highest_trailing_stop == pytest.approx(328.0)
+    # +75 pts gain (LTP 375) -> Stage 1 threshold (+70 pts) triggered; trails by 25 pts: 375 - 25 = 350
+    pt.update_positions({order_atm.symbol: 375.0}, timestamp=t0 + timedelta(minutes=3))
+    assert order_atm._highest_trailing_stop == pytest.approx(350.0)
 
-    # Pullback to 327.0 -> Exits on TRAILING_STOP at 328.0
-    closed = pt.update_positions({order_atm.symbol: 327.0}, timestamp=t0 + timedelta(minutes=4))
+    # Pullback to 349.0 -> Exits on TRAILING_STOP at 350.0
+    closed = pt.update_positions({order_atm.symbol: 349.0}, timestamp=t0 + timedelta(minutes=4))
     assert len(closed) == 1
     assert closed[0].exit_reason == "TRAILING_STOP"
-    assert closed[0].exit_price == pytest.approx(328.0)
+    assert closed[0].exit_price == pytest.approx(350.0)
 
     # 2. Test SENSEX ITM (Entry 500.0)
     order_itm = pt.place_order(
@@ -308,19 +308,19 @@ def test_p3_sensex_points_tsl_cost_lock_and_trailing():
         side="BUY",
         qty=1,
         price=500.0,
-        stop_loss=425.0,  # 15% SL
+        stop_loss=410.0,  # 90 pts SL
         strategy="SENSEX_TEST_ITM",
         timestamp=t0,
     )
-    # +20 pts gain -> Cost lock not yet hit (needs +35)
-    pt.update_positions({order_itm.symbol: 520.0}, timestamp=t0 + timedelta(minutes=1))
+    # +40 pts gain -> Cost lock not yet hit (needs +70)
+    pt.update_positions({order_itm.symbol: 540.0}, timestamp=t0 + timedelta(minutes=1))
     assert order_itm.trailing_active is False
     assert getattr(order_itm, "_highest_trailing_stop", None) is None
 
-    # +36 pts gain (LTP 536) -> Cost-lock activates: SL moved to entry price (500.0)
-    pt.update_positions({order_itm.symbol: 536.0}, timestamp=t0 + timedelta(minutes=2))
+    # +72 pts gain (LTP 572) -> Cost-lock activates with spread buffer floor: SL moved to Entry + 25 = 525.0
+    pt.update_positions({order_itm.symbol: 572.0}, timestamp=t0 + timedelta(minutes=2))
     assert order_itm.trailing_active is True
-    assert order_itm._highest_trailing_stop == 500.0
+    assert order_itm._highest_trailing_stop == 525.0
 
 
 # =============================================================================

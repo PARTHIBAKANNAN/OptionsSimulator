@@ -14,10 +14,14 @@ import {
   RefreshCw,
   ShieldCheck,
   Server,
-  Zap
+  Zap,
+  Volume2,
+  VolumeX,
+  Play
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { API_BASE } from "../lib/apiBase";
+import { soundEngine } from "../utils/audioAlerts";
 
 export function SettingsScreen({ onOpenAliceLogin }) {
   // Telemetry & WebSocket state
@@ -32,6 +36,15 @@ export function SettingsScreen({ onOpenAliceLogin }) {
   const [restartingAll, setRestartingAll] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [actionMessage, setActionMessage] = useState(null);
+  const [soundMuted, setSoundMuted] = useState(soundEngine.isMuted());
+
+  const handleToggleSound = () => {
+    const next = soundEngine.toggleMute();
+    setSoundMuted(next);
+    if (!next) {
+      soundEngine.playOrderEntry();
+    }
+  };
 
   // Measure HTTP API Round-Trip Time & fetch live telemetry
   const fetchTelemetry = async () => {
@@ -427,6 +440,68 @@ export function SettingsScreen({ onOpenAliceLogin }) {
           <div className="rounded-xl border border-subtle bg-surface2/60 p-3">
             <div className="text-[10px] font-sans font-semibold text-faint uppercase">Order Engine Mode</div>
             <div className="mt-1 font-bold text-accent">PAPER SIMULATOR</div>
+          </div>
+        </div>
+      </div>
+
+      {/* SECTION 5: Audio & Execution Sound Alert Preferences */}
+      <div className="rounded-2xl border border-subtle bg-surface p-5 space-y-4 shadow-sm">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-subtle pb-4">
+          <div className="flex items-center gap-3">
+            <div className={`rounded-xl p-2.5 transition ${soundMuted ? "bg-surface2 text-faint" : "bg-accent/15 text-accent"}`}>
+              {soundMuted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
+            </div>
+            <div>
+              <h3 className="font-bold text-sm text-primary">Audio &amp; Execution Chimes</h3>
+              <p className="text-xs text-faint">Real-time acoustic audio alerts for order fills, trailing stop locks, and target hits</p>
+            </div>
+          </div>
+
+          <button
+            onClick={handleToggleSound}
+            className={`flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-bold transition shadow-sm cursor-pointer ${
+              soundMuted
+                ? "border border-subtle bg-surface2 hover:bg-surface3 text-faint"
+                : "border border-accent/40 bg-accent text-white shadow-accent/20"
+            }`}
+          >
+            {soundMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+            <span>{soundMuted ? "Sound Muted (Click to Enable)" : "Sound Active (Click to Mute)"}</span>
+          </button>
+        </div>
+
+        {/* Test Chimes Grid */}
+        <div className="space-y-2">
+          <div className="text-[11px] font-bold uppercase tracking-wider text-faint">Test Acoustic Synthesizers:</div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+            <button
+              onClick={() => soundEngine.playOrderEntry()}
+              className="flex items-center justify-center gap-1.5 rounded-xl border border-subtle bg-surface2/60 hover:bg-surface2 px-3 py-2 text-xs font-semibold text-primary transition active:scale-95"
+            >
+              <Play className="h-3 w-3 text-accent" />
+              <span>Order Entry</span>
+            </button>
+            <button
+              onClick={() => soundEngine.playTslLocked()}
+              className="flex items-center justify-center gap-1.5 rounded-xl border border-subtle bg-surface2/60 hover:bg-surface2 px-3 py-2 text-xs font-semibold text-primary transition active:scale-95"
+            >
+              <Play className="h-3 w-3 text-cyan-400" />
+              <span>TSL Locked</span>
+            </button>
+            <button
+              onClick={() => soundEngine.playTargetHit()}
+              className="flex items-center justify-center gap-1.5 rounded-xl border border-subtle bg-surface2/60 hover:bg-surface2 px-3 py-2 text-xs font-semibold text-primary transition active:scale-95"
+            >
+              <Play className="h-3 w-3 text-bull" />
+              <span>Target Hit</span>
+            </button>
+            <button
+              onClick={() => soundEngine.playStopLossHit()}
+              className="flex items-center justify-center gap-1.5 rounded-xl border border-subtle bg-surface2/60 hover:bg-surface2 px-3 py-2 text-xs font-semibold text-primary transition active:scale-95"
+            >
+              <Play className="h-3 w-3 text-bear" />
+              <span>Stop Loss</span>
+            </button>
           </div>
         </div>
       </div>

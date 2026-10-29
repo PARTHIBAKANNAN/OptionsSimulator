@@ -1,5 +1,5 @@
-"""
-Simulated order execution — no broker calls, no real money. Tracks open positions,
+﻿"""
+Simulated order execution ΓÇö no broker calls, no real money. Tracks open positions,
 applies stop-loss/take-profit/time-exit, and calculates realized + unrealized P&L.
 Enforces strict Bid/Ask execution and 24-field audit logging.
 """
@@ -34,7 +34,7 @@ class Order:
     exit_price: Optional[float] = None
     exit_time: Optional[datetime] = None
     exit_reason: Optional[str] = None
-    realized_pnl: Optional[float] = None  # gross — price difference only, unchanged meaning
+    realized_pnl: Optional[float] = None  # gross ΓÇö price difference only, unchanged meaning
     peak_price: Optional[float] = None  # high-water mark since entry, for the trailing stop
     trailing_active: bool = False
     entry_charges: float = 0.0
@@ -57,7 +57,7 @@ class Order:
 
     @property
     def net_pnl(self) -> Optional[float]:
-        """realized_pnl net of both legs' charges — the actual cash-flow effect on the wallet.
+        """realized_pnl net of both legs' charges ΓÇö the actual cash-flow effect on the wallet.
         None while still open (exit_charges aren't known yet)."""
         if self.realized_pnl is None:
             return None
@@ -102,6 +102,7 @@ class PaperTrader:
         tiered_rules: dict = None,
         expanding_dynamic_tsl_enabled: bool = False,
         multi_index_tsl: dict = None,
+        enforce_wallet_limits: bool = False,  # False in paper mode so no strategy gets locked out
         logger=None,
         audit_logger: Optional[AuditLogger] = None,
     ):
@@ -118,19 +119,84 @@ class PaperTrader:
             "tier2": {"min_entry_price": 200.0, "max_entry_price": 600.0, "stop_loss_pct": 20.0, "cost_lock_pts": 20.0, "step_pts": 15.0, "step_lock_pts": 15.0, "target_pts": 120.0},
             "tier3": {"min_entry_price": 600.0, "stop_loss_pct": 15.0, "cost_lock_pts": 20.0, "step_pts": 15.0, "step_lock_pts": 15.0, "target_pts": 150.0},
         }
+        self.enforce_wallet_limits = enforce_wallet_limits
         self.expanding_dynamic_tsl_enabled = expanding_dynamic_tsl_enabled
+        # Point-based SL, TP, and Balanced TSL with spread buffer floor
+        # Nifty: ATM SL 40/TP 70 | ITM SL 40/TP 90
+        # BankNifty: ATM SL 60/TP 100 | ITM SL 90/TP 150
+        # Sensex: ATM SL 60/TP 100 | ITM SL 90/TP 150
         self.multi_index_tsl = multi_index_tsl or {
             "NIFTY": {
-                "atm": {"max_entry_price": 200.0, "cost_lock_pts": 12.0, "trail_stage1_pts": 10.0, "stage1_threshold_pts": 20.0, "trail_stage2_pts": 15.0, "stage2_threshold_pts": 40.0, "target_pts": 60.0},
-                "itm": {"min_entry_price": 200.0, "cost_lock_pts": 16.0, "trail_stage1_pts": 14.0, "stage1_threshold_pts": 30.0, "trail_stage2_pts": 20.0, "stage2_threshold_pts": 60.0, "target_pts": 90.0},
+                "atm": {
+                    "max_entry_price": 200.0,
+                    "stop_loss_pts": 40.0,
+                    "target_pts": 70.0,
+                    "cost_lock_pts": 35.0,
+                    "cost_lock_floor_pts": 8.0,
+                    "stage1_threshold_pts": 50.0,
+                    "trail_stage1_pts": 18.0,
+                    "stage2_threshold_pts": 60.0,
+                    "trail_stage2_pts": 15.0,
+                },
+                "itm": {
+                    "min_entry_price": 200.0,
+                    "stop_loss_pts": 40.0,
+                    "target_pts": 90.0,
+                    "cost_lock_pts": 45.0,
+                    "cost_lock_floor_pts": 10.0,
+                    "stage1_threshold_pts": 65.0,
+                    "trail_stage1_pts": 22.0,
+                    "stage2_threshold_pts": 80.0,
+                    "trail_stage2_pts": 18.0,
+                },
             },
             "BANKNIFTY": {
-                "atm": {"max_entry_price": 350.0, "cost_lock_pts": 25.0, "trail_stage1_pts": 22.0, "stage1_threshold_pts": 45.0, "trail_stage2_pts": 32.0, "stage2_threshold_pts": 90.0, "target_pts": 120.0},
-                "itm": {"min_entry_price": 350.0, "cost_lock_pts": 35.0, "trail_stage1_pts": 30.0, "stage1_threshold_pts": 60.0, "trail_stage2_pts": 45.0, "stage2_threshold_pts": 120.0, "target_pts": 180.0},
+                "atm": {
+                    "max_entry_price": 450.0,
+                    "stop_loss_pts": 60.0,
+                    "target_pts": 100.0,
+                    "cost_lock_pts": 50.0,
+                    "cost_lock_floor_pts": 15.0,
+                    "stage1_threshold_pts": 70.0,
+                    "trail_stage1_pts": 25.0,
+                    "stage2_threshold_pts": 85.0,
+                    "trail_stage2_pts": 20.0,
+                },
+                "itm": {
+                    "min_entry_price": 450.0,
+                    "stop_loss_pts": 90.0,
+                    "target_pts": 150.0,
+                    "cost_lock_pts": 70.0,
+                    "cost_lock_floor_pts": 25.0,
+                    "stage1_threshold_pts": 105.0,
+                    "trail_stage1_pts": 35.0,
+                    "stage2_threshold_pts": 130.0,
+                    "trail_stage2_pts": 25.0,
+                },
             },
             "SENSEX": {
-                "atm": {"max_entry_price": 450.0, "cost_lock_pts": 25.0, "trail_stage1_pts": 22.0, "stage1_threshold_pts": 45.0, "trail_stage2_pts": 32.0, "stage2_threshold_pts": 90.0, "target_pts": 120.0},
-                "itm": {"min_entry_price": 450.0, "cost_lock_pts": 35.0, "trail_stage1_pts": 30.0, "stage1_threshold_pts": 60.0, "trail_stage2_pts": 45.0, "stage2_threshold_pts": 120.0, "target_pts": 180.0},
+                "atm": {
+                    "max_entry_price": 450.0,
+                    "stop_loss_pts": 60.0,
+                    "target_pts": 100.0,
+                    "cost_lock_pts": 50.0,
+                    "cost_lock_floor_pts": 15.0,
+                    "stage1_threshold_pts": 70.0,
+                    "trail_stage1_pts": 25.0,
+                    "stage2_threshold_pts": 85.0,
+                    "trail_stage2_pts": 20.0,
+                },
+                "itm": {
+                    "min_entry_price": 450.0,
+                    "stop_loss_pts": 90.0,
+                    "target_pts": 150.0,
+                    "cost_lock_pts": 70.0,
+                    "cost_lock_floor_pts": 25.0,
+                    "stage1_threshold_pts": 105.0,
+                    "trail_stage1_pts": 35.0,
+                    "stage2_threshold_pts": 130.0,
+                    "trail_stage2_pts": 25.0,
+                },
             },
         }
         self.trailing_stop_enabled = trailing_stop_enabled
@@ -358,7 +424,7 @@ class PaperTrader:
         order_value = fill_price * qty * lot_size
         entry_charges = calculate_charges(order_value, "BUY", self.charges_rates).total
 
-        if strategy is not None and strategy in self.wallet_balance:
+        if self.enforce_wallet_limits and strategy is not None and strategy in self.wallet_balance:
             required = order_value + entry_charges
             available = self.wallet_balance[strategy]
             if required > available:
@@ -581,20 +647,22 @@ class PaperTrader:
                     rule = index_rules.get("itm" if is_itm else "atm", {})
 
                     cost_lock = rule.get("cost_lock_pts", 12.0)
+                    cost_lock_floor = rule.get("cost_lock_floor_pts", 8.0)
                     stage1_thresh = rule.get("stage1_threshold_pts", 20.0)
                     trail1 = rule.get("trail_stage1_pts", 10.0)
                     stage2_thresh = rule.get("stage2_threshold_pts", 40.0)
                     trail2 = rule.get("trail_stage2_pts", 15.0)
 
+                    guaranteed_floor = ep + cost_lock_floor
                     if peak_gain_pts >= stage2_thresh:
                         order.trailing_active = True
-                        trailing_stop_price = max(ep, order.peak_price - trail2)
+                        trailing_stop_price = max(guaranteed_floor, order.peak_price - trail2)
                     elif peak_gain_pts >= stage1_thresh:
                         order.trailing_active = True
-                        trailing_stop_price = max(ep, order.peak_price - trail1)
+                        trailing_stop_price = max(guaranteed_floor, order.peak_price - trail1)
                     elif peak_gain_pts >= cost_lock:
                         order.trailing_active = True
-                        trailing_stop_price = ep
+                        trailing_stop_price = guaranteed_floor
                 elif self.tiered_trailing_enabled:
                     if ep < 200.0:
                         if peak_gain_pts >= 45.0:

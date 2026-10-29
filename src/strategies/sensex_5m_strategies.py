@@ -1,4 +1,4 @@
-"""
+﻿"""
 SENSEX 5-Minute In-The-Money (ITM ~Rs.600) Strategy Suite
 =========================================================
 Top-performing 6 SENSEX strategies (3 CE & 3 PE) executing on 5-minute candle closes
@@ -54,7 +54,10 @@ class SensexSupportBounce5MITM(BaseStrategy):
         if rng <= 0 or current.close <= 0:
             return None
 
-        closes_strong = (current.close - current.low) / rng >= 0.60
+        adx_val_sb = indicators.get("adx_14_5m") or indicators.get("adx_14_1m")
+        if not self.is_trend_confirmed(adx_val_sb, min_adx=20.0):
+            return None
+        closes_strong = (current.close - current.low) / rng >= 0.65  # tightened 0.60->0.65
         volume_confirmed = self.is_volume_acceptable(vol_ratio, ts, min_morning=1.0, min_midday=1.35, current_volume=current.volume, avg_volume=avg_volume)
 
         if prev.low <= ema20 and current.close > ema20 and current.close > ema50_1h and closes_strong and volume_confirmed:
@@ -120,8 +123,17 @@ class SensexHeikinAshiBullish5MITM(BaseStrategy):
             return None
 
         lower_wick = ha["open"] - ha["low"]
-        if lower_wick > 0.30 * body:
+        if lower_wick > 0.20 * body:  # tightened 0.30->0.20
             return None
+
+        # MACD histogram slope: momentum must be positive & expanding (not decelerating into a trap)
+        macd_hist = indicators.get("macd_hist_5m")
+        macd_hist_prev = indicators.get("macd_hist_5m_prev")
+        if macd_hist is not None:
+            if macd_hist <= 0:
+                return None
+            if macd_hist_prev is not None and macd_hist <= macd_hist_prev:
+                return None
 
         symbol, strike = self.select_strike(spot, "CE", timestamp=ts)
         price = self.get_option_price(symbol, strike, spot, "CE", data_state)
@@ -193,7 +205,7 @@ class SensexORBBullish5MITM(BaseStrategy):
             return None
 
         crossed_now = (prev.close <= self._range_high < current.close) or (prev.timestamp.time() < ORB_WINDOW_END and current.close > self._range_high)
-        volume_confirmed = current.volume >= (1.25 * avg_volume)
+        volume_confirmed = current.volume >= (1.35 * avg_volume)
         if crossed_now and volume_confirmed and (ema50 is not None and current.close > ema50):
             spot = current.close
             symbol, strike = self.select_strike(spot, "CE", timestamp=ts)
@@ -247,7 +259,10 @@ class SensexResistanceRejection5MITM(BaseStrategy):
         if rng <= 0 or current.close <= 0:
             return None
 
-        closes_weak = (current.high - current.close) / rng >= 0.60
+        adx_val_rr = indicators.get("adx_14_5m") or indicators.get("adx_14_1m")
+        if not self.is_trend_confirmed(adx_val_rr, min_adx=20.0):
+            return None
+        closes_weak = (current.high - current.close) / rng >= 0.65  # tightened 0.60->0.65
         volume_confirmed = self.is_volume_acceptable(vol_ratio, ts, min_morning=1.0, min_midday=1.35, current_volume=current.volume, avg_volume=avg_volume)
         if prev.high >= ema20 and current.close < ema20 and current.close < ema50_1h and closes_weak and volume_confirmed:
             spot = current.close
@@ -312,8 +327,17 @@ class SensexHeikinAshiBearish5MITM(BaseStrategy):
             return None
 
         upper_wick = ha["high"] - ha["open"]
-        if upper_wick > 0.30 * body:
+        if upper_wick > 0.20 * body:  # tightened 0.30->0.20
             return None
+
+        # MACD histogram slope: downward momentum must be expanding (not reversing into a V-shape)
+        macd_hist = indicators.get("macd_hist_5m")
+        macd_hist_prev = indicators.get("macd_hist_5m_prev")
+        if macd_hist is not None:
+            if macd_hist >= 0:
+                return None
+            if macd_hist_prev is not None and macd_hist >= macd_hist_prev:
+                return None
 
         symbol, strike = self.select_strike(spot, "PE", timestamp=ts)
         price = self.get_option_price(symbol, strike, spot, "PE", data_state)
@@ -385,7 +409,7 @@ class SensexORBBearish5MITM(BaseStrategy):
             return None
 
         crossed_now = (prev.close >= self._range_low > current.close) or (prev.timestamp.time() < ORB_WINDOW_END and current.close < self._range_low)
-        volume_confirmed = current.volume >= (1.25 * avg_volume)
+        volume_confirmed = current.volume >= (1.35 * avg_volume)
         if crossed_now and volume_confirmed and (ema50 is not None and current.close < ema50):
             spot = current.close
             symbol, strike = self.select_strike(spot, "PE", timestamp=ts)

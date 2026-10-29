@@ -1,15 +1,15 @@
 import { memo, useState } from "react";
-import { motion } from "framer-motion";
-import { TrendingUp, TrendingDown, Clock, ShieldCheck, BarChart2, AlertCircle, Volume2, VolumeX } from "lucide-react";
-import { Badge } from "./ui/Badge";
+import { TrendingUp, TrendingDown, Clock, BarChart2 } from "lucide-react";
 import { ChartModal } from "./ChartModal";
 import { ConnectAliceBlueModal } from "./ConnectAliceBlueModal";
-import { soundEngine } from "../utils/audioAlerts";
 import { useSpotPrices } from "../hooks/useMarketStream";
 
 function fmtRupee(v) {
   if (v == null) return "—";
-  return Number(v).toLocaleString("en-IN", { maximumFractionDigits: 2 });
+  return Number(v).toLocaleString("en-IN", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
 }
 
 function fmtTime(iso) {
@@ -23,36 +23,42 @@ const IndexCard = memo(function IndexCard({ label, price, prevClose, change, cha
 
   return (
     <div 
-      onClick={onOpenChart}
-      className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-3.5 rounded-xl border border-subtle/80 bg-surface2/70 p-2 sm:px-4 sm:py-2.5 backdrop-blur-md shadow-sm transition hover:border-border-strong cursor-pointer"
+      className="group relative flex flex-col justify-between rounded-2xl border border-subtle/80 bg-surface2/60 p-3 sm:p-3.5 backdrop-blur-md shadow-sm transition-all duration-200 hover:border-accent/40 hover:bg-surface2/80 min-w-0"
     >
-      <div className="min-w-0">
-        <div className="flex items-center gap-1">
-          <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-faint truncate">{label}</span>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onOpenChart();
-            }}
-            title={`Open interactive ${label} chart`}
-            className="text-faint hover:text-accent transition shrink-0"
-          >
-            <BarChart2 className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
-          </button>
-        </div>
-        <div className="font-mono text-sm sm:text-xl md:text-2xl font-black text-primary tracking-tight tabular-nums truncate">
-          {hasPrice ? fmtRupee(price) : "24,823.15"}
-        </div>
+      {/* Top Header: Index Title & Anchored Fixed Chart Action Button */}
+      <div className="flex items-center justify-between gap-2 pb-2 border-b border-subtle/40">
+        <span className="text-[11px] font-black uppercase tracking-wider text-muted group-hover:text-primary transition-colors">
+          {label === "NIFTY" ? "NIFTY 50" : label}
+        </span>
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onOpenChart();
+          }}
+          title={`Open interactive ${label} candlestick chart`}
+          className="flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-[11px] font-semibold text-faint hover:text-accent bg-surface/90 hover:bg-accent/15 border border-subtle hover:border-accent/30 transition-all cursor-pointer active:scale-95 shrink-0"
+        >
+          <BarChart2 className="h-3 w-3 text-accent shrink-0" />
+          <span>Chart</span>
+        </button>
       </div>
 
-      <div className={`flex flex-col sm:text-right font-mono text-[10px] sm:text-xs font-bold tabular-nums ${positive ? "text-bull" : "text-bear"}`}>
-        <span className="flex items-center sm:justify-end gap-0.5 truncate">
-          {positive ? <TrendingUp className="h-3 w-3 sm:h-3.5 sm:w-3.5" /> : <TrendingDown className="h-3 w-3 sm:h-3.5 sm:w-3.5" />}
-          {positive ? "+" : ""}{change != null ? fmtRupee(change) : "+124.75"}
-        </span>
-        <span className="text-[9px] sm:text-[11px] opacity-90">
-          ({positive ? "+" : ""}{changePct != null ? changePct.toFixed(2) : "0.51"}%)
-        </span>
+      {/* Main Body: Price & Change with Stable Tabular Mono Numbers */}
+      <div className="flex items-baseline justify-between gap-2 pt-2.5 min-w-0">
+        <div className="font-mono text-base sm:text-xl lg:text-2xl font-black text-primary tracking-tight tabular-nums truncate">
+          {hasPrice ? fmtRupee(price) : "—"}
+        </div>
+
+        <div className={`flex flex-col items-end shrink-0 font-mono text-[11px] sm:text-xs font-bold tabular-nums ${positive ? "text-bull" : "text-bear"}`}>
+          <span className="flex items-center gap-0.5">
+            {positive ? <TrendingUp className="h-3 w-3 shrink-0" /> : <TrendingDown className="h-3 w-3 shrink-0" />}
+            {positive ? "+" : ""}{change != null ? fmtRupee(change) : "0.00"}
+          </span>
+          <span className="text-[10px] opacity-85">
+            ({positive ? "+" : ""}{changePct != null ? Number(changePct).toFixed(2) : "0.00"}%)
+          </span>
+        </div>
       </div>
     </div>
   );
@@ -62,7 +68,6 @@ export function MarketHeader({ state: propState }) {
   const liveSpot = useSpotPrices();
   const state = propState ? { ...propState, ...liveSpot } : liveSpot;
   const [chartFor, setChartFor] = useState(null);
-  const [soundMuted, setSoundMuted] = useState(soundEngine.isMuted());
   const [showAliceModal, setShowAliceModal] = useState(false);
   const {
     nifty_price, nifty_prev_close, nifty_change, nifty_change_pct, nifty_candles_5m,
@@ -73,16 +78,15 @@ export function MarketHeader({ state: propState }) {
     ws_latency_ms, active_quotes_count,
   } = state;
   const isStreaming = Boolean(is_connected);
-  const isSessionActive = Boolean(aliceblue_authenticated || broker_authenticated || corridor_subscribed);
 
   const now = new Date();
   const isWeekend = now.getDay() === 0 || now.getDay() === 6;
 
   return (
-    <div className="rounded-2xl border border-subtle bg-surface p-2.5 sm:p-4 shadow-sm backdrop-blur-sm">
+    <div className="rounded-2xl border border-subtle bg-surface p-3 sm:p-4 shadow-sm backdrop-blur-sm">
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 sm:gap-4">
-        {/* Left: 3 Index Tickers (3-column on mobile, flex on desktop) */}
-        <div className="grid grid-cols-3 gap-1.5 sm:gap-3 lg:flex lg:flex-wrap lg:items-center">
+        {/* Left: 3 Fixed-Grid Index Tickers (equal-width columns, zero width jitter) */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3.5 w-full lg:flex-1">
           <IndexCard
             label="NIFTY" price={nifty_price} prevClose={nifty_prev_close} change={nifty_change}
             changePct={nifty_change_pct} exchangeOpen={exchange_open} onOpenChart={() => setChartFor("NIFTY")}
@@ -97,83 +101,46 @@ export function MarketHeader({ state: propState }) {
           />
         </div>
 
-        {/* Right: Market Status & System Diagnostics */}
-        <div className="flex flex-col items-start lg:items-end gap-1.5 pt-2 border-t border-subtle/60 lg:border-t-0 lg:pt-0">
-          <div className="flex flex-wrap items-center justify-between w-full lg:w-auto lg:justify-end gap-1.5 sm:gap-2">
-            <div className="flex items-center gap-1.5">
+        {/* Right: Clean, Unified Market Status & Connection Details */}
+        <div className="flex flex-row lg:flex-col items-center lg:items-end justify-between lg:justify-center gap-2 pt-2 border-t border-subtle/50 lg:border-t-0 lg:pt-0 shrink-0">
+          {/* Single Consolidated Status Pill */}
+          <button
+            type="button"
+            onClick={() => setShowAliceModal(true)}
+            title="Click to view broker gateway connection & details"
+            className="flex items-center gap-2 rounded-xl px-3 py-1.5 text-xs font-bold transition-all border shadow-sm cursor-pointer hover:opacity-90 active:scale-95 bg-surface2/80 border-subtle"
+          >
+            <span className="relative flex h-2 w-2">
               {exchange_open ? (
-                <span className="flex items-center gap-1 rounded-full bg-bull/15 px-2.5 py-0.5 sm:px-3 sm:py-1 text-[11px] sm:text-xs font-bold text-bull border border-bull/30">
-                  <span className="relative flex h-2 w-2">
-                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-bull opacity-75" />
-                    <span className="relative inline-flex h-2 w-2 rounded-full bg-bull" />
-                  </span>
-                  LIVE
-                </span>
+                <>
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-bull opacity-75" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-bull" />
+                </>
               ) : (
-                <span className="flex items-center gap-1 rounded-full bg-surface3 px-2.5 py-0.5 sm:px-3 sm:py-1 text-[11px] sm:text-xs font-bold text-muted border border-subtle">
-                  <Clock className="h-3 w-3 text-faint" />
-                  {isWeekend ? "WEEKEND" : "AFTER-HOURS"}
-                </span>
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-muted" />
               )}
+            </span>
 
-              {mode === "live" && (
-                <button
-                  type="button"
-                  onClick={() => setShowAliceModal(true)}
-                  title="Click to view Alice Blue connection & submit daily morning TOTP"
-                  className={`flex items-center gap-1.5 rounded-full px-2.5 py-0.5 sm:px-3 sm:py-1 text-[11px] sm:text-xs font-bold transition hover:opacity-90 cursor-pointer ${
-                    isStreaming
-                      ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30"
-                      : isSessionActive
-                      ? "bg-cyan-500/15 text-cyan-400 border border-cyan-500/30"
-                      : "bg-amber-500/15 text-amber-400 border border-amber-500/30 animate-pulse"
-                  }`}
-                >
-                  <ShieldCheck className="h-3.5 w-3.5" />
-                  <span className="hidden sm:inline">
-                    {isStreaming
-                      ? "Alice Blue Streaming"
-                      : isSessionActive
-                      ? "Alice Blue Active"
-                      : "Connect Alice Blue"}
-                  </span>
-                  <span className="sm:hidden">
-                    {isStreaming
-                      ? "Live"
-                      : isSessionActive
-                      ? "Active"
-                      : "Login"}
-                  </span>
-                </button>
-              )}
-            </div>
+            <span className="text-primary font-bold">
+              {exchange_open ? "LIVE" : isWeekend ? "WEEKEND" : "MARKET CLOSED"}
+            </span>
 
-            <div className="flex items-center gap-1.5">
-              {/* Audio Alert Toggle Button */}
-              <button
-                onClick={() => setSoundMuted(soundEngine.toggleMute())}
-                title={soundMuted ? "Sound alerts muted" : "Sound alerts active"}
-                className={`flex items-center gap-1 rounded-full px-2.5 py-0.5 sm:px-3 sm:py-1 text-[11px] sm:text-xs font-bold transition border ${
-                  soundMuted
-                    ? "border-subtle bg-surface2 text-faint hover:text-primary"
-                    : "border-accent/40 bg-accent/15 text-accent shadow-sm"
-                }`}
-              >
-                {soundMuted ? <VolumeX className="h-3 w-3" /> : <Volume2 className="h-3 w-3" />}
-                <span className="hidden sm:inline">{soundMuted ? "Muted" : "Sound On"}</span>
-              </button>
-            </div>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2 text-[10px] sm:text-[11px] text-faint font-mono font-medium">
-            {isStreaming && (
-              <span className="flex items-center gap-1.5 text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                Alice Blue WS: {ws_latency_ms != null ? `${ws_latency_ms}ms` : "Connected"}
-                {active_quotes_count > 0 && ` | Quotes: ${active_quotes_count}`}
+            {isStreaming && ws_latency_ms != null && (
+              <span className="text-[11px] font-mono font-semibold text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">
+                {ws_latency_ms}ms
               </span>
             )}
-            <span>Last Sync: {fmtTime(timestamp || new Date().toISOString())} IST</span>
+          </button>
+
+          {/* Compact Subtitle Telemetry */}
+          <div className="flex items-center gap-2 text-[11px] font-mono text-faint">
+            {active_quotes_count > 0 && (
+              <span className="hidden sm:inline">
+                {active_quotes_count} quotes
+              </span>
+            )}
+            {active_quotes_count > 0 && <span className="hidden sm:inline opacity-40">•</span>}
+            <span>Sync: {fmtTime(timestamp || new Date().toISOString())}</span>
           </div>
         </div>
       </div>

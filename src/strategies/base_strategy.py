@@ -1,4 +1,4 @@
-"""Shared Signal type and strike-selection/pricing helpers all strategies build on."""
+﻿"""Shared Signal type and strike-selection/pricing helpers all strategies build on."""
 from dataclasses import dataclass
 from datetime import datetime, time as dtime
 from typing import Optional
@@ -10,6 +10,9 @@ EOD_CUTOFF_TIME = dtime(15, 15)
 ORB_ENTRY_CUTOFF_TIME = dtime(10, 30)
 MIDDAY_START_TIME = dtime(10, 30)
 MIDDAY_END_TIME = dtime(13, 0)
+MIDDAY_CHOP_START = dtime(12, 30)  # Afternoon false-breakout / V-reversal risk window
+MIDDAY_CHOP_END = dtime(14, 30)
+SCALP_1M_CUTOFF = dtime(10, 45)    # 1M Scalps strictly morning momentum only
 
 
 @dataclass
@@ -39,10 +42,13 @@ class BaseStrategy:
         self._last_signal_bar: Optional[datetime] = None
 
     def can_trigger(self, current_time: datetime) -> bool:
-        """Enforces opening 09:25 AM cutoff, 15:15 PM EOD cutoff, and a minimum cooldown between signals."""
+        """Enforces opening 09:25 AM cutoff, 15:15 PM EOD cutoff, 1M morning window, and minimum cooldown."""
         if current_time is not None:
             t = current_time.time() if hasattr(current_time, "time") else None
             if t and (t < OPENING_CUTOFF_TIME or t >= EOD_CUTOFF_TIME):
+                return False
+            # 1M Scalp strategies strictly permitted only between 09:25 AM and 10:45 AM
+            if "_1M_" in self.name and not self.is_scalp_1m_allowed(current_time):
                 return False
         if self.last_signal_time is None:
             return True
@@ -74,16 +80,35 @@ class BaseStrategy:
         return dist_pct <= max_dist_pct
 
     @staticmethod
+    def is_midday_chop_zone(current_time: datetime) -> bool:
+        """Returns True if current timestamp is within the 12:30 PM to 14:30 PM high-risk consolidation window."""
+        if current_time is None:
+            return False
+        t = current_time.time() if hasattr(current_time, "time") else None
+        return t is not None and (MIDDAY_CHOP_START <= t < MIDDAY_CHOP_END)
+
+    @staticmethod
+    def is_scalp_1m_allowed(current_time: datetime) -> bool:
+        """1M Scalp entries are strictly allowed only during peak morning momentum (09:25 to 10:45 AM IST)."""
+        if current_time is None:
+            return False
+        t = current_time.time() if hasattr(current_time, "time") else None
+        return t is not None and (OPENING_CUTOFF_TIME <= t < SCALP_1M_CUTOFF)
+
+    @staticmethod
     def is_volume_acceptable(volume_ratio: Optional[float], current_time: datetime,
                               min_morning: float = 1.0, min_midday: float = 1.4,
+                              min_afternoon_chop: float = 1.5,
                               current_volume: Optional[float] = None,
                               avg_volume: Optional[float] = None) -> bool:
-        """Requires higher volume surge during midday (10:30 - 13:00) to filter chop."""
+        """Requires higher volume surge during midday (10:30 - 13:00) and 1.5x during 12:30-14:30 chop zone."""
         if volume_ratio is None:
             if current_volume is not None and avg_volume is not None and avg_volume > 0:
                 volume_ratio = current_volume / avg_volume
             else:
                 return True
+        if BaseStrategy.is_midday_chop_zone(current_time):
+            return volume_ratio >= min_afternoon_chop
         if BaseStrategy.is_midday(current_time):
             return volume_ratio >= min_midday
         return volume_ratio >= min_morning

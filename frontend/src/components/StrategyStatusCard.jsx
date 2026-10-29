@@ -149,18 +149,18 @@ function SteppedTslProgressGauge({ entryPrice, ltp, stopLoss, takeProfit, closed
         </div>
       </div>
 
-      {/* Bi-Directional Dual-Zone Slider */}
+      {/* Asymmetric Dual-Zone Slider: Short SL Zone (25%) & Long Multi-Step TSL Zone (75%) */}
       <div className="relative h-2.5 w-full rounded-full bg-surface3/80 overflow-hidden flex">
-        {/* Left Zone: Drawdown toward Hard SL (Fills Right-to-Left from Center Axis) */}
-        <div className="relative w-1/2 h-full flex justify-end bg-surface2/50 border-r border-subtle/80">
+        {/* Left Zone: Drawdown toward Hard SL (25% width - Fills Right-to-Left from Entry Axis) */}
+        <div className="relative w-1/4 h-full flex justify-end bg-surface2/50 border-r-2 border-subtle/90">
           <div
             className="h-full bg-gradient-to-l from-amber-500 to-rose-500 rounded-l-full transition-all duration-300"
             style={{ width: `${slDrawdownPct}%` }}
           />
         </div>
 
-        {/* Right Zone: Profit Expansion toward Target (Fills Left-to-Right from Center Axis) */}
-        <div className="relative w-1/2 h-full flex justify-start bg-surface2/30">
+        {/* Right Zone: Multi-Step Profit Expansion (75% long runway - Fills Left-to-Right from Entry Axis) */}
+        <div className="relative w-3/4 h-full flex justify-start bg-surface2/30">
           <div
             className={`h-full rounded-r-full transition-all duration-300 ${
               currentStep >= 3
@@ -174,13 +174,23 @@ function SteppedTslProgressGauge({ entryPrice, ltp, stopLoss, takeProfit, closed
         </div>
       </div>
 
-      {/* Milestone Points */}
-      <div className="mt-2 flex items-center justify-between text-[10px] text-gray-400">
-        <span className={isLoss ? "text-rose-400 font-bold" : ""}>-SL (-{hardSlPct}%)</span>
-        <span className="text-muted font-bold">Entry (0)</span>
-        <span className={currentStep >= 1 ? "text-emerald-400 font-bold" : ""}>+{costLockPts}pt (Lock)</span>
-        <span className={currentStep >= 2 ? "text-cyan-400 font-bold" : ""}>+{stage1Pts}pt</span>
-        <span className={deltaPts >= targetPts ? "text-indigo-400 font-bold" : ""}>+{targetPts}pt</span>
+      {/* Milestone Points: Aligned Exactly to Asymmetric 25% Entry Axis & 75% TSL Runway */}
+      <div className="relative mt-2 h-3.5 w-full text-[10px] text-gray-400 select-none">
+        <span className={`absolute left-0 ${isLoss ? "text-rose-400 font-bold" : ""}`}>
+          -SL (-{hardSlPct}%)
+        </span>
+        <span className="absolute left-1/4 -translate-x-1/2 text-muted font-bold">
+          Entry (0)
+        </span>
+        <span className={`absolute left-[44%] -translate-x-1/2 whitespace-nowrap ${currentStep >= 1 ? "text-emerald-400 font-bold" : ""}`}>
+          +{costLockPts}pt (Lock)
+        </span>
+        <span className={`absolute left-[68%] -translate-x-1/2 whitespace-nowrap ${currentStep >= 2 ? "text-cyan-400 font-bold" : ""}`}>
+          +{stage1Pts}pt
+        </span>
+        <span className={`absolute right-0 ${deltaPts >= targetPts ? "text-indigo-400 font-bold" : ""}`}>
+          +{targetPts}pt
+        </span>
       </div>
 
       {!closed && (
