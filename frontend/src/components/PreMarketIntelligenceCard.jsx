@@ -70,9 +70,15 @@ export function PreMarketIntelligenceCard() {
           <div>
             <div className="flex flex-wrap items-center gap-2">
               <h3 className="text-xs font-bold uppercase tracking-wider text-primary">Pre-Market Catalyst Intelligence</h3>
-              <span className="rounded-full bg-bull/15 px-2.5 py-0.5 text-[10px] font-extrabold text-bull border border-bull/30">
-                {intel.market_bias?.replace("_", " ")} ({intel.sentiment_score}%)
-              </span>
+              {intel.is_market_day === false ? (
+                <span className="rounded-full bg-slate-500/15 px-2.5 py-0.5 text-[10px] font-extrabold text-slate-300 border border-slate-500/30">
+                  EXCHANGE CLOSED (WEEKEND)
+                </span>
+              ) : (
+                <span className="rounded-full bg-bull/15 px-2.5 py-0.5 text-[10px] font-extrabold text-bull border border-bull/30">
+                  {intel.market_bias?.replace("_", " ")} ({intel.sentiment_score}%)
+                </span>
+              )}
               <span className={`hidden sm:inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold ${
                 isGeminiLive ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30" : "bg-surface3 text-faint border border-subtle"
               }`}>
@@ -132,7 +138,7 @@ export function PreMarketIntelligenceCard() {
             <div className="rounded-xl border border-subtle/80 bg-surface2/80 p-3 text-xs text-primary leading-relaxed flex items-start gap-2.5">
               <Compass className="h-4 w-4 text-accent shrink-0 mt-0.5" />
               <div>
-                <span className="font-bold text-accent">Expected Open: </span>
+                <span className="font-bold text-accent">{intel.is_market_day === false ? "Market Status: " : "Expected Open: "}</span>
                 <span className="font-semibold">{intel.expected_gap}. </span>
                 <span className="text-muted">{intel.summary}</span>
               </div>

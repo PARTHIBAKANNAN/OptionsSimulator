@@ -308,6 +308,63 @@ async def get_paper_strategy_history(name: str):
     return _sanitize(trades)
 
 
+@router.get("/intelligence/config")
+async def get_gemini_config():
+    """Returns the current Gemini model and masked API key."""
+    from .ai_intelligence import get_ai_config
+    cfg = get_ai_config()
+    key = cfg.get("api_key", "")
+    masked = f"{key[:7]}...{key[-5:]}" if len(key) > 12 else ("Configured" if key else "")
+    return {
+        "model": cfg.get("model", "gemini-3.6-flash"),
+        "api_key_masked": masked,
+        "has_key": bool(key),
+    }
+
+
+@router.post("/intelligence/config")
+async def update_gemini_config(request: Request):
+    """Updates the Gemini API key and preferred model."""
+    from .ai_intelligence import save_ai_config
+    body = await request.json()
+    api_key = body.get("api_key")
+    model = body.get("model")
+    save_ai_config(api_key=api_key, model=model)
+    return {"status": "success", "message": "Gemini configuration saved"}
+
+
+@router.post("/intelligence/test-gemini")
+async def test_gemini_connection(request: Request):
+    """Pings Gemini with a minimal prompt to measure latency and verify API key."""
+    from .ai_intelligence import call_gemini_json, get_ai_config
+    import time
+    body = await request.json()
+    cfg = get_ai_config()
+    api_key = body.get("api_key") or cfg.get("api_key")
+    model = body.get("model") or cfg.get("model") or "gemini-3.6-flash"
+
+    t0 = time.time()
+    res, model_used = call_gemini_json(
+        prompt='Respond with JSON: {"status": "ok", "ping": "pong"}',
+        preferred_model=model,
+        api_key=api_key,
+    )
+    latency_ms = round((time.time() - t0) * 1000.0, 1)
+    if res and isinstance(res, dict):
+        return {
+            "success": True,
+            "model": model_used,
+            "latency_ms": latency_ms,
+            "message": f"Connected to {model_used} in {latency_ms}ms",
+        }
+    return {
+        "success": False,
+        "model": model,
+        "latency_ms": latency_ms,
+        "error": "Failed to reach Gemini API. Please check key validity or network.",
+    }
+
+
 @router.get("/intelligence/premarket")
 async def get_premarket_intelligence():
     """Returns today's pre-market catalyst & opening market bias intelligence."""

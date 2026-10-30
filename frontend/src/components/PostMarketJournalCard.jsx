@@ -72,11 +72,17 @@ export function PostMarketJournalCard() {
           <div>
             <div className="flex flex-wrap items-center gap-2">
               <h3 className="text-xs font-bold uppercase tracking-wider text-primary">Post-Market AI Trade Journal</h3>
-              <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-extrabold border ${
-                isGradeGood ? "bg-emerald-500/15 text-emerald-400 border-emerald-500/30" : "bg-amber-500/15 text-amber-400 border-amber-500/30"
-              }`}>
-                Grade: {grade} ({journal.discipline_score}% Discipline)
-              </span>
+              {journal.is_market_day === false ? (
+                <span className="rounded-full bg-slate-500/15 px-2.5 py-0.5 text-[10px] font-extrabold text-slate-300 border border-slate-500/30">
+                  WEEKEND DEBRIEF (100% CAPITAL PRESERVED)
+                </span>
+              ) : (
+                <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-extrabold border ${
+                  isGradeGood ? "bg-emerald-500/15 text-emerald-400 border-emerald-500/30" : "bg-amber-500/15 text-amber-400 border-amber-500/30"
+                }`}>
+                  Grade: {grade} ({journal.discipline_score}% Discipline)
+                </span>
+              )}
               <span className={`hidden sm:inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold ${
                 isGemini ? "bg-purple-500/15 text-purple-400 border border-purple-500/30" : "bg-surface3 text-faint border border-subtle"
               }`}>

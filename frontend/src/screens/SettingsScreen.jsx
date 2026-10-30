@@ -25,7 +25,10 @@ import {
   Trash2,
   Send,
   Eye,
-  Check
+  Check,
+  Sparkles,
+  Bot,
+  EyeOff
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { API_BASE } from "../lib/apiBase";
@@ -106,6 +109,19 @@ export function SettingsScreen({ onOpenAliceLogin }) {
   const [defaultTimeframe, setDefaultTimeframe] = useState(() => {
     return localStorage.getItem("nukebox_default_timeframe") || "5m";
   });
+  // AI Intelligence & Gemini
+  const [geminiApiKey, setGeminiApiKey] = useState(() => {
+    return localStorage.getItem("nukebox_gemini_api_key") || "";
+  });
+  const [showApiKey, setShowApiKey] = useState(false);
+  const [selectedModel, setSelectedModel] = useState(() => {
+    return localStorage.getItem("nukebox_gemini_model") || "gemini-3.6-flash";
+  });
+  const [testingConnection, setTestingConnection] = useState(false);
+  const [connectionStatus, setConnectionStatus] = useState(null);
+  const [savingConfig, setSavingConfig] = useState(false);
+  const [refreshingAi, setRefreshingAi] = useState(false);
+
   const [showGridlines, setShowGridlines] = useState(() => {
     return localStorage.getItem("nukebox_show_gridlines") !== "false";
   });
@@ -225,12 +241,77 @@ export function SettingsScreen({ onOpenAliceLogin }) {
     }
   }
 
+  const handleSaveAiConfig = async () => {
+    setSavingConfig(true);
+    try {
+      localStorage.setItem("nukebox_gemini_api_key", geminiApiKey);
+      localStorage.setItem("nukebox_gemini_model", selectedModel);
+      await fetch(`${API_BASE}/api/paper/intelligence/config`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ api_key: geminiApiKey, model: selectedModel }),
+      });
+      setActionMessage({ type: "success", text: "Gemini configuration saved & applied successfully" });
+    } catch (e) {
+      setActionMessage({ type: "error", text: "Failed to save AI config: " + e.message });
+    } finally {
+      setSavingConfig(false);
+    }
+  };
+
+  const handleTestAiConnection = async () => {
+    setTestingConnection(true);
+    setConnectionStatus(null);
+    try {
+      const res = await fetch(`${API_BASE}/api/paper/intelligence/test-gemini`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ api_key: geminiApiKey, model: selectedModel }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setConnectionStatus({ success: true, message: `✓ Connected (${data.model} · ${data.latency_ms}ms)` });
+      } else {
+        setConnectionStatus({ success: false, message: `✗ ${data.error || "Connection Failed"}` });
+      }
+    } catch (e) {
+      setConnectionStatus({ success: false, message: `✗ ${e.message}` });
+    } finally {
+      setTestingConnection(false);
+    }
+  };
+
+  const handleForcePremarket = async () => {
+    setRefreshingAi(true);
+    try {
+      await fetch(`${API_BASE}/api/paper/intelligence/premarket/refresh`, { method: "POST" });
+      setActionMessage({ type: "success", text: "Pre-market briefing regenerated with Gemini 3.6 Flash" });
+    } catch (e) {
+      setActionMessage({ type: "error", text: "Failed to regenerate pre-market: " + e.message });
+    } finally {
+      setRefreshingAi(false);
+    }
+  };
+
+  const handleForcePostmarket = async () => {
+    setRefreshingAi(true);
+    try {
+      await fetch(`${API_BASE}/api/paper/intelligence/postmarket/refresh`, { method: "POST" });
+      setActionMessage({ type: "success", text: "Post-market journal audited with Gemini 3.6 Flash" });
+    } catch (e) {
+      setActionMessage({ type: "error", text: "Failed to audit post-market: " + e.message });
+    } finally {
+      setRefreshingAi(false);
+    }
+  };
+
   // Sub-Navigation Tabs Definitions
   const navTabs = [
     { id: "appearance", label: "Appearance & Charts", shortLabel: "Charts", icon: Palette },
     { id: "execution", label: "Execution & Strategies", shortLabel: "Exec", icon: Zap },
     { id: "risk", label: "Risk & Circuit Breakers", shortLabel: "Risk", icon: ShieldAlert },
     { id: "broker", label: "Broker & Live Stream", shortLabel: "Broker", icon: Server },
+    { id: "ai", label: "AI Intelligence & Gemini", shortLabel: "AI", icon: Sparkles },
     { id: "sound", label: "Sound & Audio Alerts", shortLabel: "Audio", icon: Volume2 },
     { id: "data", label: "Data & Maintenance", shortLabel: "Data", icon: Database },
   ];
@@ -879,6 +960,143 @@ export function SettingsScreen({ onOpenAliceLogin }) {
             </motion.div>
           )}
 
+          {/* TAB: 🤖 AI INTELLIGENCE & GEMINI */}
+          {activeTab === "ai" && (
+            <motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} className="space-y-6">
+              <div className="rounded-3xl border border-subtle bg-surface p-5 sm:p-6 shadow-sm space-y-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div>
+                    <h2 className="text-sm font-bold text-primary flex items-center gap-2">
+                      <Sparkles className="h-4 w-4 text-purple-400" />
+                      <span>Google Gemini Institutional Intelligence</span>
+                    </h2>
+                    <p className="text-xs text-faint mt-0.5">
+                      Powers the 08:50 AM Pre-Market Catalyst Briefing and 15:35 PM Post-Market Trade Journal.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Model Selection & API Key */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  {/* Model Selector Card */}
+                  <div className="p-4 rounded-2xl bg-surface2/40 border border-subtle space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-xs text-primary">Gemini Model</span>
+                      <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-purple-500/15 text-purple-400 font-bold border border-purple-500/30">
+                        Active Engine
+                      </span>
+                    </div>
+                    <p className="text-faint text-[11px]">Select which Gemini Flash version generates briefings and trade audits.</p>
+                    <select
+                      value={selectedModel}
+                      onChange={(e) => setSelectedModel(e.target.value)}
+                      className="w-full rounded-xl border border-subtle bg-surface px-3 py-2 text-xs font-mono font-bold text-primary"
+                    >
+                      <option value="gemini-3.6-flash">gemini-3.6-flash (Production - Recommended)</option>
+                      <option value="gemini-3.5-flash">gemini-3.5-flash (Secondary Fallback)</option>
+                      <option value="gemini-3.1-flash-lite">gemini-3.1-flash-lite (Ultra-low Latency)</option>
+                    </select>
+                  </div>
+
+                  {/* API Key Card */}
+                  <div className="p-4 rounded-2xl bg-surface2/40 border border-subtle space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-xs text-primary">Gemini API Key</span>
+                      <button
+                        onClick={() => setShowApiKey(!showApiKey)}
+                        className="text-[11px] text-accent hover:underline flex items-center gap-1 font-semibold"
+                      >
+                        {showApiKey ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
+                        <span>{showApiKey ? "Hide" : "Reveal"}</span>
+                      </button>
+                    </div>
+                    <p className="text-faint text-[11px]">API Key used to authenticate calls to Google Generative Language endpoints.</p>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type={showApiKey ? "text" : "password"}
+                        value={geminiApiKey}
+                        onChange={(e) => setGeminiApiKey(e.target.value)}
+                        placeholder="Enter Gemini API Key..."
+                        className="flex-1 rounded-xl border border-subtle bg-surface px-3 py-2 font-mono text-xs text-primary"
+                      />
+                      <button
+                        onClick={handleSaveAiConfig}
+                        disabled={savingConfig}
+                        className="rounded-xl bg-accent px-4 py-2 text-xs font-bold text-surface hover:opacity-90 transition disabled:opacity-50 shrink-0"
+                      >
+                        {savingConfig ? "Saving…" : "Save"}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Connection & Live Ping Tester */}
+                <div className="p-4 rounded-2xl bg-surface2/40 border border-subtle flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div>
+                    <span className="font-bold text-xs text-primary">Test Connection &amp; Latency</span>
+                    <p className="text-faint text-[11px] mt-0.5">
+                      Dispatches a lightweight handshake ping to verify Google API credentials and measure round-trip response time.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    {connectionStatus && (
+                      <span className={`text-[11px] font-mono font-bold px-2.5 py-1 rounded-xl border ${
+                        connectionStatus.success
+                          ? "bg-emerald-500/15 text-emerald-400 border-emerald-500/30"
+                          : "bg-bear/15 text-bear border-bear/30"
+                      }`}>
+                        {connectionStatus.message}
+                      </span>
+                    )}
+                    <button
+                      onClick={handleTestAiConnection}
+                      disabled={testingConnection}
+                      className="rounded-xl border border-accent/40 bg-accent/15 px-4 py-2 text-xs font-bold text-accent hover:bg-accent/25 transition disabled:opacity-50 shrink-0 flex items-center gap-1.5"
+                    >
+                      <RefreshCw className={`h-3.5 w-3.5 ${testingConnection ? "animate-spin" : ""}`} />
+                      <span>{testingConnection ? "Pinging Google…" : "Test Ping"}</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Manual Operations */}
+                <div className="space-y-3 pt-2 border-t border-subtle">
+                  <h3 className="text-xs font-bold text-faint uppercase tracking-wider">Manual Briefing Triggers</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="p-3.5 rounded-2xl bg-surface2/40 border border-subtle flex items-center justify-between">
+                      <div>
+                        <span className="font-bold text-xs text-primary">Pre-Market Briefing</span>
+                        <p className="text-faint text-[10px]">Re-synthesizes macro data, gift delta, and sector cues.</p>
+                      </div>
+                      <button
+                        onClick={handleForcePremarket}
+                        disabled={refreshingAi}
+                        className="rounded-xl border border-subtle bg-surface px-3 py-1.5 text-xs font-bold text-accent hover:bg-surface2 transition disabled:opacity-50"
+                      >
+                        Run Now
+                      </button>
+                    </div>
+
+                    <div className="p-3.5 rounded-2xl bg-surface2/40 border border-subtle flex items-center justify-between">
+                      <div>
+                        <span className="font-bold text-xs text-primary">Post-Market Journal</span>
+                        <p className="text-faint text-[10px]">Audits today's trade ledger, discipline score, and P&amp;L.</p>
+                      </div>
+                      <button
+                        onClick={handleForcePostmarket}
+                        disabled={refreshingAi}
+                        className="rounded-xl border border-subtle bg-surface px-3 py-1.5 text-xs font-bold text-purple-400 hover:bg-surface2 transition disabled:opacity-50"
+                      >
+                        Run Now
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          
           {/* TAB 5: 🔔 SOUND & ALERTS */}
           {activeTab === "sound" && (
             <motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} className="space-y-6">
