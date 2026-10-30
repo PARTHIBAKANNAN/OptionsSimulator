@@ -41,7 +41,12 @@ export function applySnapshot(data) {
   if (prevPositionsCount > 0 && newPositionsCount > prevPositionsCount) {
     soundEngine.playOrderEntry();
   } else if (prevPositionsCount > 0 && newPositionsCount < prevPositionsCount) {
-    soundEngine.playTargetExit();
+    const lastExitReason = data.last_closed_trade?.exit_reason || "";
+    if (lastExitReason.toUpperCase().includes("STOP") || lastExitReason.toUpperCase().includes("SL")) {
+      soundEngine.playStopLossHit();
+    } else {
+      soundEngine.playTargetHit();
+    }
   }
   prevPositionsCount = newPositionsCount;
   state = { ...state, ...data };
@@ -67,7 +72,12 @@ export function applyDelta(changed) {
     if (newPositionsCount > prevPositionsCount) {
       soundEngine.playOrderEntry();
     } else if (newPositionsCount < prevPositionsCount) {
-      soundEngine.playTargetExit();
+      const lastExitReason = changed.last_closed_trade?.exit_reason || "";
+      if (lastExitReason.toUpperCase().includes("STOP") || lastExitReason.toUpperCase().includes("SL")) {
+        soundEngine.playStopLossHit();
+      } else {
+        soundEngine.playTargetHit();
+      }
     }
     prevPositionsCount = newPositionsCount;
   }

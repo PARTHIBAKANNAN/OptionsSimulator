@@ -1,19 +1,15 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import {
   createChart,
   CandlestickSeries,
   HistogramSeries,
   LineSeries,
-  createSeriesMarkers,
+  CrosshairMode,
+  LineStyle,
 } from "lightweight-charts";
-import { Eye, EyeOff, BarChart2 } from "lucide-react";
+import { Eye, EyeOff, Magnet, Maximize2, Minimize2, ZoomIn } from "lucide-react";
 import { useTheme } from "../contexts/ThemeContext";
-
-function bucketToTime(bucket) {
-  const now = new Date();
-  const utcMidnight = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
-  return Math.floor(utcMidnight / 1000) + bucket * 60;
-}
+import { getActivePalette } from "../utils/chartPalette";
 
 function computeEmaSeries(data, span) {
   if (!data || data.length === 0) return [];
@@ -87,27 +83,11 @@ function computeBollingerBands(data, period = 20, mult = 2) {
   return { upper, lower };
 }
 
-function readCandleColors() {
-  const styles = getComputedStyle(document.documentElement);
-  const getRgb = (prop, fallback) => {
-    const raw = (styles.getPropertyValue(prop) || "").trim();
-    if (!raw) return fallback;
-    if (raw.startsWith("#")) return raw;
-    const numbers = raw.match(/\d+/g);
-    if (numbers && numbers.length >= 3) {
-      return `rgb(${numbers[0]}, ${numbers[1]}, ${numbers[2]})`;
-    }
-    return fallback;
-  };
-
-  const up = getRgb("--bull", "rgb(34, 197, 94)");
-  const down = getRgb("--bear", "rgb(239, 68, 68)");
-  return { up, down };
-}
-
-export function CandleChart({ candles = [], height = 400 }) {
+export function CandleChart({ candles = [], trades = [], height = 400 }) {
   const { theme } = useTheme() || {};
+  const isDark = theme === "dark";
   const containerRef = useRef(null);
+  const chartWrapperRef = useRef(null);
   const chartRef = useRef(null);
   const seriesRef = useRef(null);
 
@@ -120,7 +100,13 @@ export function CandleChart({ candles = [], height = 400 }) {
   const volumeSeriesRef = useRef(null);
   const volumeMaRef = useRef(null);
 
-  // Indicator visibility toggles (TradingView Eye style)
+  // Interactive UI state
+  const [palette, setPalette] = useState(getActivePalette());
+  const [isMagnet, setIsMagnet] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [hoveredCandle, setHoveredCandle] = useState(null);
+
+  // Indicator visibility toggles
   const [visibilities, setVisibilities] = useState(() => {
     try {
       const saved = localStorage.getItem("nukebox_chart_indicators");
@@ -135,6 +121,13 @@ export function CandleChart({ candles = [], height = 400 }) {
     };
   });
 
+  // Listen for palette updates from Settings Screen
+  useEffect(() => {
+    const handlePaletteChange = () => setPalette(getActivePalette());
+    window.addEventListener("nukebox_palette_changed", handlePaletteChange);
+    return () => window.removeEventListener("nukebox_palette_changed", handlePaletteChange);
+  }, []);
+
   function toggleIndicator(key) {
     setVisibilities((prev) => {
       const next = { ...prev, [key]: !prev[key] };
@@ -145,13 +138,34 @@ export function CandleChart({ candles = [], height = 400 }) {
     });
   }
 
+  // Format candles safely
+  const formattedData = useMemo(() => {
+    return (candles || [])
+      .map((c) => {
+        let t = c.time;
+        if (!t && c.timestamp) {
+          t = Math.floor(new Date(c.timestamp).getTime() / 1000);
+        }
+        return {
+          time: t,
+          open: Number(c.open),
+          high: Number(c.high),
+          low: Number(c.low),
+          close: Number(c.close),
+          volume: Number(c.volume || 0),
+        };
+      })
+      .filter((c) => !isNaN(c.time) && !isNaN(c.open) && !isNaN(c.close) && c.open > 0)
+      .sort((a, b) => a.time - b.time);
+  }, [candles]);
+
+  const latestCandle = formattedData.length > 0 ? formattedData[formattedData.length - 1] : null;
+  const activeDisplayCandle = hoveredCandle || latestCandle;
+
   // Initialize Lightweight Charts Canvas
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
-
-    const { up, down } = readCandleColors();
-    const isDark = theme === "dark";
 
     const chart = createChart(container, {
       autoSize: true,
@@ -162,6 +176,19 @@ export function CandleChart({ candles = [], height = 400 }) {
       grid: {
         vertLines: { visible: false },
         horzLines: { color: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)" },
+      },
+      crosshair: {
+        mode: isMagnet ? CrosshairMode.Magnet : CrosshairMode.Normal,
+        vertLine: {
+          color: isDark ? "rgba(255, 255, 255, 0.25)" : "rgba(0, 0, 0, 0.25)",
+          width: 1,
+          style: LineStyle.Dashed,
+        },
+        horzLine: {
+          color: isDark ? "rgba(255, 255, 255, 0.25)" : "rgba(0, 0, 0, 0.25)",
+          width: 1,
+          style: LineStyle.Dashed,
+        },
       },
       localization: {
         timeFormatter: (timestamp) => {
@@ -177,7 +204,7 @@ export function CandleChart({ candles = [], height = 400 }) {
             minute: "2-digit",
             hour12: false,
           });
-          return `${dStr} ${tStr}`;
+          return `${dStr} ${tStr} IST`;
         },
       },
       timeScale: {
@@ -187,22 +214,54 @@ export function CandleChart({ candles = [], height = 400 }) {
         minBarSpacing: 3,
         fixLeftEdge: true,
         rightOffset: 12,
+        // Crucial fix: Format horizontal axis tick marks in Indian Standard Time (IST)
+        tickMarkFormatter: (time, tickMarkType) => {
+          const date = new Date(time * 1000);
+          if (tickMarkType < 3) {
+            return date.toLocaleDateString("en-IN", {
+              timeZone: "Asia/Kolkata",
+              day: "numeric",
+              month: "short",
+            });
+          }
+          return date.toLocaleTimeString("en-IN", {
+            timeZone: "Asia/Kolkata",
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: false,
+          });
+        },
+      },
+      handleScroll: {
+        mouseWheel: true,
+        pressedMouseMove: true,
+        horzTouchDrag: true,
+        vertTouchDrag: false,
+      },
+      handleScale: {
+        axisPressedMouseMove: false,
+        mouseWheel: true,
+        pinch: true,
+      },
+      kineticScroll: {
+        touch: true,
+        mouse: false,
       },
     });
 
     // Main Candlestick Series
     const series = chart.addSeries(CandlestickSeries, {
-      upColor: up,
-      downColor: down,
-      borderUpColor: up,
-      borderDownColor: down,
-      wickUpColor: up,
-      wickDownColor: down,
+      upColor: palette.upColor,
+      downColor: palette.downColor,
+      borderUpColor: palette.upColor,
+      borderDownColor: palette.downColor,
+      wickUpColor: palette.upColor,
+      wickDownColor: palette.downColor,
     });
 
     // Indicators on Main Pane
     const ema20 = chart.addSeries(LineSeries, {
-      color: "#06b6d4",
+      color: palette.ema20Color,
       lineWidth: 1.5,
       priceLineVisible: false,
       lastValueVisible: false,
@@ -210,7 +269,7 @@ export function CandleChart({ candles = [], height = 400 }) {
     });
 
     const ema50 = chart.addSeries(LineSeries, {
-      color: "#f97316",
+      color: palette.ema50Color,
       lineWidth: 1.5,
       priceLineVisible: false,
       lastValueVisible: false,
@@ -218,7 +277,7 @@ export function CandleChart({ candles = [], height = 400 }) {
     });
 
     const vwap = chart.addSeries(LineSeries, {
-      color: "#eab308",
+      color: palette.vwapColor,
       lineWidth: 1.5,
       priceLineVisible: false,
       lastValueVisible: false,
@@ -228,7 +287,7 @@ export function CandleChart({ candles = [], height = 400 }) {
     const bbUpper = chart.addSeries(LineSeries, {
       color: "rgba(56, 189, 248, 0.6)",
       lineWidth: 1,
-      lineStyle: 2,
+      lineStyle: LineStyle.Dotted,
       priceLineVisible: false,
       lastValueVisible: false,
       title: "BB Upper",
@@ -237,7 +296,7 @@ export function CandleChart({ candles = [], height = 400 }) {
     const bbLower = chart.addSeries(LineSeries, {
       color: "rgba(56, 189, 248, 0.6)",
       lineWidth: 1,
-      lineStyle: 2,
+      lineStyle: LineStyle.Dotted,
       priceLineVisible: false,
       lastValueVisible: false,
       title: "BB Lower",
@@ -271,6 +330,35 @@ export function CandleChart({ candles = [], height = 400 }) {
     if (panes[0]) panes[0].setStretchFactor(3);
     if (panes[1]) panes[1].setStretchFactor(1);
 
+    // Crosshair movement subscription for dynamic OHLCV HUD header
+    chart.subscribeCrosshairMove((param) => {
+      if (
+        !param.time ||
+        param.point === undefined ||
+        param.point.x < 0 ||
+        param.point.x > container.clientWidth ||
+        param.point.y < 0 ||
+        param.point.y > container.clientHeight
+      ) {
+        setHoveredCandle(null);
+        return;
+      }
+      const candlePrice = param.seriesData.get(series);
+      if (candlePrice) {
+        const volData = param.seriesData.get(volumeSeries);
+        const vwapData = param.seriesData.get(vwap);
+        setHoveredCandle({
+          open: candlePrice.open,
+          high: candlePrice.high,
+          low: candlePrice.low,
+          close: candlePrice.close,
+          volume: volData ? volData.value : null,
+          vwap: vwapData ? vwapData.value : null,
+          time: param.time,
+        });
+      }
+    });
+
     chartRef.current = chart;
     seriesRef.current = series;
     ema20Ref.current = ema20;
@@ -293,38 +381,15 @@ export function CandleChart({ candles = [], height = 400 }) {
       volumeSeriesRef.current = null;
       volumeMaRef.current = null;
     };
-  }, []);
+  }, [theme, isMagnet, palette]);
 
-  // Update Data and Client-Side Indicators
+  // Update Data and Series
   useEffect(() => {
-    if (!seriesRef.current) return;
-
-    const formattedData = (candles || [])
-      .map((c) => {
-        let vol = Number(c.volume || 0);
-        // Fallback: If exchange tick feed reported 0 volume on index spot, compute constituent proxy volume
-        if (vol <= 0) {
-          const hi = Number(c.high) || 0;
-          const lo = Number(c.low) || 0;
-          const range = Math.max(1, hi - lo);
-          vol = Math.round(350000 * (0.65 + 0.70 * Math.min(4, range / 15)));
-        }
-        return {
-          time: c.time ?? bucketToTime(c.bucket),
-          open: Number(c.open),
-          high: Number(c.high),
-          low: Number(c.low),
-          close: Number(c.close),
-          volume: vol,
-        };
-      })
-      .sort((a, b) => a.time - b.time);
-
-    if (formattedData.length === 0) return;
+    if (!seriesRef.current || formattedData.length === 0) return;
 
     seriesRef.current.setData(formattedData);
 
-    // EMAs
+    // EMA 20 & 50
     if (ema20Ref.current) {
       ema20Ref.current.setData(computeEmaSeries(formattedData, 20));
       ema20Ref.current.applyOptions({ visible: visibilities.ema20 });
@@ -351,24 +416,196 @@ export function CandleChart({ candles = [], height = 400 }) {
 
     // Volume Histogram + 20-MA
     if (volumeSeriesRef.current && volumeMaRef.current) {
-      const { up, down } = readCandleColors();
       const volData = formattedData.map((d) => ({
         time: d.time,
         value: d.volume,
-        color: d.close >= d.open ? "rgba(34, 197, 94, 0.65)" : "rgba(239, 68, 68, 0.65)",
+        color: d.close >= d.open ? palette.volumeUp : palette.volumeDown,
       }));
       volumeSeriesRef.current.setData(volData);
       volumeMaRef.current.setData(computeVolumeMa(formattedData, 20));
-
       volumeSeriesRef.current.applyOptions({ visible: visibilities.volume });
       volumeMaRef.current.applyOptions({ visible: visibilities.volume });
     }
-  }, [candles, visibilities]);
+
+    // Interactive Trade Markers Overlay
+    if (trades && trades.length > 0 && seriesRef.current) {
+      const markers = trades
+        .filter((t) => t.entry_time)
+        .map((t) => {
+          const entryTimeUnix = Math.floor(new Date(t.entry_time).getTime() / 1000);
+          const isCE = (t.direction || "").toUpperCase() === "CE";
+          return {
+            time: entryTimeUnix,
+            position: isCE ? "belowBar" : "aboveBar",
+            color: isCE ? "#10b981" : "#f43f5e",
+            shape: isCE ? "arrowUp" : "arrowDown",
+            text: `${t.direction || "BUY"} @ ₹${Math.round(t.entry_price || 0)}`,
+          };
+        })
+        .sort((a, b) => a.time - b.time);
+      try {
+        seriesRef.current.setMarkers(markers);
+      } catch {}
+    }
+  }, [formattedData, visibilities, palette, trades]);
+
+  // Quick Zoom Helper
+  const handleQuickZoom = (range) => {
+    if (!chartRef.current || formattedData.length === 0) return;
+    const timeScale = chartRef.current.timeScale();
+    const lastBarTime = formattedData[formattedData.length - 1].time;
+
+    if (range === "all") {
+      timeScale.fitContent();
+      return;
+    }
+
+    let secondsBack = 86400; // 1 day
+    if (range === "2d") secondsBack = 2 * 86400;
+    else if (range === "5d") secondsBack = 5 * 86400;
+
+    timeScale.setVisibleRange({
+      from: lastBarTime - secondsBack,
+      to: lastBarTime + 1800,
+    });
+  };
+
+  const toggleFullscreen = () => {
+    if (!chartWrapperRef.current) return;
+    if (!document.fullscreenElement) {
+      chartWrapperRef.current.requestFullscreen().catch(() => {});
+      setIsFullscreen(true);
+    } else {
+      document.exitFullscreen().catch(() => {});
+      setIsFullscreen(false);
+    }
+  };
+
+  const barChange = activeDisplayCandle
+    ? activeDisplayCandle.close - activeDisplayCandle.open
+    : 0;
+  const barChangePct = activeDisplayCandle && activeDisplayCandle.open > 0
+    ? (barChange / activeDisplayCandle.open) * 100
+    : 0;
+  const isBullish = barChange >= 0;
 
   return (
-    <div className="relative w-full flex flex-col rounded-2xl overflow-hidden border border-subtle bg-surface" style={{ height }}>
-      {/* Indicator Toolbar Bar - Fixed Top Strip (Never Blocks Candlesticks or Price Action) */}
-      <div className="flex flex-wrap items-center gap-1 sm:gap-1.5 px-3 py-1.5 bg-surface2/60 border-b border-subtle text-[11px] shrink-0">
+    <div
+      ref={chartWrapperRef}
+      className={`relative w-full flex flex-col rounded-2xl overflow-hidden border border-subtle bg-surface ${
+        isFullscreen ? "p-4 fixed inset-0 z-50 rounded-none bg-surface" : ""
+      }`}
+      style={{ height: isFullscreen ? "100vh" : height }}
+    >
+      {/* 1. Dynamic Live OHLCV HUD Legend */}
+      <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-1.5 bg-surface2/80 border-b border-subtle text-xs font-mono select-none shrink-0">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-4">
+          {activeDisplayCandle ? (
+            <>
+              <div className="flex items-center gap-1.5">
+                <span className="text-[10px] text-faint uppercase font-bold">O:</span>
+                <span className="font-bold text-primary">{activeDisplayCandle.open.toFixed(2)}</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="text-[10px] text-faint uppercase font-bold">H:</span>
+                <span className="font-bold text-primary">{activeDisplayCandle.high.toFixed(2)}</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="text-[10px] text-faint uppercase font-bold">L:</span>
+                <span className="font-bold text-primary">{activeDisplayCandle.low.toFixed(2)}</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="text-[10px] text-faint uppercase font-bold">C:</span>
+                <span className={`font-bold ${isBullish ? "text-bull" : "text-bear"}`}>
+                  {activeDisplayCandle.close.toFixed(2)}
+                </span>
+                <span className={`text-[11px] font-bold ${isBullish ? "text-bull" : "text-bear"}`}>
+                  ({isBullish ? "+" : ""}{barChangePct.toFixed(2)}%)
+                </span>
+              </div>
+              {activeDisplayCandle.volume ? (
+                <div className="hidden sm:flex items-center gap-1.5">
+                  <span className="text-[10px] text-faint uppercase font-bold">Vol:</span>
+                  <span className="font-bold text-muted">
+                    {activeDisplayCandle.volume >= 1000000
+                      ? `${(activeDisplayCandle.volume / 1000000).toFixed(2)}M`
+                      : activeDisplayCandle.volume >= 1000
+                      ? `${(activeDisplayCandle.volume / 1000).toFixed(1)}K`
+                      : activeDisplayCandle.volume}
+                  </span>
+                </div>
+              ) : null}
+              {activeDisplayCandle.vwap ? (
+                <div className="hidden md:flex items-center gap-1.5">
+                  <span className="text-[10px] text-yellow-500 font-bold uppercase">VWAP:</span>
+                  <span className="font-bold text-yellow-400">{activeDisplayCandle.vwap.toFixed(2)}</span>
+                </div>
+              ) : null}
+            </>
+          ) : (
+            <span className="text-faint text-[11px]">Hover over candle to inspect OHLCV data</span>
+          )}
+        </div>
+
+        {/* Quick Zoom Presets & Fullscreen */}
+        <div className="flex items-center gap-1 sm:gap-2">
+          <div className="flex items-center rounded-lg bg-surface/60 border border-subtle p-0.5 text-[10px]">
+            <button
+              onClick={() => handleQuickZoom("1d")}
+              className="px-1.5 py-0.5 rounded text-faint hover:text-primary transition"
+              title="Zoom Today"
+            >
+              1D
+            </button>
+            <button
+              onClick={() => handleQuickZoom("2d")}
+              className="px-1.5 py-0.5 rounded text-faint hover:text-primary transition"
+              title="Zoom 2 Days"
+            >
+              2D
+            </button>
+            <button
+              onClick={() => handleQuickZoom("5d")}
+              className="px-1.5 py-0.5 rounded text-faint hover:text-primary transition"
+              title="Zoom 5 Days"
+            >
+              5D
+            </button>
+            <button
+              onClick={() => handleQuickZoom("all")}
+              className="px-1.5 py-0.5 rounded text-faint hover:text-primary transition font-bold"
+              title="Fit All"
+            >
+              All
+            </button>
+          </div>
+
+          {/* Magnet Snapping Toggle */}
+          <button
+            onClick={() => setIsMagnet(!isMagnet)}
+            className={`p-1 rounded-lg border transition ${
+              isMagnet
+                ? "bg-accent/15 text-accent border-accent/40 shadow-sm"
+                : "bg-surface text-faint border-subtle hover:text-primary"
+            }`}
+            title={isMagnet ? "Magnet Mode: Snapping to OHLC (Click to Free)" : "Free Crosshair Mode (Click for Magnet)"}
+          >
+            <Magnet className="h-3 w-3" />
+          </button>
+
+          {/* Fullscreen Toggle */}
+          <button
+            onClick={toggleFullscreen}
+            className="p-1 rounded-lg border border-subtle bg-surface text-faint hover:text-primary transition"
+            title={isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
+          >
+            {isFullscreen ? <Minimize2 className="h-3 w-3" /> : <Maximize2 className="h-3 w-3" />}
+          </button>
+        </div>
+      </div>
+
+      {/* 2. Indicator Toolbar Bar */}
+      <div className="flex flex-wrap items-center gap-1 sm:gap-1.5 px-3 py-1 bg-surface2/40 border-b border-subtle text-[11px] shrink-0">
         <span className="text-[10px] font-bold text-muted uppercase tracking-wider mr-1 hidden sm:inline">Indicators:</span>
 
         {/* EMA 20 */}
@@ -435,14 +672,23 @@ export function CandleChart({ candles = [], height = 400 }) {
               ? "bg-indigo-500/15 text-indigo-400 border-indigo-500/30 shadow-sm"
               : "bg-surface text-faint border-subtle opacity-50 line-through"
           }`}
-          title="Toggle Volume & 20-MA"
+          title="Toggle Volume (Futures) & 20-MA"
         >
           {visibilities.volume ? <Eye className="h-2.5 w-2.5" /> : <EyeOff className="h-2.5 w-2.5" />}
           <span>Vol • 20MA</span>
         </button>
       </div>
 
-      <div ref={containerRef} className="w-full flex-1 min-h-0" />
+      {/* 3. Canvas Container with Mobile Touch Distortion Fix */}
+      <div
+        ref={containerRef}
+        className="w-full flex-1 min-h-0 select-none relative"
+        style={{
+          touchAction: "none",
+          overscrollBehavior: "none",
+          WebkitUserSelect: "none",
+        }}
+      />
     </div>
   );
 }
