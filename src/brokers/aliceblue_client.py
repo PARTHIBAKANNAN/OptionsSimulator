@@ -533,6 +533,20 @@ class AliceBlueClient:
                         logger.debug("Error in on_tick_hook: %s", hook_err)
                 return
 
+            # 1b. Near-Month Index Futures Tick (Live Exchange Volume Proxy)
+            fut_und = self.contract_master.get_underlying_for_future_token(token)
+            if fut_und:
+                vol = int(data.get("v", 0) or 0)
+                dm = self.data_managers.get(fut_und)
+                if dm and hasattr(dm, "on_future_tick"):
+                    dm.on_future_tick(ltp=ltp, volume=vol, timestamp=now_ist)
+                if self.on_tick_hook:
+                    try:
+                        self.on_tick_hook()
+                    except Exception as hook_err:
+                        logger.debug("Error in on_tick_hook (future): %s", hook_err)
+                return
+
             # 2. Option Contract Tick
             inst = self._token_to_inst.get(token)
             if not inst:

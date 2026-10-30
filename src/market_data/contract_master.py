@@ -77,6 +77,13 @@ class ContractMaster:
             "BANKNIFTY": [],
             "SENSEX": []
         }
+        self._futures_by_underlying: Dict[str, List[ContractMeta]] = {
+            "NIFTY": [],
+            "BANKNIFTY": [],
+            "SENSEX": []
+        }
+        self._active_future_by_underlying: Dict[str, ContractMeta] = {}
+        self._future_token_to_underlying: Dict[int, str] = {}
 
     def load_contracts(self, force_download: bool = False) -> None:
         """Downloads (if needed) and parses official NFO and BFO contracts into memory."""
@@ -98,6 +105,9 @@ class ContractMaster:
         self._by_canonical_id.clear()
         self._clean_alias_to_token.clear()
         self._contracts_by_underlying = {"NIFTY": [], "BANKNIFTY": [], "SENSEX": []}
+        self._futures_by_underlying = {"NIFTY": [], "BANKNIFTY": [], "SENSEX": []}
+        self._active_future_by_underlying.clear()
+        self._future_token_to_underlying.clear()
 
         if nfo_path.exists():
             self._parse_nfo(nfo_path)
@@ -116,10 +126,19 @@ class ContractMaster:
                     if c.expiry == active_exp:
                         self._clean_alias_to_token[c.clean_alias] = c.token
 
+        # 5. Resolve active near-month Futures for each index
+        for und, futs in self._futures_by_underlying.items():
+            valid_futs = sorted([f for f in futs if f.expiry >= today], key=lambda x: x.expiry)
+            if valid_futs:
+                near_fut = valid_futs[0]
+                self._active_future_by_underlying[und] = near_fut
+                self._future_token_to_underlying[near_fut.token] = und
+
         logger.info(
-            "ContractMaster loaded: %d contracts indexed. Active expiries: %s",
+            "ContractMaster loaded: %d contracts indexed. Active expiries: %s. Active futures: %s",
             len(self._by_token),
-            {k: str(v) for k, v in self._active_expiry_by_underlying.items()}
+            {k: str(v) for k, v in self._active_expiry_by_underlying.items()},
+            {k: f"{v.trading_symbol} (Token {v.token})" for k, v in self._active_future_by_underlying.items()}
         )
 
     def _download_file(self, url: str, target_path: Path) -> None:
@@ -150,12 +169,15 @@ class ContractMaster:
                 if sym not in ("NIFTY", "BANKNIFTY"):
                     continue
                 itype = row.get("Instrument Type", "").strip()
-                if itype != "OPTIDX":
+                if itype not in ("OPTIDX", "FUTIDX"):
                     continue
                 try:
                     token = int(row["Token"])
-                    strike = float(row["Strike Price"])
-                    opttype = row["Option Type"].strip().upper()
+                    strike = float(row.get("Strike Price", 0.0) or 0.0)
+                    opttype = row.get("Option Type", "").strip().upper()
+                    if itype == "FUTIDX":
+                        opttype = "FUT"
+                        strike = 0.0
                     exp_date = date.fromisoformat(row["Expiry Date"].strip())
                     lot_size = int(row.get("Lot Size", 25))
                     meta = ContractMeta(
@@ -171,7 +193,10 @@ class ContractMaster:
                     )
                     self._by_token[token] = meta
                     self._by_canonical_id[meta.canonical_id] = meta
-                    self._contracts_by_underlying[sym].append(meta)
+                    if itype == "FUTIDX":
+                        self._futures_by_underlying[sym].append(meta)
+                    else:
+                        self._contracts_by_underlying[sym].append(meta)
                 except (ValueError, KeyError):
                     continue
 
@@ -181,12 +206,18 @@ class ContractMaster:
             for row in reader:
                 sym = row.get("Symbol", "").strip()
                 ins_name = row.get("Instrument Name", "").strip()
-                if sym != "SENSEX" and "SENSEX" not in ins_name:
+                tsym = row.get("Trading Symbol", "").strip()
+                if sym != "SENSEX" and "SENSEX" not in ins_name and not tsym.startswith("SENSEX"):
                     continue
+                itype = row.get("Instrument Type", "").strip()
+                is_future = (ins_name == "IF" or itype == "FUTIDX" or tsym.endswith("FUT"))
                 try:
                     token = int(row["Token"])
-                    strike = float(row["Strike Price"])
-                    opttype = row["Option Type"].strip().upper()
+                    strike = float(row.get("Strike Price", 0.0) or 0.0)
+                    opttype = row.get("Option Type", "").strip().upper()
+                    if is_future:
+                        opttype = "FUT"
+                        strike = 0.0
                     exp_date = date.fromisoformat(row["Expiry Date"].strip())
                     lot_size = int(row.get("Lot Size", 10))
                     meta = ContractMeta(
@@ -197,12 +228,15 @@ class ContractMaster:
                         strike=strike,
                         option_type=opttype,
                         expiry=exp_date,
-                        trading_symbol=row.get("Trading Symbol", "").strip(),
+                        trading_symbol=tsym,
                         lot_size=lot_size,
                     )
                     self._by_token[token] = meta
                     self._by_canonical_id[meta.canonical_id] = meta
-                    self._contracts_by_underlying["SENSEX"].append(meta)
+                    if is_future:
+                        self._futures_by_underlying["SENSEX"].append(meta)
+                    else:
+                        self._contracts_by_underlying["SENSEX"].append(meta)
                 except (ValueError, KeyError):
                     continue
 
@@ -220,6 +254,14 @@ class ContractMaster:
         """Returns nearest weekly active expiry date for the underlying (e.g. NIFTY -> 2026-10-19)."""
         return self._active_expiry_by_underlying.get(underlying)
 
+    def get_active_future(self, underlying: str) -> Optional[ContractMeta]:
+        """Returns the ContractMeta of the active near-month future for the underlying."""
+        return self._active_future_by_underlying.get(underlying)
+
+    def get_underlying_for_future_token(self, token: int) -> Optional[str]:
+        """Maps a future contract token back to its underlying ('NIFTY', 'BANKNIFTY', 'SENSEX')."""
+        return self._future_token_to_underlying.get(token)
+
     def get_corridor_tokens(
         self,
         spot_prices: Dict[str, float],
@@ -228,8 +270,9 @@ class ContractMaster:
         """
         Returns list of (exchange, token) tuples for the full strike corridor:
         - Spot indices (NIFTY 26000, BANKNIFTY 26009, SENSEX 1)
+        - Active near-month Index Futures (NIFTY-FUT, BANKNIFTY-FUT, SENSEX-FUT)
         - ATM ± strikes_each_side for active expiry (NIFTY, BANKNIFTY, SENSEX)
-        Total ~189 tokens.
+        Total ~192 tokens.
         """
         results: List[Tuple[str, int]] = []
 
@@ -237,7 +280,11 @@ class ContractMaster:
         for und, (exch, tok) in INDEX_SPOT_TOKENS.items():
             results.append((exch, tok))
 
-        # 2. Add Option Corridor tokens for active expiries
+        # 2. Add Active Near-Month Futures tokens
+        for und, fut_meta in self._active_future_by_underlying.items():
+            results.append((fut_meta.exchange, fut_meta.token))
+
+        # 3. Add Option Corridor tokens for active expiries
         for und, spot in spot_prices.items():
             if spot <= 0 or und not in self._active_expiry_by_underlying:
                 continue

@@ -57,11 +57,10 @@ class ORBBullish(BaseStrategy):
 
         indicators = data_state.get("indicators") or {}
         avg_volume = indicators.get("avg_volume")
-        if avg_volume is None or avg_volume <= 0:
-            return None
+        vol_ratio = indicators.get("volume_ratio") or indicators.get("volume_ratio_5m") or 1.0
 
         crossed_now = (prev.close <= self._range_high < current.close) or (prev.timestamp.time() < ORB_WINDOW_END and current.close > self._range_high)
-        volume_confirmed = current.volume >= (1.25 * avg_volume)
+        volume_confirmed = (current.volume >= (1.15 * avg_volume)) if (avg_volume and avg_volume > 0) else (vol_ratio >= 1.15)
         if crossed_now and volume_confirmed:
             spot = current.close
             if spot <= 0:

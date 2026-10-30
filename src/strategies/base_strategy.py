@@ -47,9 +47,8 @@ class BaseStrategy:
             t = current_time.time() if hasattr(current_time, "time") else None
             if t and (t < OPENING_CUTOFF_TIME or t >= EOD_CUTOFF_TIME):
                 return False
-            # 1M Scalp strategies strictly permitted only between 09:25 AM and 10:45 AM
-            if "_1M_" in self.name and not self.is_scalp_1m_allowed(current_time):
-                return False
+            # Dynamic 1M Scalp check (no blanket clock cutoff)
+            pass
         if self.last_signal_time is None:
             return True
         elapsed_seconds = (current_time - self.last_signal_time).total_seconds()
@@ -119,6 +118,47 @@ class BaseStrategy:
         if adx_val is None:
             return True
         return adx_val >= min_adx
+
+    @staticmethod
+    def is_chop_free(data_state: dict, current_time: datetime) -> bool:
+        """Triple Chop-Filter Matrix replacing the blunt 12:30-14:30 clock block.
+        Checks ADX trend strength, candle body-to-range ratio, and Bollinger Band expansion."""
+        indicators = data_state.get("indicators") or {}
+        # 1. ADX filter: If ADX is computed and < 20, market is oscillating in flat chop
+        adx = indicators.get("adx_14_5m") or indicators.get("adx") or indicators.get("adx_14_1m")
+        if adx is not None and adx < 20.0:
+            return False
+
+        # 2. Candle body ratio in midday/afternoon chop zone (12:30 - 14:30)
+        # Avoid thin-body dojis and rejection traps
+        if BaseStrategy.is_midday_chop_zone(current_time):
+            candles = data_state.get("candles", [])
+            if candles:
+                last_candle = candles[-1]
+                rng = float(last_candle.high) - float(last_candle.low)
+                body = abs(float(last_candle.close) - float(last_candle.open))
+                if rng > 0 and (body / rng) < 0.45:
+                    return False
+        return True
+
+    @staticmethod
+    def is_scalp_1m_confirmed(data_state: dict, direction: str) -> bool:
+        """Multi-Timeframe Macro Alignment for 1M Scalps (Replaces 10:45 AM clock block).
+        Ensures 1M scalp entries are aligned with the 5M trend anchor."""
+        indicators = data_state.get("indicators") or {}
+        st_dir = indicators.get("supertrend_10_3_direction")
+        ema20_5m = indicators.get("ema_20_5m")
+        spot = data_state.get("nifty_price") or data_state.get("banknifty_price") or data_state.get("sensex_price")
+        
+        # In a 5M downtrend, do not take 1M CE scalps
+        if direction == "CE":
+            if st_dir == -1.0 and ema20_5m is not None and spot is not None and spot < ema20_5m:
+                return False
+        # In a 5M uptrend, do not take 1M PE scalps
+        elif direction == "PE":
+            if st_dir == 1.0 and ema20_5m is not None and spot is not None and spot > ema20_5m:
+                return False
+        return True
 
 
     def evaluate(self, data_state: dict) -> Optional[Signal]:

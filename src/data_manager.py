@@ -57,6 +57,11 @@ class DataManager:
         # construction. Used by get_state() for spot index display so the UI always shows the
         # freshest tick, exactly like TradeDashBoard's market_state.set_nifty(ltp=ltp).
         self._live_ltp: Optional[float] = None
+        # Near-Month Index Futures tracking for authentic volume & institutional VWAP
+        self._prev_future_volume: Optional[int] = None
+        self._prev_future_ltp: Optional[float] = None
+        self._future_live_ltp: Optional[float] = None
+        self._future_volume_today: int = 0
 
         # Multi-timeframe indicators only change when their bar actually closes — recomputing a
         # full resample of up to `window_size` candles on every single 1-min tick is both wasteful
@@ -72,6 +77,32 @@ class DataManager:
         from zoneinfo import ZoneInfo
         ts = timestamp or datetime.now(ZoneInfo("Asia/Kolkata"))
         self.on_nifty_tick({"ltp": price, "volume": volume, "timestamp": ts})
+
+    def on_future_tick(self, ltp: float, volume: int = 0, timestamp: Optional[datetime] = None) -> None:
+        """Processes live Near-Month Index Futures ticks (Quantman Derivative Model).
+        Attributes real exchange volume and tick-rule delta to the current forming bar."""
+        from zoneinfo import ZoneInfo
+        ts = timestamp or datetime.now(ZoneInfo("Asia/Kolkata"))
+        self._future_live_ltp = ltp
+        self._future_volume_today = volume
+
+        vol_delta = max(0, volume - self._prev_future_volume) if self._prev_future_volume is not None else 0
+        if self._prev_future_ltp is None or vol_delta == 0:
+            signed_delta = 0.0
+        elif ltp > self._prev_future_ltp:
+            signed_delta = float(vol_delta)
+        elif ltp < self._prev_future_ltp:
+            signed_delta = -float(vol_delta)
+        else:
+            signed_delta = 0.0
+
+        self._prev_future_ltp = ltp
+        self._prev_future_volume = volume
+
+        # If a minute candle is forming, accumulate the real futures volume and tick-delta
+        if self._current is not None and vol_delta > 0:
+            self._current.volume += vol_delta
+            self._current.delta += signed_delta
 
     def on_nifty_tick(self, tick: dict) -> None:
         """tick: {'ltp': float, 'volume': int (cumulative or delta), 'timestamp': datetime}"""
@@ -437,6 +468,8 @@ class DataManager:
                 out["macd_histogram_5m_prev"] = (
                     float(macd_df_5m["histogram"].iloc[-2]) if len(macd_df_5m) >= 2 else out["macd_histogram_5m"]
                 )
+                out["macd_hist_5m"] = out["macd_histogram_5m"]
+                out["macd_hist_5m_prev"] = out["macd_histogram_5m_prev"]
                 # Was referenced by the VWAP-POC expansion strategies but never actually computed —
                 # silently fell back to a constant 50.0 forever, making their RSI filter (>50 / <45)
                 # mathematically impossible to satisfy. See docs/ARCHITECTURE.md.
@@ -523,6 +556,9 @@ class DataManager:
 
         if "vwap_5m" in out:
             out["vwap"] = out["vwap_5m"]
+        if self._future_live_ltp is not None:
+            out["future_ltp"] = self._future_live_ltp
+            out["future_volume"] = self._future_volume_today
 
         self._cached_values = out
         return out

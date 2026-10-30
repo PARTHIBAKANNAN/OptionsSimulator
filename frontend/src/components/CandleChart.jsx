@@ -250,7 +250,7 @@ export function CandleChart({ candles = [], height = 400 }) {
         priceFormat: { type: "volume" },
         priceLineVisible: false,
         lastValueVisible: true,
-        title: "Volume",
+        title: "Volume (Futures)",
       },
       1
     );
