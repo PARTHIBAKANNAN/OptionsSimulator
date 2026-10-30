@@ -41,7 +41,7 @@ class BacktestEngine:
         sizing = risk_params.get("position_sizing", {})
         self.qty_per_signal = sizing.get("qty_per_signal", 1)
         self.lot_size = sizing.get("lot_size", 65)
-        self.max_concurrent_positions = sizing.get("max_concurrent_positions", 5)
+        self.max_concurrent_positions = sizing.get("max_concurrent_positions", None)
         self.max_daily_loss = sizing.get("max_daily_loss", 5000)
         self.max_trades_per_day_per_strategy = sizing.get("max_trades_per_day_per_strategy", 2)
 
@@ -81,7 +81,7 @@ def _worker_run_single_strategy(args: tuple) -> tuple:
     trader = PaperTrader(
         initial_capital=initial_capital,
         lot_size=lot_size,
-        max_concurrent_positions=params.get("max_concurrent_positions", 5),
+        max_concurrent_positions=params.get("max_concurrent_positions", None),
         max_daily_loss=params.get("max_daily_loss", 5000),
         max_trades_per_day_per_strategy=params.get("max_trades_per_day_per_strategy", 2),
         trailing_stop_enabled=params.get("trailing_stop_enabled", False),
@@ -151,7 +151,7 @@ class BacktestEngine:
         sizing = risk_params.get("position_sizing", {})
         self.qty_per_signal = sizing.get("qty_per_signal", 1)
         self.lot_size = sizing.get("lot_size", 65)
-        self.max_concurrent_positions = sizing.get("max_concurrent_positions", 5)
+        self.max_concurrent_positions = sizing.get("max_concurrent_positions", None)
         self.max_daily_loss = sizing.get("max_daily_loss", 5000)
         self.max_trades_per_day_per_strategy = sizing.get("max_trades_per_day_per_strategy", 2)
 

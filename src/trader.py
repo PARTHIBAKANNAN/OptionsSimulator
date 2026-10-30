@@ -116,7 +116,7 @@ class LiveTrader:
         self.paper_trader = PaperTrader(
             lot_size=sizing.get("lot_size", 65),
             min_entry_premium=sizing.get("min_entry_premium", 60.0),
-            max_concurrent_positions=sizing.get("max_concurrent_positions", 5),
+            max_concurrent_positions=sizing.get("max_concurrent_positions", None),
             max_daily_loss=sizing.get("max_daily_loss", 5000),
             max_trades_per_day_per_strategy=sizing.get("max_trades_per_day_per_strategy", 2),
             trailing_stop_enabled=exits.get("trailing_stop_enabled", False),

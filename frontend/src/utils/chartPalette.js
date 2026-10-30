@@ -91,3 +91,4 @@ export function saveCustomPalette(customColors) {
   localStorage.setItem("nukebox_chart_palette", JSON.stringify(merged));
   window.dispatchEvent(new Event("nukebox_palette_changed"));
 }
+

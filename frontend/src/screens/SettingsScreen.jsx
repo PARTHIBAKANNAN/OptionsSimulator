@@ -84,9 +84,6 @@ export function SettingsScreen({ onOpenAliceLogin }) {
   const [tierExpansion, setTierExpansion] = useState(() => {
     return localStorage.getItem("nukebox_tier_expansion") !== "false";
   });
-  const [maxPositions, setMaxPositions] = useState(() => {
-    return parseInt(localStorage.getItem("nukebox_max_positions") || "10", 10);
-  });
 
   // Risk Circuit Breakers (Disabled by default as requested)
   const [lossLimitActive, setLossLimitActive] = useState(() => {
@@ -101,9 +98,6 @@ export function SettingsScreen({ onOpenAliceLogin }) {
   const [profitLockAmount, setProfitLockAmount] = useState(() => {
     return localStorage.getItem("nukebox_profit_lock_amount") || "30000";
   });
-  const [slippagePts, setSlippagePts] = useState(() => {
-    return localStorage.getItem("nukebox_slippage_pts") || "0.0";
-  });
   const [statutoryCharges, setStatutoryCharges] = useState(() => {
     return localStorage.getItem("nukebox_statutory_charges") !== "false";
   });
@@ -114,17 +108,6 @@ export function SettingsScreen({ onOpenAliceLogin }) {
   });
   const [showGridlines, setShowGridlines] = useState(() => {
     return localStorage.getItem("nukebox_show_gridlines") !== "false";
-  });
-
-  // External Alerts Webhook
-  const [telegramToken, setTelegramToken] = useState(() => {
-    return localStorage.getItem("nukebox_telegram_token") || "";
-  });
-  const [telegramChatId, setTelegramChatId] = useState(() => {
-    return localStorage.getItem("nukebox_telegram_chat_id") || "";
-  });
-  const [discordWebhook, setDiscordWebhook] = useState(() => {
-    return localStorage.getItem("nukebox_discord_webhook") || "";
   });
 
   const handleToggleSound = () => {
@@ -245,10 +228,10 @@ export function SettingsScreen({ onOpenAliceLogin }) {
   // Sub-Navigation Tabs Definitions
   const navTabs = [
     { id: "appearance", label: "Appearance & Charts", shortLabel: "Charts", icon: Palette },
-    { id: "execution", label: "Execution & Strategies", shortLabel: "Execution", icon: Zap },
+    { id: "execution", label: "Execution & Strategies", shortLabel: "Exec", icon: Zap },
     { id: "risk", label: "Risk & Circuit Breakers", shortLabel: "Risk", icon: ShieldAlert },
     { id: "broker", label: "Broker & Live Stream", shortLabel: "Broker", icon: Server },
-    { id: "sound", label: "Sound & Audio Alerts", shortLabel: "Alerts", icon: Volume2 },
+    { id: "sound", label: "Sound & Audio Alerts", shortLabel: "Audio", icon: Volume2 },
     { id: "data", label: "Data & Maintenance", shortLabel: "Data", icon: Database },
   ];
 
@@ -317,9 +300,9 @@ export function SettingsScreen({ onOpenAliceLogin }) {
       </AnimatePresence>
 
       {/* 2. Main Two-Column Layout: Left-Side Navigation Dock + Main Stage */}
-      <div className="flex flex-row gap-3 sm:gap-6 min-h-[640px]">
-        {/* LEFT-SIDE SUB-NAVIGATION BUTTONS (Desktop full width, Mobile compact icon dock) */}
-        <aside className="w-16 sm:w-20 md:w-64 shrink-0 flex flex-col gap-1.5 rounded-3xl border border-subtle bg-surface p-2 sm:p-3 shadow-md self-start sticky top-20">
+      <div className="flex flex-row gap-2 sm:gap-4 md:gap-6 min-h-[640px]">
+        {/* LEFT-SIDE SUB-NAVIGATION BUTTONS (Desktop full width, Mobile compact icon dock with micro-labels) */}
+        <aside className="w-16 sm:w-20 md:w-64 shrink-0 flex flex-col gap-1 sm:gap-1.5 rounded-2xl md:rounded-3xl border border-subtle bg-surface p-1.5 sm:p-2 md:p-3 shadow-md self-start sticky top-20">
           <div className="px-2 py-1.5 hidden md:block text-[10px] font-bold uppercase tracking-wider text-faint border-b border-subtle mb-1">
             Navigation
           </div>
@@ -331,14 +314,20 @@ export function SettingsScreen({ onOpenAliceLogin }) {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-3 w-full rounded-2xl p-2.5 sm:p-3 text-xs font-bold transition justify-center md:justify-start ${
+                className={`flex flex-col md:flex-row items-center justify-center md:justify-start gap-1 md:gap-3 w-full rounded-xl md:rounded-2xl py-2 px-1 md:py-2.5 md:px-3 text-xs font-bold transition relative group ${
                   isActive
                     ? "bg-accent/15 text-accent border border-accent/40 shadow-sm"
                     : "text-faint hover:text-primary hover:bg-surface2/60 border border-transparent"
                 }`}
                 title={tab.label}
               >
-                <Icon className={`h-4 w-4 shrink-0 ${isActive ? "text-accent" : "text-faint"}`} />
+                {isActive && (
+                  <span className="hidden md:block absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-accent rounded-r-full" />
+                )}
+                <Icon className={`h-4 w-4 shrink-0 transition-transform group-active:scale-90 ${isActive ? "text-accent" : "text-faint"}`} />
+                <span className="text-[9px] sm:text-[10px] font-bold tracking-tight text-center leading-none md:hidden truncate w-full">
+                  {tab.shortLabel}
+                </span>
                 <span className="hidden md:inline font-sans truncate">{tab.label}</span>
               </button>
             );
@@ -676,26 +665,6 @@ export function SettingsScreen({ onOpenAliceLogin }) {
                       ))}
                     </div>
                   </div>
-
-                  <div className="p-4 rounded-2xl bg-surface2/40 border border-subtle space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="font-bold text-xs text-primary">Max Concurrent Trades</span>
-                      <span className="font-mono font-bold text-accent">{maxPositions}</span>
-                    </div>
-                    <p className="text-faint text-[11px]">Maximum open positions permitted at any one time</p>
-                    <input
-                      type="range"
-                      min="1"
-                      max="15"
-                      value={maxPositions}
-                      onChange={(e) => {
-                        const val = parseInt(e.target.value, 10);
-                        setMaxPositions(val);
-                        localStorage.setItem("nukebox_max_positions", val.toString());
-                      }}
-                      className="w-full accent-accent cursor-pointer"
-                    />
-                  </div>
                 </div>
               </div>
             </motion.div>
@@ -802,29 +771,6 @@ export function SettingsScreen({ onOpenAliceLogin }) {
                     </div>
                   </div>
 
-                  {/* Simulated Execution Slippage */}
-                  <div className="p-4 rounded-2xl bg-surface2/40 border border-subtle flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <div>
-                      <span className="font-bold text-xs text-primary">Simulated Execution Slippage</span>
-                      <p className="text-faint text-[11px] mt-0.5">
-                        Applies price penalty to entry/exit fills for ultra-realistic paper trading stress-testing.
-                      </p>
-                    </div>
-
-                    <select
-                      value={slippagePts}
-                      onChange={(e) => {
-                        setSlippagePts(e.target.value);
-                        localStorage.setItem("nukebox_slippage_pts", e.target.value);
-                      }}
-                      className="rounded-xl border border-subtle bg-surface px-3 py-1.5 font-bold text-primary font-mono text-xs"
-                    >
-                      <option value="0.0">0.0 pts (Raw Fills - Default)</option>
-                      <option value="0.5">0.5 pts Slippage</option>
-                      <option value="1.0">1.0 pt Slippage</option>
-                      <option value="2.0">2.0 pts Slippage</option>
-                    </select>
-                  </div>
                 </div>
               </div>
             </motion.div>
@@ -1045,53 +991,6 @@ export function SettingsScreen({ onOpenAliceLogin }) {
                       >
                         Test
                       </button>
-                    </div>
-                  </div>
-                </div>
-
-                {/* External Push Webhooks */}
-                <div className="pt-4 border-t border-subtle space-y-4">
-                  <h3 className="text-xs font-bold text-faint uppercase tracking-wider">External Push Notification Integrations</h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-mono">
-                    <div className="p-4 rounded-2xl bg-surface2/40 border border-subtle space-y-2">
-                      <span className="font-bold text-primary font-sans">Telegram Bot Alerts</span>
-                      <input
-                        type="text"
-                        placeholder="Bot Token (e.g. 123456:ABC-DEF)"
-                        value={telegramToken}
-                        onChange={(e) => {
-                          setTelegramToken(e.target.value);
-                          localStorage.setItem("nukebox_telegram_token", e.target.value);
-                        }}
-                        className="w-full rounded-xl border border-subtle bg-surface px-3 py-1.5 text-primary text-[11px]"
-                      />
-                      <input
-                        type="text"
-                        placeholder="Chat ID (e.g. -100123456789)"
-                        value={telegramChatId}
-                        onChange={(e) => {
-                          setTelegramChatId(e.target.value);
-                          localStorage.setItem("nukebox_telegram_chat_id", e.target.value);
-                        }}
-                        className="w-full rounded-xl border border-subtle bg-surface px-3 py-1.5 text-primary text-[11px]"
-                      />
-                    </div>
-
-                    <div className="p-4 rounded-2xl bg-surface2/40 border border-subtle space-y-2">
-                      <span className="font-bold text-primary font-sans">Discord Webhook Integration</span>
-                      <input
-                        type="text"
-                        placeholder="https://discord.com/api/webhooks/..."
-                        value={discordWebhook}
-                        onChange={(e) => {
-                          setDiscordWebhook(e.target.value);
-                          localStorage.setItem("nukebox_discord_webhook", e.target.value);
-                        }}
-                        className="w-full rounded-xl border border-subtle bg-surface px-3 py-1.5 text-primary text-[11px]"
-                      />
-                      <p className="text-[10px] text-faint font-sans mt-2">
-                        Sends instant message whenever paper trades enter, lock trailing SL, or exit.
-                      </p>
                     </div>
                   </div>
                 </div>

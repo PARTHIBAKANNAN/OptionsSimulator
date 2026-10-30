@@ -80,7 +80,7 @@ class PaperTrader:
         initial_capital: float = 1_000_000,
         slippage_pct: float = 0.1,
         lot_size: int = 65,
-        max_concurrent_positions: int = 5,
+        max_concurrent_positions: Optional[int] = None,
         max_daily_loss: float = 5000,
         max_trades_per_day_per_strategy: int = 2,
         trailing_stop_enabled: bool = False,
