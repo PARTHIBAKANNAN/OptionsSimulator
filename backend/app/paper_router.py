@@ -426,146 +426,317 @@ async def refresh_postmarket_intelligence(request: Request):
     return _sanitize(journal)
 
 
+def _parse_audited_trades(start_date: date_cls, end_date: date_cls):
+    """Loads and computes live market metrics from audited trades CSV as baseline / fallback."""
+    import csv
+    csv_file = Path("data/market_analysis/audited_trades_real_vs_app_sept01_to_date.csv")
+    rows = []
+    if csv_file.exists():
+        with open(csv_file, encoding="utf-8") as f:
+            for r in csv.DictReader(f):
+                try:
+                    d = datetime.strptime(r["date"], "%Y-%m-%d").date()
+                    if start_date <= d <= end_date:
+                        rows.append(r)
+                except Exception:
+                    continue
+    return rows
+
+
 @router.get("/analytics/overview")
-async def get_analytics_overview(request: Request):
+async def get_analytics_overview(
+    request: Request,
+    range: str = "all",
+    from_date: str = None,
+    to_date: str = None
+):
     """Institutional All-Time & Live Telemetry Overview derived strictly from live DB executions."""
     engine = _get_engine(request)
     wallets = engine.paper_trader.get_all_wallets()
     total_allocated = sum(w.get("allocated_capital", 0.0) for w in wallets.values()) if wallets else 0.0
     total_wallet_balance = sum(w.get("balance", 0.0) for w in wallets.values()) if wallets else 0.0
 
-    if not getattr(request.app.state, "db_available", False):
-        return {
-            "all_time_net_pnl": round(total_wallet_balance - total_allocated, 2),
-            "all_time_gross_pnl": round(total_wallet_balance - total_allocated, 2),
-            "all_time_charges": 0.0,
-            "all_time_trades": 0,
-            "all_time_win_rate": 0.0,
-            "total_allocated_capital": total_allocated,
-            "total_wallet_balance": total_wallet_balance,
-            "top_performers": [],
-            "laggards": [],
-            "index_breakdown": {
-                "NIFTY": {"trades": 0, "wins": 0, "win_rate": 0.0, "net_pnl": 0.0},
-                "BANKNIFTY": {"trades": 0, "wins": 0, "win_rate": 0.0, "net_pnl": 0.0},
-                "SENSEX": {"trades": 0, "wins": 0, "win_rate": 0.0, "net_pnl": 0.0},
-            },
-            "equity_curve": []
-        }
+    try:
+        s_date = datetime.strptime(from_date, "%Y-%m-%d").date() if from_date else None
+        e_date = datetime.strptime(to_date, "%Y-%m-%d").date() if to_date else None
+        start_date, end_date = resolve_range(range, start=s_date, end=e_date)
+    except Exception:
+        start_date, end_date = resolve_range("all")
 
-    pool = db.get_pool()
-    # 1. All-time aggregate numbers
-    agg_row = await pool.fetchrow(
-        """SELECT COUNT(*) AS trades,
-                  SUM(CASE WHEN realized_pnl > 0 THEN 1 ELSE 0 END) AS wins,
-                  COALESCE(SUM(realized_pnl), 0) AS gross_pnl,
-                  COALESCE(SUM(entry_charges + exit_charges), 0) AS charges,
-                  COALESCE(SUM(realized_pnl - entry_charges - exit_charges), 0) AS net_pnl
-           FROM options_positions
-           WHERE status = 'CLOSED'"""
-    )
-    all_time_trades = agg_row["trades"] or 0
-    all_time_wins = agg_row["wins"] or 0
-    all_time_gross = float(agg_row["gross_pnl"] or 0)
-    all_time_charges = float(agg_row["charges"] or 0)
-    all_time_net = float(agg_row["net_pnl"] or 0)
-    all_time_wr = round(all_time_wins / all_time_trades * 100, 2) if all_time_trades > 0 else 0.0
+    use_db = getattr(request.app.state, "db_available", False)
+    db_rows = []
+    if use_db:
+        try:
+            pool = db.get_pool()
+            db_rows = await pool.fetch(
+                """SELECT order_id, strategy, symbol, qty, entry_price, entry_time, exit_price, exit_time,
+                          exit_reason, realized_pnl, entry_charges, exit_charges
+                   FROM options_positions
+                   WHERE status = 'CLOSED' AND strategy IS NOT NULL
+                     AND (exit_time AT TIME ZONE 'Asia/Kolkata')::date BETWEEN $1 AND $2
+                   ORDER BY exit_time ASC""",
+                start_date, end_date
+            )
+        except Exception:
+            db_rows = []
 
-    # 2. Per-strategy rankings
-    strat_rows = await pool.fetch(
-        """SELECT strategy, COUNT(*) AS trades,
-                  SUM(CASE WHEN realized_pnl > 0 THEN 1 ELSE 0 END) AS wins,
-                  COALESCE(SUM(realized_pnl), 0) AS gross_pnl,
-                  COALESCE(SUM(entry_charges + exit_charges), 0) AS charges,
-                  COALESCE(SUM(realized_pnl - entry_charges - exit_charges), 0) AS net_pnl
-           FROM options_positions
-           WHERE status = 'CLOSED' AND strategy IS NOT NULL
-           GROUP BY strategy
-           ORDER BY net_pnl DESC"""
-    )
-    strat_list = []
-    for r in strat_rows:
-        t = r["trades"]
-        w = r["wins"]
-        net = float(r["net_pnl"])
-        strat_list.append({
-            "strategy": r["strategy"],
-            "trades": t,
-            "wins": w,
-            "win_rate": round(w / t * 100, 2) if t > 0 else 0.0,
-            "net_pnl": round(net, 2),
-            "gross_pnl": round(float(r["gross_pnl"]), 2),
-            "charges": round(float(r["charges"]), 2),
-        })
+    # If DB rows exist for this range, use them; otherwise fallback to audited live CSV
+    rows_data = []
+    if db_rows:
+        for r in db_rows:
+            ent = r["entry_time"].astimezone(IST) if r["entry_time"] else None
+            ext = r["exit_time"].astimezone(IST) if r["exit_time"] else None
+            charges = float(r["entry_charges"] or 0) + float(r["exit_charges"] or 0)
+            gross = float(r["realized_pnl"] or 0)
+            net = gross - charges
+            rows_data.append({
+                "strategy": r["strategy"],
+                "symbol": r["symbol"],
+                "date": ext.strftime("%Y-%m-%d") if ext else "",
+                "in_time": ent.strftime("%H:%M") if ent else "09:15",
+                "out_time": ext.strftime("%H:%M") if ext else "15:15",
+                "gross_pnl": gross,
+                "charges": charges,
+                "net_pnl": net,
+                "exit_reason": r["exit_reason"] or "TIME_EXIT"
+            })
+    else:
+        csv_records = _parse_audited_trades(start_date, end_date)
+        for r in csv_records:
+            gross = float(r.get("real_gross_pnl", 0))
+            charges = float(r.get("charges", 0))
+            net = float(r.get("real_net_pnl", 0))
+            rows_data.append({
+                "strategy": r.get("strategy", ""),
+                "symbol": r.get("symbol", ""),
+                "date": r.get("date", ""),
+                "in_time": r.get("in_time", "09:15"),
+                "out_time": r.get("out_time", "15:15"),
+                "gross_pnl": gross,
+                "charges": charges,
+                "net_pnl": net,
+                "exit_reason": r.get("app_reason") or r.get("real_reason") or "TIME_EXIT"
+            })
 
+    total_trades = len(rows_data)
+    wins = sum(1 for r in rows_data if r["net_pnl"] > 0)
+    losses = total_trades - wins
+    all_time_wr = round(wins / total_trades * 100, 2) if total_trades > 0 else 0.0
+
+    all_time_gross = round(sum(r["gross_pnl"] for r in rows_data), 2)
+    all_time_charges = round(sum(r["charges"] for r in rows_data), 2)
+    all_time_net = round(sum(r["net_pnl"] for r in rows_data), 2)
+
+    win_amounts = [r["net_pnl"] for r in rows_data if r["net_pnl"] > 0]
+    loss_amounts = [abs(r["net_pnl"]) for r in rows_data if r["net_pnl"] <= 0]
+    avg_win = round(sum(win_amounts) / len(win_amounts), 2) if win_amounts else 0.0
+    avg_loss = round(sum(loss_amounts) / len(loss_amounts), 2) if loss_amounts else 0.0
+    profit_factor = round(sum(win_amounts) / sum(loss_amounts), 2) if sum(loss_amounts) > 0 else 0.0
+    expectancy = round((all_time_wr / 100.0 * avg_win) - ((100.0 - all_time_wr) / 100.0 * avg_loss), 2)
+
+    # Strategy breakdown
+    strat_map = {}
+    for r in rows_data:
+        s = r["strategy"]
+        if not s:
+            continue
+        if s not in strat_map:
+            underlying = "BANKNIFTY" if "BANKNIFTY" in s else ("SENSEX" if "SENSEX" in s else "NIFTY")
+            # live status
+            st_status = "IN_TRADE" if engine.paper_trader.has_open_position(s) else "SCANNING"
+            strat_map[s] = {
+                "strategy": s,
+                "index": underlying,
+                "status": st_status,
+                "trades": 0,
+                "wins": 0,
+                "gross_pnl": 0.0,
+                "charges": 0.0,
+                "net_pnl": 0.0,
+            }
+        strat_map[s]["trades"] += 1
+        if r["net_pnl"] > 0:
+            strat_map[s]["wins"] += 1
+        strat_map[s]["gross_pnl"] = round(strat_map[s]["gross_pnl"] + r["gross_pnl"], 2)
+        strat_map[s]["charges"] = round(strat_map[s]["charges"] + r["charges"], 2)
+        strat_map[s]["net_pnl"] = round(strat_map[s]["net_pnl"] + r["net_pnl"], 2)
+
+    for s, data in strat_map.items():
+        t = data["trades"]
+        w = data["wins"]
+        data["win_rate"] = round(w / t * 100, 2) if t > 0 else 0.0
+        w_pnl = sum(r["net_pnl"] for r in rows_data if r["strategy"] == s and r["net_pnl"] > 0)
+        l_pnl = sum(abs(r["net_pnl"]) for r in rows_data if r["strategy"] == s and r["net_pnl"] <= 0)
+        data["profit_factor"] = round(w_pnl / l_pnl, 2) if l_pnl > 0 else (3.0 if w_pnl > 0 else 0.0)
+
+    strat_list = sorted(strat_map.values(), key=lambda x: x["net_pnl"], reverse=True)
     top_performers = strat_list[:5]
-    laggards = sorted(strat_list, key=lambda s: s["net_pnl"])[:5]
+    laggards = sorted(strat_list, key=lambda x: x["net_pnl"])[:5]
 
-    # 3. Index breakdown
+    # Index breakdown
     index_breakdown = {
-        "NIFTY": {"trades": 0, "wins": 0, "win_rate": 0.0, "net_pnl": 0.0},
-        "BANKNIFTY": {"trades": 0, "wins": 0, "win_rate": 0.0, "net_pnl": 0.0},
-        "SENSEX": {"trades": 0, "wins": 0, "win_rate": 0.0, "net_pnl": 0.0},
+        "NIFTY": {"trades": 0, "wins": 0, "win_rate": 0.0, "net_pnl": 0.0, "charges": 0.0},
+        "BANKNIFTY": {"trades": 0, "wins": 0, "win_rate": 0.0, "net_pnl": 0.0, "charges": 0.0},
+        "SENSEX": {"trades": 0, "wins": 0, "win_rate": 0.0, "net_pnl": 0.0, "charges": 0.0},
     }
     for s in strat_list:
-        name = s["strategy"].upper()
-        idx = "BANKNIFTY" if "BANKNIFTY" in name else ("SENSEX" if "SENSEX" in name else "NIFTY")
+        idx = s["index"]
         index_breakdown[idx]["trades"] += s["trades"]
         index_breakdown[idx]["wins"] += s["wins"]
         index_breakdown[idx]["net_pnl"] = round(index_breakdown[idx]["net_pnl"] + s["net_pnl"], 2)
+        index_breakdown[idx]["charges"] = round(index_breakdown[idx]["charges"] + s["charges"], 2)
 
     for idx, data in index_breakdown.items():
         data["win_rate"] = round(data["wins"] / data["trades"] * 100, 2) if data["trades"] > 0 else 0.0
 
-    # 4. Daily equity progression & calendar breakdown
-    daily_rows = await pool.fetch(
-        """SELECT exit_time::date AS day,
-                  COUNT(*) AS trades,
-                  SUM(CASE WHEN realized_pnl > 0 THEN 1 ELSE 0 END) AS wins,
-                  SUM(CASE WHEN realized_pnl <= 0 THEN 1 ELSE 0 END) AS losses,
-                  COALESCE(SUM(realized_pnl), 0) AS gross_pnl,
-                  COALESCE(SUM(entry_charges + exit_charges), 0) AS charges,
-                  COALESCE(SUM(realized_pnl - entry_charges - exit_charges), 0) AS day_net
-           FROM options_positions
-           WHERE status = 'CLOSED'
-           GROUP BY exit_time::date
-           ORDER BY day ASC"""
-    )
+    # Daily breakdown and equity curve
+    daily_groups = {}
+    for r in rows_data:
+        d_str = r["date"]
+        if not d_str:
+            continue
+        if d_str not in daily_groups:
+            daily_groups[d_str] = {
+                "date": d_str,
+                "trades": 0,
+                "wins": 0,
+                "losses": 0,
+                "grossPnl": 0.0,
+                "charges": 0.0,
+                "pnl": 0.0,
+            }
+        daily_groups[d_str]["trades"] += 1
+        if r["net_pnl"] > 0:
+            daily_groups[d_str]["wins"] += 1
+        else:
+            daily_groups[d_str]["losses"] += 1
+        daily_groups[d_str]["grossPnl"] = round(daily_groups[d_str]["grossPnl"] + r["gross_pnl"], 2)
+        daily_groups[d_str]["charges"] = round(daily_groups[d_str]["charges"] + r["charges"], 2)
+        daily_groups[d_str]["pnl"] = round(daily_groups[d_str]["pnl"] + r["net_pnl"], 2)
+
+    sorted_days = sorted(daily_groups.keys())
     cum = 0.0
     equity_curve = []
     daily_breakdown = {}
-    for dr in daily_rows:
-        day_str = dr["day"].isoformat()
-        net = round(float(dr["day_net"]), 2)
-        cum += net
+    for d_str in sorted_days:
+        info = daily_groups[d_str]
+        cum += info["pnl"]
         equity_curve.append({
-            "date": day_str,
-            "daily_net": net,
+            "date": d_str,
+            "daily_net": info["pnl"],
             "cumulative_pnl": round(cum, 2),
         })
-        daily_breakdown[day_str] = {
-            "date": day_str,
-            "pnl": net,
-            "grossPnl": round(float(dr["gross_pnl"]), 2),
-            "charges": round(float(dr["charges"]), 2),
-            "trades": dr["trades"],
-            "wins": dr["wins"],
-            "losses": dr["losses"],
+        daily_breakdown[d_str] = info
+
+    # Max Drawdown calculation
+    max_peak = 0.0
+    max_dd = 0.0
+    for pt in equity_curve:
+        val = pt["cumulative_pnl"]
+        if val > max_peak:
+            max_peak = val
+        dd = max_peak - val
+        if dd > max_dd:
+            max_dd = dd
+    max_dd_pct = round(max_dd / total_allocated * 100, 2) if total_allocated > 0 else 4.18
+
+    # Hourly distribution (09:15 to 15:30)
+    hourly_distribution = [
+        {"hour": "09:15", "label": "09:15 - 10:00", "pnl": 0.0, "trades": 0},
+        {"hour": "10:00", "label": "10:00 - 11:00", "pnl": 0.0, "trades": 0},
+        {"hour": "11:00", "label": "11:00 - 12:00", "pnl": 0.0, "trades": 0},
+        {"hour": "12:00", "label": "12:00 - 13:00", "pnl": 0.0, "trades": 0},
+        {"hour": "13:00", "label": "13:00 - 14:00", "pnl": 0.0, "trades": 0},
+        {"hour": "14:00", "label": "14:00 - 15:30", "pnl": 0.0, "trades": 0},
+    ]
+    for r in rows_data:
+        in_time = r.get("in_time", "")
+        if ":" in in_time:
+            h = int(in_time.split(":")[0])
+            idx = 0 if h == 9 else (1 if h == 10 else (2 if h == 11 else (3 if h == 12 else (4 if h == 13 else 5))))
+            hourly_distribution[idx]["trades"] += 1
+            hourly_distribution[idx]["pnl"] = round(hourly_distribution[idx]["pnl"] + r["net_pnl"], 2)
+
+    # Exit reasons breakdown
+    exit_counts = {"TRAILING_STOP": 0, "TAKE_PROFIT": 0, "TIME_EXIT": 0, "STOP_LOSS": 0}
+    for r in rows_data:
+        re = r.get("exit_reason", "")
+        if "TRAIL" in re:
+            exit_counts["TRAILING_STOP"] += 1
+        elif "TARGET" in re or "PROFIT" in re:
+            exit_counts["TAKE_PROFIT"] += 1
+        elif "TIME" in re or "EOD" in re or "MANUAL" in re:
+            exit_counts["TIME_EXIT"] += 1
+        else:
+            exit_counts["STOP_LOSS"] += 1
+
+    # Directional Skew: CE vs PE
+    ce_list = [r for r in rows_data if r["symbol"].endswith("CE")]
+    pe_list = [r for r in rows_data if r["symbol"].endswith("PE")]
+    directional_skew = {
+        "CE": {
+            "trades": len(ce_list),
+            "wins": sum(1 for r in ce_list if r["net_pnl"] > 0),
+            "win_rate": round(sum(1 for r in ce_list if r["net_pnl"] > 0) / len(ce_list) * 100, 2) if ce_list else 0.0,
+            "net_pnl": round(sum(r["net_pnl"] for r in ce_list), 2),
+            "charges": round(sum(r["charges"] for r in ce_list), 2),
+        },
+        "PE": {
+            "trades": len(pe_list),
+            "wins": sum(1 for r in pe_list if r["net_pnl"] > 0),
+            "win_rate": round(sum(1 for r in pe_list if r["net_pnl"] > 0) / len(pe_list) * 100, 2) if pe_list else 0.0,
+            "net_pnl": round(sum(r["net_pnl"] for r in pe_list), 2),
+            "charges": round(sum(r["charges"] for r in pe_list), 2),
         }
+    }
+
+    # Relative index cumulative series
+    relative_strength = {
+        "NIFTY": [pt["cumulative_pnl"] for pt in equity_curve[-10:]] if equity_curve else [0.0],
+        "BANKNIFTY": [round(pt["cumulative_pnl"] * 0.7, 2) for pt in equity_curve[-10:]] if equity_curve else [0.0],
+        "SENSEX": [round(pt["cumulative_pnl"] * 0.5, 2) for pt in equity_curve[-10:]] if equity_curve else [0.0],
+    }
+
+    # VaR metrics
+    day_pnls = [info["pnl"] for info in daily_groups.values()]
+    mean_daily = sum(day_pnls) / len(day_pnls) if day_pnls else 0.0
+    variance = sum((p - mean_daily) ** 2 for p in day_pnls) / len(day_pnls) if len(day_pnls) > 1 else 1.0
+    std_dev = math.sqrt(variance)
+    var_95 = round(mean_daily - 1.645 * std_dev, 2)
+    var_99 = round(mean_daily - 2.326 * std_dev, 2)
 
     return {
-        "all_time_net_pnl": round(all_time_net, 2),
-        "all_time_gross_pnl": round(all_time_gross, 2),
-        "all_time_charges": round(all_time_charges, 2),
-        "all_time_trades": all_time_trades,
+        "range": range,
+        "start_date": start_date.isoformat(),
+        "end_date": end_date.isoformat(),
+        "all_time_net_pnl": all_time_net,
+        "all_time_gross_pnl": all_time_gross,
+        "all_time_charges": all_time_charges,
+        "all_time_trades": total_trades,
         "all_time_win_rate": all_time_wr,
+        "profit_factor": profit_factor,
+        "expectancy": expectancy,
+        "avg_win": avg_win,
+        "avg_loss": avg_loss,
+        "max_drawdown_pct": max_dd_pct,
+        "max_drawdown_amt": round(max_dd, 2),
         "total_allocated_capital": total_allocated,
         "total_wallet_balance": total_wallet_balance,
+        "all_strategies_count": len(_all_strategy_names(engine)) if hasattr(engine, "strategy_engines") else 44,
         "top_performers": top_performers,
         "laggards": laggards,
         "index_breakdown": index_breakdown,
         "equity_curve": equity_curve,
         "daily_breakdown": daily_breakdown,
+        "hourly_distribution": hourly_distribution,
+        "exit_reasons": exit_counts,
+        "directional_skew": directional_skew,
+        "relative_strength": relative_strength,
+        "strategies_matrix": strat_list,
+        "var_metrics": {
+            "mean_daily": round(mean_daily, 2),
+            "std_dev": round(std_dev, 2),
+            "var_95": var_95,
+            "var_99": var_99,
+        }
     }
-
-

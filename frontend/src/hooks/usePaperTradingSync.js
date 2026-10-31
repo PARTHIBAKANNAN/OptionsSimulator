@@ -80,8 +80,11 @@ export async function fetchPnlReport(params) {
   return api(`/api/paper/pnl/report?${qs}`);
 }
 
-export async function fetchLiveAnalyticsOverview() {
-  return api("/api/paper/analytics/overview");
+export async function fetchLiveAnalyticsOverview(range = "all", fromDate = null, toDate = null) {
+  const params = new URLSearchParams({ range });
+  if (fromDate) params.append("from_date", fromDate);
+  if (toDate) params.append("to_date", toDate);
+  return api(`/api/paper/analytics/overview?${params.toString()}`);
 }
 
 export async function downloadPnlExport(params) {

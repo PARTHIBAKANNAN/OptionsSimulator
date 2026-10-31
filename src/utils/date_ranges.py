@@ -5,7 +5,7 @@ from zoneinfo import ZoneInfo
 
 IST = ZoneInfo("Asia/Kolkata")
 
-VALID_RANGES = {"today", "yesterday", "this_week", "last_week", "this_month", "30d", "60d", "90d", "custom"}
+VALID_RANGES = {"today", "yesterday", "this_week", "last_week", "this_month", "30d", "60d", "90d", "custom", "all", "all_time"}
 
 
 def resolve_range(key: str, start: date = None, end: date = None, now: datetime = None) -> tuple[date, date]:
@@ -15,6 +15,9 @@ def resolve_range(key: str, start: date = None, end: date = None, now: datetime 
         raise ValueError(f"Unknown range '{key}' — must be one of {sorted(VALID_RANGES)}")
 
     today = (now or datetime.now(IST)).date()
+
+    if key in ("all", "all_time"):
+        return date(2020, 1, 1), today
 
     if key == "custom":
         if start is None or end is None:
