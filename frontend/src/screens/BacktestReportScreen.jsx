@@ -5,6 +5,7 @@ import {
 import { Card } from "../components/ui/Card";
 import { StrategyRankTable } from "../components/StrategyRankTable";
 import { StrategyPnlComparisonChart } from "../components/StrategyPnlComparisonChart";
+import { UnderwaterDrawdownChart } from "../components/UnderwaterDrawdownChart";
 import { TrendingUp, ShieldCheck, Zap, Layers, Trophy } from "lucide-react";
 
 function fmtRupee(v) {
@@ -116,6 +117,20 @@ export function BacktestReportScreen() {
           </div>
         </div>
         <StrategyPnlComparisonChart strategies={strategies} />
+      </div>
+
+      {/* Underwater Drawdown Duration & Depth Chart */}
+      <div className="rounded-xl border border-subtle bg-surface p-4 sm:p-5">
+        <div className="mb-3 flex items-center justify-between">
+          <div>
+            <h3 className="font-semibold text-sm text-primary tracking-wide flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span>
+              Underwater Portfolio Drawdown &amp; Waterline Recovery
+            </h3>
+            <p className="text-xs text-faint mt-0.5">Historical portfolio depth below high-water mark and days to equity recovery</p>
+          </div>
+        </div>
+        <UnderwaterDrawdownChart dailyBreakdown={dailyBreakdown} />
       </div>
 
       {/* Tabs Filter Bar for Leaderboards */}

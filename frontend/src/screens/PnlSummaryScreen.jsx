@@ -217,6 +217,25 @@ export function PnlSummaryScreen() {
             <StatTile label="Combined Wallet" value={fmt(report.combined.wallet_balance)} valueClass="text-accent" icon={Wallet} />
           </div>
 
+          {/* Statutory Fee & Friction Breakdown */}
+          <div className="rounded-xl border border-subtle bg-surface2/60 p-4 flex flex-wrap items-center justify-between gap-4 font-mono text-xs shadow-sm">
+            <div className="flex flex-wrap items-center gap-3">
+              <span className="text-faint font-semibold uppercase tracking-wider text-[11px]">Statutory Fee Friction:</span>
+              <span className="text-rose-400 font-bold">{fmt(report.combined.charges || (report.combined.gross_pnl - report.combined.net_pnl))}</span>
+              <span className="text-slate-600">|</span>
+              <span className="text-faint">Net Alpha Retention:</span>
+              <span className="text-emerald-400 font-bold">
+                {report.combined.gross_pnl > 0 ? `${((report.combined.net_pnl / report.combined.gross_pnl) * 100).toFixed(1)}%` : "Optimal"}
+              </span>
+            </div>
+            <div className="flex items-center gap-3 text-[11px] text-faint">
+              <span className="px-2 py-0.5 rounded bg-surface border border-subtle">STT (NSE/BSE)</span>
+              <span className="px-2 py-0.5 rounded bg-surface border border-subtle">GST (18%)</span>
+              <span className="px-2 py-0.5 rounded bg-surface border border-subtle">Turnover Charges</span>
+              <span className="px-2 py-0.5 rounded bg-surface border border-subtle">Stamp Duty</span>
+            </div>
+          </div>
+
           <div className="rounded-xl border border-subtle bg-surface p-4 sm:p-5">
             <h3 className="text-sm font-semibold uppercase tracking-wider text-faint mb-3">Live Equity Curve</h3>
             <DailyPnlChart daily={report.daily_net_pnl} />

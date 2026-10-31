@@ -236,12 +236,28 @@ export function CandleChart({ candles = [], trades = [], height = 400 }) {
         mouseWheel: true,
         pressedMouseMove: true,
         horzTouchDrag: true,
-        vertTouchDrag: false,
+        vertTouchDrag: true,
       },
       handleScale: {
-        axisPressedMouseMove: false,
+        axisPressedMouseMove: {
+          time: true,
+          price: true,
+        },
+        axisDoubleClickReset: {
+          time: true,
+          price: true,
+        },
         mouseWheel: true,
         pinch: true,
+      },
+      rightPriceScale: {
+        visible: true,
+        borderColor: isDark ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.1)",
+        autoScale: true,
+        scaleMargins: {
+          top: 0.1,
+          bottom: 0.15,
+        },
       },
       kineticScroll: {
         touch: true,
@@ -426,28 +442,7 @@ export function CandleChart({ candles = [], trades = [], height = 400 }) {
       volumeSeriesRef.current.applyOptions({ visible: visibilities.volume });
       volumeMaRef.current.applyOptions({ visible: visibilities.volume });
     }
-
-    // Interactive Trade Markers Overlay
-    if (trades && trades.length > 0 && seriesRef.current) {
-      const markers = trades
-        .filter((t) => t.entry_time)
-        .map((t) => {
-          const entryTimeUnix = Math.floor(new Date(t.entry_time).getTime() / 1000);
-          const isCE = (t.direction || "").toUpperCase() === "CE";
-          return {
-            time: entryTimeUnix,
-            position: isCE ? "belowBar" : "aboveBar",
-            color: isCE ? "#10b981" : "#f43f5e",
-            shape: isCE ? "arrowUp" : "arrowDown",
-            text: `${t.direction || "BUY"} @ ₹${Math.round(t.entry_price || 0)}`,
-          };
-        })
-        .sort((a, b) => a.time - b.time);
-      try {
-        seriesRef.current.setMarkers(markers);
-      } catch {}
-    }
-  }, [formattedData, visibilities, palette, trades]);
+  }, [formattedData, visibilities, palette]);
 
   // Quick Zoom Helper
   const handleQuickZoom = (range) => {
